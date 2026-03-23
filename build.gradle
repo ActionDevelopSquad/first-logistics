@@ -10,7 +10,7 @@ subprojects {
     version = '0.0.1-SNAPSHOT'
 
     java {
-        sourceCompatibility = JavaVersion.VERSION_25
+        sourceCompatibility = JavaVersion.VERSION_21
     }
 
     repositories {
@@ -19,8 +19,8 @@ subprojects {
 
     dependencies {
         implementation platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
-        compileOnly 'org.projectlombok:lombok'
-        annotationProcessor 'org.projectlombok:lombok'
+        compileOnly 'org.projectlombok:lombok:1.18.32'
+        annotationProcessor 'org.projectlombok:lombok:1.18.32'
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
     }
 

@@ -1,4 +1,4 @@
 rootProject.name = 'template-project'
 
-//include(":common")
 //include(":sample-service")
+include 'common'

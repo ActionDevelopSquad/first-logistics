@@ -1,0 +1,15 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' apply false
+}
+
+group = 'com.project'
+version = 'unspecified'
+
+jar { enabled = true }
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
