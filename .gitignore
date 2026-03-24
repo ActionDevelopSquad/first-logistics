@@ -24,8 +24,6 @@ hs_err_pid*
 replay_pid*
 
 
-
-
 .env
 *.env
 
@@ -50,11 +48,6 @@ target/
 
 .DS_Store
 Thumbs.db
-
-application-prod.yml
-application-prod.yaml
-**/src/main/resources/application-prod.yml
-**/src/main/resources/application-prod.yaml
 
 logs/
 *.log
