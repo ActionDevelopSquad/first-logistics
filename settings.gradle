@@ -2,3 +2,4 @@ rootProject.name = 'first-logistics'
 
 include 'sample-service'
 include 'common'
+include 'delivery-service'
