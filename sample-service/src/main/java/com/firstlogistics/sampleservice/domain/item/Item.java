@@ -1,4 +1,4 @@
-package com.project.sampleservice.domain.item;
+package com.firstlogistics.sampleservice.domain.item;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

@@ -1,4 +1,4 @@
-package com.project.sampleservice;
+package com.firstlogistics.sampleservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

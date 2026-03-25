@@ -1,4 +1,4 @@
-package com.project.sampleservice.presentation;
+package com.firstlogistics.sampleservice.presentation;
 
 import common.exception.GlobalExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;

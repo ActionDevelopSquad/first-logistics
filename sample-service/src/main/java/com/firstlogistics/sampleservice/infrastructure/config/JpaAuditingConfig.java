@@ -1,4 +1,4 @@
-package com.project.sampleservice.infrastructure.config;
+package com.firstlogistics.sampleservice.infrastructure.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;

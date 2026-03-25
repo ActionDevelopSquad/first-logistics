@@ -1,10 +1,10 @@
-package com.project.sampleservice.application.item;
+package com.firstlogistics.sampleservice.application.item;
 
-import com.project.sampleservice.domain.item.Item;
-import com.project.sampleservice.domain.item.ItemRepository;
-import com.project.sampleservice.domain.item.exception.ItemErrorCode;
-import com.project.sampleservice.domain.item.exception.ItemException;
-import com.project.sampleservice.presentation.item.dto.ItemResponse;
+import com.firstlogistics.sampleservice.domain.item.Item;
+import com.firstlogistics.sampleservice.domain.item.ItemRepository;
+import com.firstlogistics.sampleservice.domain.item.exception.ItemErrorCode;
+import com.firstlogistics.sampleservice.domain.item.exception.ItemException;
+import com.firstlogistics.sampleservice.presentation.item.dto.ItemResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

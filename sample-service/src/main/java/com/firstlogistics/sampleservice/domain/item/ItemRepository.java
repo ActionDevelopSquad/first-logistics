@@ -1,4 +1,4 @@
-package com.project.sampleservice.domain.item;
+package com.firstlogistics.sampleservice.domain.item;
 
 import java.util.List;
 import java.util.Optional;

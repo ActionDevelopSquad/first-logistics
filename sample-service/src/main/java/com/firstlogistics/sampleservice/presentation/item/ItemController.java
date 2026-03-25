@@ -1,10 +1,10 @@
-package com.project.sampleservice.presentation.item;
+package com.firstlogistics.sampleservice.presentation.item;
 
-import com.project.sampleservice.application.item.ItemCommandService;
-import com.project.sampleservice.application.item.ItemQueryService;
-import com.project.sampleservice.presentation.item.dto.CreateItemRequest;
-import com.project.sampleservice.presentation.item.dto.ItemResponse;
-import com.project.sampleservice.presentation.item.dto.UpdateItemRequest;
+import com.firstlogistics.sampleservice.application.item.ItemCommandService;
+import com.firstlogistics.sampleservice.application.item.ItemQueryService;
+import com.firstlogistics.sampleservice.presentation.item.dto.CreateItemRequest;
+import com.firstlogistics.sampleservice.presentation.item.dto.ItemResponse;
+import com.firstlogistics.sampleservice.presentation.item.dto.UpdateItemRequest;
 import common.response.ApiResponse;
 import common.response.CommonSuccessCode;
 import jakarta.validation.Valid;

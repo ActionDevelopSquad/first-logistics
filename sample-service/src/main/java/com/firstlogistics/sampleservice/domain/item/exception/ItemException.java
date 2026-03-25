@@ -1,4 +1,4 @@
-package com.project.sampleservice.domain.item.exception;
+package com.firstlogistics.sampleservice.domain.item.exception;
 
 import common.exception.BaseException;
 

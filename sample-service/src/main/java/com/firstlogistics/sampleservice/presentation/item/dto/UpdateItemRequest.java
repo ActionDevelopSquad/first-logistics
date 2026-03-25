@@ -1,6 +1,6 @@
-package com.project.sampleservice.presentation.item.dto;
+package com.firstlogistics.sampleservice.presentation.item.dto;
 
-import com.project.sampleservice.application.item.command.UpdateItemCommand;
+import com.firstlogistics.sampleservice.application.item.command.UpdateItemCommand;
 import jakarta.validation.constraints.NotBlank;
 
 public record UpdateItemRequest(
