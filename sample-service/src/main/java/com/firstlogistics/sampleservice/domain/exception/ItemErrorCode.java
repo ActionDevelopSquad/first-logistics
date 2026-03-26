@@ -1,4 +1,4 @@
-package com.firstlogistics.sampleservice.domain.item.exception;
+package com.firstlogistics.sampleservice.domain.exception;
 
 import common.response.ErrorCode;
 import lombok.Getter;

@@ -1,7 +1,7 @@
 package com.firstlogistics.sampleservice.infrastructure.item;
 
-import com.firstlogistics.sampleservice.domain.item.Item;
-import com.firstlogistics.sampleservice.domain.item.ItemRepository;
+import com.firstlogistics.sampleservice.infrastructure.entity.Item;
+import com.firstlogistics.sampleservice.domain.repository.ItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
