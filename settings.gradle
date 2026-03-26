@@ -4,3 +4,5 @@ include 'sample-service'
 include 'common'
 include 'common-jpa'
 include 'company-service'
+
+include 'delivery-service'
