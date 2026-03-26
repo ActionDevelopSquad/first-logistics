@@ -1,10 +1,10 @@
-package com.firstlogistics.gwservice;
+package com.firstlogistics.apigateway;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class GwServiceApplicationTests {
+class ApiGatewayApplicationTests {
 
     @Test
     void contextLoads() {
