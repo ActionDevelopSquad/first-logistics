@@ -1,6 +1,6 @@
-package com.firstlogistics.sampleservice.presentation.item.dto;
+package com.firstlogistics.sampleservice.presentation.dto;
 
-import com.firstlogistics.sampleservice.domain.item.Item;
+import com.firstlogistics.sampleservice.infrastructure.entity.Item;
 
 import java.time.LocalDateTime;
 
