@@ -1,3 +1,3 @@
 spring:
   application:
-    name: deliver-service
+    name: delivery-service
