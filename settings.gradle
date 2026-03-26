@@ -2,3 +2,6 @@ rootProject.name = 'first-logistics'
 
 include 'sample-service'
 include 'common'
+include 'eureka-server'
+include 'gw-service'
+include 'user-service'
