@@ -1,13 +1,14 @@
 package com.firstlogistics.sampleservice.presentation.item;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.firstlogistics.sampleservice.application.item.ItemCommandService;
-import com.firstlogistics.sampleservice.application.item.ItemQueryService;
-import com.firstlogistics.sampleservice.domain.item.exception.ItemErrorCode;
-import com.firstlogistics.sampleservice.domain.item.exception.ItemException;
-import com.firstlogistics.sampleservice.presentation.item.dto.CreateItemRequest;
-import com.firstlogistics.sampleservice.presentation.item.dto.ItemResponse;
-import com.firstlogistics.sampleservice.presentation.item.dto.UpdateItemRequest;
+import com.firstlogistics.sampleservice.application.ItemCommandService;
+import com.firstlogistics.sampleservice.application.ItemQueryService;
+import com.firstlogistics.sampleservice.domain.exception.ItemErrorCode;
+import com.firstlogistics.sampleservice.domain.exception.ItemException;
+import com.firstlogistics.sampleservice.presentation.ItemController;
+import com.firstlogistics.sampleservice.presentation.dto.CreateItemRequest;
+import com.firstlogistics.sampleservice.presentation.dto.ItemResponse;
+import com.firstlogistics.sampleservice.presentation.dto.UpdateItemRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

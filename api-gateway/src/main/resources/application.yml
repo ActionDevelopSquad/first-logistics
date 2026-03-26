@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: api-gateway
+#  cloud:
+#    gateway:
+#      discovery:
+#        locator:
+#          enabled: true  # 서비스 디스커버리를 통해 동적으로 라우트를 생성하도록 설정
+#      routes:
+#        - id: user-service  # 라우트 식별자
+#          uri: lb://user-service # 'users-service'라는 이름으로 로드 밸런싱된 서비스로 라우팅
+#          predicates:
+#            - Path=/user/** # /users/** 경로로 들어오는 요청을 이 라우트로 처리
+#        - id: delivery-service
+#          uri: lb://delivery-service
+#          predicates:
+#            - Path=/delivery/**
+#        - id: order-service
+#          uri: lb://order-service
+#          predicates:
+#            - Path=/order/**
+#        - id: hub-service
+#          uri: lb://hub-service
+#          predicates:
+#            - Path=/hub/**
+#        - id: company-service
+#          uri: lb://company-service
+#          predicates:
+#            - Path=/company/**
+#        - id: product-service
+#          uri: lb://product-service
+#          predicates:
+#            - Path=/product/**
+#        - id: notification-service
+#          uri: lb://notification-service
+#          predicates:
+#            - Path=/notification/**
+
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
+    service-url:
+      defaultZone: http://localhost:19090/eureka/
+
