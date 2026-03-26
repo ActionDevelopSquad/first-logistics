@@ -14,7 +14,7 @@ Monorepo + Multi-Module 기반으로 DDD 4계층 아키텍처를 적용한다.
 | Build | Gradle 9.2.0 (Multi-Module) |
 | DB | PostgreSQL 16 |
 | Cache | Redis 7.2 |
-| Message Broker | Kafka, RabbitMQ |
+| Message Broker | Kafka |
 | Infra | Docker, Docker Compose |
 
 ---
@@ -118,8 +118,6 @@ docker compose logs -f sample-service
 | Kafka (내부) | 9092 |
 | Kafka (외부/호스트) | 29092 |
 | Kafka UI | 8989 |
-| RabbitMQ | 5672 |
-| RabbitMQ Management | 15672 |
 | sample-service | 8080 |
 
 ### 5. API 테스트
@@ -135,7 +133,6 @@ DELETE /api/items/{id}  삭제
 ```
 
 Kafka UI: http://localhost:8989
-RabbitMQ Management: http://localhost:15672 (guest / guest)
 
 ---
 
