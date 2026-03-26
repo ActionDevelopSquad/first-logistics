@@ -2,10 +2,10 @@ package com.project.sampleservice.application.item;
 
 import com.project.sampleservice.application.item.command.CreateItemCommand;
 import com.project.sampleservice.application.item.command.UpdateItemCommand;
-import com.project.sampleservice.domain.item.Item;
-import com.project.sampleservice.domain.item.ItemRepository;
-import com.project.sampleservice.domain.item.exception.ItemErrorCode;
-import com.project.sampleservice.domain.item.exception.ItemException;
+import com.project.sampleservice.infrastructure.entity.Item;
+import com.project.sampleservice.domain.ItemRepository;
+import com.project.sampleservice.domain.exception.ItemErrorCode;
+import com.project.sampleservice.domain.exception.ItemException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

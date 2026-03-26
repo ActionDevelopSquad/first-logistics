@@ -1,6 +1,6 @@
 package com.project.sampleservice.presentation.item.dto;
 
-import com.project.sampleservice.domain.item.Item;
+import com.project.sampleservice.infrastructure.entity.Item;
 
 import java.time.LocalDateTime;
 

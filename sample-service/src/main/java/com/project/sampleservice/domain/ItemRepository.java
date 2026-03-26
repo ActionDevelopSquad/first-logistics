@@ -1,4 +1,6 @@
-package com.project.sampleservice.domain.item;
+package com.project.sampleservice.domain;
+
+import com.project.sampleservice.infrastructure.entity.Item;
 
 import java.util.List;
 import java.util.Optional;

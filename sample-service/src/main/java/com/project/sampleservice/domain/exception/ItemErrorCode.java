@@ -1,4 +1,4 @@
-package com.project.sampleservice.domain.item.exception;
+package com.project.sampleservice.domain.exception;
 
 import common.response.ErrorCode;
 import lombok.Getter;

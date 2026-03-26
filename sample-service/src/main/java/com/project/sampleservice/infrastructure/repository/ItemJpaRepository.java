@@ -1,7 +1,7 @@
-package com.project.sampleservice.infrastructure.item;
+package com.project.sampleservice.infrastructure.repository;
 
-import com.project.sampleservice.domain.item.Item;
-import com.project.sampleservice.domain.item.ItemRepository;
+import com.project.sampleservice.infrastructure.entity.Item;
+import com.project.sampleservice.domain.ItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
