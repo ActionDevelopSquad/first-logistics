@@ -1,5 +1,6 @@
-package com.firstlogistics.sampleservice.domain.item;
+package com.firstlogistics.sampleservice.infrastructure.entity;
 
+import common.jpa.entity.BaseAuditEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -15,7 +16,7 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
-public class Item {
+public class Item extends BaseAuditEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

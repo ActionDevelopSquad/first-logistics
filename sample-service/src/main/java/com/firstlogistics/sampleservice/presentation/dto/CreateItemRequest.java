@@ -1,6 +1,6 @@
-package com.firstlogistics.sampleservice.presentation.item.dto;
+package com.firstlogistics.sampleservice.presentation.dto;
 
-import com.firstlogistics.sampleservice.application.item.command.CreateItemCommand;
+import com.firstlogistics.sampleservice.application.command.CreateItemCommand;
 import jakarta.validation.constraints.NotBlank;
 
 public record CreateItemRequest(

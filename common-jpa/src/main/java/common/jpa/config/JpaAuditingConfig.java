@@ -1,9 +1,10 @@
-package com.firstlogistics.sampleservice.infrastructure.config;
+package common.jpa.config;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @Configuration
 @EnableJpaAuditing
-public class JpaAuditingConfig {
-}
+@Profile("!test")
+public class JpaAuditingConfig {}
