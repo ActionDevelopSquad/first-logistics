@@ -71,7 +71,7 @@ public class Order {
 
     private void calculateTotalAmount() {
         this.totalAmount = Money.of(orderItems.stream()
-                .mapToLong(x -> x.getSubTotal().getAmount())
+                .mapToLong(x -> x.getSubTotal().amount())
                 .sum());
     }
 

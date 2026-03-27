@@ -1,16 +1,8 @@
 package com.firstlogistics.orderservice.domain.vo;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
-@Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class Money {
-    private Long amount;
-
+public record Money(
+        Long amount
+) {
     public static Money of(Long amount) {
         return new Money(amount);
     }

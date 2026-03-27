@@ -1,16 +1,10 @@
 package com.firstlogistics.orderservice.domain.vo;
 
-import lombok.*;
-
 import java.util.UUID;
 
-@Getter
-@EqualsAndHashCode
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class OrderId {
-    private UUID id;
-
+public record OrderId(
+        UUID id
+) {
     public static OrderId of() {
         return OrderId.of(UUID.randomUUID());
     }
