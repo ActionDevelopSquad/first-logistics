@@ -14,6 +14,8 @@ public class Company {
     private CompanyAddress address;
 
     private Company(UUID id, UUID hubId, String name, CompanyType type, CompanyStatus status, CompanyAddress address) {
+        validate(hubId, name, type);
+
         this.id = id;
         this.hubId = hubId;
         this.name = name;
@@ -22,20 +24,18 @@ public class Company {
         this.address = address;
     }
 
-    public static Company of(UUID hubId, String name, CompanyType type, String address) {
-        validate(hubId, name, type);
-
+    public static Company of(UUID hubId, String name, CompanyType type, String roadAddress, String detailAddress) {
         return new Company(
                 UUID.randomUUID(),
                 hubId,
                 name,
                 type,
                 CompanyStatus.ACTIVE,
-                CompanyAddress.of(address)
+                CompanyAddress.of(roadAddress, detailAddress)
         );
     }
 
-    private static void validate(UUID hubId, String name, CompanyType type) {
+    private void validate(UUID hubId, String name, CompanyType type) {
         if (hubId == null) {
             throw new IllegalArgumentException("허브 ID는 null일 수 없습니다.");
         }
@@ -47,16 +47,12 @@ public class Company {
         }
     }
 
-    public void changeAddress(String address) {
+    public void changeAddress(String roadAddress, String detailAddress) {
         if (this.status == CompanyStatus.INACTIVE) {
             throw new IllegalStateException("비활성화 상태의 회사는 주소를 변경할 수 없습니다.");
         }
 
-        if (address == null || address.isBlank()) {
-            throw new IllegalArgumentException("주소는 null이거나 빈 문자열일 수 없습니다.");
-        }
-
-        this.address = new CompanyAddress(address);
+        this.address = CompanyAddress.of(roadAddress, detailAddress);
     }
 
     public void deactivate() {
