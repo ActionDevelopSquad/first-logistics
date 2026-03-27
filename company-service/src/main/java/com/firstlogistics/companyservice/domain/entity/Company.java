@@ -18,7 +18,7 @@ public class Company {
     private CompanyAddress address;
     private GeoLocation geoLocation;
 
-    public static Company of(UUID hubId, UUID userId, String name, CompanyType type, String roadAddress, String detailAddress, long latitude, long longitude) {
+    public static Company create(UUID hubId, UUID userId, String name, CompanyType type, String roadAddress, String detailAddress, long latitude, long longitude) {
         validate(hubId, userId, name, type);
 
         return new Company(
