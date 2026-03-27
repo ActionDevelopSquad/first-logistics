@@ -5,7 +5,9 @@ import com.firstlogistics.companyservice.domain.vo.CompanyAddress;
 import com.firstlogistics.companyservice.domain.vo.GeoLocation;
 import java.util.Objects;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
 
+@AllArgsConstructor
 public class Company {
     private UUID id;
     private UUID hubId;
@@ -16,20 +18,9 @@ public class Company {
     private CompanyAddress address;
     private GeoLocation geoLocation;
 
-    private Company(UUID id, UUID hubId, UUID userId, String name, CompanyType type, CompanyStatus status, CompanyAddress address, long latitude, long longitude) {
+    public static Company of(UUID hubId, UUID userId, String name, CompanyType type, String roadAddress, String detailAddress, long latitude, long longitude) {
         validate(hubId, userId, name, type);
 
-        this.id = id;
-        this.hubId = hubId;
-        this.userId = userId;
-        this.name = name;
-        this.type = type;
-        this.status = status;
-        this.address = address;
-        this.geoLocation = GeoLocation.of(latitude, longitude);
-    }
-
-    public static Company of(UUID hubId, UUID userId, String name, CompanyType type, String roadAddress, String detailAddress, long latitude, long longitude) {
         return new Company(
                 UUID.randomUUID(),
                 hubId,
@@ -38,12 +29,11 @@ public class Company {
                 type,
                 CompanyStatus.ACTIVE,
                 CompanyAddress.of(roadAddress, detailAddress),
-                latitude,
-                longitude
+                GeoLocation.of(latitude, longitude)
         );
     }
 
-    private void validate(UUID hubId, UUID userId, String name, CompanyType type) {
+    private static void validate(UUID hubId, UUID userId, String name, CompanyType type) {
         if (hubId == null) {
             throw new IllegalArgumentException("허브 ID는 null일 수 없습니다.");
         }

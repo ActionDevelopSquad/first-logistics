@@ -4,11 +4,8 @@ public record CompanyAddress(
         String roadAddress,
         String detailAddress
 ) {
-    public CompanyAddress(String roadAddress, String detailAddress) {
+    public CompanyAddress {
         validateAddress(roadAddress, detailAddress);
-
-        this.roadAddress = roadAddress;
-        this.detailAddress = detailAddress;
     }
 
     public static CompanyAddress of(String roadAddress, String detailAddress) {

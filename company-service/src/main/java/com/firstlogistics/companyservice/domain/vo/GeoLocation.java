@@ -5,14 +5,11 @@ public record GeoLocation(
         double longitude
 ) {
 
-    public GeoLocation(double latitude, double longitude){
+    public GeoLocation {
         validate(latitude, longitude);
-
-        this.latitude = latitude;
-        this.longitude = longitude;
     }
 
-    public static GeoLocation of (double latitude, double longitude){
+    public static GeoLocation of(double latitude, double longitude) {
         return new GeoLocation(latitude, longitude);
     }
 
