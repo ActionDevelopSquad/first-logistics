@@ -9,17 +9,19 @@ import java.util.UUID;
 public class Company {
     private UUID id;
     private UUID hubId;
+    private UUID userId;
     private String name;
     private CompanyType type;
     private CompanyStatus status;
     private CompanyAddress address;
     private GeoLocation geoLocation;
 
-    private Company(UUID id, UUID hubId, String name, CompanyType type, CompanyStatus status, CompanyAddress address, long latitude, long longitude) {
-        validate(hubId, name, type);
+    private Company(UUID id, UUID hubId, UUID userId, String name, CompanyType type, CompanyStatus status, CompanyAddress address, long latitude, long longitude) {
+        validate(hubId, userId, name, type);
 
         this.id = id;
         this.hubId = hubId;
+        this.userId = userId;
         this.name = name;
         this.type = type;
         this.status = status;
@@ -27,10 +29,11 @@ public class Company {
         this.geoLocation = GeoLocation.of(latitude, longitude);
     }
 
-    public static Company of(UUID hubId, String name, CompanyType type, String roadAddress, String detailAddress, long latitude, long longitude) {
+    public static Company of(UUID hubId, UUID userId, String name, CompanyType type, String roadAddress, String detailAddress, long latitude, long longitude) {
         return new Company(
                 UUID.randomUUID(),
                 hubId,
+                userId,
                 name,
                 type,
                 CompanyStatus.ACTIVE,
@@ -40,9 +43,12 @@ public class Company {
         );
     }
 
-    private void validate(UUID hubId, String name, CompanyType type) {
+    private void validate(UUID hubId, UUID userId, String name, CompanyType type) {
         if (hubId == null) {
             throw new IllegalArgumentException("허브 ID는 null일 수 없습니다.");
+        }
+        if (userId == null) {
+            throw new IllegalArgumentException("사용자 ID는 null일 수 없습니다.");
         }
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("이름은 null이거나 빈 문자열일 수 없습니다.");
