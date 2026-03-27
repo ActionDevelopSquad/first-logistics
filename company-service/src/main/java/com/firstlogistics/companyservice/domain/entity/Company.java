@@ -2,6 +2,7 @@ package com.firstlogistics.companyservice.domain.entity;
 
 import com.firstlogistics.companyservice.domain.enums.CompanyStatus;
 import com.firstlogistics.companyservice.domain.vo.CompanyAddress;
+import com.firstlogistics.companyservice.domain.vo.GeoLocation;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -12,8 +13,9 @@ public class Company {
     private CompanyType type;
     private CompanyStatus status;
     private CompanyAddress address;
+    private GeoLocation geoLocation;
 
-    private Company(UUID id, UUID hubId, String name, CompanyType type, CompanyStatus status, CompanyAddress address) {
+    private Company(UUID id, UUID hubId, String name, CompanyType type, CompanyStatus status, CompanyAddress address, long latitude, long longitude) {
         validate(hubId, name, type);
 
         this.id = id;
@@ -22,16 +24,19 @@ public class Company {
         this.type = type;
         this.status = status;
         this.address = address;
+        this.geoLocation = GeoLocation.of(latitude, longitude);
     }
 
-    public static Company of(UUID hubId, String name, CompanyType type, String roadAddress, String detailAddress) {
+    public static Company of(UUID hubId, String name, CompanyType type, String roadAddress, String detailAddress, long latitude, long longitude) {
         return new Company(
                 UUID.randomUUID(),
                 hubId,
                 name,
                 type,
                 CompanyStatus.ACTIVE,
-                CompanyAddress.of(roadAddress, detailAddress)
+                CompanyAddress.of(roadAddress, detailAddress),
+                latitude,
+                longitude
         );
     }
 
