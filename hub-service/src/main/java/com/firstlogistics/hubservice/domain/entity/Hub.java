@@ -1,12 +1,11 @@
 package com.firstlogistics.hubservice.domain.entity;
 
-import com.firstlogistics.hubservice.domain.enums.HubConnectionStatus;
 import com.firstlogistics.hubservice.domain.enums.HubStatus;
 import com.firstlogistics.hubservice.domain.vo.*;
+import lombok.AllArgsConstructor;
 
-import java.util.UUID;
 
-
+@AllArgsConstructor
 public class Hub {
     private HubId id;
     private String name;
@@ -14,25 +13,13 @@ public class Hub {
     private GeoLocation geoLocation;
     private HubStatus status;
 
-    private Hub(
-            HubId id,
-            String name,
-            HubAddress address,
-            GeoLocation geoLocation,
-            HubStatus status) {
-        //private 검증 메서드
-        this.id = id;
-        this.name = name;
-        this.address = address;
-        this.geoLocation = geoLocation;
-        this.status = status;
-    }
 
     public static Hub create(
             String name,
             HubAddress address,
             GeoLocation geoLocation
     ) {
+        //검증 메소드
         HubStatus status = HubStatus.ACTIVE;
         return new Hub(HubId.generate(), name, address, geoLocation, status);
     }
