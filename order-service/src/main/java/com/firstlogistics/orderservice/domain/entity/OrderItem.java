@@ -3,13 +3,14 @@ package com.firstlogistics.orderservice.domain.entity;
 import com.firstlogistics.orderservice.domain.vo.Money;
 import com.firstlogistics.orderservice.domain.vo.OrderId;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class OrderItem {
     private UUID id;
     private OrderId orderId;
@@ -19,26 +20,21 @@ public class OrderItem {
     private int quantity;
     private Money subTotal;
 
-    public static OrderItem create(
+    static OrderItem create(
             OrderId orderId,
             UUID productId,
             String productName,
-            Long unitPrice,
+            Money unitPrice,
             int quantity
     ) {
-        OrderItem item = new OrderItem();
-        item.id = UUID.randomUUID();
-        item.orderId = orderId;
-        item.productId = productId;
-        item.productName = productName;
-        item.unitPrice = Money.of(unitPrice);
-        item.quantity = quantity;
-        item.calculateSubTotal();
-
-        return item;
-    }
-
-    private void calculateSubTotal() {
-        this.subTotal = unitPrice.multiply(quantity);
+        return new OrderItem(
+                UUID.randomUUID(),
+                orderId,
+                productId,
+                productName,
+                unitPrice,
+                quantity,
+                unitPrice.multiply(quantity)
+        );
     }
 }

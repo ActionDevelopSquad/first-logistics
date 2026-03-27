@@ -8,6 +8,7 @@ import com.firstlogistics.orderservice.domain.vo.OrderId;
 import com.firstlogistics.orderservice.domain.vo.Receiver;
 import com.firstlogistics.orderservice.domain.vo.Supplier;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -17,7 +18,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Order {
     private OrderId id;
     private Supplier supplier;
@@ -36,23 +37,27 @@ public class Order {
             UUID receiverManagerId,
             LocalDateTime dueDate,
             String requestMemo,
-            List<OrderItem> items
+            List<OrderItem> items // 추후 DTO로 수정
     ) {
-        Order order = new Order();
-        order.id = OrderId.of();
-        order.supplier = Supplier.of(supplierCompanyId, supplierManagerId);
-        order.receiver = Receiver.of(receiverCompanyId, receiverManagerId);
-        order.dueDate = dueDate;
-        order.requestMemo = requestMemo;
-        order.status = OrderStatus.PENDING;
+        Order order = new Order(
+                OrderId.of(),
+                Supplier.of(supplierCompanyId, supplierManagerId),
+                Receiver.of(receiverCompanyId, receiverManagerId),
+                null,
+                OrderStatus.PENDING,
+                Money.of(0L),
+                dueDate,
+                requestMemo,
+                new ArrayList<>()
+        );
 
-        order.setOrderItems(items);
+        order.initOrderItems(items);
         order.calculateTotalAmount();
 
         return order;
     }
 
-    private void setOrderItems(List<OrderItem> orderItems) {
+    private void initOrderItems(List<OrderItem> orderItems) {
         // 주문 상세 존재 여부 체크
         if (orderItems == null || orderItems.isEmpty()) {
             throw new OrderException(OrderErrorCode.ORDER_ITEM_NOT_EXIST);
@@ -66,12 +71,18 @@ public class Order {
 
     private void addOrderItem(OrderItem item) {
         // 개별 검증 로직 추가
-        orderItems.add(item);
+        orderItems.add(OrderItem.create(
+                this.id,
+                item.getProductId(),
+                item.getProductName(),
+                item.getUnitPrice(),
+                item.getQuantity()
+        ));
     }
 
     private void calculateTotalAmount() {
         this.totalAmount = Money.of(orderItems.stream()
-                .mapToLong(x -> x.getSubTotal().amount())
+                .mapToLong(item -> item.getSubTotal().amount())
                 .sum());
     }
 
