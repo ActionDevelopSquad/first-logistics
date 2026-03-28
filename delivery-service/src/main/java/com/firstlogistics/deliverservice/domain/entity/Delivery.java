@@ -4,15 +4,15 @@ import com.firstlogistics.deliverservice.domain.enums.DeliveryStatus;
 import com.firstlogistics.deliverservice.domain.vo.Address;
 import com.firstlogistics.deliverservice.domain.vo.GeoLocation;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Delivery {
 
 	private UUID id;
@@ -25,47 +25,30 @@ public class Delivery {
 	private UUID receiverId;
 	private String receiverSlackId;
 	private UUID receiverCompanyDeliveryStaffId;
-
-	private List<DeliveryRoute> routes = new ArrayList<>();
-
-	private Delivery(
-		UUID orderId,
-		DeliveryStatus status,
-		UUID sourceHubId,
-		UUID destinationHubId,
-		Address address,
-		GeoLocation geoLocation,
-		UUID receiverId,
-		String receiverSlackId,
-		UUID receiverCompanyDeliveryStaffId
-	) {
-		this.orderId = orderId;
-		this.status = status;
-		this.sourceHubId = sourceHubId;
-		this.destinationHubId = destinationHubId;
-		this.address = address;
-		this.geoLocation = geoLocation;
-		this.receiverId = receiverId;
-		this.receiverSlackId = receiverSlackId;
-		this.receiverCompanyDeliveryStaffId = receiverCompanyDeliveryStaffId;
-	}
+	private List<DeliveryRoute> routes;
 
 	public static Delivery create(
 		UUID orderId,
 		UUID sourceHubId,
 		UUID destinationHubId,
-		Address address,
-		GeoLocation geoLocation,
+		String roadAddress,
+		String detailAddress,
+		double latitude,
+		double longitude,
 		UUID receiverId,
 		String receiverSlackId,
 		UUID receiverCompanyDeliveryStaffId
 	) {
 		DeliveryStatus createdStatus = DeliveryStatus.CREATED;
-		return new Delivery(orderId, createdStatus, sourceHubId, destinationHubId, address, geoLocation, receiverId, receiverSlackId, receiverCompanyDeliveryStaffId);
-	}
-
-	public void startDelivery() {
-		this.status = DeliveryStatus.HUB_WAITING;
+		final List<DeliveryRoute> createdRoutes = new ArrayList<>();
+		return new Delivery(
+				null, orderId, createdStatus,
+				sourceHubId, destinationHubId,
+				Address.of(roadAddress, detailAddress),
+				GeoLocation.of(latitude, longitude),
+				receiverId, receiverSlackId, receiverCompanyDeliveryStaffId,
+				createdRoutes
+		);
 	}
 
 	public void moveToNextHub() {

@@ -3,13 +3,13 @@ package com.firstlogistics.deliverservice.domain.entity;
 import com.firstlogistics.deliverservice.domain.enums.StaffType;
 import com.firstlogistics.deliverservice.domain.vo.StaffDetail;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class DeliveryStaff {
 
 	private UUID id;
@@ -18,36 +18,22 @@ public class DeliveryStaff {
 	private String slackId;
 	private StaffType staffType;
 	private int deliverySequence;
-	private Boolean isDelivering;
-
-	private DeliveryStaff(
-		UUID id,
-		StaffDetail staffDetail,
-		UUID hubId,
-		String slackId,
-		StaffType staffType,
-		int deliverySequence,
-		boolean isDelivering
-	) {
-		this.id = id;
-		this.staffDetail = staffDetail;
-		this.hubId = hubId;
-		this.slackId = slackId;
-		this.staffType = staffType;
-		this.deliverySequence = deliverySequence;
-		this.isDelivering = isDelivering;
-	}
+	private boolean isDelivering;
 
 	public static DeliveryStaff create(
 		UUID id,
-		StaffDetail staffDetail,
+		String staffName,
+		String phoneNumber,
 		UUID hubId,
 		String slackId,
 		StaffType staffType,
 		int deliverySequence
 	) {
 		boolean createdIsDelivering = false;
-		return new DeliveryStaff(id, staffDetail, hubId, slackId, staffType, deliverySequence, createdIsDelivering);
+		return new DeliveryStaff(
+				id, StaffDetail.of(staffName, phoneNumber), hubId, slackId,
+				staffType, deliverySequence, createdIsDelivering
+		);
 	}
 
 	public void startDelivering() {

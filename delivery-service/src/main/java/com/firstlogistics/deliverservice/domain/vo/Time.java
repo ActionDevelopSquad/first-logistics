@@ -1,18 +1,17 @@
 package com.firstlogistics.deliverservice.domain.vo;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 
-@Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Time {
+public record Time(int minutes) {
 
-	private int minutes;
+	public Time {
+		if (minutes < 0) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_TIME);
+		}
+	}
 
 	public static Time of(int minutes) {
-		Time time = new Time();
-		time.minutes = minutes;
-		return time;
+		return new Time(minutes);
 	}
 }

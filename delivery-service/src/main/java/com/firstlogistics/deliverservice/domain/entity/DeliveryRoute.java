@@ -4,13 +4,13 @@ import com.firstlogistics.deliverservice.domain.enums.RouteStatus;
 import com.firstlogistics.deliverservice.domain.vo.Distance;
 import com.firstlogistics.deliverservice.domain.vo.Time;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class DeliveryRoute {
 
 	private UUID id;
@@ -25,34 +25,23 @@ public class DeliveryRoute {
 	private RouteStatus status;
 	private UUID deliveryStaffId;
 
-	private DeliveryRoute(
-		UUID deliveryId,
-		int sequence,
-		UUID sourceHubId,
-		UUID destinationHubId,
-		Distance estimatedDistance,
-		Time estimatedDuration,
-		RouteStatus status
-	) {
-		this.deliveryId = deliveryId;
-		this.sequence = sequence;
-		this.sourceHubId = sourceHubId;
-		this.destinationHubId = destinationHubId;
-		this.estimatedDistance = estimatedDistance;
-		this.estimatedDuration = estimatedDuration;
-		this.status = status;
-	}
-
 	public static DeliveryRoute create(
 		UUID deliveryId,
 		int sequence,
 		UUID sourceHubId,
 		UUID destinationHubId,
-		Distance estimatedDistance,
-		Time estimatedDuration
+		int estimatedDistanceMeters,
+		int estimatedDurationMinutes
 	) {
 		RouteStatus createdStatus = RouteStatus.CREATED;
-		return new DeliveryRoute(deliveryId, sequence, sourceHubId, destinationHubId, estimatedDistance, estimatedDuration, createdStatus);
+		return new DeliveryRoute(
+				null, deliveryId, sequence,
+				sourceHubId, destinationHubId,
+				Distance.of(estimatedDistanceMeters),
+				Time.of(estimatedDurationMinutes),
+				null, null,
+				createdStatus, null
+		);
 	}
 
 	public void departRoute() {
@@ -61,12 +50,6 @@ public class DeliveryRoute {
 
 	public void waitAtHub() {
 		this.status = RouteStatus.HUB_WAITING;
-	}
-
-	public void arriveRoute(Distance actualDistance, Time actualDuration) {
-		this.actualDistance = actualDistance;
-		this.actualDuration = actualDuration;
-		this.status = RouteStatus.DESTINATION_ARRIVED;
 	}
 
 	public void assignStaff(UUID staffId) {
