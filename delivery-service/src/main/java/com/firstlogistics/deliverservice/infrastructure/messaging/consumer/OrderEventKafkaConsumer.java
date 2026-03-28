@@ -4,6 +4,7 @@ import com.firstlogistics.deliverservice.infrastructure.messaging.consumer.event
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -16,10 +17,16 @@ public class OrderEventKafkaConsumer {
 	@KafkaListener(
 		topics = "order.accepted",
 		groupId = "delivery-service",
-		containerFactory = "orderAcceptedListenerFactory"
+		containerFactory = "deliveryListenerContainerFactory"
 	)
-	public void handleOrderAccepted(OrderAcceptedEvent event) {
+	public void handleOrderAccepted(OrderAcceptedEvent event, Acknowledgment ack) {
 		log.info("order.accepted 이벤트 수신 - orderId: {}", event.orderId());
-		// TODO: deliveryCommandService.createDelivery(event);
+		try {
+			// TODO: deliveryCommandService.createDelivery(event);
+			ack.acknowledge();
+		} catch (Exception e) {
+			log.error("order.accepted 이벤트 처리 실패 - orderId: {}", event.orderId(), e);
+			// ack 하지 않으면 재시도
+		}
 	}
 }
