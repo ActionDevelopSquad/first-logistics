@@ -147,12 +147,20 @@ public class Order {
     }
 
     public void requestCancel() {
+        // 이미 취소 요청 or 취소 된 상태인 경우
+        if (this.status == OrderStatus.CANCEL_REQUESTED || this.status == OrderStatus.CANCELLED) {
+            throw new OrderException(OrderErrorCode.ALREADY_CANCEL_REQUESTED);
+        }
         this.status.validateNext(OrderStatus.CANCEL_REQUESTED);
         this.previousStatus = this.status;
         this.status = OrderStatus.CANCEL_REQUESTED;
     }
 
     public void rejectCancelRequest() {
+        // 취소 요청 상태에서만 가능
+        if (this.status != OrderStatus.CANCEL_REQUESTED || this.previousStatus == null) {
+            throw new OrderException(OrderErrorCode.CANNOT_REJECT_CANCEL);
+        }
         this.status.validateNext(this.previousStatus);
         this.status = this.previousStatus; // 이전 상태 복구
         this.previousStatus = null;

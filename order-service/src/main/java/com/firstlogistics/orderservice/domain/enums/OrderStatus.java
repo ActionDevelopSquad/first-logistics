@@ -18,7 +18,7 @@ public enum OrderStatus {
 
     // 상태 전이 Map
     private static final Map<OrderStatus, Set<OrderStatus>> transitions = Map.of(
-            PENDING, Set.of(RESERVED, CANCELLED),
+            PENDING, Set.of(RESERVED, CANCEL_REQUESTED, CANCELLED),
             RESERVED, Set.of(ACCEPTED, CANCEL_REQUESTED, CANCELLED),
             ACCEPTED, Set.of(READY),
             READY, Set.of(SHIPPING),
@@ -29,6 +29,7 @@ public enum OrderStatus {
     );
 
     public void validateNext(OrderStatus next) {
+        if (this == next) return;
         if (!transitions.getOrDefault(this, Set.of()).contains(next)) {
             throw new OrderException(OrderErrorCode.INVALID_ORDER_STATUS);
         }
