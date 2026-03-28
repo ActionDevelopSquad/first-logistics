@@ -23,7 +23,8 @@ public enum DeliveryErrorCode implements ErrorCode {
 	// 외부 서비스
 	HUB_NOT_FOUND(HttpStatus.NOT_FOUND, "DR401", "허브를 찾을 수 없습니다."),
 	COMPANY_NOT_FOUND(HttpStatus.NOT_FOUND, "DR402", "업체를 찾을 수 없습니다."),
-	EXTERNAL_SERVICE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "DR403", "외부 서비스 호출에 실패했습니다.")
+	USER_NOT_FOUND(HttpStatus.NOT_FOUND, "DR403", "사용자를 찾을 수 없습니다."),
+	EXTERNAL_SERVICE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "DR404", "외부 서비스 호출에 실패했습니다.")
 
 	;
 

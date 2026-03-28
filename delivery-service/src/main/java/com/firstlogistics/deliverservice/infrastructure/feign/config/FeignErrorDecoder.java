@@ -16,6 +16,9 @@ public class FeignErrorDecoder implements ErrorDecoder {
 			if (methodKey.startsWith("CompanyClient#")) {
 				return new DeliveryException(DeliveryErrorCode.COMPANY_NOT_FOUND);
 			}
+			if (methodKey.startsWith("UserClient#")) {
+				return new DeliveryException(DeliveryErrorCode.USER_NOT_FOUND);
+			}
 		}
 		return new DeliveryException(DeliveryErrorCode.EXTERNAL_SERVICE_ERROR);
 	}
