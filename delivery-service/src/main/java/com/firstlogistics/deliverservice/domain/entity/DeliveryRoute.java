@@ -1,7 +1,9 @@
 package com.firstlogistics.deliverservice.domain.entity;
 
 import com.firstlogistics.deliverservice.domain.enums.RouteStatus;
+import com.firstlogistics.deliverservice.domain.vo.Address;
 import com.firstlogistics.deliverservice.domain.vo.Distance;
+import com.firstlogistics.deliverservice.domain.vo.GeoLocation;
 import com.firstlogistics.deliverservice.domain.vo.Time;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -22,6 +24,8 @@ public class DeliveryRoute {
 	private Time estimatedDuration;
 	private Distance actualDistance;
 	private Time actualDuration;
+	private Address actualAddress;
+	private GeoLocation actualLocation;
 	private RouteStatus status;
 	private UUID deliveryStaffId;
 
@@ -39,7 +43,7 @@ public class DeliveryRoute {
 				sourceHubId, destinationHubId,
 				Distance.of(estimatedDistanceMeters),
 				Time.of(estimatedDurationMinutes),
-				null, null,
+				null, null, null, null,
 				createdStatus, null
 		);
 	}

@@ -25,6 +25,7 @@ public class Delivery {
 	private UUID receiverId;
 	private String receiverSlackId;
 	private UUID receiverCompanyDeliveryStaffId;
+	private UUID currentHubId;
 	private List<DeliveryRoute> routes;
 
 	public static Delivery create(
@@ -47,6 +48,7 @@ public class Delivery {
 				Address.of(roadAddress, detailAddress),
 				GeoLocation.of(latitude, longitude),
 				receiverId, receiverSlackId, receiverCompanyDeliveryStaffId,
+				sourceHubId,
 				createdRoutes
 		);
 	}
