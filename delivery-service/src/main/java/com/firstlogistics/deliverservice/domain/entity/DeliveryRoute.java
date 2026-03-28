@@ -24,8 +24,8 @@ public class DeliveryRoute {
 	private Time estimatedDuration;
 	private Distance actualDistance;
 	private Time actualDuration;
-	private Address actualAddress;
-	private GeoLocation actualLocation;
+	private Address actualDestinationAddress;
+	private GeoLocation actualDestinationLocation;
 	private RouteStatus status;
 	private UUID deliveryStaffId;
 
