@@ -108,17 +108,18 @@ public class Order {
     }
 
     public void assignDelivery(UUID deliveryId) {
+        if (deliveryId == null) {
+            throw new OrderException(OrderErrorCode.INVALID_DELIVERY_ID);
+        }
+
         // 이미 배송이 할당된 경우
         if (this.deliveryId != null) {
             throw new OrderException(OrderErrorCode.DELIVERY_ALREADY_ASSIGNED);
         }
 
-        // 주문 승인 상태에서만 배송 할당 가능
-        if (!status.equals(OrderStatus.ACCEPTED)) {
-            throw new OrderException(OrderErrorCode.INVALID_ORDER_STATUS_FOR_DELIVERY);
-        }
-
+        this.status.validateNext(OrderStatus.READY);
         this.deliveryId = deliveryId;
+        this.status = OrderStatus.READY;
     }
 
     public void startShipping() {
