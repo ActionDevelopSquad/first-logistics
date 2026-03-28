@@ -81,7 +81,7 @@ public class Delivery {
 	}
 
 	public void startLastMile() {
-		this.status = DeliveryStatus.FOR_VENDOR_MOVING;
+		this.status = DeliveryStatus.FOR_COMPANY_MOVING;
 	}
 
 	public void completeDelivery() {
