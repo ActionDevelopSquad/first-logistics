@@ -10,12 +10,9 @@ import com.firstlogistics.orderservice.domain.vo.Supplier;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -29,6 +26,8 @@ public class Order {
     private String requestMemo;
     private OrderStatus status;
     private OrderStatus previousStatus;
+
+    @Getter(AccessLevel.NONE)
     private List<OrderItem> orderItems;
 
     public static Order create(
@@ -59,9 +58,17 @@ public class Order {
         return order;
     }
 
+    // 외부에서 리스트 수정 못하도록 읽기 전용으로 반환
+    public List<OrderItem> getOrderItems() {
+        return Collections.unmodifiableList(orderItems);
+    }
+
     private void initOrderItems(List<OrderItem> orderItems) {
         // 주문 상세 존재 여부 체크
         if (orderItems == null || orderItems.isEmpty()) {
+            throw new OrderException(OrderErrorCode.ORDER_ITEM_NOT_EXIST);
+        }
+        if (orderItems.stream().anyMatch(Objects::isNull)) {
             throw new OrderException(OrderErrorCode.ORDER_ITEM_NOT_EXIST);
         }
 

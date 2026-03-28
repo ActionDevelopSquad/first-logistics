@@ -5,7 +5,6 @@ import com.firstlogistics.orderservice.domain.vo.OrderId;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
