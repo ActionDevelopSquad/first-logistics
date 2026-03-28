@@ -24,10 +24,11 @@ public class Order {
     private Supplier supplier;
     private Receiver receiver;
     private UUID deliveryId;
-    private OrderStatus status;
     private Money totalAmount;
     private LocalDateTime dueDate;
     private String requestMemo;
+    private OrderStatus status;
+    private OrderStatus previousStatus;
     private List<OrderItem> orderItems;
 
     public static Order create(
@@ -44,10 +45,11 @@ public class Order {
                 Supplier.of(supplierCompanyId, supplierManagerId),
                 Receiver.of(receiverCompanyId, receiverManagerId),
                 null,
-                OrderStatus.PENDING,
                 Money.of(0L),
                 dueDate,
                 requestMemo,
+                OrderStatus.PENDING,
+                null,
                 new ArrayList<>()
         );
 
@@ -86,6 +88,20 @@ public class Order {
                 .sum());
     }
 
+    public void reserve(boolean isSuccess) {
+        OrderStatus resultStatus = isSuccess ? OrderStatus.RESERVED : OrderStatus.CANCELLED;
+
+        // 취소 요청 상태에서는 이전 상태 업데이트
+        if (this.status == OrderStatus.CANCEL_REQUESTED) {
+            this.previousStatus.validateNext(resultStatus);
+            this.previousStatus = resultStatus;
+            return;
+        }
+
+        this.status.validateNext(resultStatus);
+        this.status = resultStatus;
+    }
+
     public void accept() {
         this.status.validateNext(OrderStatus.ACCEPTED);
         this.status = OrderStatus.ACCEPTED;
@@ -115,8 +131,23 @@ public class Order {
         this.status = OrderStatus.COMPLETED;
     }
 
+    // 주문 취소 / 거절 / 취소 요청 승인 (나중에 필요하면 분리)
     public void cancel() {
         this.status.validateNext(OrderStatus.CANCELLED);
         this.status = OrderStatus.CANCELLED;
+        this.previousStatus = null; // 취소 요청이었다면 이전 상태 초기화
     }
+
+    public void requestCancel() {
+        this.status.validateNext(OrderStatus.CANCEL_REQUESTED);
+        this.previousStatus = this.status;
+        this.status = OrderStatus.CANCEL_REQUESTED;
+    }
+
+    public void rejectCancelRequest() {
+        this.status.validateNext(this.previousStatus);
+        this.status = this.previousStatus; // 이전 상태 복구
+        this.previousStatus = null;
+    }
+
 }
