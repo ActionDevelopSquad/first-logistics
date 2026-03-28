@@ -20,10 +20,11 @@ public class Delivery {
 	private DeliveryStatus status;
 	private UUID sourceHubId;
 	private UUID destinationHubId;
-	private Address address;
-	private GeoLocation geoLocation;
+	private Address deliveryAddress;
+	private GeoLocation deliveryLocation;
 	private UUID receiverId;
 	private String receiverSlackId;
+	private UUID receiverCompanyId;
 	private UUID receiverCompanyDeliveryStaffId;
 	private UUID currentHubId;
 	private List<DeliveryRoute> routes;
@@ -38,6 +39,7 @@ public class Delivery {
 		double longitude,
 		UUID receiverId,
 		String receiverSlackId,
+		UUID receiverCompanyId,
 		UUID receiverCompanyDeliveryStaffId
 	) {
 		DeliveryStatus createdStatus = DeliveryStatus.CREATED;
@@ -47,7 +49,7 @@ public class Delivery {
 				sourceHubId, destinationHubId,
 				Address.of(roadAddress, detailAddress),
 				GeoLocation.of(latitude, longitude),
-				receiverId, receiverSlackId, receiverCompanyDeliveryStaffId,
+				receiverId, receiverSlackId, receiverCompanyId, receiverCompanyDeliveryStaffId,
 				sourceHubId,
 				createdRoutes
 		);
