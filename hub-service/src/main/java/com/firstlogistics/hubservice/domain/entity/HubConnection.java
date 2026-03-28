@@ -5,9 +5,10 @@ import com.firstlogistics.hubservice.domain.vo.Distance;
 import com.firstlogistics.hubservice.domain.vo.HubConnectionId;
 import com.firstlogistics.hubservice.domain.vo.HubId;
 import com.firstlogistics.hubservice.domain.vo.Time;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class HubConnection {
     private HubConnectionId id;
     private HubId sourceHubId;

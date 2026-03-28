@@ -2,10 +2,11 @@ package com.firstlogistics.hubservice.domain.entity;
 
 import com.firstlogistics.hubservice.domain.enums.HubStatus;
 import com.firstlogistics.hubservice.domain.vo.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
 
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Hub {
     private HubId id;
     private String name;
