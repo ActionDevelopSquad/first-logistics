@@ -100,6 +100,14 @@ public class Order {
 
         // 취소 요청 상태에서는 이전 상태 업데이트
         if (this.status == OrderStatus.CANCEL_REQUESTED) {
+
+            // 취소 요청 상태에서 재고 예약 실패 시 취소 상태로 변경
+            if(!isSuccess) {
+                this.status = OrderStatus.CANCELLED;
+                this.previousStatus = null;
+                return;
+            }
+
             this.previousStatus.validateNext(resultStatus);
             this.previousStatus = resultStatus;
             return;
