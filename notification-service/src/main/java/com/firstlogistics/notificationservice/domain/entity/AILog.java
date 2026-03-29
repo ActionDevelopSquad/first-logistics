@@ -15,7 +15,6 @@ import java.util.UUID;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name="p_ai_log")
 public class AILog {
     AILogId id;
     UUID messageId;

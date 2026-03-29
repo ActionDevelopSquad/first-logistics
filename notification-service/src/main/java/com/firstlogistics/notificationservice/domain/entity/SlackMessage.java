@@ -16,8 +16,7 @@ import java.util.UUID;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name="p_slack_message")
-public class SlackMessage extends BaseAuditEntity {
+public class SlackMessage {
     SlackMessageId id;
     UUID receiverId;
     String slackId;
