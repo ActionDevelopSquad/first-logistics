@@ -5,9 +5,11 @@ import com.firstlogistics.companyservice.domain.vo.CompanyAddress;
 import com.firstlogistics.companyservice.domain.vo.GeoLocation;
 import java.util.Objects;
 import java.util.UUID;
+
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Company {
     private UUID id;
     private UUID hubId;
