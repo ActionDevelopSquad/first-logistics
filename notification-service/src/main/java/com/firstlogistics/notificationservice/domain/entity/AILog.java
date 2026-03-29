@@ -56,4 +56,12 @@ public class AILog {
 
         this.messageId = slackMessageId;
     }
+
+    public void updateStatus(AILogStatus status) {
+        if (!this.status.canTransitionTo(status)) {
+            throw new AILogException(AILogErrorCode.CANNOT_UPDATE_STATUS);
+        }
+        this.status = status;
+
+    }
 }
