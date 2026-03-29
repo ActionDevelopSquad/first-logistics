@@ -7,7 +7,7 @@ public enum AILogStatus {
     FAILED;
 
     public boolean canTransitionTo(AILogStatus nextStatus) {
-        // 성공(SENT) 상태는 어떤 상태로도 변경 불가
+        // 성공(SUCCESS) 상태는 어떤 상태로도 변경 불가
         if (this == SUCCESS) {
             return false;
         }
