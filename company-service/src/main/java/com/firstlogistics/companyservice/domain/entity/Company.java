@@ -1,16 +1,24 @@
 package com.firstlogistics.companyservice.domain.entity;
 
 import com.firstlogistics.companyservice.domain.enums.CompanyStatus;
+import com.firstlogistics.companyservice.domain.exception.CompanyErrorCode;
+import com.firstlogistics.companyservice.domain.exception.CompanyException;
 import com.firstlogistics.companyservice.domain.vo.CompanyAddress;
 import com.firstlogistics.companyservice.domain.vo.GeoLocation;
-import java.util.Objects;
-import java.util.UUID;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
+import java.util.UUID;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(onlyExplicitlyIncluded = true)
 public class Company {
+
+    @EqualsAndHashCode.Include
+    @ToString.Include
     private UUID id;
     private UUID hubId;
     private UUID userId;
@@ -37,22 +45,22 @@ public class Company {
 
     private static void validate(UUID hubId, UUID userId, String name, CompanyType type) {
         if (hubId == null) {
-            throw new IllegalArgumentException("허브 ID는 null일 수 없습니다.");
+            throw new CompanyException(CompanyErrorCode.INVALID_HUB_ID);
         }
         if (userId == null) {
-            throw new IllegalArgumentException("사용자 ID는 null일 수 없습니다.");
+            throw new CompanyException(CompanyErrorCode.INVALID_USER_ID);
         }
         if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("이름은 null이거나 빈 문자열일 수 없습니다.");
+            throw new CompanyException(CompanyErrorCode.INVALID_COMPANY_NAME);
         }
         if (type == null) {
-            throw new IllegalArgumentException("타입은 null일 수 없습니다.");
+            throw new CompanyException(CompanyErrorCode.INVALID_COMPANY_TYPE);
         }
     }
 
     public void changeAddress(String roadAddress, String detailAddress) {
         if (this.status == CompanyStatus.INACTIVE) {
-            throw new IllegalStateException("비활성화 상태의 회사는 주소를 변경할 수 없습니다.");
+            throw new CompanyException(CompanyErrorCode.COMPANY_INACTIVE);
         }
 
         this.address = CompanyAddress.of(roadAddress, detailAddress);
@@ -60,14 +68,14 @@ public class Company {
 
     public void deactivate() {
         if (this.status == CompanyStatus.INACTIVE) {
-            throw new IllegalStateException("이미 비활성화 상태입니다.");
+            throw new CompanyException(CompanyErrorCode.COMPANY_ALREADY_INACTIVE);
         }
         this.status = CompanyStatus.INACTIVE;
     }
 
     public void activate() {
         if (this.status == CompanyStatus.ACTIVE) {
-            throw new IllegalStateException("이미 활성화 상태입니다.");
+            throw new CompanyException(CompanyErrorCode.COMPANY_ALREADY_ACTIVE);
         }
         this.status = CompanyStatus.ACTIVE;
     }
@@ -78,26 +86,5 @@ public class Company {
 
     public boolean canHoldInventory() {
         return type.canHoldInventory();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Company)) return false;
-        Company company = (Company) o;
-        return Objects.equals(id, company.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {
-        return "Company{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                '}';
     }
 }

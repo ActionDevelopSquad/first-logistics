@@ -1,5 +1,8 @@
 package com.firstlogistics.companyservice.domain.vo;
 
+import com.firstlogistics.companyservice.domain.exception.CompanyErrorCode;
+import com.firstlogistics.companyservice.domain.exception.CompanyException;
+
 public record CompanyAddress(
         String roadAddress,
         String detailAddress
@@ -14,15 +17,15 @@ public record CompanyAddress(
 
     private void validateAddress(String roadAddress, String detailAddress) {
         if (roadAddress == null || roadAddress.isBlank()) {
-            throw new IllegalArgumentException("도로명 주소는 null이거나 빈 문자열일 수 없습니다.");
+            throw new CompanyException(CompanyErrorCode.INVALID_ADDRESS);
         }
 
         if (detailAddress == null || detailAddress.isBlank()) {
-            throw new IllegalArgumentException("상세 주소는 null이거나 빈 문자열일 수 없습니다.");
+            throw new CompanyException(CompanyErrorCode.INVALID_ADDRESS);
         }
 
-        if (roadAddress.length() > 255 ||  detailAddress.length() > 255) {
-            throw new IllegalArgumentException("도로명 주소와 상세 주소는 255자를 초과할 수 없습니다.");
+        if (roadAddress.length() > 255 || detailAddress.length() > 255) {
+            throw new CompanyException(CompanyErrorCode.INVALID_ADDRESS);
         }
     }
 }
