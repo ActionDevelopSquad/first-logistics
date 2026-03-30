@@ -6,6 +6,7 @@ import com.firstlogistics.deliverservice.domain.entity.Delivery;
 import com.firstlogistics.deliverservice.domain.entity.DeliveryStaff;
 import com.firstlogistics.deliverservice.domain.enums.DeliveryStatus;
 import com.firstlogistics.deliverservice.domain.enums.StaffType;
+import com.firstlogistics.deliverservice.domain.enums.TimetableStatus;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryRepository;
@@ -28,6 +29,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -35,8 +37,10 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.times;
 
 @Slf4j
 @ExtendWith(MockitoExtension.class)
@@ -174,9 +178,9 @@ class DeliveryCommandServiceTest {
 				.willReturn(new FeignResponse<>(new CompanyResponse(receiverCompanyId, destinationHubId)));
 			given(hubClient.getHubRoute(sourceHubId, destinationHubId))
 				.willReturn(new FeignResponse<>(new HubRouteResponse(sourceHubId, destinationHubId, steps)));
-			given(deliveryStaffRepository.findNextHubStaff(sourceHubId))
+			given(deliveryStaffRepository.findNextHubStaff(eq(sourceHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
 				.willReturn(Optional.of(stubHubStaff(sourceHubId)));
-			given(deliveryStaffRepository.findNextHubStaff(middleHubId))
+			given(deliveryStaffRepository.findNextHubStaff(eq(middleHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
 				.willReturn(Optional.empty());
 
 			// when
@@ -214,11 +218,11 @@ class DeliveryCommandServiceTest {
 				.willReturn(new FeignResponse<>(new CompanyResponse(receiverCompanyId, destinationHubId)));
 			given(hubClient.getHubRoute(sourceHubId, destinationHubId))
 				.willReturn(new FeignResponse<>(new HubRouteResponse(sourceHubId, destinationHubId, steps)));
-			given(deliveryStaffRepository.findNextHubStaff(sourceHubId))
+			given(deliveryStaffRepository.findNextHubStaff(eq(sourceHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
 				.willReturn(Optional.of(stubHubStaff(sourceHubId)));
-			given(deliveryStaffRepository.findNextHubStaff(middleHubId))
+			given(deliveryStaffRepository.findNextHubStaff(eq(middleHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
 				.willReturn(Optional.of(stubHubStaff(middleHubId)));
-			given(deliveryStaffRepository.findNextCompanyStaff(destinationHubId))
+			given(deliveryStaffRepository.findNextCompanyStaff(eq(destinationHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
 				.willReturn(Optional.empty());
 
 			// when
@@ -256,11 +260,11 @@ class DeliveryCommandServiceTest {
 				.willReturn(new FeignResponse<>(new CompanyResponse(receiverCompanyId, destinationHubId)));
 			given(hubClient.getHubRoute(sourceHubId, destinationHubId))
 				.willReturn(new FeignResponse<>(new HubRouteResponse(sourceHubId, destinationHubId, steps)));
-			given(deliveryStaffRepository.findNextHubStaff(sourceHubId))
+			given(deliveryStaffRepository.findNextHubStaff(eq(sourceHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
 				.willReturn(Optional.of(stubHubStaff(sourceHubId)));
-			given(deliveryStaffRepository.findNextHubStaff(middleHubId))
+			given(deliveryStaffRepository.findNextHubStaff(eq(middleHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
 				.willReturn(Optional.of(stubHubStaff(middleHubId)));
-			given(deliveryStaffRepository.findNextCompanyStaff(destinationHubId))
+			given(deliveryStaffRepository.findNextCompanyStaff(eq(destinationHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
 				.willReturn(Optional.of(stubCompanyStaff(destinationHubId)));
 			given(userClient.getUser(receiverId))
 				.willThrow(new DeliveryException(DeliveryErrorCode.USER_NOT_FOUND));
@@ -344,6 +348,44 @@ class DeliveryCommandServiceTest {
 			then(deliveryRepository).should().save(captor.capture());
 			assertThat(captor.getValue().getReceiverCompanyDeliveryStaffId()).isEqualTo(f.companyStaff().getId());
 		}
+
+		@Test
+		@DisplayName("배송 생성 시 허브 배송담당자 타임테이블 생성")
+		void createDelivery_success_hubStaffTimetableCreated() {
+			// given
+			SuccessFixture f = SuccessFixture.create();
+			setupSuccessMocks(f);
+
+			// when
+			deliveryCommandService.createDelivery(f.command());
+
+			// then
+			ArgumentCaptor<DeliveryStaff> staffCaptor = ArgumentCaptor.forClass(DeliveryStaff.class);
+			then(deliveryStaffRepository).should(times(f.steps().size() + 1)).save(staffCaptor.capture());
+			List<DeliveryStaff> savedStaffs = staffCaptor.getAllValues();
+			assertThat(savedStaffs.get(0).getTimetables()).hasSize(1);
+			assertThat(savedStaffs.get(0).getTimetables().get(0).getStatus()).isEqualTo(TimetableStatus.CREATED);
+			assertThat(savedStaffs.get(1).getTimetables()).hasSize(1);
+			assertThat(savedStaffs.get(1).getTimetables().get(0).getStatus()).isEqualTo(TimetableStatus.CREATED);
+		}
+
+		@Test
+		@DisplayName("배송 생성 시 업체 배송담당자 타임테이블 생성")
+		void createDelivery_success_companyStaffTimetableCreated() {
+			// given
+			SuccessFixture f = SuccessFixture.create();
+			setupSuccessMocks(f);
+
+			// when
+			deliveryCommandService.createDelivery(f.command());
+
+			// then
+			ArgumentCaptor<DeliveryStaff> staffCaptor = ArgumentCaptor.forClass(DeliveryStaff.class);
+			then(deliveryStaffRepository).should(times(f.steps().size() + 1)).save(staffCaptor.capture());
+			DeliveryStaff savedCompanyStaff = staffCaptor.getAllValues().get(f.steps().size());
+			assertThat(savedCompanyStaff.getTimetables()).hasSize(1);
+			assertThat(savedCompanyStaff.getTimetables().get(0).getStatus()).isEqualTo(TimetableStatus.CREATED);
+		}
 	}
 
 	// --- 성공 테스트 공통 픽스처 ---
@@ -364,6 +406,7 @@ class DeliveryCommandServiceTest {
 			UUID destinationHubId = UUID.randomUUID();
 			UUID receiverCompanyId = UUID.randomUUID();
 			UUID receiverId = UUID.randomUUID();
+
 			CreateDeliveryCommand command = new CreateDeliveryCommand(
 				orderId, sourceHubId, receiverCompanyId, receiverId,
 				"서울시 강남구 테헤란로 123", "101호", 37.5, 127.0
@@ -391,12 +434,16 @@ class DeliveryCommandServiceTest {
 			.willReturn(new FeignResponse<>(new CompanyResponse(receiverCompanyId, f.destinationHubId())));
 		given(hubClient.getHubRoute(sourceHubId, f.destinationHubId()))
 			.willReturn(new FeignResponse<>(new HubRouteResponse(sourceHubId, f.destinationHubId(), f.steps())));
-		given(deliveryStaffRepository.findNextHubStaff(sourceHubId)).willReturn(Optional.of(f.hubStaff1()));
-		given(deliveryStaffRepository.findNextHubStaff(middleHubId)).willReturn(Optional.of(f.hubStaff2()));
-		given(deliveryStaffRepository.findNextCompanyStaff(f.destinationHubId())).willReturn(Optional.of(f.companyStaff()));
+		given(deliveryStaffRepository.findNextHubStaff(eq(sourceHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
+			.willReturn(Optional.of(f.hubStaff1()));
+		given(deliveryStaffRepository.findNextHubStaff(eq(middleHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
+			.willReturn(Optional.of(f.hubStaff2()));
+		given(deliveryStaffRepository.findNextCompanyStaff(eq(f.destinationHubId()), any(LocalDateTime.class), any(LocalDateTime.class)))
+			.willReturn(Optional.of(f.companyStaff()));
 		given(userClient.getUser(receiverId))
 			.willReturn(new FeignResponse<>(new UserResponse(receiverId, f.receiverSlackId())));
 		given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
+		given(deliveryStaffRepository.save(any(DeliveryStaff.class))).willAnswer(inv -> inv.getArgument(0));
 	}
 
 	private DeliveryStaff stubHubStaff(UUID hubId) {
