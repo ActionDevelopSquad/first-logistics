@@ -9,6 +9,7 @@ import com.firstlogistics.hubservice.hub.domain.repository.HubRepository;
 import com.firstlogistics.hubservice.hub.domain.vo.GeoLocation;
 import com.firstlogistics.hubservice.hub.domain.vo.HubAddress;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +29,13 @@ public class HubCommandService {
                 HubAddress.of(command.roadAddress()),
                 GeoLocation.of(command.latitude(), command.longitude())
         );
-        hubRepository.save(hub);
+
+        try{
+            hubRepository.save(hub);
+        } catch (DataIntegrityViolationException e) {
+            throw new HubException(HubErrorCode.DUPLICATE_HUB_NAME);
+        }
+
         return HubResult.from(hub);
     }
 }
