@@ -32,8 +32,7 @@ public class DeliveryMapper {
 			delivery.getReceiverId(),
 			delivery.getReceiverSlackId(),
 			delivery.getReceiverCompanyId(),
-			delivery.getReceiverCompanyDeliveryStaffId() != null
-				? delivery.getReceiverCompanyDeliveryStaffId().id() : null,
+			delivery.getReceiverCompanyDeliveryStaffId().id(),
 			delivery.getCurrentHubId()
 		);
 
@@ -45,7 +44,7 @@ public class DeliveryMapper {
 		return jpaEntity;
 	}
 
-	public DeliveryRouteJpaEntity toRouteJpaEntity(DeliveryRoute route, DeliveryJpaEntity deliveryJpaEntity) {
+	private DeliveryRouteJpaEntity toRouteJpaEntity(DeliveryRoute route, DeliveryJpaEntity deliveryJpaEntity) {
 		return DeliveryRouteJpaEntity.create(
 			route.getId().id(),
 			deliveryJpaEntity,
@@ -54,10 +53,10 @@ public class DeliveryMapper {
 			route.getDestinationHubId(),
 			route.getEstimatedDistance().meters(),
 			route.getEstimatedDuration().minutes(),
-			route.getActualDistance() != null ? route.getActualDistance().meters() : 0,
-			route.getActualDuration() != null ? route.getActualDuration().minutes() : 0,
+			route.getActualDistance().meters(),
+			route.getActualDuration().minutes(),
 			route.getStatus(),
-			route.getDeliveryStaffId() != null ? route.getDeliveryStaffId().id() : null
+			route.getDeliveryStaffId().id()
 		);
 	}
 
@@ -77,14 +76,13 @@ public class DeliveryMapper {
 			jpaEntity.getReceiverId(),
 			jpaEntity.getReceiverSlackId(),
 			jpaEntity.getReceiverCompanyId(),
-			jpaEntity.getReceiverCompanyDeliveryStaffId() != null
-				? DeliveryStaffId.of(jpaEntity.getReceiverCompanyDeliveryStaffId()) : null,
+			DeliveryStaffId.of(jpaEntity.getReceiverCompanyDeliveryStaffId()),
 			jpaEntity.getCurrentHubId(),
 			routes
 		);
 	}
 
-	public DeliveryRoute toRouteDomain(DeliveryRouteJpaEntity jpaEntity) {
+	private DeliveryRoute toRouteDomain(DeliveryRouteJpaEntity jpaEntity) {
 		return DeliveryRoute.reconstitute(
 			DeliveryRouteId.of(jpaEntity.getId()),
 			DeliveryId.of(jpaEntity.getDelivery().getId()),
@@ -93,12 +91,12 @@ public class DeliveryMapper {
 			jpaEntity.getDestinationHubId(),
 			Distance.of(jpaEntity.getEstimatedDistance()),
 			Time.of(jpaEntity.getEstimatedDuration()),
-			jpaEntity.getActualDistance() != 0 ? Distance.of(jpaEntity.getActualDistance()) : null,
-			jpaEntity.getActualDuration() != 0 ? Time.of(jpaEntity.getActualDuration()) : null,
+			Distance.of(jpaEntity.getActualDistance()),
+			Time.of(jpaEntity.getActualDuration()),
 			null,
 			null,
 			jpaEntity.getStatus(),
-			jpaEntity.getDeliveryStaffId() != null ? DeliveryStaffId.of(jpaEntity.getDeliveryStaffId()) : null
+			DeliveryStaffId.of(jpaEntity.getDeliveryStaffId())
 		);
 	}
 }
