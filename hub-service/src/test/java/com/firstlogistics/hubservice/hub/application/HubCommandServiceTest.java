@@ -46,6 +46,45 @@ public class HubCommandServiceTest {
                 .extracting("errorCode")
                 .isEqualTo(HubErrorCode.DUPLICATE_HUB_NAME);
     }
+    @Test
+    @DisplayName("실패: 허브 이름이 비어있으면 에러 발생")
+    void createHub_fail_invalidName(){
+        //given
+        CreateHubCommand command = new CreateHubCommand(
+                "",
+                "서울특별시",
+                37.5665,
+                127.9780
+        );
+
+        //when
+
+        //then
+        assertThatThrownBy(()-> hubCommandService.create(command))
+                .isInstanceOf(HubException.class)
+                .extracting("errorCode")
+                .isEqualTo(HubErrorCode.INVALID_HUB_NAME);
+    }
+
+    @Test
+    @DisplayName("실패: 위도 경도 범위가 벗어나면 에러 발생")
+    void createHub_fail_invalidGeoLocation(){
+        //given
+        CreateHubCommand command = new CreateHubCommand(
+                "서울",
+                "서울특별시",
+                100.5665,
+                -200.9780
+        );
+
+        //when
+
+        //then
+        assertThatThrownBy(()-> hubCommandService.create(command))
+                .isInstanceOf(HubException.class)
+                .extracting("errorCode")
+                .isEqualTo(HubErrorCode.INVALID_HUB_GEOLOCATION_RANGE);
+    }
 
     @Test
     @DisplayName("성공: 허브 생성")
