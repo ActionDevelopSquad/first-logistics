@@ -30,6 +30,8 @@ public class OrderAcceptedConsumerConfig {
 	public ConsumerFactory<String, OrderAcceptedEvent> orderAcceptedConsumerFactory() {
 		JsonDeserializer<OrderAcceptedEvent> deserializer = new JsonDeserializer<>(OrderAcceptedEvent.class);
 		deserializer.addTrustedPackages("*");
+		// 프로듀서가 보낸 타입 헤더 무시 → 항상 OrderAcceptedEvent로 역직렬화 (타입 불일치 오류 방지)
+		deserializer.setUseTypeHeaders(false);
 		return new DefaultKafkaConsumerFactory<>(kafkaConsumerConfig.commonConsumerProps(), new StringDeserializer(), deserializer);
 	}
 
