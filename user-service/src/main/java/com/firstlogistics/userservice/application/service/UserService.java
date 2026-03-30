@@ -30,6 +30,7 @@ public class UserService {
         TokenInfo tokenInfo = tokenService.generate(command.username(), command.password());
 
         user.recordLogin();
+        userRepository.save(user);
 
         return new TokenResult(
                 tokenInfo.access_token(),
