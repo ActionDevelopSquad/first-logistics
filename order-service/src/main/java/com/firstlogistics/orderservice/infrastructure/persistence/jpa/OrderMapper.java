@@ -2,8 +2,10 @@ package com.firstlogistics.orderservice.infrastructure.persistence.jpa;
 
 import com.firstlogistics.orderservice.domain.entity.Order;
 import com.firstlogistics.orderservice.domain.entity.OrderItem;
+import org.hibernate.Hibernate;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -39,6 +41,11 @@ public class OrderMapper {
     public Order toDomain(OrderJpaEntity entity) {
         if (entity == null) return null;
 
+        // fetch join으로 가져올 때만 주문 상세 가져오기
+        List<OrderItem> items = Hibernate.isInitialized(entity.getOrderItems())
+                ? entity.getOrderItems().stream().map(item -> this.toItemDomain(item, entity.getId())).toList()
+                : List.of(); // 초기화 안됐으면 추가 쿼리 방지
+
         return Order.reconstitute(
                 entity.getId(),
                 entity.getSupplierCompanyId(),
@@ -52,9 +59,7 @@ public class OrderMapper {
                 entity.getStatus(),
                 entity.getPreviousStatus(),
                 entity.getCreatedAt(),
-                entity.getOrderItems().stream()
-                        .map(item -> this.toItemDomain(item, entity.getId()))
-                        .toList()
+                items
         );
     }
 
