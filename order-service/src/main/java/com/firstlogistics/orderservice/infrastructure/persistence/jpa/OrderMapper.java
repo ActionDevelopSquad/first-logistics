@@ -1,0 +1,82 @@
+package com.firstlogistics.orderservice.infrastructure.persistence.jpa;
+
+import com.firstlogistics.orderservice.domain.entity.Order;
+import com.firstlogistics.orderservice.domain.entity.OrderItem;
+import org.springframework.stereotype.Component;
+
+import java.util.UUID;
+
+@Component
+public class OrderMapper {
+
+    /**
+     * Order 도메인 -> OrderJpaEntity
+     */
+    public OrderJpaEntity toJpaEntity(Order order) {
+        if (order == null) return null;
+
+        return new OrderJpaEntity(
+                order.getId().id(),
+                order.getSupplier().companyId(),
+                order.getSupplier().managerId(),
+                order.getReceiver().companyId(),
+                order.getReceiver().managerId(),
+                order.getDeliveryId(),
+                order.getTotalAmount().amount(),
+                order.getDueDate(),
+                order.getRequestMemo(),
+                order.getStatus(),
+                order.getPreviousStatus(),
+                order.getOrderItems().stream()
+                        .map(this::toItemEntity)
+                        .toList()
+        );
+    }
+
+    /**
+     * OrderJpaEntity -> Order 도메인
+     */
+    public Order toDomain(OrderJpaEntity entity) {
+        if (entity == null) return null;
+
+        return Order.reconstitute(
+                entity.getId(),
+                entity.getSupplierCompanyId(),
+                entity.getSupplierManagerId(),
+                entity.getReceiverCompanyId(),
+                entity.getReceiverManagerId(),
+                entity.getDeliveryId(),
+                entity.getTotalAmount(),
+                entity.getDueDate(),
+                entity.getRequestMemo(),
+                entity.getStatus(),
+                entity.getPreviousStatus(),
+                entity.getCreatedAt(),
+                entity.getOrderItems().stream()
+                        .map(item -> this.toItemDomain(item, entity.getId()))
+                        .toList()
+        );
+    }
+
+    private OrderItemJpaEntity toItemEntity(OrderItem item) {
+        return new OrderItemJpaEntity(
+                item.getId(),
+                item.getProductId(),
+                item.getProductName(),
+                item.getUnitPrice().amount(),
+                item.getQuantity(),
+                item.getSubTotal().amount()
+        );
+    }
+
+    private OrderItem toItemDomain(OrderItemJpaEntity itemEntity, UUID orderId) {
+        return OrderItem.reconstitute(
+                itemEntity.getId(),
+                itemEntity.getProductId(),
+                itemEntity.getProductName(),
+                itemEntity.getUnitPrice(),
+                itemEntity.getQuantity(),
+                itemEntity.getSubTotal()
+        );
+    }
+}
