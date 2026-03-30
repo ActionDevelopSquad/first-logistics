@@ -28,7 +28,7 @@ public class OrderController {
             @RequestHeader("X-User-Id") String userId,
             @RequestBody @Valid CreateOrderRequest request
     ) {
-        UUID id = orderService.createOrder(request.toCommand(UUID.fromString(userId)));
+        UUID id = orderService.createOrder(request.toCommand());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(CommonSuccessCode.CREATED, id));
     }

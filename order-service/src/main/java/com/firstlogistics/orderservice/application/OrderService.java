@@ -17,6 +17,8 @@ public class OrderService {
 
     @Transactional
     public UUID createOrder(CreateOrderCommand command) {
+        // TODO: 나중에 userId와 검증 로직 필요
+
         Order order = Order.create(
                 command.supplierCompanyId(),
                 command.supplierManagerId(),

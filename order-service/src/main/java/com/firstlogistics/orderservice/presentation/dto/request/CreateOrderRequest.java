@@ -19,6 +19,8 @@ public record CreateOrderRequest(
         UUID supplierManagerId,
         @NotNull
         UUID receiverCompanyId,
+        @NotNull
+        UUID receiverManagerId,
         @NotBlank
         String deliveryAddress,
         @FutureOrPresent
@@ -28,12 +30,12 @@ public record CreateOrderRequest(
         List<@Valid OrderItemRequest> items
 ) {
 
-    public CreateOrderCommand toCommand(UUID loginUserId) {
+    public CreateOrderCommand toCommand() {
         return new CreateOrderCommand(
                 this.supplierCompanyId,
                 this.supplierManagerId,
                 this.receiverCompanyId,
-                loginUserId,
+                this.receiverManagerId,
                 this.deliveryAddress,
                 this.dueDate,
                 this.requestMemo,
