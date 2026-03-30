@@ -28,9 +28,7 @@ public class KafkaConsumerConfig {
 		props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
 		props.put(ConsumerConfig.GROUP_ID_CONFIG, "delivery-service");
 		props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-		// 자동 커밋 비활성화 (MANUAL ack 사용)
 		props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
-		// 처리 시간이 길어져도 consumer group에서 제외되지 않도록 설정
 		props.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, 300000);
 		return props;
 	}

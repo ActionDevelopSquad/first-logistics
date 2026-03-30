@@ -18,13 +18,9 @@ public class DeliveryEventKafkaProducer implements DeliveryEventProducer {
 	private final KafkaTemplate<String, Object> deliveryKafkaTemplate;
 
 	@Override
-	public void sendCreated(Delivery delivery) {
-		DeliveryCreatedEvent event = new DeliveryCreatedEvent(
-			delivery.getId().id(),
-			delivery.getOrderId(),
-			delivery.getReceiverSlackId()
-		);
-		deliveryKafkaTemplate.send(TOPIC_CREATED, delivery.getId().toString(), event);
-		log.info("이벤트 발행 - topic: {}, deliveryId: {}", TOPIC_CREATED, delivery.getId());
+	public void sendCreated(DeliveryCreatedEvent deliveryCreatedEvent) {
+
+		deliveryKafkaTemplate.send(TOPIC_CREATED, deliveryCreatedEvent.deliveryId().toString(), deliveryCreatedEvent);
+		log.info("이벤트 발행 - topic: {}, deliveryId: {}", TOPIC_CREATED, deliveryCreatedEvent.deliveryId());
 	}
 }

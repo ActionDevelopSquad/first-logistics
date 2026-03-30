@@ -1,8 +1,8 @@
 package com.firstlogistics.deliverservice.application.port;
 
-import com.firstlogistics.deliverservice.domain.entity.Delivery;
+import com.firstlogistics.deliverservice.infrastructure.messaging.producer.event.DeliveryCreatedEvent;
 
 public interface DeliveryEventProducer {
 
-	void sendCreated(Delivery delivery);
+	void sendCreated(DeliveryCreatedEvent deliveryCreatedEvent);
 }

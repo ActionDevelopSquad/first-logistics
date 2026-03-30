@@ -21,7 +21,6 @@ public class FeignErrorDecoder implements ErrorDecoder {
 				return new DeliveryCreationException(DeliveryErrorCode.USER_NOT_FOUND);
 			}
 		}
-		// 5xx 등 일시 장애: 재시도 후 DLT (자동 Saga 보상 없음)
 		return new DeliveryException(DeliveryErrorCode.EXTERNAL_SERVICE_ERROR);
 	}
 }

@@ -11,3 +11,5 @@ spring:
     properties:
       hibernate:
         default_schema: delivery
+  kafka:
+    bootstrap-servers: localhost:9092

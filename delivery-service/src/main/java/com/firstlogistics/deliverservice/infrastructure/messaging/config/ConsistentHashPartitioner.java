@@ -15,7 +15,6 @@ public class ConsistentHashPartitioner implements Partitioner {
 
 	private static final int VIRTUAL_NODES = 100;
 
-	// topic:numPartitions → 해시 링 캐시 (파티션 수 변경 시 자동 갱신)
 	private final ConcurrentHashMap<String, TreeMap<Integer, Integer>> ringCache = new ConcurrentHashMap<>();
 
 	@Override
