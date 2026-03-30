@@ -1,7 +1,10 @@
 package com.firstlogistics.deliverservice.application;
 
 import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryCommand;
+import com.firstlogistics.deliverservice.application.dto.result.DeliveryResult;
 import com.firstlogistics.deliverservice.application.port.DeliveryEventProducer;
+import com.firstlogistics.deliverservice.domain.entity.Delivery;
+import com.firstlogistics.deliverservice.domain.entity.DeliveryRoute;
 import com.firstlogistics.deliverservice.domain.entity.DeliveryStaff;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
@@ -34,7 +37,7 @@ public class DeliveryCommandService {
 	private final UserClient userClient;
 	private final DeliveryEventProducer deliveryEventProducer;
 
-	public void createDelivery(CreateDeliveryCommand command) {
+	public DeliveryResult createDelivery(CreateDeliveryCommand command) {
 		// 1. 중복 배송 체크
 		if (deliveryRepository.existsByOrderId(command.orderId())) {
 			throw new DeliveryException(DeliveryErrorCode.DELIVERY_ALREADY_EXISTS);
@@ -48,6 +51,7 @@ public class DeliveryCommandService {
 		HubRouteResponse hubRoute = hubClient.getHubRoute(command.sourceHubId(), destinationHubId).data();
 
 		// 4. 허브 배송담당자 배정 - 경로 스텝마다 한 명씩 (순번 기준)
+		// TODO: [동시성] findNextHubStaff → save 사이 레이스 컨디션 존재. 분산락(Redis) 적용 필요 - 락 키: hub:staff:assign:{hubId}
 		List<DeliveryStaff> hubStaffs = new ArrayList<>();
 		for (HubRouteStepResponse step : hubRoute.routes()) {
 			DeliveryStaff hubStaff = deliveryStaffRepository.findNextHubStaff(step.sourceHubId())
@@ -56,20 +60,48 @@ public class DeliveryCommandService {
 		}
 
 		// 5. 업체 배송담당자 배정 (순번 기준)
+		// TODO: [동시성] findNextCompanyStaff → save 사이 레이스 컨디션 존재. 분산락(Redis) 적용 필요 - 락 키: hub:staff:assign:{hubId}
 		DeliveryStaff companyStaff = deliveryStaffRepository.findNextCompanyStaff(destinationHubId)
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.COMPANY_DELIVERY_STAFF_NOT_AVAILABLE));
 
 		// 6. 수령인 조회 (slackId 확보)
 		UserResponse receiver = userClient.getUser(command.receiverId()).data();
 
-		// TODO: 배송 생성 성공 로직
-		// - Delivery.create() 호출
-		// - hubRoute.routes()와 hubStaffs를 인덱스로 매핑해 DeliveryRoute 일괄 생성
-		// - deliveryRepository.save()
-		// - deliveryEventProducer.sendCreated()
+		// 7. 배송 생성
+		Delivery delivery = Delivery.create(
+			command.orderId(),
+			command.sourceHubId(),
+			destinationHubId,
+			command.roadAddress(),
+			command.detailAddress(),
+			command.latitude(),
+			command.longitude(),
+			command.receiverId(),
+			receiver.slackId(),
+			command.receiverCompanyId(),
+			companyStaff.getId()
+		);
 
-		// TODO: [동시성] hubStaff, companyStaff 중복 배정 방지 필요
-		//   findNextHubStaff/findNextCompanyStaff → save 사이 레이스 컨디션 존재 (동시 배송 생성 시 동일 담당자 중복 배정 가능)
-		//   해결 방안: 분산락 (Redis) - 락 키: hub:staff:assign:{hubId}
+		// 8. 경로 일괄 생성 및 허브 배송담당자 배정
+		for (int i = 0; i < hubRoute.routes().size(); i++) {
+			HubRouteStepResponse step = hubRoute.routes().get(i);
+			DeliveryRoute route = DeliveryRoute.create(
+				null,
+				i,
+				step.sourceHubId(),
+				step.destinationHubId(),
+				step.distanceMeters(),
+				step.durationMinutes()
+			);
+			route.assignStaff(hubStaffs.get(i).getId());
+			delivery.assignRoute(route);
+		}
+
+		// 9. 저장 및 이벤트 발행
+		Delivery savedDelivery = deliveryRepository.save(delivery);
+		// TODO: 배송 생성 이벤트 발행 테스트 작성 후 주석 해제
+		// deliveryEventProducer.sendCreated(savedDelivery);
+
+		return DeliveryResult.from(savedDelivery);
 	}
 }
