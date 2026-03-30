@@ -85,10 +85,10 @@ class OrderMapperTest {
     }
 
     @Test
-    @DisplayName("일반 findById 조회 시 아이템은 빈 리스트여야 한다 (Lazy)")
+    @DisplayName("목록 조회 시 아이템은 빈 리스트여야 한다 (Lazy)")
     void toDomain_WithLazyLoading() {
         // given
-        OrderJpaEntity lazyOrder = orderJpaRepository.findById(orderId).orElseThrow();
+        OrderJpaEntity lazyOrder = orderJpaRepository.findAll().getFirst();
 
         // when
         Order domain = orderMapper.toDomain(lazyOrder);
@@ -101,11 +101,11 @@ class OrderMapperTest {
     }
 
     @Test
-    @DisplayName("EntityGraph(Fetch Join) 조회 시 아이템이 채워져야 한다")
+    @DisplayName("주문 단건 조회 시 아이템이 채워져야 한다")
     void toDomain_WithFetchJoin() {
         // given
         // JpaRepository에 작성한 @EntityGraph 메서드 호출
-        OrderJpaEntity fetchOrder = orderJpaRepository.findByIdWithItems(orderId).orElseThrow();
+        OrderJpaEntity fetchOrder = orderJpaRepository.findById(orderId).orElseThrow();
 
         // when
         Order domain = orderMapper.toDomain(fetchOrder);
