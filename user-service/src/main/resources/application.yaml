@@ -33,6 +33,6 @@ keycloak:
   server-url: http://localhost:3300
   realm: codefactory
   client-id: spring-app
-  client-secret: Eju0knPo8BsChh39Gn2aNa4Hep01PKux
-  admin-username: admin
-  admin-password: admin
+  client-secret:
+  admin-username:
+  admin-password:
