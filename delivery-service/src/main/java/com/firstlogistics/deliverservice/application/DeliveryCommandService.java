@@ -59,10 +59,10 @@ public class DeliveryCommandService {
 		List<DeliveryStaff> hubStaffs = new ArrayList<>();
 
 		for (HubRouteStepResponse step : hubRoute.routes()) {
-			LocalDateTime stepStart = now.plusMinutes(cumulativeMinutes);
-			LocalDateTime stepEnd = now.plusMinutes(cumulativeMinutes + step.durationMinutes());
+			LocalDateTime assignmentStart = now.plusMinutes(cumulativeMinutes);
+			LocalDateTime assignmentEnd = now.plusMinutes(cumulativeMinutes + step.durationMinutes());
 
-			DeliveryStaff hubStaff = deliveryStaffRepository.findNextHubStaff(step.sourceHubId(), stepStart, stepEnd)
+			DeliveryStaff hubStaff = deliveryStaffRepository.findNextHubStaff(step.sourceHubId(), assignmentStart, assignmentEnd)
 				.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.HUB_DELIVERY_STAFF_NOT_AVAILABLE));
 
 			hubStaffs.add(hubStaff);
@@ -72,10 +72,10 @@ public class DeliveryCommandService {
 		// 5. 업체 배송담당자 배정 (순번 기준)
 		// TODO: [동시성] findNextCompanyStaff → save 사이 레이스 컨디션 존재. 분산락(Redis) 적용 필요 - 락 키: hub:staff:assign:{hubId}
 		int lastStepDuration = hubRoute.routes().getLast().durationMinutes();
-		LocalDateTime companyStart = now.plusMinutes(cumulativeMinutes);
-		LocalDateTime companyEnd = companyStart.plusMinutes(lastStepDuration);
+		LocalDateTime companyAssignmentStart = now.plusMinutes(cumulativeMinutes);
+		LocalDateTime companyAssignmentEnd = companyAssignmentStart.plusMinutes(lastStepDuration);
 
-		DeliveryStaff companyStaff = deliveryStaffRepository.findNextCompanyStaff(destinationHubId, companyStart, companyEnd)
+		DeliveryStaff companyStaff = deliveryStaffRepository.findNextCompanyStaff(destinationHubId, companyAssignmentStart, companyAssignmentEnd)
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.COMPANY_DELIVERY_STAFF_NOT_AVAILABLE));
 
 		// 6. 수령인 조회 (slackId 확보)
@@ -118,10 +118,10 @@ public class DeliveryCommandService {
 		int timetableMinutes = 0;
 		for (int i = 0; i < hubRoute.routes().size(); i++) {
 			HubRouteStepResponse step = hubRoute.routes().get(i);
-			LocalDateTime stepStart = now.plusMinutes(timetableMinutes);
-			LocalDateTime stepEnd = now.plusMinutes(timetableMinutes + step.durationMinutes());
+			LocalDateTime assignmentStart = now.plusMinutes(timetableMinutes);
+			LocalDateTime assignmentEnd = now.plusMinutes(timetableMinutes + step.durationMinutes());
 
-			StaffTimetable timetable = StaffTimetable.create(hubStaffs.get(i).getId(), savedDelivery.getId(), stepStart, stepEnd);
+			StaffTimetable timetable = StaffTimetable.create(hubStaffs.get(i).getId(), savedDelivery.getId(), assignmentStart, assignmentEnd);
 			hubStaffs.get(i).addTimetable(timetable);
 			deliveryStaffRepository.save(hubStaffs.get(i));
 
@@ -129,7 +129,7 @@ public class DeliveryCommandService {
 		}
 
 		// 11. 업체 배송담당자 타임테이블 생성 및 저장
-		StaffTimetable companyTimetable = StaffTimetable.create(companyStaff.getId(), savedDelivery.getId(), companyStart, companyEnd);
+		StaffTimetable companyTimetable = StaffTimetable.create(companyStaff.getId(), savedDelivery.getId(), companyAssignmentStart, companyAssignmentEnd);
 		companyStaff.addTimetable(companyTimetable);
 		deliveryStaffRepository.save(companyStaff);
 
