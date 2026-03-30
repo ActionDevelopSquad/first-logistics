@@ -25,6 +25,7 @@ public class Order {
     private Supplier supplier;
     private Receiver receiver;
     private UUID deliveryId;
+    private String deliveryAddress;
     private Money totalAmount;
     private LocalDateTime dueDate;
     private String requestMemo;
@@ -40,6 +41,7 @@ public class Order {
             UUID supplierManagerId,
             UUID receiverCompanyId,
             UUID receiverManagerId,
+            String deliveryAddress,
             LocalDateTime dueDate,
             String requestMemo,
             List<OrderItem> items // 추후 DTO로 수정
@@ -49,6 +51,7 @@ public class Order {
                 Supplier.of(supplierCompanyId, supplierManagerId),
                 Receiver.of(receiverCompanyId, receiverManagerId),
                 null,
+                deliveryAddress,
                 Money.of(0L),
                 dueDate,
                 requestMemo,
@@ -74,6 +77,7 @@ public class Order {
             UUID receiverCompanyId,
             UUID receiverManagerId,
             UUID deliveryId,
+            String deliveryAddress,
             Long totalAmount,
             LocalDateTime dueDate,
             String requestMemo,
@@ -87,6 +91,7 @@ public class Order {
                 Supplier.of(supplierCompanyId, supplierManagerId),
                 Receiver.of(receiverCompanyId, receiverManagerId),
                 deliveryId,
+                deliveryAddress,
                 Money.of(totalAmount),
                 dueDate,
                 requestMemo,

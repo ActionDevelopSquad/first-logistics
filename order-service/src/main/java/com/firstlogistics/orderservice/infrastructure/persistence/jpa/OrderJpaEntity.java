@@ -49,6 +49,9 @@ public class OrderJpaEntity extends BaseAuditEntity {
     private UUID deliveryId;
 
     @Column(nullable = false)
+    private String deliveryAddress;
+
+    @Column(nullable = false)
     private Long totalAmount;
 
     @Column(nullable = false)
