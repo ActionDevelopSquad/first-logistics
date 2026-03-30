@@ -33,6 +33,8 @@ public class KafkaProducerConfig {
 		// 프로듀서 멱등성: 재시도 시 중복 메시지 방지
 		props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
 		props.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, 5);
+		// 컨시스턴트 해시 파티셔너: 파티션 수 변경 시 최소 키만 재배치
+		props.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, ConsistentHashPartitioner.class);
 		return new DefaultKafkaProducerFactory<>(props);
 	}
 

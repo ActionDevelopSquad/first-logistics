@@ -1,5 +1,7 @@
 package com.firstlogistics.deliverservice.infrastructure.messaging.consumer;
 
+import com.firstlogistics.deliverservice.application.DeliveryCommandService;
+import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryCommand;
 import com.firstlogistics.deliverservice.infrastructure.messaging.consumer.event.OrderAcceptedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +14,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class OrderEventKafkaConsumer {
 
-	// TODO: DeliveryCommandService 주입 후 연결
+	private final DeliveryCommandService deliveryCommandService;
 
 	@KafkaListener(
 		topics = "order.accepted",
@@ -21,12 +23,17 @@ public class OrderEventKafkaConsumer {
 	)
 	public void handleOrderAccepted(OrderAcceptedEvent event, Acknowledgment ack) {
 		log.info("order.accepted 이벤트 수신 - orderId: {}", event.orderId());
-		try {
-			// TODO: deliveryCommandService.createDelivery(event);
-			ack.acknowledge();
-		} catch (Exception e) {
-			log.error("order.accepted 이벤트 처리 실패 - orderId: {}", event.orderId(), e);
-			// ack 하지 않으면 재시도
-		}
+		final CreateDeliveryCommand createDeliveryCommand = new CreateDeliveryCommand(
+				event.orderId(),
+				event.sourceHubId(),
+				event.receiverCompanyId(),
+				event.receiverId(),
+				event.roadAddress(),
+				event.detailAddress(),
+				event.latitude(),
+				event.longitude()
+		);
+		deliveryCommandService.createDelivery(createDeliveryCommand);
+		ack.acknowledge();
 	}
 }

@@ -1,5 +1,6 @@
 package com.firstlogistics.deliverservice.infrastructure.messaging.config;
 
+import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.infrastructure.messaging.consumer.event.OrderAcceptedEvent;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -10,7 +11,11 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
+import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
+import org.springframework.util.backoff.FixedBackOff;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,12 +47,26 @@ public class KafkaConsumerConfig {
 	}
 
 	@Bean
-	public ConcurrentKafkaListenerContainerFactory<String, OrderAcceptedEvent> deliveryListenerContainerFactory() {
+	public DefaultErrorHandler kafkaErrorHandler(KafkaTemplate<String, Object> kafkaTemplate) {
+		// 3회 재시도 소진 시 DLQ(order.accepted.DLT)로 발행
+		DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(kafkaTemplate);
+		// 1초 간격으로 최대 3회 재시도
+		DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, new FixedBackOff(1000L, 3L));
+		// 비즈니스 예외는 재시도 없이 즉시 DLQ로 (재시도해도 결과 동일)
+		errorHandler.addNotRetryableExceptions(DeliveryException.class);
+		return errorHandler;
+	}
+
+	@Bean
+	public ConcurrentKafkaListenerContainerFactory<String, OrderAcceptedEvent> deliveryListenerContainerFactory(
+		DefaultErrorHandler kafkaErrorHandler
+	) {
 		ConcurrentKafkaListenerContainerFactory<String, OrderAcceptedEvent> factory =
 			new ConcurrentKafkaListenerContainerFactory<>();
 		factory.setConsumerFactory(deliveryConsumerFactory());
 		// 처리 완료 후 수동으로 offset 커밋 (중복 처리 방지)
 		factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
+		factory.setCommonErrorHandler(kafkaErrorHandler);
 		return factory;
 	}
 }
