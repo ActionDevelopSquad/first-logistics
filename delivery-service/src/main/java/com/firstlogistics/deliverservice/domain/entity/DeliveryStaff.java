@@ -39,6 +39,18 @@ public class DeliveryStaff {
 		);
 	}
 
+	public static DeliveryStaff reconstitute(
+		DeliveryStaffId id,
+		StaffDetail staffDetail,
+		UUID hubId,
+		String slackId,
+		StaffType staffType,
+		int deliverySequence,
+		List<StaffTimetable> timetables
+	) {
+		return new DeliveryStaff(id, staffDetail, hubId, slackId, staffType, deliverySequence, timetables);
+	}
+
 	public void addTimetable(StaffTimetable timetable) {
 		this.timetables.add(timetable);
 	}

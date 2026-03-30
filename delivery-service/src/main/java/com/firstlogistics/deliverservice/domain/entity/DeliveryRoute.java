@@ -52,6 +52,31 @@ public class DeliveryRoute {
 		);
 	}
 
+	public static DeliveryRoute reconstitute(
+		DeliveryRouteId id,
+		DeliveryId deliveryId,
+		int sequence,
+		UUID sourceHubId,
+		UUID destinationHubId,
+		Distance estimatedDistance,
+		Time estimatedDuration,
+		Distance actualDistance,
+		Time actualDuration,
+		Address actualDestinationAddress,
+		GeoLocation actualDestinationLocation,
+		RouteStatus status,
+		DeliveryStaffId deliveryStaffId
+	) {
+		return new DeliveryRoute(
+			id, deliveryId, sequence,
+			sourceHubId, destinationHubId,
+			estimatedDistance, estimatedDuration,
+			actualDistance, actualDuration,
+			actualDestinationAddress, actualDestinationLocation,
+			status, deliveryStaffId
+		);
+	}
+
 	public void departRoute() {
 		this.status = RouteStatus.HUB_MOVING;
 	}

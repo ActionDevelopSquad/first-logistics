@@ -37,6 +37,17 @@ public class StaffTimetable {
 		);
 	}
 
+	public static StaffTimetable reconstitute(
+		StaffTimetableId id,
+		DeliveryStaffId staffId,
+		DeliveryId deliveryId,
+		LocalDateTime expectedStartAt,
+		LocalDateTime expectedEndAt,
+		TimetableStatus status
+	) {
+		return new StaffTimetable(id, staffId, deliveryId, expectedStartAt, expectedEndAt, status);
+	}
+
 	public void start() {
 		this.status = TimetableStatus.HUB_MOVING;
 	}

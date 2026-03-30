@@ -57,6 +57,30 @@ public class Delivery {
 		);
 	}
 
+	public static Delivery reconstitute(
+		DeliveryId id,
+		UUID orderId,
+		DeliveryStatus status,
+		UUID sourceHubId,
+		UUID destinationHubId,
+		Address deliveryAddress,
+		GeoLocation deliveryLocation,
+		UUID receiverId,
+		String receiverSlackId,
+		UUID receiverCompanyId,
+		DeliveryStaffId receiverCompanyDeliveryStaffId,
+		UUID currentHubId,
+		List<DeliveryRoute> routes
+	) {
+		return new Delivery(
+			id, orderId, status,
+			sourceHubId, destinationHubId,
+			deliveryAddress, deliveryLocation,
+			receiverId, receiverSlackId, receiverCompanyId, receiverCompanyDeliveryStaffId,
+			currentHubId, routes
+		);
+	}
+
 	public void moveToNextHub() {
 		this.status = DeliveryStatus.HUB_MOVING;
 	}
