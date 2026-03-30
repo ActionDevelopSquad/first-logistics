@@ -71,7 +71,7 @@ public class DeliveryCommandService {
 
 		// 5. 업체 배송담당자 배정 (순번 기준)
 		// TODO: [동시성] findNextCompanyStaff → save 사이 레이스 컨디션 존재. 분산락(Redis) 적용 필요 - 락 키: hub:staff:assign:{hubId}
-		int lastStepDuration = hubRoute.routes().get(hubRoute.routes().size() - 1).durationMinutes();
+		int lastStepDuration = hubRoute.routes().getLast().durationMinutes();
 		LocalDateTime companyStart = now.plusMinutes(cumulativeMinutes);
 		LocalDateTime companyEnd = companyStart.plusMinutes(lastStepDuration);
 
