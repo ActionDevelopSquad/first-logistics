@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -21,7 +23,7 @@ public class DeliveryStaff {
 	private String slackId;
 	private StaffType staffType;
 	private int deliverySequence;
-	private boolean isDelivering;
+	private List<StaffTimetable> timetables;
 
 	public static DeliveryStaff create(
 		String staffName,
@@ -33,15 +35,11 @@ public class DeliveryStaff {
 	) {
 		return new DeliveryStaff(
 			DeliveryStaffId.generate(), StaffDetail.of(staffName, phoneNumber), hubId, slackId,
-			staffType, deliverySequence, false
+			staffType, deliverySequence, new ArrayList<>()
 		);
 	}
 
-	public void startDelivering() {
-		this.isDelivering = true;
-	}
-
-	public void finishDelivering() {
-		this.isDelivering = false;
+	public void addTimetable(StaffTimetable timetable) {
+		this.timetables.add(timetable);
 	}
 }
