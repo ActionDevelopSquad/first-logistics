@@ -8,8 +8,11 @@ import com.firstlogistics.hubservice.domain.vo.HubAddress;
 import com.firstlogistics.hubservice.domain.vo.HubId;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
+import java.time.LocalDateTime;
 
+@Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Hub {
     private static final int MAX_NAME_LENGTH = 30;

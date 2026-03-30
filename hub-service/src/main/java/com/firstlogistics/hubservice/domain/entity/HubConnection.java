@@ -1,7 +1,6 @@
 package com.firstlogistics.hubservice.domain.entity;
 
 import com.firstlogistics.hubservice.domain.enums.HubConnectionStatus;
-import com.firstlogistics.hubservice.domain.enums.HubStatus;
 import com.firstlogistics.hubservice.domain.exception.HubErrorCode;
 import com.firstlogistics.hubservice.domain.exception.HubException;
 import com.firstlogistics.hubservice.domain.vo.Distance;
@@ -10,7 +9,9 @@ import com.firstlogistics.hubservice.domain.vo.HubId;
 import com.firstlogistics.hubservice.domain.vo.Time;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
+@Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class HubConnection {
     private HubConnectionId id;
