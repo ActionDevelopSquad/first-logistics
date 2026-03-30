@@ -6,7 +6,7 @@ import com.firstlogistics.hubservice.domain.enums.HubStatus;
 import java.util.UUID;
 
 public record HubResult(
-        UUID HubId,
+        UUID hubId,
         String name,
         String roadAddress,
         double latitude,
