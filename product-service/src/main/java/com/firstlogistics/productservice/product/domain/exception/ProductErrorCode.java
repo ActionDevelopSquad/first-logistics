@@ -14,7 +14,6 @@ public enum ProductErrorCode implements ErrorCode {
     INVALID_PRODUCT_STATUS(HttpStatus.BAD_REQUEST, "PRO004", "상품 상태가 유효하지 않습니다.")
     ;
 
-
     private final HttpStatus status;
     private final String code;
     private final String message;
