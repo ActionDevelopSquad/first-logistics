@@ -10,11 +10,13 @@ import com.firstlogistics.deliverservice.domain.vo.GeoLocation;
 import com.firstlogistics.deliverservice.domain.vo.Time;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import java.util.UUID;
 
 @Getter
+@EqualsAndHashCode(of = "id")
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class DeliveryRoute {
 
