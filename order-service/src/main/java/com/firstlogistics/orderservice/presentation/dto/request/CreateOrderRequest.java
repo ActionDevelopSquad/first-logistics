@@ -1,6 +1,7 @@
 package com.firstlogistics.orderservice.presentation.dto.request;
 
 import com.firstlogistics.orderservice.application.dto.CreateOrderCommand;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -24,7 +25,7 @@ public record CreateOrderRequest(
         LocalDateTime dueDate,
         String requestMemo,
         @NotEmpty
-        List<OrderItemRequest> items
+        List<@Valid OrderItemRequest> items
 ) {
 
     public CreateOrderCommand toCommand(UUID loginUserId) {
