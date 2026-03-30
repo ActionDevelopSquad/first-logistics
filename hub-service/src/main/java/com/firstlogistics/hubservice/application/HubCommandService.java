@@ -28,7 +28,7 @@ public class HubCommandService {
                 HubAddress.of(command.roadAddress()),
                 GeoLocation.of(command.latitude(), command.longitude())
         );
-        Hub savedHub = hubRepository.save(hub);
-        return HubResult.from(savedHub);
+        hubRepository.save(hub);
+        return HubResult.from(hub);
     }
 }
