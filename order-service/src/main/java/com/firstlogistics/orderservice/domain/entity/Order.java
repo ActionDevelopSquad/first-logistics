@@ -30,6 +30,7 @@ public class Order {
     private String requestMemo;
     private OrderStatus status;
     private OrderStatus previousStatus;
+    private LocalDateTime orderedAt;
 
     @Getter(AccessLevel.NONE)
     private List<OrderItem> orderItems;
@@ -53,6 +54,7 @@ public class Order {
                 requestMemo,
                 OrderStatus.PENDING,
                 null,
+                null,
                 new ArrayList<>()
         );
 
@@ -60,6 +62,39 @@ public class Order {
         order.calculateTotalAmount();
 
         return order;
+    }
+
+    /**
+     * OrderJpaEntity -> Order 변환 시에만 사용
+     */
+    public static Order reconstitute(
+            UUID id,
+            UUID supplierCompanyId,
+            UUID supplierManagerId,
+            UUID receiverCompanyId,
+            UUID receiverManagerId,
+            UUID deliveryId,
+            Long totalAmount,
+            LocalDateTime dueDate,
+            String requestMemo,
+            OrderStatus status,
+            OrderStatus previousStatus,
+            LocalDateTime orderedAt,
+            List<OrderItem> orderItems
+    ) {
+        return new Order(
+                OrderId.of(id),
+                Supplier.of(supplierCompanyId, supplierManagerId),
+                Receiver.of(receiverCompanyId, receiverManagerId),
+                deliveryId,
+                Money.of(totalAmount),
+                dueDate,
+                requestMemo,
+                status,
+                previousStatus,
+                orderedAt,
+                orderItems
+        );
     }
 
     // 외부에서 리스트 수정 못하도록 읽기 전용으로 반환
@@ -85,7 +120,6 @@ public class Order {
     private void addOrderItem(OrderItem item) {
         // 개별 검증 로직 추가
         orderItems.add(OrderItem.create(
-                this.id,
                 item.getProductId(),
                 item.getProductName(),
                 item.getUnitPrice(),
