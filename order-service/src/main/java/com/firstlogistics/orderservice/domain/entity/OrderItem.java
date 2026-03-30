@@ -1,5 +1,7 @@
 package com.firstlogistics.orderservice.domain.entity;
 
+import com.firstlogistics.orderservice.domain.exception.OrderErrorCode;
+import com.firstlogistics.orderservice.domain.exception.OrderException;
 import com.firstlogistics.orderservice.domain.vo.Money;
 import com.firstlogistics.orderservice.domain.vo.OrderId;
 import lombok.AccessLevel;
@@ -21,16 +23,22 @@ public class OrderItem {
     static OrderItem create(
             UUID productId,
             String productName,
-            Money unitPrice,
+            Long unitPrice,
             int quantity
     ) {
+        if (productId == null) throw new OrderException(OrderErrorCode.INVALID_PRODUCT_ID);
+        if (productName == null || productName.isBlank()) throw new OrderException(OrderErrorCode.INVALID_PRODUCT_NAME);
+        if (quantity <= 0) throw new OrderException(OrderErrorCode.INVALID_QUANTITY);
+
+        Money price = Money.of(unitPrice);
+
         return new OrderItem(
                 UUID.randomUUID(),
                 productId,
                 productName,
-                unitPrice,
+                price,
                 quantity,
-                unitPrice.multiply(quantity)
+                price.multiply(quantity)
         );
     }
 

@@ -1,5 +1,6 @@
 package com.firstlogistics.orderservice.domain.entity;
 
+import com.firstlogistics.orderservice.application.dto.CreateOrderCommand;
 import com.firstlogistics.orderservice.domain.enums.OrderStatus;
 import com.firstlogistics.orderservice.domain.exception.OrderErrorCode;
 import com.firstlogistics.orderservice.domain.exception.OrderException;
@@ -44,7 +45,7 @@ public class Order {
             String deliveryAddress,
             LocalDateTime dueDate,
             String requestMemo,
-            List<OrderItem> items // 추후 DTO로 수정
+            List<CreateOrderCommand.OrderItemCommand> items
     ) {
         Order order = new Order(
                 OrderId.of(),
@@ -61,7 +62,7 @@ public class Order {
                 new ArrayList<>()
         );
 
-        order.initOrderItems(items);
+        order.createOrderItems(items);
         order.calculateTotalAmount();
 
         return order;
@@ -107,29 +108,23 @@ public class Order {
         return Collections.unmodifiableList(orderItems);
     }
 
-    private void initOrderItems(List<OrderItem> orderItems) {
+    private void createOrderItems(List<CreateOrderCommand.OrderItemCommand> items) {
         // 주문 상세 존재 여부 체크
-        if (orderItems == null || orderItems.isEmpty()) {
+        if (items == null || items.isEmpty()) {
             throw new OrderException(OrderErrorCode.ORDER_ITEM_NOT_EXIST);
         }
-        if (orderItems.stream().anyMatch(Objects::isNull)) {
+        if (items.stream().anyMatch(Objects::isNull)) {
             throw new OrderException(OrderErrorCode.ORDER_ITEM_NOT_EXIST);
         }
-
-        // 주문 가능한 상품인지 체크?
 
         this.orderItems = new ArrayList<>();
-        orderItems.forEach(this::addOrderItem);
-    }
-
-    private void addOrderItem(OrderItem item) {
-        // 개별 검증 로직 추가
-        orderItems.add(OrderItem.create(
-                item.getProductId(),
-                item.getProductName(),
-                item.getUnitPrice(),
-                item.getQuantity()
-        ));
+        items.forEach(item ->
+                orderItems.add(OrderItem.create(
+                        item.productId(),
+                        item.productName(),
+                        item.unitPrice(),
+                        item.quantity()
+                )));
     }
 
     private void calculateTotalAmount() {
