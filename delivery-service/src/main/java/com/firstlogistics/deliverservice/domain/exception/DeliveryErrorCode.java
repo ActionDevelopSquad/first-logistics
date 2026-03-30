@@ -20,6 +20,10 @@ public enum DeliveryErrorCode implements ErrorCode {
 	DELIVERY_ALREADY_EXISTS(HttpStatus.CONFLICT, "DR101", "이미 배송이 존재합니다."),
 	DELIVERY_NOT_FOUND(HttpStatus.NOT_FOUND, "DR102", "배송을 찾을 수 없습니다."),
 
+	// 배송 담당자
+	HUB_DELIVERY_STAFF_NOT_AVAILABLE(HttpStatus.NOT_FOUND, "DR201", "배정 가능한 허브 배송담당자가 없습니다."),
+	COMPANY_DELIVERY_STAFF_NOT_AVAILABLE(HttpStatus.NOT_FOUND, "DR202", "배정 가능한 업체 배송담당자가 없습니다."),
+
 	// 외부 서비스
 	HUB_NOT_FOUND(HttpStatus.NOT_FOUND, "DR401", "허브를 찾을 수 없습니다."),
 	COMPANY_NOT_FOUND(HttpStatus.NOT_FOUND, "DR402", "업체를 찾을 수 없습니다."),
