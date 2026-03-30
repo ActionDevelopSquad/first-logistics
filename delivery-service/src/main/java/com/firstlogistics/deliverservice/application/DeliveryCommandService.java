@@ -86,7 +86,7 @@ public class DeliveryCommandService {
 		for (int i = 0; i < hubRoute.routes().size(); i++) {
 			HubRouteStepResponse step = hubRoute.routes().get(i);
 			DeliveryRoute route = DeliveryRoute.create(
-				null,
+				delivery.getId(),
 				i,
 				step.sourceHubId(),
 				step.destinationHubId(),

@@ -2,6 +2,8 @@ package com.firstlogistics.deliverservice.domain.entity;
 
 import com.firstlogistics.deliverservice.domain.enums.DeliveryStatus;
 import com.firstlogistics.deliverservice.domain.vo.Address;
+import com.firstlogistics.deliverservice.domain.vo.DeliveryId;
+import com.firstlogistics.deliverservice.domain.vo.DeliveryStaffId;
 import com.firstlogistics.deliverservice.domain.vo.GeoLocation;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -15,7 +17,7 @@ import java.util.UUID;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Delivery {
 
-	private UUID id;
+	private DeliveryId id;
 	private UUID orderId;
 	private DeliveryStatus status;
 	private UUID sourceHubId;
@@ -25,7 +27,7 @@ public class Delivery {
 	private UUID receiverId;
 	private String receiverSlackId;
 	private UUID receiverCompanyId;
-	private UUID receiverCompanyDeliveryStaffId;
+	private DeliveryStaffId receiverCompanyDeliveryStaffId;
 	private UUID currentHubId;
 	private List<DeliveryRoute> routes;
 
@@ -40,18 +42,16 @@ public class Delivery {
 		UUID receiverId,
 		String receiverSlackId,
 		UUID receiverCompanyId,
-		UUID receiverCompanyDeliveryStaffId
+		DeliveryStaffId receiverCompanyDeliveryStaffId
 	) {
-		DeliveryStatus createdStatus = DeliveryStatus.CREATED;
-		final List<DeliveryRoute> createdRoutes = new ArrayList<>();
 		return new Delivery(
-				null, orderId, createdStatus,
-				sourceHubId, destinationHubId,
-				Address.of(roadAddress, detailAddress),
-				GeoLocation.of(latitude, longitude),
-				receiverId, receiverSlackId, receiverCompanyId, receiverCompanyDeliveryStaffId,
-				sourceHubId,
-				createdRoutes
+			DeliveryId.generate(), orderId, DeliveryStatus.CREATED,
+			sourceHubId, destinationHubId,
+			Address.of(roadAddress, detailAddress),
+			GeoLocation.of(latitude, longitude),
+			receiverId, receiverSlackId, receiverCompanyId, receiverCompanyDeliveryStaffId,
+			sourceHubId,
+			new ArrayList<>()
 		);
 	}
 

@@ -2,6 +2,9 @@ package com.firstlogistics.deliverservice.domain.entity;
 
 import com.firstlogistics.deliverservice.domain.enums.RouteStatus;
 import com.firstlogistics.deliverservice.domain.vo.Address;
+import com.firstlogistics.deliverservice.domain.vo.DeliveryId;
+import com.firstlogistics.deliverservice.domain.vo.DeliveryRouteId;
+import com.firstlogistics.deliverservice.domain.vo.DeliveryStaffId;
 import com.firstlogistics.deliverservice.domain.vo.Distance;
 import com.firstlogistics.deliverservice.domain.vo.GeoLocation;
 import com.firstlogistics.deliverservice.domain.vo.Time;
@@ -15,8 +18,8 @@ import java.util.UUID;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class DeliveryRoute {
 
-	private UUID id;
-	private UUID deliveryId;
+	private DeliveryRouteId id;
+	private DeliveryId deliveryId;
 	private int sequence;
 	private UUID sourceHubId;
 	private UUID destinationHubId;
@@ -27,24 +30,23 @@ public class DeliveryRoute {
 	private Address actualDestinationAddress;
 	private GeoLocation actualDestinationLocation;
 	private RouteStatus status;
-	private UUID deliveryStaffId;
+	private DeliveryStaffId deliveryStaffId;
 
 	public static DeliveryRoute create(
-		UUID deliveryId,
+		DeliveryId deliveryId,
 		int sequence,
 		UUID sourceHubId,
 		UUID destinationHubId,
 		int estimatedDistanceMeters,
 		int estimatedDurationMinutes
 	) {
-		RouteStatus createdStatus = RouteStatus.CREATED;
 		return new DeliveryRoute(
-				null, deliveryId, sequence,
-				sourceHubId, destinationHubId,
-				Distance.of(estimatedDistanceMeters),
-				Time.of(estimatedDurationMinutes),
-				null, null, null, null,
-				createdStatus, null
+			DeliveryRouteId.generate(), deliveryId, sequence,
+			sourceHubId, destinationHubId,
+			Distance.of(estimatedDistanceMeters),
+			Time.of(estimatedDurationMinutes),
+			null, null, null, null,
+			RouteStatus.CREATED, null
 		);
 	}
 
@@ -56,7 +58,7 @@ public class DeliveryRoute {
 		this.status = RouteStatus.HUB_WAITING;
 	}
 
-	public void assignStaff(UUID staffId) {
+	public void assignStaff(DeliveryStaffId staffId) {
 		this.deliveryStaffId = staffId;
 	}
 }

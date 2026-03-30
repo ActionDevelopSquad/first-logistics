@@ -1,6 +1,7 @@
 package com.firstlogistics.deliverservice.domain.entity;
 
 import com.firstlogistics.deliverservice.domain.enums.StaffType;
+import com.firstlogistics.deliverservice.domain.vo.DeliveryStaffId;
 import com.firstlogistics.deliverservice.domain.vo.StaffDetail;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -12,7 +13,7 @@ import java.util.UUID;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class DeliveryStaff {
 
-	private UUID id;
+	private DeliveryStaffId id;
 	private StaffDetail staffDetail;
 	private UUID hubId;
 	private String slackId;
@@ -21,7 +22,6 @@ public class DeliveryStaff {
 	private boolean isDelivering;
 
 	public static DeliveryStaff create(
-		UUID id,
 		String staffName,
 		String phoneNumber,
 		UUID hubId,
@@ -29,10 +29,9 @@ public class DeliveryStaff {
 		StaffType staffType,
 		int deliverySequence
 	) {
-		boolean createdIsDelivering = false;
 		return new DeliveryStaff(
-				id, StaffDetail.of(staffName, phoneNumber), hubId, slackId,
-				staffType, deliverySequence, createdIsDelivering
+			DeliveryStaffId.generate(), StaffDetail.of(staffName, phoneNumber), hubId, slackId,
+			staffType, deliverySequence, false
 		);
 	}
 

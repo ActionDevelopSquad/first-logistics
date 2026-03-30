@@ -364,10 +364,6 @@ class DeliveryCommandServiceTest {
 			UUID destinationHubId = UUID.randomUUID();
 			UUID receiverCompanyId = UUID.randomUUID();
 			UUID receiverId = UUID.randomUUID();
-			UUID hubStaff1Id = UUID.randomUUID();
-			UUID hubStaff2Id = UUID.randomUUID();
-			UUID companyStaffId = UUID.randomUUID();
-
 			CreateDeliveryCommand command = new CreateDeliveryCommand(
 				orderId, sourceHubId, receiverCompanyId, receiverId,
 				"서울시 강남구 테헤란로 123", "101호", 37.5, 127.0
@@ -376,9 +372,9 @@ class DeliveryCommandServiceTest {
 				new HubRouteStepResponse(sourceHubId, middleHubId, 10000, 30),
 				new HubRouteStepResponse(middleHubId, destinationHubId, 8000, 25)
 			);
-			DeliveryStaff hubStaff1 = DeliveryStaff.create(hubStaff1Id, "허브담당1", "010-1111-1111", sourceHubId, "slack-hub1", StaffType.HUB_DELIVERY, 0);
-			DeliveryStaff hubStaff2 = DeliveryStaff.create(hubStaff2Id, "허브담당2", "010-2222-2222", middleHubId, "slack-hub2", StaffType.HUB_DELIVERY, 1);
-			DeliveryStaff companyStaff = DeliveryStaff.create(companyStaffId, "업체담당1", "010-3333-3333", destinationHubId, "slack-company", StaffType.COMPANY_DELIVERY, 0);
+			DeliveryStaff hubStaff1 = DeliveryStaff.create("허브담당1", "010-1111-1111", sourceHubId, "slack-hub1", StaffType.HUB_DELIVERY, 0);
+			DeliveryStaff hubStaff2 = DeliveryStaff.create("허브담당2", "010-2222-2222", middleHubId, "slack-hub2", StaffType.HUB_DELIVERY, 1);
+			DeliveryStaff companyStaff = DeliveryStaff.create("업체담당1", "010-3333-3333", destinationHubId, "slack-company", StaffType.COMPANY_DELIVERY, 0);
 
 			return new SuccessFixture(command, steps, hubStaff1, hubStaff2, companyStaff, destinationHubId, "slack-receiver");
 		}
@@ -404,20 +400,10 @@ class DeliveryCommandServiceTest {
 	}
 
 	private DeliveryStaff stubHubStaff(UUID hubId) {
-		UUID staffId = UUID.randomUUID();
-		return DeliveryStaff.create(
-			staffId, "홍길동", "010-1234-5678",
-			hubId, "slack-hub",
-			StaffType.HUB_DELIVERY, 0
-		);
+		return DeliveryStaff.create("홍길동", "010-1234-5678", hubId, "slack-hub", StaffType.HUB_DELIVERY, 0);
 	}
 
 	private DeliveryStaff stubCompanyStaff(UUID hubId) {
-		UUID staffId = UUID.randomUUID();
-		return DeliveryStaff.create(
-			staffId, "김영희", "010-9876-5432",
-			hubId, "slack-company",
-			StaffType.COMPANY_DELIVERY, 0
-		);
+		return DeliveryStaff.create("김영희", "010-9876-5432", hubId, "slack-company", StaffType.COMPANY_DELIVERY, 0);
 	}
 }

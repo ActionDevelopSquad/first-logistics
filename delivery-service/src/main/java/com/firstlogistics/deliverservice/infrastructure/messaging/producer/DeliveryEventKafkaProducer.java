@@ -20,7 +20,7 @@ public class DeliveryEventKafkaProducer implements DeliveryEventProducer {
 	@Override
 	public void sendCreated(Delivery delivery) {
 		DeliveryCreatedEvent event = new DeliveryCreatedEvent(
-			delivery.getId(),
+			delivery.getId().id(),
 			delivery.getOrderId(),
 			delivery.getReceiverSlackId()
 		);

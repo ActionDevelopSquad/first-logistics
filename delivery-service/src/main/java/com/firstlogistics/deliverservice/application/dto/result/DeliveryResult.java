@@ -13,7 +13,7 @@ public record DeliveryResult(
 
 	public static DeliveryResult from(Delivery delivery) {
 		return new DeliveryResult(
-			delivery.getId(),
+			delivery.getId().id(),
 			delivery.getOrderId(),
 			delivery.getStatus()
 		);
