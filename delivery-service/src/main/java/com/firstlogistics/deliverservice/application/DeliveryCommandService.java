@@ -7,6 +7,7 @@ import com.firstlogistics.deliverservice.domain.entity.Delivery;
 import com.firstlogistics.deliverservice.domain.entity.DeliveryRoute;
 import com.firstlogistics.deliverservice.domain.entity.DeliveryStaff;
 import com.firstlogistics.deliverservice.domain.entity.StaffTimetable;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryCreationException;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryRepository;
@@ -63,7 +64,7 @@ public class DeliveryCommandService {
 			LocalDateTime assignmentEnd = now.plusMinutes(cumulativeMinutes + step.durationMinutes());
 
 			DeliveryStaff hubStaff = deliveryStaffRepository.findNextHubStaff(step.sourceHubId(), assignmentStart, assignmentEnd)
-				.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.HUB_DELIVERY_STAFF_NOT_AVAILABLE));
+				.orElseThrow(() -> new DeliveryCreationException(DeliveryErrorCode.HUB_DELIVERY_STAFF_NOT_AVAILABLE));
 
 			hubStaffs.add(hubStaff);
 			cumulativeMinutes += step.durationMinutes();
@@ -76,7 +77,7 @@ public class DeliveryCommandService {
 		LocalDateTime companyAssignmentEnd = companyAssignmentStart.plusMinutes(lastStepDuration);
 
 		DeliveryStaff companyStaff = deliveryStaffRepository.findNextCompanyStaff(destinationHubId, companyAssignmentStart, companyAssignmentEnd)
-			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.COMPANY_DELIVERY_STAFF_NOT_AVAILABLE));
+			.orElseThrow(() -> new DeliveryCreationException(DeliveryErrorCode.COMPANY_DELIVERY_STAFF_NOT_AVAILABLE));
 
 		// 6. 수령인 조회 (slackId 확보)
 		UserResponse receiver = userClient.getUser(command.receiverId()).data();
@@ -134,7 +135,7 @@ public class DeliveryCommandService {
 		deliveryStaffRepository.save(companyStaff);
 
 		// TODO: 배송 생성 이벤트 발행 테스트 작성 후 주석 해제
-		// deliveryEventProducer.sendCreated(savedDelivery);
+		deliveryEventProducer.sendCreated(savedDelivery);
 
 		return DeliveryResult.from(savedDelivery);
 	}
