@@ -14,7 +14,7 @@ public record HubAddress(String roadAddress) {
         return new HubAddress(roadAddress);
     }
     private static void validate(String roadAddress){
-        if(roadAddress.isBlank() || roadAddress == null)
+        if(roadAddress == null ||roadAddress.isBlank() )
             throw new HubException(HubErrorCode.INVALID_HUB_ADDRESS);
         if(roadAddress.length()> MAX_LENGTH)
             throw new HubException(HubErrorCode.INVALID_HUB_ADDRESS);
