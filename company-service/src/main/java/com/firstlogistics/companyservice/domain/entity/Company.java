@@ -58,12 +58,13 @@ public class Company {
         }
     }
 
-    public void changeAddress(String roadAddress, String detailAddress) {
+    public void changeAddress(String roadAddress, String detailAddress,  double latitude, double longitude) {
         if (this.status == CompanyStatus.INACTIVE) {
             throw new CompanyException(CompanyErrorCode.COMPANY_INACTIVE);
         }
 
         this.address = CompanyAddress.of(roadAddress, detailAddress);
+        this.geoLocation = GeoLocation.of(latitude, longitude);
     }
 
     public void deactivate() {
