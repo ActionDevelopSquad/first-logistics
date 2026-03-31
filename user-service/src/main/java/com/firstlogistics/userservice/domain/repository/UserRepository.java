@@ -9,5 +9,9 @@ public interface UserRepository {
 
     User findById(UUID userId);
 
-    User findByUsername(String username);
+    User findByIdNotDeleted(UUID userId);
+
+    User findByUsernameNotDeleted(String username);
+
+    void delete(UUID userId, UUID deletedUserId);
 }

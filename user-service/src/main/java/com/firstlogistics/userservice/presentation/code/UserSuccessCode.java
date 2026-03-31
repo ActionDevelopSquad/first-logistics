@@ -1,4 +1,4 @@
-package com.firstlogistics.userservice.domain.exception;
+package com.firstlogistics.userservice.presentation.code;
 
 import common.response.SuccessCode;
 import lombok.Getter;

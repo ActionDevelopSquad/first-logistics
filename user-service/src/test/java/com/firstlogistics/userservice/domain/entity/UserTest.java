@@ -126,9 +126,10 @@ class UserTest {
     private User reconstituteUser(Status status) {
         return User.reconstitute(
                 UUID.randomUUID(),
-                "testuser",
+                "testUser",
                 "테스트 유저",
                 "010-1234-5678",
+                "test@google.com",
                 "slackId",
                 status,
                 UserRole.COMPANY_MANAGER,

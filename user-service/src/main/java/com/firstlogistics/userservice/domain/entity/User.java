@@ -21,13 +21,21 @@ public class User {
     private String username;
     private String name;
     private String phone;
+    private String email;
     private String slackId;
     private Status status;
     private UserRole userRole;
     private LocalDateTime lastLoginAt;
 
-    public static User create(UUID userId, String username, String name, String phone, String slackId, UserRole role) {
-        return new User(userId, username, name, phone, slackId, Status.PENDING, role, null);
+    public static User create(UUID userId, String username, String name, String phone, String email, String slackId, UserRole role) {
+        return new User(userId, username, name, phone, email, slackId, Status.PENDING, role, null);
+    }
+
+    public void update(String name, String email, String phone, String slackId) {
+        this.name = name;
+        this.email = email;
+        this.phone = phone;
+        this.slackId = slackId;
     }
 
     public void canLogin() {
@@ -50,6 +58,13 @@ public class User {
         this.status = Status.REJECTED;
     }
 
+    public void updateRole(UserRole role) {
+        if (userRole == role) {
+            throw new UserException(UserErrorCode.SAME_ROLE_SELECTED);
+        }
+        this.userRole = role;
+    }
+
     public void recordLogin() {
         this.lastLoginAt = LocalDateTime.now();
     }
@@ -59,6 +74,7 @@ public class User {
             String username,
             String name,
             String phone,
+            String email,
             String slackId,
             Status status,
             UserRole userRole,
@@ -69,9 +85,11 @@ public class User {
                 username,
                 name,
                 phone,
+                email,
                 slackId,
                 status,
                 userRole,
-                lastLoginAt);
+                lastLoginAt
+        );
     }
 }

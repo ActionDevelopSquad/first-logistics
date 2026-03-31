@@ -3,7 +3,6 @@ package com.firstlogistics.userservice.application.service;
 import com.firstlogistics.userservice.application.dto.TokenInfo;
 import com.firstlogistics.userservice.application.dto.command.LoginCommand;
 import com.firstlogistics.userservice.application.dto.result.TokenResult;
-import com.firstlogistics.userservice.application.port.KeycloackService;
 import com.firstlogistics.userservice.application.port.KeycloackTokenService;
 import com.firstlogistics.userservice.domain.entity.User;
 import com.firstlogistics.userservice.domain.enums.Status;
@@ -62,7 +61,7 @@ class UserServiceTest {
 
             User user = approvedUser();
 
-            given(userRepository.findByUsername(command.username())).willReturn(user);
+            given(userRepository.findByUsernameNotDeleted(command.username())).willReturn(user);
             given(tokenService.generate(command.username(), command.password())).willReturn(tokenInfo);
 
             // when
@@ -76,7 +75,7 @@ class UserServiceTest {
             assertEquals(tokenInfo.token_type(), result.tokenType());
             assertThat(user.getLastLoginAt()).isNotNull();
 
-            then(userRepository).should(times(1)).findByUsername(command.username());
+            then(userRepository).should(times(1)).findByUsernameNotDeleted(command.username());
             then(tokenService).should(times(1)).generate(command.username(), command.password());
         }
 
@@ -95,14 +94,14 @@ class UserServiceTest {
 
             User user = pendingUser();
 
-            given(userRepository.findByUsername(command.username())).willReturn(user);
+            given(userRepository.findByUsernameNotDeleted(command.username())).willReturn(user);
 
             // when & then
             assertThatThrownBy(() -> userService.login(command))
                     .isInstanceOf(UserException.class)
                     .hasMessageContaining(UserErrorCode.CAN_LOGIN_ONLY_APPROVE.getMessage());
 
-            then(userRepository).should(times(1)).findByUsername(command.username());
+            then(userRepository).should(times(1)).findByUsernameNotDeleted(command.username());
             then(tokenService).should(never()).generate(any(), any());
         }
     }
@@ -146,13 +145,13 @@ class UserServiceTest {
             then(tokenService).should(never()).logout(any());
         }
     }
-
     private User pendingUser() {
         return User.reconstitute(
                 UUID.randomUUID(),
                 "testUser",
                 "테스트유저",
                 "010-1234-5678",
+                "test@google.com",
                 "slack-123",
                 Status.PENDING,
                 UserRole.COMPANY_MANAGER,
@@ -166,6 +165,7 @@ class UserServiceTest {
                 "testUser",
                 "테스트유저",
                 "010-1234-5678",
+                "test@google.com",
                 "slack-123",
                 Status.APPROVE,
                 UserRole.COMPANY_MANAGER,
@@ -179,6 +179,7 @@ class UserServiceTest {
                 "testUser",
                 "테스트유저",
                 "010-1234-5678",
+                "test@google.com",
                 "slack-123",
                 Status.REJECTED,
                 UserRole.COMPANY_MANAGER,

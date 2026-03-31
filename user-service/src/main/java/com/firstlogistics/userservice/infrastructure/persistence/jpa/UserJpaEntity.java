@@ -1,8 +1,8 @@
 package com.firstlogistics.userservice.infrastructure.persistence.jpa;
 
-import com.firstlogistics.userservice.domain.entity.User;
 import com.firstlogistics.userservice.domain.enums.Status;
 import common.jpa.domain.enums.UserRole;
+import common.jpa.entity.BaseAuditEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -16,24 +16,24 @@ import java.util.UUID;
 @Getter
 @Table(name = "p_user")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class UserJpaEntity {
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
+public class UserJpaEntity extends BaseAuditEntity {
 
     @Id
     @Column(name = "id", nullable = false)
     private UUID id;
 
-    @Column(name = "username", nullable = false, unique = true, length = 10)
+    @Column(name = "username", nullable = false, length = 10)
     private String username;
-
-//    @Column(name = "password", nullable = false, length = 15)
-//    private String password;
 
     @Column(name = "name", nullable = false, length = 30)
     private String name;
 
     @Column(name = "phone", nullable = false, length = 20)
     private String phone;
+
+    @Column(name = "email", nullable = false, length = 100)
+    private String email;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "user_role", nullable = false, length = 30)
@@ -49,26 +49,4 @@ public class UserJpaEntity {
     @Column(name = "slack_id", length = 100)
     private String slackId;
 
-    // Domain → Entity 변환
-    public static UserJpaEntity from(User user) {
-        return new UserJpaEntity(
-                user.getId(),
-                user.getUsername(),
-                user.getName(),
-                user.getPhone(),
-                user.getUserRole(),
-                user.getStatus(),
-                user.getLastLoginAt(),
-                user.getSlackId()
-        );
-    }
-
-    // Entity → Domain 변환
-    public User toDomain() {
-        return User.reconstitute(id, username, name, phone, slackId, status, userRole, lastLoginAt);
-    }
-
-    public void updateLastLoginAt() {
-        this.lastLoginAt = LocalDateTime.now();
-    }
 }

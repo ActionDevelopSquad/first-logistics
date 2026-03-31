@@ -23,7 +23,7 @@ public class UserService {
 
     @Transactional
     public TokenResult login(LoginCommand command) {
-        User user = userRepository.findByUsername(command.username());
+        User user = userRepository.findByUsernameNotDeleted(command.username());
 
         user.canLogin();
 

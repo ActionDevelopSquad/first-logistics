@@ -3,7 +3,7 @@ package com.firstlogistics.userservice.presentation.controller;
 import com.firstlogistics.userservice.application.dto.command.LoginCommand;
 import com.firstlogistics.userservice.application.dto.result.TokenResult;
 import com.firstlogistics.userservice.application.service.UserService;
-import com.firstlogistics.userservice.domain.exception.UserSuccessCode;
+import com.firstlogistics.userservice.presentation.code.UserSuccessCode;
 import com.firstlogistics.userservice.presentation.dto.request.LoginRequest;
 import com.firstlogistics.userservice.presentation.dto.response.TokenResponse;
 import common.response.ApiResponse;
