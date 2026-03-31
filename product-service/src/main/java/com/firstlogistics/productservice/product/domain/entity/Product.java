@@ -17,14 +17,14 @@ public class Product {
     private Money price;
     private ProductStatus status;
 
-    public static Product create(UUID companyId, String name, long price) {
+    public static Product create(UUID companyId, String name, Money price) {
         validate(companyId, name);
 
         return new Product(
                 UUID.randomUUID(),
                 companyId,
                 name,
-                Money.krw(price),
+                price,
                 ProductStatus.SELLING
         );
     }
@@ -38,12 +38,12 @@ public class Product {
         }
     }
 
-    public void changePrice(long price) {
-        this.price = Money.krw(price);
+    public void changePrice(Money price) {
+        this.price = price;
     }
 
     public void stopSelling() {
-        this.status = ProductStatus.SELLING;
+        this.status = ProductStatus.STOPPED;
     }
 
     public boolean isSellable() {
