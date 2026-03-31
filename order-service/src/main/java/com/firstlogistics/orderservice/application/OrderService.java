@@ -30,6 +30,8 @@ public class OrderService {
                 command.items()
         );
 
+        // TODO: 주문 생성 이벤트 발행
+
         orderRepository.save(order);
 
         return order.getId().id();

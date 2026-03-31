@@ -3,7 +3,6 @@ package com.firstlogistics.orderservice.presentation;
 import com.firstlogistics.orderservice.application.OrderService;
 import com.firstlogistics.orderservice.presentation.dto.request.CreateOrderRequest;
 import common.response.ApiResponse;
-import common.response.CommonSuccessCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -30,7 +29,7 @@ public class OrderController {
     ) {
         UUID id = orderService.createOrder(request.toCommand());
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(CommonSuccessCode.CREATED, id));
+                .body(ApiResponse.success(OrderSuccessCode.ORDER_CREATED, id));
     }
 
 }
