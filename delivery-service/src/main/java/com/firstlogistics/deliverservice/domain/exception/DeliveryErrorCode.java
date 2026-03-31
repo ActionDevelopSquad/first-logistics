@@ -25,6 +25,8 @@ public enum DeliveryErrorCode implements ErrorCode {
 	// 배송
 	DELIVERY_ALREADY_EXISTS(HttpStatus.CONFLICT, "DR101", "이미 배송이 존재합니다."),
 	DELIVERY_NOT_FOUND(HttpStatus.NOT_FOUND, "DR102", "배송을 찾을 수 없습니다."),
+	INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "DR103", "종료일이 시작일보다 앞설 수 없습니다."),
+	INVALID_ROLE_SCOPE(HttpStatus.BAD_REQUEST, "DR104", "역할에 필요한 스코프 정보가 없습니다."),
 
 	// 배송 담당자
 	HUB_DELIVERY_STAFF_NOT_AVAILABLE(HttpStatus.NOT_FOUND, "DR201", "배정 가능한 허브 배송담당자가 없습니다."),
