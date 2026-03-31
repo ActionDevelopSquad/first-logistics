@@ -53,10 +53,10 @@ public class DeliveryMapper {
 			route.getDestinationHubId(),
 			route.getEstimatedDistance().meters(),
 			route.getEstimatedDuration().minutes(),
-			route.getActualDistance().meters(),
-			route.getActualDuration().minutes(),
+			route.getActualDistance() != null ? route.getActualDistance().meters() : 0,
+			route.getActualDuration() != null ? route.getActualDuration().minutes() : 0,
 			route.getStatus(),
-			route.getDeliveryStaffId().id()
+			route.getDeliveryStaffId() != null ? route.getDeliveryStaffId().id() : null
 		);
 	}
 
@@ -96,7 +96,7 @@ public class DeliveryMapper {
 			null,
 			null,
 			jpaEntity.getStatus(),
-			DeliveryStaffId.of(jpaEntity.getDeliveryStaffId())
+			jpaEntity.getDeliveryStaffId() != null ? DeliveryStaffId.of(jpaEntity.getDeliveryStaffId()) : null
 		);
 	}
 }

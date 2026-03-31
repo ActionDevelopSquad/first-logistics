@@ -99,10 +99,13 @@ class OrderEventKafkaConsumerTest {
 			log.info("Kafka send: orderId={}", event.orderId());
 
 			// then
-			await().atMost(5, TimeUnit.SECONDS).untilAsserted(() ->
-					then(deliveryQueryService).should().existsByOrderId(event.orderId())
-			);
-			then(deliveryCreateFacade).should(never()).createDelivery(any());
+			// existsByOrderId 호출 확인과 never() 단언을 같은 await 블록 안에서 평가한다.
+			// never()를 await 밖에서 즉시 평가하면 리스너 스레드가 아직 실행 중일 수 있어
+			// createDelivery 호출 여부를 확정하기 전에 단언이 통과하는 레이스 컨디션이 발생한다.
+			await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
+				then(deliveryQueryService).should().existsByOrderId(event.orderId());
+				then(deliveryCreateFacade).should(never()).createDelivery(any());
+			});
 		}
 
 		@Test

@@ -45,6 +45,10 @@ public class DeliveryCommandService {
 			throw new DeliveryException(DeliveryErrorCode.DELIVERY_ALREADY_EXISTS);
 		}
 
+		if (hubRoute.routes() == null || hubRoute.routes().isEmpty()) {
+			throw new DeliveryCreationException(DeliveryErrorCode.HUB_ROUTE_INVALID);
+		}
+
 		UUID destinationHubId = company.hubId();
 
 		List<HubRouteStepResponse> orderedRoutes = hubRoute.routes().stream()

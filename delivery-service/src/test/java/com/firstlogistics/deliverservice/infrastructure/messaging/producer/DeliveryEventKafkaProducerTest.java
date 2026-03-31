@@ -1,40 +1,27 @@
 package com.firstlogistics.deliverservice.infrastructure.messaging.producer;
 
 
-import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryCommand;
-import com.firstlogistics.deliverservice.domain.entity.Delivery;
-import com.firstlogistics.deliverservice.domain.enums.DeliveryStatus;
-import com.firstlogistics.deliverservice.domain.vo.DeliveryId;
 import com.firstlogistics.deliverservice.infrastructure.feign.CompanyClient;
 import com.firstlogistics.deliverservice.infrastructure.feign.HubClient;
 import com.firstlogistics.deliverservice.infrastructure.feign.UserClient;
 import com.firstlogistics.deliverservice.infrastructure.messaging.config.KafkaConsumerConfig;
-import com.firstlogistics.deliverservice.infrastructure.messaging.consumer.event.OrderAcceptedEvent;
 import com.firstlogistics.deliverservice.infrastructure.messaging.producer.event.DeliveryCreatedEvent;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.kafka.core.DefaultKafkaProducerFactory;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
-import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.ActiveProfiles;
-import org.redisson.api.RedissonClient;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -61,6 +48,9 @@ class DeliveryEventKafkaProducerTest {
 
     @Autowired
     private KafkaConsumerConfig kafkaConsumerConfig;
+
+    @Autowired
+    private PlatformTransactionManager transactionManager;
 
     @MockitoBean
     private RedissonClient redissonClient;
@@ -89,7 +79,13 @@ class DeliveryEventKafkaProducerTest {
             consumer.seekToBeginning(List.of(tp));
 
             // when
-            producer.sendCreated(deliveryCreatedEvent);
+            // sendCreated()는 트랜잭션 커밋 이후 Kafka를 발행한다(@TransactionalEventListener AFTER_COMMIT).
+            // 트랜잭션 없이 직접 호출하면 커밋 이벤트가 발생하지 않아 Kafka 발행이 일어나지 않는다.
+            // TransactionTemplate으로 실제 커밋을 발생시켜 핸들러가 정상 호출되도록 한다.
+            new TransactionTemplate(transactionManager).execute(status -> {
+                producer.sendCreated(deliveryCreatedEvent);
+                return null;
+            });
 
             // then
             await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {

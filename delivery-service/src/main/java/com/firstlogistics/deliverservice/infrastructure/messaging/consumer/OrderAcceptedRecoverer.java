@@ -22,7 +22,6 @@ public class OrderAcceptedRecoverer implements ConsumerRecordRecoverer {
 
 	@Override
 	public void accept(ConsumerRecord<?, ?> record, Exception exception) {
-		// DeliveryException 중 DeliveryCreationException이 아닌 경우(예: DELIVERY_ALREADY_EXISTS)는 Saga 불필요 (멱등성)
 		boolean shouldFireSaga = !hasCause(exception, DeliveryException.class)
 			|| hasCause(exception, DeliveryCreationException.class);
 

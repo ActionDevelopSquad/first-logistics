@@ -87,7 +87,6 @@ class DeliveryDistributedLockServiceTest {
             // then
             assertThat(throwable).isInstanceOf(DistributedLockException.class);
             assertThat(Thread.currentThread().isInterrupted()).isTrue();
-            // 다음 테스트 영향 방지
             Thread.interrupted();
         }
 

@@ -35,6 +35,7 @@ public enum DeliveryErrorCode implements ErrorCode {
 	COMPANY_NOT_FOUND(HttpStatus.NOT_FOUND, "DR402", "업체를 찾을 수 없습니다."),
 	USER_NOT_FOUND(HttpStatus.NOT_FOUND, "DR403", "사용자를 찾을 수 없습니다."),
 	EXTERNAL_SERVICE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "DR404", "외부 서비스 호출에 실패했습니다."),
+	HUB_ROUTE_INVALID(HttpStatus.UNPROCESSABLE_ENTITY, "DR405", "허브 경로 정보가 유효하지 않습니다."),
 
 	// 락
 	DELIVERY_STAFF_ASSIGN_LOCK_ACQUISITION_FAILED(HttpStatus.CONFLICT, "DR301", "배송 담당자 배정 락 획득에 실패했습니다.")
