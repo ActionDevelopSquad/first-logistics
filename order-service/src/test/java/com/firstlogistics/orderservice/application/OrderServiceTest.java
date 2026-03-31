@@ -40,7 +40,7 @@ class OrderServiceTest {
         CreateOrderCommand command = new CreateOrderCommand(
                 UUID.randomUUID(), UUID.randomUUID(),
                 UUID.randomUUID(), UUID.randomUUID(),
-                "서울시 강남구", LocalDateTime.now().plusDays(1),
+                "서울시 강남구", "상세주소", LocalDateTime.now().plusDays(1),
                 "빨리 배송해주세요", List.of(item)
         );
 
@@ -59,7 +59,7 @@ class OrderServiceTest {
         CreateOrderCommand command = new CreateOrderCommand(
                 UUID.randomUUID(), UUID.randomUUID(),
                 UUID.randomUUID(), UUID.randomUUID(),
-                "서울시 강남구", LocalDateTime.now().plusDays(1),
+                "서울시 강남구", "상세주소", LocalDateTime.now().plusDays(1),
                 "메모", List.of() // 빈 리스트
         );
 

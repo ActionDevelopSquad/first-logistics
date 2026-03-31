@@ -46,6 +46,7 @@ class OrderMapperTest {
                 UUID.randomUUID(), // receiverManagerId
                 UUID.randomUUID(), // deliveryId
                 "배송 주소",
+                "상세 주소",
                 30000L,            // totalAmount
                 LocalDateTime.now().plusDays(3),
                 "배송 메시지",
