@@ -1,10 +1,13 @@
 package com.firstlogistics.notificationservice.ailog.infrastructure.persistence.jpa;
 
+import com.firstlogistics.notificationservice.ailog.domain.entity.AILog;
 import com.firstlogistics.notificationservice.ailog.domain.enums.AILogStatus;
 import com.firstlogistics.notificationservice.ailog.domain.enums.MessengerType;
+import com.firstlogistics.notificationservice.ailog.domain.vo.AILogId;
 import common.jpa.entity.BaseAuditEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -14,6 +17,7 @@ import java.util.UUID;
 @Table(name = "p_ai_log")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class AILogJpaEntity extends BaseAuditEntity {
 
     @Id
@@ -38,4 +42,16 @@ public class AILogJpaEntity extends BaseAuditEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private MessengerType messengerType;
+
+    public static AILogJpaEntity create(UUID messageId, String request, String response, String system, AILogStatus status, MessengerType type) {
+        return new AILogJpaEntity(
+                AILogId.of(UUID.randomUUID()).id(),
+                messageId,
+                request,
+                response,
+                system,
+                status,
+                type
+        );
+    }
 }
