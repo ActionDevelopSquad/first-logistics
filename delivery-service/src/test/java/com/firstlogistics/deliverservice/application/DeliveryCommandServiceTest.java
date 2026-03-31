@@ -70,23 +70,17 @@ class DeliveryCommandServiceTest {
 			UUID sourceHubId = UUID.randomUUID();
 			UUID middleHubId = UUID.randomUUID();
 			UUID receiverCompanyId = UUID.randomUUID();
-			UUID receiverId = UUID.randomUUID();
+			UUID receiverManagerId = UUID.randomUUID();
 			UUID destinationHubId = UUID.randomUUID();
-			CreateDeliveryCommand command = new CreateDeliveryCommand(
-				orderId, sourceHubId, receiverCompanyId, receiverId,
-				"서울시 강남구 테헤란로 123", "101호", 37.5, 127.0
-			);
-			CompanyResponse company = new CompanyResponse(receiverCompanyId, destinationHubId);
-			HubRouteResponse hubRoute = new HubRouteResponse(sourceHubId, destinationHubId, List.of(
-				new HubRouteStepResponse(0, sourceHubId, middleHubId, 10000, 30),
-				new HubRouteStepResponse(1, middleHubId, destinationHubId, 8000, 25),
-				new HubRouteStepResponse(2, destinationHubId, UUID.randomUUID(), 5000, 20)
-			));
+			CreateDeliveryCommand command = stubCommand(orderId, receiverCompanyId, receiverManagerId);
+			CompanyResponse receiverCompany = new CompanyResponse(receiverCompanyId, destinationHubId);
+			HubRouteResponse hubRoute = stubHubRoute(sourceHubId, middleHubId, destinationHubId);
 
 			given(deliveryRepository.existsByOrderId(orderId)).willReturn(true);
 
 			// when
-			Throwable throwable = catchThrowable(() -> deliveryCommandService.createDelivery(command, company, hubRoute));
+			Throwable throwable = catchThrowable(() ->
+				deliveryCommandService.createDelivery(command, stubSupplierCompany(sourceHubId), receiverCompany, hubRoute));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -103,18 +97,11 @@ class DeliveryCommandServiceTest {
 			UUID sourceHubId = UUID.randomUUID();
 			UUID middleHubId = UUID.randomUUID();
 			UUID receiverCompanyId = UUID.randomUUID();
-			UUID receiverId = UUID.randomUUID();
+			UUID receiverManagerId = UUID.randomUUID();
 			UUID destinationHubId = UUID.randomUUID();
-			CreateDeliveryCommand command = new CreateDeliveryCommand(
-				orderId, sourceHubId, receiverCompanyId, receiverId,
-				"서울시 강남구 테헤란로 123", "101호", 37.5, 127.0
-			);
-			CompanyResponse company = new CompanyResponse(receiverCompanyId, destinationHubId);
-			HubRouteResponse hubRoute = new HubRouteResponse(sourceHubId, destinationHubId, List.of(
-				new HubRouteStepResponse(0, sourceHubId, middleHubId, 10000, 30),
-				new HubRouteStepResponse(1, middleHubId, destinationHubId, 8000, 25),
-				new HubRouteStepResponse(2, destinationHubId, UUID.randomUUID(), 5000, 20)
-			));
+			CreateDeliveryCommand command = stubCommand(orderId, receiverCompanyId, receiverManagerId);
+			CompanyResponse receiverCompany = new CompanyResponse(receiverCompanyId, destinationHubId);
+			HubRouteResponse hubRoute = stubHubRoute(sourceHubId, middleHubId, destinationHubId);
 
 			given(deliveryRepository.existsByOrderId(orderId)).willReturn(false);
 			given(deliveryStaffRepository.findNextHubStaff(eq(sourceHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
@@ -123,7 +110,8 @@ class DeliveryCommandServiceTest {
 				.willReturn(Optional.empty());
 
 			// when
-			Throwable throwable = catchThrowable(() -> deliveryCommandService.createDelivery(command, company, hubRoute));
+			Throwable throwable = catchThrowable(() ->
+				deliveryCommandService.createDelivery(command, stubSupplierCompany(sourceHubId), receiverCompany, hubRoute));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -140,18 +128,11 @@ class DeliveryCommandServiceTest {
 			UUID sourceHubId = UUID.randomUUID();
 			UUID middleHubId = UUID.randomUUID();
 			UUID receiverCompanyId = UUID.randomUUID();
-			UUID receiverId = UUID.randomUUID();
+			UUID receiverManagerId = UUID.randomUUID();
 			UUID destinationHubId = UUID.randomUUID();
-			CreateDeliveryCommand command = new CreateDeliveryCommand(
-				orderId, sourceHubId, receiverCompanyId, receiverId,
-				"서울시 강남구 테헤란로 123", "101호", 37.5, 127.0
-			);
-			CompanyResponse company = new CompanyResponse(receiverCompanyId, destinationHubId);
-			HubRouteResponse hubRoute = new HubRouteResponse(sourceHubId, destinationHubId, List.of(
-				new HubRouteStepResponse(0, sourceHubId, middleHubId, 10000, 30),
-				new HubRouteStepResponse(1, middleHubId, destinationHubId, 8000, 25),
-				new HubRouteStepResponse(2, destinationHubId, UUID.randomUUID(), 5000, 20)
-			));
+			CreateDeliveryCommand command = stubCommand(orderId, receiverCompanyId, receiverManagerId);
+			CompanyResponse receiverCompany = new CompanyResponse(receiverCompanyId, destinationHubId);
+			HubRouteResponse hubRoute = stubHubRoute(sourceHubId, middleHubId, destinationHubId);
 
 			given(deliveryRepository.existsByOrderId(orderId)).willReturn(false);
 			given(deliveryStaffRepository.findNextHubStaff(eq(sourceHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
@@ -162,7 +143,8 @@ class DeliveryCommandServiceTest {
 				.willReturn(Optional.empty());
 
 			// when
-			Throwable throwable = catchThrowable(() -> deliveryCommandService.createDelivery(command, company, hubRoute));
+			Throwable throwable = catchThrowable(() ->
+				deliveryCommandService.createDelivery(command, stubSupplierCompany(sourceHubId), receiverCompany, hubRoute));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -179,18 +161,11 @@ class DeliveryCommandServiceTest {
 			UUID sourceHubId = UUID.randomUUID();
 			UUID middleHubId = UUID.randomUUID();
 			UUID receiverCompanyId = UUID.randomUUID();
-			UUID receiverId = UUID.randomUUID();
+			UUID receiverManagerId = UUID.randomUUID();
 			UUID destinationHubId = UUID.randomUUID();
-			CreateDeliveryCommand command = new CreateDeliveryCommand(
-				orderId, sourceHubId, receiverCompanyId, receiverId,
-				"서울시 강남구 테헤란로 123", "101호", 37.5, 127.0
-			);
-			CompanyResponse company = new CompanyResponse(receiverCompanyId, destinationHubId);
-			HubRouteResponse hubRoute = new HubRouteResponse(sourceHubId, destinationHubId, List.of(
-				new HubRouteStepResponse(0, sourceHubId, middleHubId, 10000, 30),
-				new HubRouteStepResponse(1, middleHubId, destinationHubId, 8000, 25),
-				new HubRouteStepResponse(2, destinationHubId, UUID.randomUUID(), 5000, 20)
-			));
+			CreateDeliveryCommand command = stubCommand(orderId, receiverCompanyId, receiverManagerId);
+			CompanyResponse receiverCompany = new CompanyResponse(receiverCompanyId, destinationHubId);
+			HubRouteResponse hubRoute = stubHubRoute(sourceHubId, middleHubId, destinationHubId);
 
 			given(deliveryRepository.existsByOrderId(orderId)).willReturn(false);
 			given(deliveryStaffRepository.findNextHubStaff(eq(sourceHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
@@ -199,11 +174,12 @@ class DeliveryCommandServiceTest {
 				.willReturn(Optional.of(stubHubStaff(middleHubId)));
 			given(deliveryStaffRepository.findNextCompanyStaff(eq(destinationHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
 				.willReturn(Optional.of(stubCompanyStaff(destinationHubId)));
-			given(userPort.getUser(receiverId))
+			given(userPort.getUser(receiverManagerId))
 				.willThrow(new DeliveryException(DeliveryErrorCode.USER_NOT_FOUND));
 
 			// when
-			Throwable throwable = catchThrowable(() -> deliveryCommandService.createDelivery(command, company, hubRoute));
+			Throwable throwable = catchThrowable(() ->
+				deliveryCommandService.createDelivery(command, stubSupplierCompany(sourceHubId), receiverCompany, hubRoute));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -225,7 +201,7 @@ class DeliveryCommandServiceTest {
 			setupSuccessMocks(f);
 
 			// when
-			deliveryCommandService.createDelivery(f.command(), f.company(), f.hubRoute());
+			deliveryCommandService.createDelivery(f.command(), f.supplierCompany(), f.receiverCompany(), f.hubRoute());
 
 			// then
 			ArgumentCaptor<Delivery> captor = ArgumentCaptor.forClass(Delivery.class);
@@ -241,7 +217,7 @@ class DeliveryCommandServiceTest {
 			setupSuccessMocks(f);
 
 			// when
-			deliveryCommandService.createDelivery(f.command(), f.company(), f.hubRoute());
+			deliveryCommandService.createDelivery(f.command(), f.supplierCompany(), f.receiverCompany(), f.hubRoute());
 
 			// then
 			ArgumentCaptor<Delivery> captor = ArgumentCaptor.forClass(Delivery.class);
@@ -257,7 +233,7 @@ class DeliveryCommandServiceTest {
 			setupSuccessMocks(f);
 
 			// when
-			deliveryCommandService.createDelivery(f.command(), f.company(), f.hubRoute());
+			deliveryCommandService.createDelivery(f.command(), f.supplierCompany(), f.receiverCompany(), f.hubRoute());
 
 			// then
 			ArgumentCaptor<Delivery> captor = ArgumentCaptor.forClass(Delivery.class);
@@ -274,7 +250,7 @@ class DeliveryCommandServiceTest {
 			setupSuccessMocks(f);
 
 			// when
-			deliveryCommandService.createDelivery(f.command(), f.company(), f.hubRoute());
+			deliveryCommandService.createDelivery(f.command(), f.supplierCompany(), f.receiverCompany(), f.hubRoute());
 
 			// then
 			ArgumentCaptor<Delivery> captor = ArgumentCaptor.forClass(Delivery.class);
@@ -290,7 +266,7 @@ class DeliveryCommandServiceTest {
 			setupSuccessMocks(f);
 
 			// when
-			deliveryCommandService.createDelivery(f.command(), f.company(), f.hubRoute());
+			deliveryCommandService.createDelivery(f.command(), f.supplierCompany(), f.receiverCompany(), f.hubRoute());
 
 			// then
 			ArgumentCaptor<DeliveryStaff> staffCaptor = ArgumentCaptor.forClass(DeliveryStaff.class);
@@ -310,7 +286,7 @@ class DeliveryCommandServiceTest {
 			setupSuccessMocks(f);
 
 			// when
-			deliveryCommandService.createDelivery(f.command(), f.company(), f.hubRoute());
+			deliveryCommandService.createDelivery(f.command(), f.supplierCompany(), f.receiverCompany(), f.hubRoute());
 
 			// then
 			ArgumentCaptor<DeliveryStaff> staffCaptor = ArgumentCaptor.forClass(DeliveryStaff.class);
@@ -325,16 +301,14 @@ class DeliveryCommandServiceTest {
 
 	private record SuccessFixture(
 		CreateDeliveryCommand command,
-		CompanyResponse company,
+		CompanyResponse supplierCompany,
+		CompanyResponse receiverCompany,
 		HubRouteResponse hubRoute,
 		DeliveryStaff hubStaff1,
 		DeliveryStaff hubStaff2,
 		DeliveryStaff companyStaff,
 		String receiverSlackId
 	) {
-		List<HubRouteStepResponse> steps() { return hubRoute.routes(); }
-
-		// 마지막 스텝(업체 배송)을 제외한 허브 배송 스텝 목록
 		List<HubRouteStepResponse> hubSteps() {
 			List<HubRouteStepResponse> all = hubRoute.routes();
 			return all.subList(0, all.size() - 1);
@@ -342,17 +316,30 @@ class DeliveryCommandServiceTest {
 
 		static SuccessFixture create() {
 			UUID orderId = UUID.randomUUID();
+			UUID supplierCompanyId = UUID.randomUUID();
+			UUID supplierManagerId = UUID.randomUUID();
 			UUID sourceHubId = UUID.randomUUID();
+			UUID supplierHubId = sourceHubId;
 			UUID middleHubId = UUID.randomUUID();
-			UUID destinationHubId = UUID.randomUUID();
 			UUID receiverCompanyId = UUID.randomUUID();
-			UUID receiverId = UUID.randomUUID();
+			UUID receiverManagerId = UUID.randomUUID();
+			UUID destinationHubId = UUID.randomUUID();
 
 			CreateDeliveryCommand command = new CreateDeliveryCommand(
-				orderId, sourceHubId, receiverCompanyId, receiverId,
-				"서울시 강남구 테헤란로 123", "101호", 37.5, 127.0
+				orderId,
+				LocalDateTime.now(),
+				LocalDateTime.now().plusDays(3),
+				"빠른 배송 부탁드립니다.",
+				supplierCompanyId,
+				supplierManagerId,
+				receiverCompanyId,
+				receiverManagerId,
+				"서울시 강남구 테헤란로 123",
+				"101호",
+				List.of(new CreateDeliveryCommand.OrderItemInfo("마른 오징어", 50, 10000))
 			);
-			CompanyResponse company = new CompanyResponse(receiverCompanyId, destinationHubId);
+			CompanyResponse supplierCompany = new CompanyResponse(supplierCompanyId, supplierHubId);
+			CompanyResponse receiverCompany = new CompanyResponse(receiverCompanyId, destinationHubId);
 			HubRouteResponse hubRoute = new HubRouteResponse(sourceHubId, destinationHubId, List.of(
 				new HubRouteStepResponse(0, sourceHubId, middleHubId, 10000, 30),
 				new HubRouteStepResponse(1, middleHubId, destinationHubId, 8000, 25),
@@ -362,26 +349,54 @@ class DeliveryCommandServiceTest {
 			DeliveryStaff hubStaff2 = DeliveryStaff.create("허브담당2", "010-2222-2222", middleHubId, "slack-hub2", StaffType.HUB_DELIVERY, 1);
 			DeliveryStaff companyStaff = DeliveryStaff.create("업체담당1", "010-3333-3333", destinationHubId, "slack-company", StaffType.COMPANY_DELIVERY, 0);
 
-			return new SuccessFixture(command, company, hubRoute, hubStaff1, hubStaff2, companyStaff, "slack-receiver");
+			return new SuccessFixture(command, supplierCompany, receiverCompany, hubRoute, hubStaff1, hubStaff2, companyStaff, "slack-receiver");
 		}
 	}
 
 	private void setupSuccessMocks(SuccessFixture f) {
-		UUID sourceHubId = f.steps().get(0).sourceHubId();
-		UUID middleHubId = f.steps().get(1).sourceHubId();
-		UUID receiverId = f.command().receiverId();
+		UUID sourceHubId = f.supplierCompany().hubId();
+		UUID middleHubId = f.hubRoute().routes().get(1).sourceHubId();
+		UUID receiverManagerId = f.command().receiverManagerId();
 
 		given(deliveryRepository.existsByOrderId(f.command().orderId())).willReturn(false);
 		given(deliveryStaffRepository.findNextHubStaff(eq(sourceHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
 			.willReturn(Optional.of(f.hubStaff1()));
 		given(deliveryStaffRepository.findNextHubStaff(eq(middleHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
 			.willReturn(Optional.of(f.hubStaff2()));
-		given(deliveryStaffRepository.findNextCompanyStaff(eq(f.company().hubId()), any(LocalDateTime.class), any(LocalDateTime.class)))
+		given(deliveryStaffRepository.findNextCompanyStaff(eq(f.receiverCompany().hubId()), any(LocalDateTime.class), any(LocalDateTime.class)))
 			.willReturn(Optional.of(f.companyStaff()));
-		given(userPort.getUser(receiverId))
-			.willReturn(new UserResponse(receiverId, f.receiverSlackId()));
+		given(userPort.getUser(receiverManagerId))
+			.willReturn(new UserResponse(receiverManagerId, "수령인", f.receiverSlackId()));
 		given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
 		given(deliveryStaffRepository.save(any(DeliveryStaff.class))).willAnswer(inv -> inv.getArgument(0));
+	}
+
+	private CreateDeliveryCommand stubCommand(UUID orderId, UUID receiverCompanyId, UUID receiverManagerId) {
+		return new CreateDeliveryCommand(
+			orderId,
+			LocalDateTime.now(),
+			LocalDateTime.now().plusDays(3),
+			"요청사항",
+			UUID.randomUUID(),
+			UUID.randomUUID(),
+			receiverCompanyId,
+			receiverManagerId,
+			"서울시 강남구 테헤란로 123",
+			"101호",
+			List.of(new CreateDeliveryCommand.OrderItemInfo("마른 오징어", 50, 10000))
+		);
+	}
+
+	private HubRouteResponse stubHubRoute(UUID sourceHubId, UUID middleHubId, UUID destinationHubId) {
+		return new HubRouteResponse(sourceHubId, destinationHubId, List.of(
+			new HubRouteStepResponse(0, sourceHubId, middleHubId, 10000, 30),
+			new HubRouteStepResponse(1, middleHubId, destinationHubId, 8000, 25),
+			new HubRouteStepResponse(2, destinationHubId, UUID.randomUUID(), 5000, 20)
+		));
+	}
+
+	private CompanyResponse stubSupplierCompany(UUID sourceHubId) {
+		return new CompanyResponse(UUID.randomUUID(), sourceHubId);
 	}
 
 	private DeliveryStaff stubHubStaff(UUID hubId) {

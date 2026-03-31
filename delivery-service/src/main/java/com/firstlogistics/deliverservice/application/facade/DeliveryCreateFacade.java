@@ -27,16 +27,19 @@ public class DeliveryCreateFacade {
     private final DeliveryDistributedLockService deliveryDistributedLockService;
 
     public DeliveryResult createDelivery(CreateDeliveryCommand command) {
-        CompanyResponse company = companyPort.getCompany(command.receiverCompanyId());
-        UUID destinationHubId = company.hubId();
+        CompanyResponse supplierCompany = companyPort.getCompany(command.supplierCompanyId());
+        UUID sourceHubId = supplierCompany.hubId();
 
-        HubRouteResponse hubRoute = hubPort.getHubRoute(command.sourceHubId(), destinationHubId);
+        CompanyResponse receiverCompany = companyPort.getCompany(command.receiverCompanyId());
+        UUID destinationHubId = receiverCompany.hubId();
+
+        HubRouteResponse hubRoute = hubPort.getHubRoute(sourceHubId, destinationHubId);
 
         List<String> lockKeys = generateLockKeys(hubRoute, destinationHubId);
 
         return deliveryDistributedLockService.executeWithMultiLock(
                 lockKeys,
-                () -> deliveryCommandService.createDelivery(command, company, hubRoute)
+                () -> deliveryCommandService.createDelivery(command, supplierCompany, receiverCompany, hubRoute)
         );
     }
 

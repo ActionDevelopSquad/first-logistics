@@ -1,27 +1,58 @@
 package com.firstlogistics.deliverservice.presentation.dto.request;
 
 import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryCommand;
-import jakarta.validation.constraints.DecimalMax;
-import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 public record DeliveryCreateRequest(
 	@NotNull UUID orderId,
-	@NotNull UUID sourceHubId,
-	@NotNull UUID receiverCompanyId,
-	@NotNull UUID receiverId,
-	@NotBlank String roadAddress,
-	@NotBlank String detailAddress,
-	@NotNull @DecimalMin("-90.0") @DecimalMax("90.0") Double latitude,
-	@NotNull @DecimalMin("-180.0") @DecimalMax("180.0") Double longitude
+	@NotNull LocalDateTime orderedAt,
+	@NotNull LocalDateTime orderDueDate,
+	String orderRequestNote,
+	@NotNull @Valid SupplierInfo supplier,
+	@NotNull @Valid ReceiverInfo receiver,
+	@NotEmpty @Valid List<OrderItemInfo> orderItems
 ) {
+	public record SupplierInfo(
+		@NotNull UUID companyId,
+		@NotNull UUID managerId
+	) {}
+
+	public record ReceiverInfo(
+		@NotNull UUID companyId,
+		@NotNull UUID managerId,
+		@NotBlank String roadAddress,
+		@NotBlank String detailAddress
+	) {}
+
+	public record OrderItemInfo(
+		@NotBlank String productName,
+		@PositiveOrZero int quantity,
+		@PositiveOrZero int price
+	) {}
+
 	public CreateDeliveryCommand toCommand() {
 		return new CreateDeliveryCommand(
-			orderId, sourceHubId, receiverCompanyId, receiverId,
-			roadAddress, detailAddress, latitude, longitude
+			orderId,
+			orderedAt,
+			orderDueDate,
+			orderRequestNote,
+			supplier.companyId(),
+			supplier.managerId(),
+			receiver.companyId(),
+			receiver.managerId(),
+			receiver.roadAddress(),
+			receiver.detailAddress(),
+			orderItems.stream()
+				.map(i -> new CreateDeliveryCommand.OrderItemInfo(i.productName(), i.quantity(), i.price()))
+				.toList()
 		);
 	}
 }

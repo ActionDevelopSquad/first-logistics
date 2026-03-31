@@ -27,8 +27,8 @@ public class DeliveryEventKafkaProducer implements DeliveryEventKafkaProducerPor
 	@Override
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleDeliveryCreated(DeliveryCreatedEvent event) {
-		deliveryKafkaTemplate.send(TOPIC_CREATED, event.deliveryId().toString(), event);
-		log.info("이벤트 발행 - topic: {}, deliveryId: {}", TOPIC_CREATED, event.deliveryId());
+		deliveryKafkaTemplate.send(TOPIC_CREATED, event.delivery().deliveryId().toString(), event);
+		log.info("이벤트 발행 - topic: {}, deliveryId: {}", TOPIC_CREATED, event.delivery().deliveryId());
 	}
 
 	/**

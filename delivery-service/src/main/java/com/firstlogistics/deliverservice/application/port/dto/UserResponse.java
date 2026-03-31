@@ -7,6 +7,7 @@ import java.util.UUID;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record UserResponse(
 	UUID userId,
+	String name,
 	String slackId
 ) {
 }
