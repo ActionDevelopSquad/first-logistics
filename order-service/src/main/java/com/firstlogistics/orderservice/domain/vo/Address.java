@@ -11,6 +11,10 @@ public record Address(
         if (roadAddress == null || roadAddress.isBlank()) {
             throw new OrderException(OrderErrorCode.DELIVERY_ADDRESS_REQUIRED);
         }
+
+        if (detailAddress == null) {
+            detailAddress = "";
+        }
     }
 
     public static Address of(String roadAddress, String detailAddress) {
