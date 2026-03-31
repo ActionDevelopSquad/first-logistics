@@ -15,13 +15,10 @@ public class HubPortAdapter implements HubPort {
 
     @Override
     public UUID getHubId(double latitude, double longitude) {
-        // TODO: hub-service 준비되면 아래 FeignClient 코드로 교체
-        return UUID.fromString("00000000-0000-0000-0000-000000000001");
-
-        // var response = hubFeignClient.findNearestHubId(latitude, longitude);
-        // if (response == null || response.getData() == null) {
-        //     throw new CompanyException(CompanyErrorCode.INVALID_HUB_ID);
-        // }
-        // return response.getData();
+         var response = hubFeignClient.findNearestHubId(latitude, longitude);
+         if (response == null || response.getData() == null) {
+             throw new CompanyException(CompanyErrorCode.INVALID_HUB_ID);
+         }
+         return response.getData();
     }
 }
