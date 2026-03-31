@@ -18,7 +18,14 @@ public enum OrderErrorCode implements ErrorCode {
     CANNOT_REJECT_CANCEL(HttpStatus.BAD_REQUEST, "ORD007", "취소 요청 상태 주문이 아닙니다."),
     INVALID_PRODUCT_ID(HttpStatus.BAD_REQUEST, "ORD008", "유효한 상품 ID가 아닙니다."),
     INVALID_QUANTITY(HttpStatus.BAD_REQUEST, "ORD009", "주문 수량은 최소 1개 이상이어야 합니다."),
-    INVALID_PRODUCT_NAME(HttpStatus.BAD_REQUEST, "ORD010", "유효한 상품 이름이 아닙니다.");
+    INVALID_PRODUCT_NAME(HttpStatus.BAD_REQUEST, "ORD010", "유효한 상품 이름이 아닙니다."),
+    INVALID_DUE_DATE(HttpStatus.BAD_REQUEST, "ORD011", "유효하지 않은 납품기한입니다."),
+    DELIVERY_ADDRESS_REQUIRED(HttpStatus.BAD_REQUEST, "ORD012", "배송 주소는 필수입니다."),
+    SUPPLIER_COMPANY_REQUIRED(HttpStatus.BAD_REQUEST, "ORD013", "공급 업체 ID는 필수 항목입니다."),
+    SUPPLIER_MANAGER_REQUIRED(HttpStatus.BAD_REQUEST, "ORD014", "공급 담당자 ID는 필수 항목입니다."),
+    RECEIVER_COMPANY_REQUIRED(HttpStatus.BAD_REQUEST, "ORD015", "수신 업체 ID는 필수 항목입니다."),
+    RECEIVER_MANAGER_REQUIRED(HttpStatus.BAD_REQUEST, "ORD016", "수신 담당자 ID는 필수 항목입니다."),
+    INVALID_ORDER_ID(HttpStatus.BAD_REQUEST, "ORD017", "유효하지 않은 주문 ID 입니다.");;
 
     private final HttpStatus status;
     private final String code;

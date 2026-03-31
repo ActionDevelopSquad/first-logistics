@@ -47,6 +47,7 @@ public class Order {
             String requestMemo,
             List<CreateOrderCommand.OrderItemCommand> items
     ) {
+        validateInput(deliveryAddress, dueDate);
         Order order = new Order(
                 OrderId.of(),
                 Supplier.of(supplierCompanyId, supplierManagerId),
@@ -106,6 +107,15 @@ public class Order {
     // 외부에서 리스트 수정 못하도록 읽기 전용으로 반환
     public List<OrderItem> getOrderItems() {
         return Collections.unmodifiableList(orderItems);
+    }
+
+    private static void validateInput(String deliveryAddress, LocalDateTime dueDate) {
+        if (deliveryAddress == null || deliveryAddress.isBlank()) {
+            throw new OrderException(OrderErrorCode.DELIVERY_ADDRESS_REQUIRED);
+        }
+        if (dueDate != null && dueDate.isBefore(LocalDateTime.now())) {
+            throw new OrderException(OrderErrorCode.INVALID_DUE_DATE);
+        }
     }
 
     private void createOrderItems(List<CreateOrderCommand.OrderItemCommand> items) {
