@@ -36,7 +36,7 @@ public enum DeliveryErrorCode implements ErrorCode {
 	USER_NOT_FOUND(HttpStatus.NOT_FOUND, "DR403", "사용자를 찾을 수 없습니다."),
 	EXTERNAL_SERVICE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "DR404", "외부 서비스 호출에 실패했습니다."),
 
-	//락
+	// 락
 	DELIVERY_STAFF_ASSIGN_LOCK_ACQUISITION_FAILED(HttpStatus.CONFLICT, "DR301", "배송 담당자 배정 락 획득에 실패했습니다.")
 
 	;

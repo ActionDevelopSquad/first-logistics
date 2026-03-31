@@ -6,7 +6,6 @@ import com.firstlogistics.deliverservice.application.port.DeliveryEventProducer;
 import com.firstlogistics.deliverservice.domain.entity.Delivery;
 import com.firstlogistics.deliverservice.domain.entity.DeliveryRoute;
 import com.firstlogistics.deliverservice.domain.entity.DeliveryStaff;
-import com.firstlogistics.deliverservice.domain.entity.StaffTimetable;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryCreationException;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
@@ -24,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -47,11 +47,18 @@ public class DeliveryCommandService {
 
 		UUID destinationHubId = company.hubId();
 
+		List<HubRouteStepResponse> orderedRoutes = hubRoute.routes().stream()
+			.sorted(Comparator.comparingInt(HubRouteStepResponse::hubRouteSequence))
+			.toList();
+
+		HubRouteStepResponse lastStep = orderedRoutes.getLast();
+		List<HubRouteStepResponse> hubSteps = orderedRoutes.subList(0, orderedRoutes.size() - 1);
+
 		LocalDateTime now = LocalDateTime.now();
 		int cumulativeMinutes = 0;
 		List<DeliveryStaff> hubStaffs = new ArrayList<>();
 
-		for (HubRouteStepResponse step : hubRoute.routes()) {
+		for (HubRouteStepResponse step : hubSteps) {
 			LocalDateTime assignmentStart = now.plusMinutes(cumulativeMinutes);
 			LocalDateTime assignmentEnd = now.plusMinutes(cumulativeMinutes + step.durationMinutes());
 
@@ -62,9 +69,8 @@ public class DeliveryCommandService {
 			cumulativeMinutes += step.durationMinutes();
 		}
 
-		int lastStepDuration = hubRoute.routes().getLast().durationMinutes();
 		LocalDateTime companyAssignmentStart = now.plusMinutes(cumulativeMinutes);
-		LocalDateTime companyAssignmentEnd = companyAssignmentStart.plusMinutes(lastStepDuration);
+		LocalDateTime companyAssignmentEnd = companyAssignmentStart.plusMinutes(lastStep.durationMinutes());
 
 		DeliveryStaff companyStaff = deliveryStaffRepository.findNextCompanyStaff(destinationHubId, companyAssignmentStart, companyAssignmentEnd)
 			.orElseThrow(() -> new DeliveryCreationException(DeliveryErrorCode.COMPANY_DELIVERY_STAFF_NOT_AVAILABLE));
@@ -85,37 +91,34 @@ public class DeliveryCommandService {
 			companyStaff.getId()
 		);
 
-		for (int i = 0; i < hubRoute.routes().size(); i++) {
-			HubRouteStepResponse step = hubRoute.routes().get(i);
+		for (int i = 0; i < hubSteps.size(); i++) {
+			HubRouteStepResponse step = hubSteps.get(i);
 			DeliveryRoute route = DeliveryRoute.create(
 				delivery.getId(),
-				i,
+				step.hubRouteSequence(),
 				step.sourceHubId(),
 				step.destinationHubId(),
 				step.distanceMeters(),
 				step.durationMinutes()
 			);
-			route.assignStaff(hubStaffs.get(i).getId());
-			delivery.assignRoute(route);
+			delivery.assignRoute(route, hubStaffs.get(i).getId());
 		}
 
 		Delivery savedDelivery = deliveryRepository.save(delivery);
 
 		int timetableMinutes = 0;
-		for (int i = 0; i < hubRoute.routes().size(); i++) {
-			HubRouteStepResponse step = hubRoute.routes().get(i);
+		for (int i = 0; i < hubSteps.size(); i++) {
+			HubRouteStepResponse step = hubSteps.get(i);
 			LocalDateTime assignmentStart = now.plusMinutes(timetableMinutes);
 			LocalDateTime assignmentEnd = now.plusMinutes(timetableMinutes + step.durationMinutes());
 
-			StaffTimetable timetable = StaffTimetable.create(hubStaffs.get(i).getId(), savedDelivery.getId(), assignmentStart, assignmentEnd);
-			hubStaffs.get(i).addTimetable(timetable);
+			hubStaffs.get(i).assignDelivery(savedDelivery.getId(), assignmentStart, assignmentEnd);
 			deliveryStaffRepository.save(hubStaffs.get(i));
 
 			timetableMinutes += step.durationMinutes();
 		}
 
-		StaffTimetable companyTimetable = StaffTimetable.create(companyStaff.getId(), savedDelivery.getId(), companyAssignmentStart, companyAssignmentEnd);
-		companyStaff.addTimetable(companyTimetable);
+		companyStaff.assignDelivery(savedDelivery.getId(), companyAssignmentStart, companyAssignmentEnd);
 		deliveryStaffRepository.save(companyStaff);
 
 		final DeliveryCreatedEvent deliveryCreatedEvent = DeliveryCreatedEvent

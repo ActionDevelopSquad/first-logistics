@@ -68,6 +68,7 @@ class DeliveryCommandServiceTest {
 			// given
 			UUID orderId = UUID.randomUUID();
 			UUID sourceHubId = UUID.randomUUID();
+			UUID middleHubId = UUID.randomUUID();
 			UUID receiverCompanyId = UUID.randomUUID();
 			UUID receiverId = UUID.randomUUID();
 			UUID destinationHubId = UUID.randomUUID();
@@ -76,7 +77,11 @@ class DeliveryCommandServiceTest {
 				"서울시 강남구 테헤란로 123", "101호", 37.5, 127.0
 			);
 			CompanyResponse company = new CompanyResponse(receiverCompanyId, destinationHubId);
-			HubRouteResponse hubRoute = new HubRouteResponse(sourceHubId, destinationHubId, List.of());
+			HubRouteResponse hubRoute = new HubRouteResponse(sourceHubId, destinationHubId, List.of(
+				new HubRouteStepResponse(0, sourceHubId, middleHubId, 10000, 30),
+				new HubRouteStepResponse(1, middleHubId, destinationHubId, 8000, 25),
+				new HubRouteStepResponse(2, destinationHubId, UUID.randomUUID(), 5000, 20)
+			));
 
 			given(deliveryRepository.existsByOrderId(orderId)).willReturn(true);
 
@@ -106,8 +111,9 @@ class DeliveryCommandServiceTest {
 			);
 			CompanyResponse company = new CompanyResponse(receiverCompanyId, destinationHubId);
 			HubRouteResponse hubRoute = new HubRouteResponse(sourceHubId, destinationHubId, List.of(
-				new HubRouteStepResponse(sourceHubId, middleHubId, 10000, 30),
-				new HubRouteStepResponse(middleHubId, destinationHubId, 8000, 25)
+				new HubRouteStepResponse(0, sourceHubId, middleHubId, 10000, 30),
+				new HubRouteStepResponse(1, middleHubId, destinationHubId, 8000, 25),
+				new HubRouteStepResponse(2, destinationHubId, UUID.randomUUID(), 5000, 20)
 			));
 
 			given(deliveryRepository.existsByOrderId(orderId)).willReturn(false);
@@ -142,8 +148,9 @@ class DeliveryCommandServiceTest {
 			);
 			CompanyResponse company = new CompanyResponse(receiverCompanyId, destinationHubId);
 			HubRouteResponse hubRoute = new HubRouteResponse(sourceHubId, destinationHubId, List.of(
-				new HubRouteStepResponse(sourceHubId, middleHubId, 10000, 30),
-				new HubRouteStepResponse(middleHubId, destinationHubId, 8000, 25)
+				new HubRouteStepResponse(0, sourceHubId, middleHubId, 10000, 30),
+				new HubRouteStepResponse(1, middleHubId, destinationHubId, 8000, 25),
+				new HubRouteStepResponse(2, destinationHubId, UUID.randomUUID(), 5000, 20)
 			));
 
 			given(deliveryRepository.existsByOrderId(orderId)).willReturn(false);
@@ -180,8 +187,9 @@ class DeliveryCommandServiceTest {
 			);
 			CompanyResponse company = new CompanyResponse(receiverCompanyId, destinationHubId);
 			HubRouteResponse hubRoute = new HubRouteResponse(sourceHubId, destinationHubId, List.of(
-				new HubRouteStepResponse(sourceHubId, middleHubId, 10000, 30),
-				new HubRouteStepResponse(middleHubId, destinationHubId, 8000, 25)
+				new HubRouteStepResponse(0, sourceHubId, middleHubId, 10000, 30),
+				new HubRouteStepResponse(1, middleHubId, destinationHubId, 8000, 25),
+				new HubRouteStepResponse(2, destinationHubId, UUID.randomUUID(), 5000, 20)
 			));
 
 			given(deliveryRepository.existsByOrderId(orderId)).willReturn(false);
@@ -238,7 +246,7 @@ class DeliveryCommandServiceTest {
 			// then
 			ArgumentCaptor<Delivery> captor = ArgumentCaptor.forClass(Delivery.class);
 			then(deliveryRepository).should().save(captor.capture());
-			assertThat(captor.getValue().getRoutes()).hasSize(f.steps().size());
+			assertThat(captor.getValue().getRoutes()).hasSize(f.hubSteps().size());
 		}
 
 		@Test
@@ -286,7 +294,7 @@ class DeliveryCommandServiceTest {
 
 			// then
 			ArgumentCaptor<DeliveryStaff> staffCaptor = ArgumentCaptor.forClass(DeliveryStaff.class);
-			then(deliveryStaffRepository).should(times(f.steps().size() + 1)).save(staffCaptor.capture());
+			then(deliveryStaffRepository).should(times(f.hubSteps().size() + 1)).save(staffCaptor.capture());
 			List<DeliveryStaff> savedStaffs = staffCaptor.getAllValues();
 			assertThat(savedStaffs.get(0).getTimetables()).hasSize(1);
 			assertThat(savedStaffs.get(0).getTimetables().get(0).getStatus()).isEqualTo(TimetableStatus.CREATED);
@@ -306,8 +314,8 @@ class DeliveryCommandServiceTest {
 
 			// then
 			ArgumentCaptor<DeliveryStaff> staffCaptor = ArgumentCaptor.forClass(DeliveryStaff.class);
-			then(deliveryStaffRepository).should(times(f.steps().size() + 1)).save(staffCaptor.capture());
-			DeliveryStaff savedCompanyStaff = staffCaptor.getAllValues().get(f.steps().size());
+			then(deliveryStaffRepository).should(times(f.hubSteps().size() + 1)).save(staffCaptor.capture());
+			DeliveryStaff savedCompanyStaff = staffCaptor.getAllValues().get(f.hubSteps().size());
 			assertThat(savedCompanyStaff.getTimetables()).hasSize(1);
 			assertThat(savedCompanyStaff.getTimetables().get(0).getStatus()).isEqualTo(TimetableStatus.CREATED);
 		}
@@ -326,6 +334,12 @@ class DeliveryCommandServiceTest {
 	) {
 		List<HubRouteStepResponse> steps() { return hubRoute.routes(); }
 
+		// 마지막 스텝(업체 배송)을 제외한 허브 배송 스텝 목록
+		List<HubRouteStepResponse> hubSteps() {
+			List<HubRouteStepResponse> all = hubRoute.routes();
+			return all.subList(0, all.size() - 1);
+		}
+
 		static SuccessFixture create() {
 			UUID orderId = UUID.randomUUID();
 			UUID sourceHubId = UUID.randomUUID();
@@ -340,8 +354,9 @@ class DeliveryCommandServiceTest {
 			);
 			CompanyResponse company = new CompanyResponse(receiverCompanyId, destinationHubId);
 			HubRouteResponse hubRoute = new HubRouteResponse(sourceHubId, destinationHubId, List.of(
-				new HubRouteStepResponse(sourceHubId, middleHubId, 10000, 30),
-				new HubRouteStepResponse(middleHubId, destinationHubId, 8000, 25)
+				new HubRouteStepResponse(0, sourceHubId, middleHubId, 10000, 30),
+				new HubRouteStepResponse(1, middleHubId, destinationHubId, 8000, 25),
+				new HubRouteStepResponse(2, destinationHubId, UUID.randomUUID(), 5000, 20)
 			));
 			DeliveryStaff hubStaff1 = DeliveryStaff.create("허브담당1", "010-1111-1111", sourceHubId, "slack-hub1", StaffType.HUB_DELIVERY, 0);
 			DeliveryStaff hubStaff2 = DeliveryStaff.create("허브담당2", "010-2222-2222", middleHubId, "slack-hub2", StaffType.HUB_DELIVERY, 1);

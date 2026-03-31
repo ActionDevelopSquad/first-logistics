@@ -3,8 +3,11 @@ package com.firstlogistics.deliverservice.domain.entity;
 import com.firstlogistics.deliverservice.domain.enums.StaffType;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
+import com.firstlogistics.deliverservice.domain.vo.DeliveryId;
 import com.firstlogistics.deliverservice.domain.vo.DeliveryStaffId;
 import com.firstlogistics.deliverservice.domain.vo.StaffDetail;
+
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -59,7 +62,8 @@ public class DeliveryStaff {
 		return new DeliveryStaff(id, staffDetail, hubId, slackId, staffType, deliverySequence, new ArrayList<>(timetables));
 	}
 
-	public void addTimetable(StaffTimetable timetable) {
+	public void assignDelivery(DeliveryId deliveryId, LocalDateTime start, LocalDateTime end) {
+		StaffTimetable timetable = StaffTimetable.create(this.id, deliveryId, start, end);
 		this.timetables.add(timetable);
 	}
 }

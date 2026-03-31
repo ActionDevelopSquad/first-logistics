@@ -114,7 +114,8 @@ public class Delivery {
 		this.status = DeliveryStatus.CANCELLED;
 	}
 
-	public void assignRoute(DeliveryRoute route) {
+	public void assignRoute(DeliveryRoute route, DeliveryStaffId staffId) {
+		route.assignStaff(staffId);
 		this.routes.add(route);
 	}
 }
