@@ -1,6 +1,6 @@
 package com.firstlogistics.deliverservice.application.dto.command;
 
-import com.firstlogistics.deliverservice.infrastructure.messaging.consumer.event.OrderAcceptedEvent;
+import com.firstlogistics.deliverservice.domain.event.OrderAcceptedEvent;
 
 import java.util.UUID;
 

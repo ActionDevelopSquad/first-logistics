@@ -3,7 +3,7 @@ package com.firstlogistics.deliverservice.infrastructure.messaging.consumer;
 import com.firstlogistics.deliverservice.application.DeliveryQueryService;
 import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryCommand;
 import com.firstlogistics.deliverservice.application.facade.DeliveryCreateFacade;
-import com.firstlogistics.deliverservice.infrastructure.messaging.consumer.event.OrderAcceptedEvent;
+import com.firstlogistics.deliverservice.domain.event.OrderAcceptedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;

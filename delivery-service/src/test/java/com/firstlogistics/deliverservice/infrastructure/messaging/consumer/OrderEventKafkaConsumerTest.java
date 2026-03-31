@@ -9,7 +9,7 @@ import com.firstlogistics.deliverservice.infrastructure.feign.UserClient;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryCreationException;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.infrastructure.messaging.config.KafkaConsumerConfig;
-import com.firstlogistics.deliverservice.infrastructure.messaging.consumer.event.OrderAcceptedEvent;
+import com.firstlogistics.deliverservice.domain.event.OrderAcceptedEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;

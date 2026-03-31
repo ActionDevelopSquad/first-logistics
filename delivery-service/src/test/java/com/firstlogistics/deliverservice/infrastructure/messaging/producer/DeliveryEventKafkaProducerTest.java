@@ -5,7 +5,7 @@ import com.firstlogistics.deliverservice.infrastructure.feign.CompanyClient;
 import com.firstlogistics.deliverservice.infrastructure.feign.HubClient;
 import com.firstlogistics.deliverservice.infrastructure.feign.UserClient;
 import com.firstlogistics.deliverservice.infrastructure.messaging.config.KafkaConsumerConfig;
-import com.firstlogistics.deliverservice.infrastructure.messaging.producer.event.DeliveryCreatedEvent;
+import com.firstlogistics.deliverservice.domain.event.DeliveryCreatedEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -83,7 +83,7 @@ class DeliveryEventKafkaProducerTest {
             // 트랜잭션 없이 직접 호출하면 커밋 이벤트가 발생하지 않아 Kafka 발행이 일어나지 않는다.
             // TransactionTemplate으로 실제 커밋을 발생시켜 핸들러가 정상 호출되도록 한다.
             new TransactionTemplate(transactionManager).execute(status -> {
-                producer.sendCreated(deliveryCreatedEvent);
+                producer.handleDeliveryCreated(deliveryCreatedEvent);
                 return null;
             });
 

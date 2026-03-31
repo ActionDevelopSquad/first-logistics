@@ -1,7 +1,7 @@
 package com.firstlogistics.deliverservice.application;
 
 import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryCommand;
-import com.firstlogistics.deliverservice.application.port.DeliveryEventProducer;
+import com.firstlogistics.deliverservice.application.publisher.DeliveryEventPublisher;
 import com.firstlogistics.deliverservice.domain.entity.Delivery;
 import com.firstlogistics.deliverservice.domain.entity.DeliveryStaff;
 import com.firstlogistics.deliverservice.domain.enums.DeliveryStatus;
@@ -53,7 +53,7 @@ class DeliveryCommandServiceTest {
 	private UserPort userPort;
 
 	@Mock
-	private DeliveryEventProducer deliveryEventProducer;
+	private DeliveryEventPublisher deliveryEventPublisher;
 
 	@InjectMocks
 	private DeliveryCommandService deliveryCommandService;

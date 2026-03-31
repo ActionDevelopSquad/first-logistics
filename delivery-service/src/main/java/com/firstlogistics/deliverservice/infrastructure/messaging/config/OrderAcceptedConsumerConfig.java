@@ -4,7 +4,7 @@ import com.firstlogistics.deliverservice.domain.exception.DeliveryCreationExcept
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.exception.DistributedLockException;
 import com.firstlogistics.deliverservice.infrastructure.messaging.consumer.OrderAcceptedRecoverer;
-import com.firstlogistics.deliverservice.infrastructure.messaging.consumer.event.OrderAcceptedEvent;
+import com.firstlogistics.deliverservice.domain.event.OrderAcceptedEvent;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.annotation.Bean;

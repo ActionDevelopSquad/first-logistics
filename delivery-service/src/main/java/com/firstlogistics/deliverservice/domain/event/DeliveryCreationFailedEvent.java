@@ -1,4 +1,4 @@
-package com.firstlogistics.deliverservice.infrastructure.messaging.producer.event;
+package com.firstlogistics.deliverservice.domain.event;
 
 import java.util.UUID;
 
@@ -10,4 +10,7 @@ public record DeliveryCreationFailedEvent(
 	UUID orderId,
 	String reason
 ) {
+	public static DeliveryCreationFailedEvent create(UUID orderId, String reason) {
+		return new DeliveryCreationFailedEvent(orderId, reason);
+	}
 }

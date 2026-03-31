@@ -2,10 +2,11 @@ package com.firstlogistics.deliverservice.application;
 
 import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryCommand;
 import com.firstlogistics.deliverservice.application.dto.result.DeliveryResult;
-import com.firstlogistics.deliverservice.application.port.DeliveryEventProducer;
+import com.firstlogistics.deliverservice.application.publisher.DeliveryEventPublisher;
 import com.firstlogistics.deliverservice.domain.entity.Delivery;
 import com.firstlogistics.deliverservice.domain.entity.DeliveryRoute;
 import com.firstlogistics.deliverservice.domain.entity.DeliveryStaff;
+import com.firstlogistics.deliverservice.domain.event.DeliveryCreatedEvent;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryCreationException;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
@@ -16,7 +17,6 @@ import com.firstlogistics.deliverservice.application.port.dto.CompanyResponse;
 import com.firstlogistics.deliverservice.application.port.dto.HubRouteResponse;
 import com.firstlogistics.deliverservice.application.port.dto.HubRouteStepResponse;
 import com.firstlogistics.deliverservice.application.port.dto.UserResponse;
-import com.firstlogistics.deliverservice.infrastructure.messaging.producer.event.DeliveryCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,7 +35,7 @@ public class DeliveryCommandService {
 	private final DeliveryRepository deliveryRepository;
 	private final DeliveryStaffRepository deliveryStaffRepository;
 	private final UserPort userPort;
-	private final DeliveryEventProducer deliveryEventProducer;
+	private final DeliveryEventPublisher deliveryEventPublisher;
 
 	public DeliveryResult createDelivery(
 			CreateDeliveryCommand command,
@@ -125,9 +125,9 @@ public class DeliveryCommandService {
 		companyStaff.assignDelivery(savedDelivery.getId(), companyAssignmentStart, companyAssignmentEnd);
 		deliveryStaffRepository.save(companyStaff);
 
-		final DeliveryCreatedEvent deliveryCreatedEvent = DeliveryCreatedEvent
-				.create(savedDelivery.getId().id(), savedDelivery.getOrderId(), savedDelivery.getReceiverSlackId());
-		deliveryEventProducer.sendCreated(deliveryCreatedEvent);
+		deliveryEventPublisher.publishedDeliveryCreated(
+				DeliveryCreatedEvent.create(savedDelivery.getId().id(), savedDelivery.getOrderId(), savedDelivery.getReceiverSlackId())
+		);
 
 		return DeliveryResult.from(savedDelivery);
 	}

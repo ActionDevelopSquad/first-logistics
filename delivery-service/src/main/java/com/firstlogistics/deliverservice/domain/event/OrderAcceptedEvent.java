@@ -1,4 +1,4 @@
-package com.firstlogistics.deliverservice.infrastructure.messaging.consumer.event;
+package com.firstlogistics.deliverservice.domain.event;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -18,4 +18,5 @@ public record OrderAcceptedEvent(
 	double latitude,
 	double longitude
 ) {
+
 }
