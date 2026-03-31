@@ -1,11 +1,7 @@
 package com.firstlogistics.companyservice.infrastructure.persistence.jpa;
 
-import com.firstlogistics.companyservice.domain.entity.Company;
-import com.firstlogistics.companyservice.domain.entity.Receiver;
-import com.firstlogistics.companyservice.domain.entity.Supplier;
 import com.firstlogistics.companyservice.domain.enums.CompanyStatus;
 import common.jpa.entity.BaseAuditEntity;
-import common.jpa.entity.BaseTimeEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -15,22 +11,24 @@ import jakarta.persistence.Table;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "p_company")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
+@Getter
 public class CompanyJpaEntity extends BaseAuditEntity {
 
     @Id
-    @Column(columnDefinition = "BINARY(16)", nullable = false)
+    @Column(columnDefinition = "uuid", nullable = false)
     private UUID id;
 
-    @Column(columnDefinition = "BINARY(16)", nullable = false)
+    @Column(columnDefinition = "uuid", nullable = false)
     private UUID hubId;
 
-    @Column(columnDefinition = "BINARY(16)", nullable = false)
+    @Column(columnDefinition = "uuid", nullable = false)
     private UUID userId;
 
     @Column(length = 50, nullable = false)
