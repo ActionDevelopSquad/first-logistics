@@ -1,13 +1,12 @@
 package com.firstlogistics.notificationservice.ailog.infrastructure.persistence.jpa;
 
-import com.firstlogistics.notificationservice.ailog.domain.entity.AILog;
 import com.firstlogistics.notificationservice.ailog.domain.enums.AILogStatus;
 import com.firstlogistics.notificationservice.ailog.domain.enums.MessengerType;
-import com.firstlogistics.notificationservice.ailog.domain.vo.AILogId;
 import common.jpa.entity.BaseAuditEntity;
 import jakarta.persistence.*;
-import lombok.*;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
@@ -15,27 +14,28 @@ import java.util.UUID;
 @Table(name = "p_ai_log")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PACKAGE)
-@EntityListeners(AuditingEntityListener.class)
 public class AILogJpaEntity extends BaseAuditEntity {
 
     @Id
     private UUID id;
 
+    @Column(name = "message_id")
     private UUID messageId;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "request_content", columnDefinition = "TEXT")
     private String requestContent;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "response_content", columnDefinition = "TEXT")
     private String responseContent;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "system_prompt", columnDefinition = "TEXT")
     private String systemPrompt;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private AILogStatus status;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private MessengerType messengerType;
 }
