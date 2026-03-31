@@ -69,25 +69,28 @@ class DeliveryDistributedLockServiceTest {
         @Test
         @DisplayName("tryLock InterruptedException 발생 시 DistributedLockException + 스레드 인터럽트 상태 복원")
         void executeWithMultiLock_fail_interruptedException() throws InterruptedException {
-            // given
-            String lockKey = DeliveryLockKeyGenerator.hubStaffAssignKey(UUID.randomUUID());
-            RLock mockLock = mock(RLock.class);
+            try {
+                // given
+                String lockKey = DeliveryLockKeyGenerator.hubStaffAssignKey(UUID.randomUUID());
+                RLock mockLock = mock(RLock.class);
 
-            given(redissonClient.getLock(lockKey)).willReturn(mockLock);
-            given(mockLock.tryLock(anyLong(), anyLong(), any())).willThrow(new InterruptedException());
+                given(redissonClient.getLock(lockKey)).willReturn(mockLock);
+                given(mockLock.tryLock(anyLong(), anyLong(), any())).willThrow(new InterruptedException());
 
-            // when
-            Throwable throwable = catchThrowable(() ->
-                lockService.executeWithMultiLock(List.of(lockKey), () -> "action")
-            );
+                // when
+                Throwable throwable = catchThrowable(() ->
+                    lockService.executeWithMultiLock(List.of(lockKey), () -> "action")
+                );
 
-            log.info("[InterruptedException] 발생 예외: {}, 스레드 인터럽트 복원 여부: {}",
-                throwable.getClass().getSimpleName(), Thread.currentThread().isInterrupted());
+                log.info("[InterruptedException] 발생 예외: {}, 스레드 인터럽트 복원 여부: {}",
+                    throwable.getClass().getSimpleName(), Thread.currentThread().isInterrupted());
 
-            // then
-            assertThat(throwable).isInstanceOf(DistributedLockException.class);
-            assertThat(Thread.currentThread().isInterrupted()).isTrue();
-            Thread.interrupted();
+                // then
+                assertThat(throwable).isInstanceOf(DistributedLockException.class);
+                assertThat(Thread.currentThread().isInterrupted()).isTrue();
+            } finally {
+                Thread.interrupted();
+            }
         }
 
         @Test
