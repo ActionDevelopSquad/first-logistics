@@ -23,19 +23,6 @@
 hs_err_pid*
 replay_pid*
 
-
-.env
-*.env
-
-CLAUDE.md
-**/CLAUDE.md
-.claude/settings.local.json
-**/.claude/settings.local.json
-
-AGENTS.md
-**/AGENTS.md
-
-
 .gradle/
 build/
 !gradle/wrapper/gradle-wrapper.jar
@@ -61,3 +48,19 @@ logs/
 
 /test-results/
 /jacoco/
+
+.env
+*.env
+
+CLAUDE.md
+**/CLAUDE.md
+.claude/settings.local.json
+**/.claude/settings.local.json
+
+AGENTS.md
+**/AGENTS.md
+
+**/TEST_SCENARIOS.md
+
+### QueryDSL Generated
+**/src/main/generated
