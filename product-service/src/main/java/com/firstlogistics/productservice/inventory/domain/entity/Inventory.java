@@ -3,21 +3,18 @@ package com.firstlogistics.productservice.inventory.domain.entity;
 import com.firstlogistics.productservice.inventory.domain.exception.InventoryErrorCode;
 import com.firstlogistics.productservice.inventory.domain.exception.InventoryException;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Inventory {
     private final UUID productId;
     private int available;
     private int reserved;
 
-    private Inventory(UUID productId, int available, int reserved) {
+    public static Inventory create(UUID productId, int available, int reserved) {
         validate(productId, available, reserved);
 
-        this.productId = productId;
-        this.available = available;
-        this.reserved = reserved;
-    }
-
-    public static Inventory create(UUID productId, int available, int reserved) {
         return new Inventory(productId, available, reserved);
     }
 
@@ -38,7 +35,7 @@ public class Inventory {
         validatePositive(quantity);
 
         if (reserved < quantity) {
-            throw new IllegalStateException("예약 재고 부족");
+            throw new InventoryException(InventoryErrorCode.INSUFFICIENT_AVAILABLE_QUANTITY);
         }
 
         reserved -= quantity;
@@ -50,7 +47,7 @@ public class Inventory {
         validatePositive(quantity);
 
         if (reserved < quantity) {
-            throw new InventoryException(InventoryErrorCode.INSUFFICIENT_AVAILABLE_QUANTITY);
+            throw new InventoryException(InventoryErrorCode.INSUFFICIENT_RESERVED_QUANTITY);
         }
 
         reserved -= quantity;
@@ -79,7 +76,7 @@ public class Inventory {
         validateInvariant();
     }
 
-    private void validate(UUID productId, int available, int reserved) {
+    private static void validate(UUID productId, int available, int reserved) {
         if (productId == null) {
             throw new InventoryException(InventoryErrorCode.INVALID_PRODUCT_ID);
         }
