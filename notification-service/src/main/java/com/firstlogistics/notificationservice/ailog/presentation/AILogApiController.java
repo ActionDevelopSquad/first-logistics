@@ -4,6 +4,7 @@ import com.firstlogistics.notificationservice.ailog.application.service.AILogSer
 import com.firstlogistics.notificationservice.ailog.presentation.dto.request.AILogCreateRequest;
 import com.firstlogistics.notificationservice.ailog.presentation.dto.response.AILogResponse;
 import common.response.ApiResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,7 +20,7 @@ public class AILogApiController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<AILogResponse>> createAILog(
-            @RequestBody AILogCreateRequest request
+            @RequestBody @Valid AILogCreateRequest request
     ) {
         AILogResponse result = AILogResponse.from(aiLogService.createAILog(request.toCommand()));
         return ResponseEntity.status(AILogSuccessCode.AILOG_CREATED.getStatus())
