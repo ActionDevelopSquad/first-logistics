@@ -1,0 +1,25 @@
+package com.firstlogistics.deliverservice.infrastructure.feign.config;
+
+import com.firstlogistics.deliverservice.domain.exception.DeliveryCreationException;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
+import feign.Response;
+import feign.codec.ErrorDecoder;
+
+public class FeignErrorDecoder implements ErrorDecoder {
+
+	@Override
+	public Exception decode(String methodKey, Response response) {
+		if (response.status() == 404) {
+			if (methodKey.startsWith("HubClient#")) {
+				return new DeliveryCreationException(DeliveryErrorCode.HUB_NOT_FOUND);
+			}
+			if (methodKey.startsWith("CompanyClient#")) {
+				return new DeliveryCreationException(DeliveryErrorCode.COMPANY_NOT_FOUND);
+			}
+			if (methodKey.startsWith("UserClient#")) {
+				return new DeliveryCreationException(DeliveryErrorCode.USER_NOT_FOUND);
+			}
+		}
+		return new DeliveryCreationException(DeliveryErrorCode.EXTERNAL_SERVICE_ERROR);
+	}
+}
