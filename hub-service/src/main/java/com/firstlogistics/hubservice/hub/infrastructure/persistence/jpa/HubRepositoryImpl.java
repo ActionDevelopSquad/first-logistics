@@ -18,8 +18,8 @@ public class HubRepositoryImpl implements HubRepository {
 
     @Override
     public Hub save(Hub hub) {
-        jpaRepository.save(mapper.toJpaEntity(hub));
-        return hub;
+        HubJpaEntity savedEntity = jpaRepository.save(mapper.toJpaEntity(hub));
+        return mapper.toDomain(savedEntity);
     }
 }
 
