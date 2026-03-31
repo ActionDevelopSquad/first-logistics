@@ -3,6 +3,7 @@ package com.firstlogistics.hubservice.hub.application;
 import com.firstlogistics.hubservice.hub.application.dto.command.CreateHubCommand;
 import com.firstlogistics.hubservice.hub.application.dto.result.HubResult;
 import com.firstlogistics.hubservice.hub.domain.entity.Hub;
+import com.firstlogistics.hubservice.hub.domain.enums.HubStatus;
 import com.firstlogistics.hubservice.hub.domain.exception.HubErrorCode;
 import com.firstlogistics.hubservice.hub.domain.exception.HubException;
 import com.firstlogistics.hubservice.hub.domain.repository.HubRepository;
@@ -56,7 +57,7 @@ public class HubCommandServiceTest {
                 37.5665,
                 127.9780
         );
-
+        given(hubRepository.existsByHubName(command.name())).willReturn(false);
         //when
 
         //then
@@ -76,7 +77,7 @@ public class HubCommandServiceTest {
                 100.5665,
                 -200.9780
         );
-
+        given(hubRepository.existsByHubName(command.name())).willReturn(false);
         //when
 
         //then
@@ -107,7 +108,7 @@ public class HubCommandServiceTest {
         assertThat(result.roadAddress()).isEqualTo("서울특별시");
         assertThat(result.latitude()).isEqualTo(37.5665);
         assertThat(result.longitude()).isEqualTo(127.9780);
-        assertThat(result.status().name()).isEqualTo("ACTIVE");
+        assertThat(result.status()).isEqualTo(HubStatus.ACTIVE);
 
     }
 

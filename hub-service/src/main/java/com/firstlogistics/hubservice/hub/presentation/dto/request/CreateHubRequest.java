@@ -1,4 +1,4 @@
-package com.firstlogistics.hubservice.hub.presentation.request.dto;
+package com.firstlogistics.hubservice.hub.presentation.dto.request;
 
 
 import com.firstlogistics.hubservice.hub.application.dto.command.CreateHubCommand;

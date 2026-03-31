@@ -1,4 +1,4 @@
-package com.firstlogistics.hubservice.hub.presentation.response.dto;
+package com.firstlogistics.hubservice.hub.presentation.dto.response;
 
 import com.firstlogistics.hubservice.hub.application.dto.result.HubResult;
 

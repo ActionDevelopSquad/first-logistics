@@ -1,9 +1,8 @@
 package com.firstlogistics.hubservice.hub.presentation;
 
 import com.firstlogistics.hubservice.hub.application.HubCommandService;
-import com.firstlogistics.hubservice.hub.presentation.request.dto.CreateHubRequest;
-import com.firstlogistics.hubservice.hub.presentation.response.code.HubSuccessCode;
-import com.firstlogistics.hubservice.hub.presentation.response.dto.HubResponse;
+import com.firstlogistics.hubservice.hub.presentation.dto.request.CreateHubRequest;
+import com.firstlogistics.hubservice.hub.presentation.dto.response.HubResponse;
 import common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

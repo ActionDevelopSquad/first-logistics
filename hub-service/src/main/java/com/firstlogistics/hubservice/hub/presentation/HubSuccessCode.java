@@ -1,4 +1,4 @@
-package com.firstlogistics.hubservice.hub.presentation.response.code;
+package com.firstlogistics.hubservice.hub.presentation;
 
 import common.response.SuccessCode;
 import lombok.Getter;
