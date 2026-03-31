@@ -143,7 +143,7 @@ public class DeliveryCommandService {
 		List<DeliveryCreatedEvent.DeliveryRouteInfo> deliveryRoutes = new ArrayList<>();
 		for (int i = 0; i < hubSteps.size(); i++) {
 			HubRouteStepResponse step = hubSteps.get(i);
-			deliveryRoutes.add(new DeliveryCreatedEvent.DeliveryRouteInfo(
+			deliveryRoutes.add(DeliveryCreatedEvent.DeliveryRouteInfo.of(
 				step.hubRouteSequence(),
 				step.sourceHubId(),
 				step.destinationHubId(),
@@ -153,17 +153,17 @@ public class DeliveryCommandService {
 			));
 		}
 
-		DeliveryCreatedEvent.OrderInfo orderInfo = new DeliveryCreatedEvent.OrderInfo(
+		DeliveryCreatedEvent.OrderInfo orderInfo = DeliveryCreatedEvent.OrderInfo.of(
 			delivery.getOrderId(),
 			command.orderedAt(),
 			command.orderDueDate(),
 			command.orderRequestNote(),
 			command.orderItems().stream()
-				.map(i -> new DeliveryCreatedEvent.OrderItemInfo(i.productName(), i.quantity(), i.price()))
+				.map(i -> DeliveryCreatedEvent.OrderItemInfo.of(i.productName(), i.quantity(), i.price()))
 				.toList()
 		);
 
-		DeliveryCreatedEvent.DeliveryInfo deliveryInfo = new DeliveryCreatedEvent.DeliveryInfo(
+		DeliveryCreatedEvent.DeliveryInfo deliveryInfo = DeliveryCreatedEvent.DeliveryInfo.of(
 			delivery.getId().id(),
 			receiver.name(),
 			delivery.getReceiverSlackId(),

@@ -71,14 +71,14 @@ class DeliveryEventKafkaProducerTest {
         UUID orderId = UUID.randomUUID();
         String receiverSlackId = "U12345678";
 
-        DeliveryCreatedEvent.OrderInfo orderInfo = new DeliveryCreatedEvent.OrderInfo(
+        DeliveryCreatedEvent.OrderInfo orderInfo = DeliveryCreatedEvent.OrderInfo.of(
             orderId,
             LocalDateTime.now(),
             LocalDateTime.now().plusDays(3),
             "빠른 배송 부탁드립니다.",
-            List.of(new DeliveryCreatedEvent.OrderItemInfo("마른 오징어", 50, 10000))
+            List.of(DeliveryCreatedEvent.OrderItemInfo.of("마른 오징어", 50, 10000))
         );
-        DeliveryCreatedEvent.DeliveryInfo deliveryInfo = new DeliveryCreatedEvent.DeliveryInfo(
+        DeliveryCreatedEvent.DeliveryInfo deliveryInfo = DeliveryCreatedEvent.DeliveryInfo.of(
             deliveryId,
             "수령인",
             receiverSlackId,

@@ -19,13 +19,22 @@ public record DeliveryCreatedEvent(
 		LocalDateTime orderDueDate,
 		String orderRequestNote,
 		List<OrderItemInfo> orderItems
-	) {}
+	) {
+		public static OrderInfo of(UUID orderId, LocalDateTime orderedAt, LocalDateTime orderDueDate,
+				String orderRequestNote, List<OrderItemInfo> orderItems) {
+			return new OrderInfo(orderId, orderedAt, orderDueDate, orderRequestNote, orderItems);
+		}
+	}
 
 	public record OrderItemInfo(
 		String productName,
 		int quantity,
 		int price
-	) {}
+	) {
+		public static OrderItemInfo of(String productName, int quantity, int price) {
+			return new OrderItemInfo(productName, quantity, price);
+		}
+	}
 
 	public record DeliveryInfo(
 		UUID deliveryId,
@@ -35,7 +44,14 @@ public record DeliveryCreatedEvent(
 		String receiverDetailAddress,
 		List<DeliveryRouteInfo> deliveryRoutes,
 		String companyStaffSlackId
-	) {}
+	) {
+		public static DeliveryInfo of(UUID deliveryId, String receiverName, String receiverSlackId,
+				String receiverRoadAddress, String receiverDetailAddress,
+				List<DeliveryRouteInfo> deliveryRoutes, String companyStaffSlackId) {
+			return new DeliveryInfo(deliveryId, receiverName, receiverSlackId,
+				receiverRoadAddress, receiverDetailAddress, deliveryRoutes, companyStaffSlackId);
+		}
+	}
 
 	public record DeliveryRouteInfo(
 		int sequence,
@@ -44,5 +60,11 @@ public record DeliveryCreatedEvent(
 		int estimatedDistanceMeters,
 		int estimatedDurationMinutes,
 		String hubStaffSlackId
-	) {}
+	) {
+		public static DeliveryRouteInfo of(int sequence, UUID sourceHubId, UUID destinationHubId,
+				int estimatedDistanceMeters, int estimatedDurationMinutes, String hubStaffSlackId) {
+			return new DeliveryRouteInfo(sequence, sourceHubId, destinationHubId,
+				estimatedDistanceMeters, estimatedDurationMinutes, hubStaffSlackId);
+		}
+	}
 }
