@@ -9,7 +9,8 @@ public record CreateOrderCommand(
         UUID supplierManagerId,
         UUID receiverCompanyId,
         UUID receiverManagerId,
-        String deliveryAddress,
+        String roadAddress,
+        String detailAddress,
         LocalDateTime dueDate,
         String requestMemo,
         List<OrderItemCommand> items

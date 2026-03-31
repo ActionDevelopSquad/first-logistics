@@ -24,7 +24,8 @@ public class OrderService {
                 command.supplierManagerId(),
                 command.receiverCompanyId(),
                 command.receiverManagerId(),
-                command.deliveryAddress(),
+                command.roadAddress(),
+                command.detailAddress(),
                 command.dueDate(),
                 command.requestMemo(),
                 command.items()

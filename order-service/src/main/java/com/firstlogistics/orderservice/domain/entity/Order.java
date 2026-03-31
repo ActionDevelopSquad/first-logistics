@@ -4,6 +4,7 @@ import com.firstlogistics.orderservice.application.dto.CreateOrderCommand;
 import com.firstlogistics.orderservice.domain.enums.OrderStatus;
 import com.firstlogistics.orderservice.domain.exception.OrderErrorCode;
 import com.firstlogistics.orderservice.domain.exception.OrderException;
+import com.firstlogistics.orderservice.domain.vo.Address;
 import com.firstlogistics.orderservice.domain.vo.Money;
 import com.firstlogistics.orderservice.domain.vo.OrderId;
 import com.firstlogistics.orderservice.domain.vo.Receiver;
@@ -26,7 +27,7 @@ public class Order {
     private Supplier supplier;
     private Receiver receiver;
     private UUID deliveryId;
-    private String deliveryAddress;
+    private Address deliveryAddress;
     private Money totalAmount;
     private LocalDateTime dueDate;
     private String requestMemo;
@@ -42,18 +43,19 @@ public class Order {
             UUID supplierManagerId,
             UUID receiverCompanyId,
             UUID receiverManagerId,
-            String deliveryAddress,
+            String roadAddress,
+            String detailAddress,
             LocalDateTime dueDate,
             String requestMemo,
             List<CreateOrderCommand.OrderItemCommand> items
     ) {
-        validateInput(deliveryAddress, dueDate);
+        validateInput(dueDate);
         Order order = new Order(
                 OrderId.of(),
                 Supplier.of(supplierCompanyId, supplierManagerId),
                 Receiver.of(receiverCompanyId, receiverManagerId),
                 null,
-                deliveryAddress,
+                Address.of(roadAddress, detailAddress),
                 Money.of(0L),
                 dueDate,
                 requestMemo,
@@ -81,7 +83,8 @@ public class Order {
             UUID receiverCompanyId,
             UUID receiverManagerId,
             UUID deliveryId,
-            String deliveryAddress,
+            String roadAddress,
+            String detailAddress,
             Long totalAmount,
             LocalDateTime dueDate,
             String requestMemo,
@@ -95,7 +98,7 @@ public class Order {
                 Supplier.of(supplierCompanyId, supplierManagerId),
                 Receiver.of(receiverCompanyId, receiverManagerId),
                 deliveryId,
-                deliveryAddress,
+                Address.of(roadAddress, detailAddress),
                 Money.of(totalAmount),
                 dueDate,
                 requestMemo,
@@ -111,10 +114,7 @@ public class Order {
         return Collections.unmodifiableList(orderItems);
     }
 
-    private static void validateInput(String deliveryAddress, LocalDateTime dueDate) {
-        if (deliveryAddress == null || deliveryAddress.isBlank()) {
-            throw new OrderException(OrderErrorCode.DELIVERY_ADDRESS_REQUIRED);
-        }
+    private static void validateInput(LocalDateTime dueDate) {
         if (dueDate != null && dueDate.isBefore(LocalDateTime.now())) {
             throw new OrderException(OrderErrorCode.INVALID_DUE_DATE);
         }

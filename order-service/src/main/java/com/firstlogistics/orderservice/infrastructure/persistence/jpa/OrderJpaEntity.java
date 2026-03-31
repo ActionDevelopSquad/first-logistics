@@ -49,7 +49,10 @@ public class OrderJpaEntity extends BaseAuditEntity {
     private UUID deliveryId;
 
     @Column(nullable = false)
-    private String deliveryAddress;
+    private String roadAddress;
+
+    @Column(nullable = true)
+    private String detailAddress;
 
     @Column(nullable = false)
     private Long totalAmount;

@@ -22,7 +22,8 @@ public record CreateOrderRequest(
         @NotNull
         UUID receiverManagerId,
         @NotBlank
-        String deliveryAddress,
+        String roadAddress,
+        String detailAddress,
         @FutureOrPresent
         LocalDateTime dueDate,
         String requestMemo,
@@ -36,7 +37,8 @@ public record CreateOrderRequest(
                 this.supplierManagerId,
                 this.receiverCompanyId,
                 this.receiverManagerId,
-                this.deliveryAddress,
+                this.roadAddress,
+                this.detailAddress,
                 this.dueDate,
                 this.requestMemo,
                 this.items.stream()
