@@ -1,13 +1,13 @@
 package com.firstlogistics.deliverservice.infrastructure.messaging.consumer;
 
-import com.firstlogistics.deliverservice.application.DeliveryCommandService;
 import com.firstlogistics.deliverservice.application.DeliveryQueryService;
 import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryCommand;
-import com.firstlogistics.deliverservice.domain.exception.DeliveryCreationException;
-import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
+import com.firstlogistics.deliverservice.application.facade.DeliveryCreateFacade;
 import com.firstlogistics.deliverservice.infrastructure.feign.CompanyClient;
 import com.firstlogistics.deliverservice.infrastructure.feign.HubClient;
 import com.firstlogistics.deliverservice.infrastructure.feign.UserClient;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryCreationException;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.infrastructure.messaging.config.KafkaConsumerConfig;
 import com.firstlogistics.deliverservice.infrastructure.messaging.consumer.event.OrderAcceptedEvent;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +18,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -53,16 +54,17 @@ class OrderEventKafkaConsumerTest {
 	private KafkaConsumerConfig kafkaConsumerConfig;
 
 	@MockitoBean
-	private DeliveryCommandService deliveryCommandService;
+	private DeliveryCreateFacade deliveryCreateFacade;
 	@MockitoBean
 	private DeliveryQueryService deliveryQueryService;
-
+	@MockitoBean
+	private RedissonClient redissonClient;
+	@MockitoBean
+	private UserClient userClient;
 	@MockitoBean
 	private CompanyClient companyClient;
 	@MockitoBean
 	private HubClient hubClient;
-	@MockitoBean
-	private UserClient userClient;
 
 	@Nested
 	@DisplayName("handleOrderAccepted")
@@ -81,7 +83,7 @@ class OrderEventKafkaConsumerTest {
 
 			// then
 			await().atMost(5, TimeUnit.SECONDS).untilAsserted(() ->
-					then(deliveryCommandService).should().createDelivery(any(CreateDeliveryCommand.class))
+					then(deliveryCreateFacade).should().createDelivery(any(CreateDeliveryCommand.class))
 			);
 		}
 
@@ -100,7 +102,7 @@ class OrderEventKafkaConsumerTest {
 			await().atMost(5, TimeUnit.SECONDS).untilAsserted(() ->
 					then(deliveryQueryService).should().existsByOrderId(event.orderId())
 			);
-			then(deliveryCommandService).should(never()).createDelivery(any());
+			then(deliveryCreateFacade).should(never()).createDelivery(any());
 		}
 
 		@Test
@@ -109,7 +111,7 @@ class OrderEventKafkaConsumerTest {
 			// given
 			OrderAcceptedEvent event = createEvent();
 			given(deliveryQueryService.existsByOrderId(event.orderId())).willReturn(false);
-			given(deliveryCommandService.createDelivery(any()))
+			given(deliveryCreateFacade.createDelivery(any()))
 					.willThrow(new DeliveryCreationException(DeliveryErrorCode.HUB_NOT_FOUND));
 
 			// subscribe 대신 assign + seekToBeginning: 그룹 조인 없이 바로 파티션 읽기 (타이밍 문제 방지)

@@ -1,6 +1,7 @@
 package com.firstlogistics.deliverservice.infrastructure.messaging.consumer;
 
 import com.firstlogistics.deliverservice.domain.exception.DeliveryCreationException;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.infrastructure.messaging.consumer.event.OrderAcceptedEvent;
 import com.firstlogistics.deliverservice.infrastructure.messaging.producer.event.DeliveryCreationFailedEvent;
 import lombok.RequiredArgsConstructor;
@@ -21,16 +22,20 @@ public class OrderAcceptedRecoverer implements ConsumerRecordRecoverer {
 
 	@Override
 	public void accept(ConsumerRecord<?, ?> record, Exception exception) {
-		if (hasCause(exception, DeliveryCreationException.class)) {
-			DeliveryCreationException cause = unwrapCause(exception, DeliveryCreationException.class);
+		// DeliveryException 중 DeliveryCreationException이 아닌 경우(예: DELIVERY_ALREADY_EXISTS)는 Saga 불필요 (멱등성)
+		boolean shouldFireSaga = !hasCause(exception, DeliveryException.class)
+			|| hasCause(exception, DeliveryCreationException.class);
+
+		if (shouldFireSaga) {
 			UUID orderId = record.value() instanceof OrderAcceptedEvent event ? event.orderId() : null;
 			if (orderId != null) {
+				String reason = exception.getMessage();
 				kafkaTemplate.send(
 					"delivery.creation.failed",
 					orderId.toString(),
-					new DeliveryCreationFailedEvent(orderId, cause.getMessage())
+					new DeliveryCreationFailedEvent(orderId, reason)
 				);
-				log.warn("delivery.creation.failed 발행 - orderId: {}, reason: {}", orderId, cause.getMessage());
+				log.warn("delivery.creation.failed 발행 - orderId: {}, reason: {}", orderId, reason);
 			} else {
 				log.error("orderId 추출 실패 - record value 타입: {}",
 					record.value() == null ? "null" : record.value().getClass().getName());
@@ -49,13 +54,4 @@ public class OrderAcceptedRecoverer implements ConsumerRecordRecoverer {
 		return false;
 	}
 
-	@SuppressWarnings("unchecked")
-	private <T extends Throwable> T unwrapCause(Throwable exception, Class<T> targetType) {
-		Throwable cause = exception;
-		while (cause != null) {
-			if (targetType.isInstance(cause)) return (T) cause;
-			cause = cause.getCause();
-		}
-		throw new IllegalStateException("cause not found: " + targetType.getSimpleName());
-	}
 }

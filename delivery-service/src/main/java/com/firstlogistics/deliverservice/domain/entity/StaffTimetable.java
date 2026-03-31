@@ -1,6 +1,8 @@
 package com.firstlogistics.deliverservice.domain.entity;
 
 import com.firstlogistics.deliverservice.domain.enums.TimetableStatus;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.vo.DeliveryId;
 import com.firstlogistics.deliverservice.domain.vo.DeliveryStaffId;
 import com.firstlogistics.deliverservice.domain.vo.StaffTimetableId;
@@ -29,6 +31,9 @@ public class StaffTimetable {
 		LocalDateTime expectedStartAt,
 		LocalDateTime expectedEndAt
 	) {
+		if (staffId == null || deliveryId == null || expectedStartAt == null || expectedEndAt == null) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_TIMETABLE_PARAMS);
+		}
 		TimetableStatus createdStatus = TimetableStatus.CREATED;
 		return new StaffTimetable(
 			StaffTimetableId.generate(), staffId, deliveryId,

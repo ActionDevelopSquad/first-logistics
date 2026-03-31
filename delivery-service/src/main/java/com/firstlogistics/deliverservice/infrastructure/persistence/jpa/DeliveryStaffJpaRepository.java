@@ -1,12 +1,13 @@
 package com.firstlogistics.deliverservice.infrastructure.persistence.jpa;
 
 import com.firstlogistics.deliverservice.domain.enums.StaffType;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 public interface DeliveryStaffJpaRepository extends JpaRepository<DeliveryStaffJpaEntity, UUID> {
@@ -34,12 +35,12 @@ public interface DeliveryStaffJpaRepository extends JpaRepository<DeliveryStaffJ
 		  )
 		GROUP BY ds
 		ORDER BY MAX(st1.expectedEndAt) ASC NULLS FIRST, ds.deliverySequence ASC
-		LIMIT 1
 		""")
-	Optional<DeliveryStaffJpaEntity> findNextAvailableStaff(
+	List<DeliveryStaffJpaEntity> findNextAvailableStaff(
 		@Param("hubId") UUID hubId,
 		@Param("staffType") StaffType staffType,
 		@Param("assignmentStart") LocalDateTime assignmentStart,
-		@Param("assignmentEnd") LocalDateTime assignmentEnd
+		@Param("assignmentEnd") LocalDateTime assignmentEnd,
+		Pageable pageable
 	);
 }

@@ -1,6 +1,8 @@
 package com.firstlogistics.deliverservice.domain.entity;
 
 import com.firstlogistics.deliverservice.domain.enums.RouteStatus;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.vo.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -36,6 +38,9 @@ public class DeliveryRoute {
 		int estimatedDistanceMeters,
 		int estimatedDurationMinutes
 	) {
+		if (deliveryId == null || sourceHubId == null || destinationHubId == null) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_DELIVERY_ROUTE_PARAMS);
+		}
 		return new DeliveryRoute(
 			DeliveryRouteId.generate(), deliveryId, deliveryRouteSequence,
 			sourceHubId, destinationHubId,

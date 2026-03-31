@@ -1,6 +1,8 @@
 package com.firstlogistics.deliverservice.domain.entity;
 
 import com.firstlogistics.deliverservice.domain.enums.StaffType;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.vo.DeliveryStaffId;
 import com.firstlogistics.deliverservice.domain.vo.StaffDetail;
 import lombok.AccessLevel;
@@ -33,6 +35,12 @@ public class DeliveryStaff {
 		StaffType staffType,
 		int deliverySequence
 	) {
+		if (hubId == null || staffType == null) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_DELIVERY_STAFF_PARAMS);
+		}
+		if (slackId == null || slackId.isBlank()) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_DELIVERY_STAFF_PARAMS);
+		}
 		return new DeliveryStaff(
 			DeliveryStaffId.generate(), StaffDetail.of(staffName, phoneNumber), hubId, slackId,
 			staffType, deliverySequence, new ArrayList<>()
@@ -48,7 +56,7 @@ public class DeliveryStaff {
 		int deliverySequence,
 		List<StaffTimetable> timetables
 	) {
-		return new DeliveryStaff(id, staffDetail, hubId, slackId, staffType, deliverySequence, timetables);
+		return new DeliveryStaff(id, staffDetail, hubId, slackId, staffType, deliverySequence, new ArrayList<>(timetables));
 	}
 
 	public void addTimetable(StaffTimetable timetable) {

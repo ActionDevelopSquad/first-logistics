@@ -2,7 +2,6 @@ package com.firstlogistics.deliverservice.infrastructure.feign.config;
 
 import com.firstlogistics.deliverservice.domain.exception.DeliveryCreationException;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
-import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import feign.Response;
 import feign.codec.ErrorDecoder;
 
@@ -21,6 +20,6 @@ public class FeignErrorDecoder implements ErrorDecoder {
 				return new DeliveryCreationException(DeliveryErrorCode.USER_NOT_FOUND);
 			}
 		}
-		return new DeliveryException(DeliveryErrorCode.EXTERNAL_SERVICE_ERROR);
+		return new DeliveryCreationException(DeliveryErrorCode.EXTERNAL_SERVICE_ERROR);
 	}
 }

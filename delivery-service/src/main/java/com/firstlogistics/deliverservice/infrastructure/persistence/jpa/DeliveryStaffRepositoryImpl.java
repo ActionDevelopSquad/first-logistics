@@ -4,9 +4,11 @@ import com.firstlogistics.deliverservice.domain.entity.DeliveryStaff;
 import com.firstlogistics.deliverservice.domain.enums.StaffType;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryStaffRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -19,16 +21,16 @@ public class DeliveryStaffRepositoryImpl implements DeliveryStaffRepository {
 
 	@Override
 	public Optional<DeliveryStaff> findNextHubStaff(UUID hubId, LocalDateTime assignmentStart, LocalDateTime assignmentEnd) {
-		return deliveryStaffJpaRepository
-			.findNextAvailableStaff(hubId, StaffType.HUB_DELIVERY, assignmentStart, assignmentEnd)
-			.map(deliveryStaffMapper::toDomain);
+		List<DeliveryStaffJpaEntity> results = deliveryStaffJpaRepository
+			.findNextAvailableStaff(hubId, StaffType.HUB_DELIVERY, assignmentStart, assignmentEnd, PageRequest.of(0, 1));
+		return results.isEmpty() ? Optional.empty() : Optional.of(deliveryStaffMapper.toDomain(results.get(0)));
 	}
 
 	@Override
 	public Optional<DeliveryStaff> findNextCompanyStaff(UUID hubId, LocalDateTime assignmentStart, LocalDateTime assignmentEnd) {
-		return deliveryStaffJpaRepository
-			.findNextAvailableStaff(hubId, StaffType.COMPANY_DELIVERY, assignmentStart, assignmentEnd)
-			.map(deliveryStaffMapper::toDomain);
+		List<DeliveryStaffJpaEntity> results = deliveryStaffJpaRepository
+			.findNextAvailableStaff(hubId, StaffType.COMPANY_DELIVERY, assignmentStart, assignmentEnd, PageRequest.of(0, 1));
+		return results.isEmpty() ? Optional.empty() : Optional.of(deliveryStaffMapper.toDomain(results.get(0)));
 	}
 
 	@Override

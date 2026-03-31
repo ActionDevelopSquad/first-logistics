@@ -1,7 +1,7 @@
 package com.firstlogistics.deliverservice.infrastructure.feign;
 
 import com.firstlogistics.deliverservice.infrastructure.feign.dto.FeignResponse;
-import com.firstlogistics.deliverservice.infrastructure.feign.dto.HubRouteResponse;
+import com.firstlogistics.deliverservice.application.port.dto.HubRouteResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;

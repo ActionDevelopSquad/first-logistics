@@ -33,6 +33,7 @@ import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.ActiveProfiles;
+import org.redisson.api.RedissonClient;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.Duration;
@@ -61,6 +62,8 @@ class DeliveryEventKafkaProducerTest {
     @Autowired
     private KafkaConsumerConfig kafkaConsumerConfig;
 
+    @MockitoBean
+    private RedissonClient redissonClient;
     @MockitoBean
     private CompanyClient companyClient;
     @MockitoBean

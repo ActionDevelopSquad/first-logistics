@@ -6,10 +6,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -29,9 +26,8 @@ public class DeliveryRouteJpaEntity extends BaseAuditEntity {
 	@Column(name = "id", columnDefinition = "uuid")
 	private UUID id;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "delivery_id", nullable = false)
-	private DeliveryJpaEntity delivery;
+	@Column(name = "delivery_id", nullable = false, columnDefinition = "uuid", insertable = false, updatable = false)
+	private UUID deliveryId;
 
 	@Column(name = "sequence", nullable = false)
 	private int deliveryRouteSequence;
@@ -63,7 +59,7 @@ public class DeliveryRouteJpaEntity extends BaseAuditEntity {
 
 	public static DeliveryRouteJpaEntity create(
 		UUID id,
-		DeliveryJpaEntity delivery,
+		UUID deliveryId,
 		int deliveryRouteSequence,
 		UUID sourceHubId,
 		UUID destinationHubId,
@@ -75,7 +71,7 @@ public class DeliveryRouteJpaEntity extends BaseAuditEntity {
 		UUID deliveryStaffId
 	) {
 		return new DeliveryRouteJpaEntity(
-			id, delivery, deliveryRouteSequence,
+			id, deliveryId, deliveryRouteSequence,
 			sourceHubId, destinationHubId,
 			estimatedDistance, estimatedDuration,
 			actualDistance, actualDuration,

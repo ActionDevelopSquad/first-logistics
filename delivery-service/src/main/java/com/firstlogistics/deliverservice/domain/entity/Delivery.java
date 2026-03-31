@@ -1,6 +1,8 @@
 package com.firstlogistics.deliverservice.domain.entity;
 
 import com.firstlogistics.deliverservice.domain.enums.DeliveryStatus;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.vo.Address;
 import com.firstlogistics.deliverservice.domain.vo.DeliveryId;
 import com.firstlogistics.deliverservice.domain.vo.DeliveryStaffId;
@@ -46,6 +48,13 @@ public class Delivery {
 		UUID receiverCompanyId,
 		DeliveryStaffId receiverCompanyDeliveryStaffId
 	) {
+		if (orderId == null || sourceHubId == null || destinationHubId == null
+			|| receiverId == null || receiverCompanyId == null || receiverCompanyDeliveryStaffId == null) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_DELIVERY_PARAMS);
+		}
+		if (receiverSlackId == null || receiverSlackId.isBlank()) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_DELIVERY_PARAMS);
+		}
 		return new Delivery(
 			DeliveryId.generate(), orderId, DeliveryStatus.CREATED,
 			sourceHubId, destinationHubId,
@@ -77,7 +86,7 @@ public class Delivery {
 			sourceHubId, destinationHubId,
 			deliveryAddress, deliveryLocation,
 			receiverId, receiverSlackId, receiverCompanyId, receiverCompanyDeliveryStaffId,
-			currentHubId, routes
+			currentHubId, new ArrayList<>(routes)
 		);
 	}
 

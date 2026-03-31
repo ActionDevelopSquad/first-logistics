@@ -1,8 +1,8 @@
 package com.firstlogistics.deliverservice.infrastructure.messaging.consumer;
 
-import com.firstlogistics.deliverservice.application.DeliveryCommandService;
 import com.firstlogistics.deliverservice.application.DeliveryQueryService;
 import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryCommand;
+import com.firstlogistics.deliverservice.application.facade.DeliveryCreateFacade;
 import com.firstlogistics.deliverservice.infrastructure.messaging.consumer.event.OrderAcceptedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,8 +15,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class OrderEventKafkaConsumer {
 
-	private final DeliveryCommandService deliveryCommandService;
 	private final DeliveryQueryService deliveryQueryService;
+	private final DeliveryCreateFacade deliveryCreateFacade;
 
 	@KafkaListener(
 		topics = "order.accepted",
@@ -32,16 +32,8 @@ public class OrderEventKafkaConsumer {
 			return;
 		}
 
-		deliveryCommandService.createDelivery(new CreateDeliveryCommand(
-			event.orderId(),
-			event.sourceHubId(),
-			event.receiverCompanyId(),
-			event.receiverId(),
-			event.roadAddress(),
-			event.detailAddress(),
-			event.latitude(),
-			event.longitude()
-		));
+		deliveryCreateFacade.createDelivery(CreateDeliveryCommand.create(event));
+
 		ack.acknowledge();
 	}
 }

@@ -9,6 +9,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -31,7 +32,7 @@ public class DeliveryJpaEntity extends BaseAuditEntity {
 	@Column(name = "id", columnDefinition = "uuid")
 	private UUID id;
 
-	@Column(name = "order_id", nullable = false, columnDefinition = "uuid")
+	@Column(name = "order_id", nullable = false, columnDefinition = "uuid",  unique = true)
 	private UUID orderId;
 
 	@Enumerated(EnumType.STRING)
@@ -71,7 +72,8 @@ public class DeliveryJpaEntity extends BaseAuditEntity {
 	@Column(name = "current_hub_id", columnDefinition = "uuid")
 	private UUID currentHubId;
 
-	@OneToMany(mappedBy = "delivery", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+	@JoinColumn(name = "delivery_id", nullable = false)
 	private List<DeliveryRouteJpaEntity> routes = new ArrayList<>();
 
 	public static DeliveryJpaEntity create(

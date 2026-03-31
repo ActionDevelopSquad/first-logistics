@@ -1,4 +1,4 @@
-package com.firstlogistics.deliverservice.infrastructure.feign.dto;
+package com.firstlogistics.deliverservice.application.port.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

@@ -6,10 +6,10 @@ import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 public record GeoLocation(double latitude, double longitude) {
 
 	public GeoLocation {
-		if (latitude < -90 || latitude > 90) {
+		if (!Double.isFinite(latitude) || latitude < -90 || latitude > 90) {
 			throw new DeliveryException(DeliveryErrorCode.INVALID_GEO_LOCATION);
 		}
-		if (longitude < -180 || longitude > 180) {
+		if (!Double.isFinite(longitude) || longitude < -180 || longitude > 180) {
 			throw new DeliveryException(DeliveryErrorCode.INVALID_GEO_LOCATION);
 		}
 	}

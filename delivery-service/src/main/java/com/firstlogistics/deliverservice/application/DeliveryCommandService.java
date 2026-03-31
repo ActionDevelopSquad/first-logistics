@@ -12,13 +12,11 @@ import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryRepository;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryStaffRepository;
-import com.firstlogistics.deliverservice.infrastructure.feign.CompanyClient;
-import com.firstlogistics.deliverservice.infrastructure.feign.HubClient;
-import com.firstlogistics.deliverservice.infrastructure.feign.UserClient;
-import com.firstlogistics.deliverservice.infrastructure.feign.dto.CompanyResponse;
-import com.firstlogistics.deliverservice.infrastructure.feign.dto.HubRouteResponse;
-import com.firstlogistics.deliverservice.infrastructure.feign.dto.HubRouteStepResponse;
-import com.firstlogistics.deliverservice.infrastructure.feign.dto.UserResponse;
+import com.firstlogistics.deliverservice.application.port.UserPort;
+import com.firstlogistics.deliverservice.application.port.dto.CompanyResponse;
+import com.firstlogistics.deliverservice.application.port.dto.HubRouteResponse;
+import com.firstlogistics.deliverservice.application.port.dto.HubRouteStepResponse;
+import com.firstlogistics.deliverservice.application.port.dto.UserResponse;
 import com.firstlogistics.deliverservice.infrastructure.messaging.producer.event.DeliveryCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -36,22 +34,19 @@ public class DeliveryCommandService {
 
 	private final DeliveryRepository deliveryRepository;
 	private final DeliveryStaffRepository deliveryStaffRepository;
-	private final CompanyClient companyClient;
-	private final HubClient hubClient;
-	private final UserClient userClient;
+	private final UserPort userPort;
 	private final DeliveryEventProducer deliveryEventProducer;
 
-	public DeliveryResult createDelivery(CreateDeliveryCommand command) {
+	public DeliveryResult createDelivery(
+			CreateDeliveryCommand command,
+			CompanyResponse company,
+            HubRouteResponse hubRoute) {
 		if (deliveryRepository.existsByOrderId(command.orderId())) {
 			throw new DeliveryException(DeliveryErrorCode.DELIVERY_ALREADY_EXISTS);
 		}
 
-		CompanyResponse company = companyClient.getCompany(command.receiverCompanyId()).data();
 		UUID destinationHubId = company.hubId();
 
-		HubRouteResponse hubRoute = hubClient.getHubRoute(command.sourceHubId(), destinationHubId).data();
-
-		// TODO: [동시성] findNextHubStaff → save 사이 레이스 컨디션 존재. 분산락(Redis) 적용 필요 - 락 키: hub:staff:assign:{hubId}
 		LocalDateTime now = LocalDateTime.now();
 		int cumulativeMinutes = 0;
 		List<DeliveryStaff> hubStaffs = new ArrayList<>();
@@ -67,7 +62,6 @@ public class DeliveryCommandService {
 			cumulativeMinutes += step.durationMinutes();
 		}
 
-		// TODO: [동시성] findNextCompanyStaff → save 사이 레이스 컨디션 존재. 분산락(Redis) 적용 필요 - 락 키: hub:staff:assign:{hubId}
 		int lastStepDuration = hubRoute.routes().getLast().durationMinutes();
 		LocalDateTime companyAssignmentStart = now.plusMinutes(cumulativeMinutes);
 		LocalDateTime companyAssignmentEnd = companyAssignmentStart.plusMinutes(lastStepDuration);
@@ -75,7 +69,7 @@ public class DeliveryCommandService {
 		DeliveryStaff companyStaff = deliveryStaffRepository.findNextCompanyStaff(destinationHubId, companyAssignmentStart, companyAssignmentEnd)
 			.orElseThrow(() -> new DeliveryCreationException(DeliveryErrorCode.COMPANY_DELIVERY_STAFF_NOT_AVAILABLE));
 
-		UserResponse receiver = userClient.getUser(command.receiverId()).data();
+		UserResponse receiver = userPort.getUser(command.receiverId());
 
 		Delivery delivery = Delivery.create(
 			command.orderId(),

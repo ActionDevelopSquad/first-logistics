@@ -32,7 +32,7 @@ public class DeliveryMapper {
 			delivery.getReceiverId(),
 			delivery.getReceiverSlackId(),
 			delivery.getReceiverCompanyId(),
-			delivery.getReceiverCompanyDeliveryStaffId().id(),
+			delivery.getReceiverCompanyDeliveryStaffId() != null ? delivery.getReceiverCompanyDeliveryStaffId().id() : null,
 			delivery.getCurrentHubId()
 		);
 
@@ -47,7 +47,7 @@ public class DeliveryMapper {
 	private DeliveryRouteJpaEntity toRouteJpaEntity(DeliveryRoute route, DeliveryJpaEntity deliveryJpaEntity) {
 		return DeliveryRouteJpaEntity.create(
 			route.getId().id(),
-			deliveryJpaEntity,
+			deliveryJpaEntity.getId(),
 			route.getDeliveryRouteSequence(),
 			route.getSourceHubId(),
 			route.getDestinationHubId(),
@@ -76,7 +76,7 @@ public class DeliveryMapper {
 			jpaEntity.getReceiverId(),
 			jpaEntity.getReceiverSlackId(),
 			jpaEntity.getReceiverCompanyId(),
-			DeliveryStaffId.of(jpaEntity.getReceiverCompanyDeliveryStaffId()),
+			jpaEntity.getReceiverCompanyDeliveryStaffId() != null ? DeliveryStaffId.of(jpaEntity.getReceiverCompanyDeliveryStaffId()) : null,
 			jpaEntity.getCurrentHubId(),
 			routes
 		);
@@ -85,7 +85,7 @@ public class DeliveryMapper {
 	private DeliveryRoute toRouteDomain(DeliveryRouteJpaEntity jpaEntity) {
 		return DeliveryRoute.reconstitute(
 			DeliveryRouteId.of(jpaEntity.getId()),
-			DeliveryId.of(jpaEntity.getDelivery().getId()),
+			DeliveryId.of(jpaEntity.getDeliveryId()),
 			jpaEntity.getDeliveryRouteSequence(),
 			jpaEntity.getSourceHubId(),
 			jpaEntity.getDestinationHubId(),
