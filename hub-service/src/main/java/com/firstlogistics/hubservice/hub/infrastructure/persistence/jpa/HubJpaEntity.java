@@ -15,7 +15,7 @@ import java.util.UUID;
 @Table(
         name = "p_hub",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_hub_name",columnNames = "name")
+                @UniqueConstraint(name = HubConstraints.UK_HUB_NAME ,columnNames = "name")
         }
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

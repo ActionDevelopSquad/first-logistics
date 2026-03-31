@@ -30,11 +30,7 @@ public class HubCommandService {
                 GeoLocation.of(command.latitude(), command.longitude())
         );
 
-        try{
-            hubRepository.save(hub);
-        } catch (DataIntegrityViolationException e) {
-            throw new HubException(HubErrorCode.DUPLICATE_HUB_NAME);
-        }
+        hubRepository.save(hub);
 
         return HubResult.from(hub);
     }
