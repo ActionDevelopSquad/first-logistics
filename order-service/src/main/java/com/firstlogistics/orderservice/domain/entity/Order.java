@@ -66,6 +66,8 @@ public class Order {
         order.createOrderItems(items);
         order.calculateTotalAmount();
 
+        // TODO: 주문 생성 이벤트 발행
+
         return order;
     }
 
