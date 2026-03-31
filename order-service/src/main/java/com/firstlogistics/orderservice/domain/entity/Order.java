@@ -1,8 +1,10 @@
 package com.firstlogistics.orderservice.domain.entity;
 
+import com.firstlogistics.orderservice.application.dto.CreateOrderCommand;
 import com.firstlogistics.orderservice.domain.enums.OrderStatus;
 import com.firstlogistics.orderservice.domain.exception.OrderErrorCode;
 import com.firstlogistics.orderservice.domain.exception.OrderException;
+import com.firstlogistics.orderservice.domain.vo.Address;
 import com.firstlogistics.orderservice.domain.vo.Money;
 import com.firstlogistics.orderservice.domain.vo.OrderId;
 import com.firstlogistics.orderservice.domain.vo.Receiver;
@@ -25,11 +27,13 @@ public class Order {
     private Supplier supplier;
     private Receiver receiver;
     private UUID deliveryId;
+    private Address deliveryAddress;
     private Money totalAmount;
     private LocalDateTime dueDate;
     private String requestMemo;
     private OrderStatus status;
     private OrderStatus previousStatus;
+    private LocalDateTime orderedAt;
 
     @Getter(AccessLevel.NONE)
     private List<OrderItem> orderItems;
@@ -39,27 +43,70 @@ public class Order {
             UUID supplierManagerId,
             UUID receiverCompanyId,
             UUID receiverManagerId,
+            String roadAddress,
+            String detailAddress,
             LocalDateTime dueDate,
             String requestMemo,
-            List<OrderItem> items // 추후 DTO로 수정
+            List<CreateOrderCommand.OrderItemCommand> items
     ) {
+        validateInput(dueDate);
         Order order = new Order(
                 OrderId.of(),
                 Supplier.of(supplierCompanyId, supplierManagerId),
                 Receiver.of(receiverCompanyId, receiverManagerId),
                 null,
+                Address.of(roadAddress, detailAddress),
                 Money.of(0L),
                 dueDate,
                 requestMemo,
                 OrderStatus.PENDING,
                 null,
+                null,
                 new ArrayList<>()
         );
 
-        order.initOrderItems(items);
+        order.createOrderItems(items);
         order.calculateTotalAmount();
 
+        // TODO: 주문 생성 이벤트 발행
+
         return order;
+    }
+
+    /**
+     * OrderJpaEntity -> Order 변환 시에만 사용
+     */
+    public static Order reconstitute(
+            UUID id,
+            UUID supplierCompanyId,
+            UUID supplierManagerId,
+            UUID receiverCompanyId,
+            UUID receiverManagerId,
+            UUID deliveryId,
+            String roadAddress,
+            String detailAddress,
+            Long totalAmount,
+            LocalDateTime dueDate,
+            String requestMemo,
+            OrderStatus status,
+            OrderStatus previousStatus,
+            LocalDateTime orderedAt,
+            List<OrderItem> orderItems
+    ) {
+        return new Order(
+                OrderId.of(id),
+                Supplier.of(supplierCompanyId, supplierManagerId),
+                Receiver.of(receiverCompanyId, receiverManagerId),
+                deliveryId,
+                Address.of(roadAddress, detailAddress),
+                Money.of(totalAmount),
+                dueDate,
+                requestMemo,
+                status,
+                previousStatus,
+                orderedAt,
+                orderItems
+        );
     }
 
     // 외부에서 리스트 수정 못하도록 읽기 전용으로 반환
@@ -67,30 +114,29 @@ public class Order {
         return Collections.unmodifiableList(orderItems);
     }
 
-    private void initOrderItems(List<OrderItem> orderItems) {
-        // 주문 상세 존재 여부 체크
-        if (orderItems == null || orderItems.isEmpty()) {
-            throw new OrderException(OrderErrorCode.ORDER_ITEM_NOT_EXIST);
+    private static void validateInput(LocalDateTime dueDate) {
+        if (dueDate != null && dueDate.isBefore(LocalDateTime.now())) {
+            throw new OrderException(OrderErrorCode.INVALID_DUE_DATE);
         }
-        if (orderItems.stream().anyMatch(Objects::isNull)) {
-            throw new OrderException(OrderErrorCode.ORDER_ITEM_NOT_EXIST);
-        }
-
-        // 주문 가능한 상품인지 체크?
-
-        this.orderItems = new ArrayList<>();
-        orderItems.forEach(this::addOrderItem);
     }
 
-    private void addOrderItem(OrderItem item) {
-        // 개별 검증 로직 추가
-        orderItems.add(OrderItem.create(
-                this.id,
-                item.getProductId(),
-                item.getProductName(),
-                item.getUnitPrice(),
-                item.getQuantity()
-        ));
+    private void createOrderItems(List<CreateOrderCommand.OrderItemCommand> items) {
+        // 주문 상세 존재 여부 체크
+        if (items == null || items.isEmpty()) {
+            throw new OrderException(OrderErrorCode.ORDER_ITEM_NOT_EXIST);
+        }
+        if (items.stream().anyMatch(Objects::isNull)) {
+            throw new OrderException(OrderErrorCode.ORDER_ITEM_NOT_EXIST);
+        }
+
+        this.orderItems = new ArrayList<>();
+        items.forEach(item ->
+                orderItems.add(OrderItem.create(
+                        item.productId(),
+                        item.productName(),
+                        item.unitPrice(),
+                        item.quantity()
+                )));
     }
 
     private void calculateTotalAmount() {
