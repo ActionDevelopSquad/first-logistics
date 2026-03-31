@@ -6,7 +6,6 @@ import org.hibernate.Hibernate;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.UUID;
 
 @Component
 public class OrderMapper {
@@ -45,7 +44,7 @@ public class OrderMapper {
 
         // fetch join으로 가져올 때만 주문 상세 가져오기
         List<OrderItem> items = Hibernate.isInitialized(entity.getOrderItems())
-                ? entity.getOrderItems().stream().map(item -> this.toItemDomain(item, entity.getId())).toList()
+                ? entity.getOrderItems().stream().map(this::toItemDomain).toList()
                 : List.of(); // 초기화 안됐으면 추가 쿼리 방지
 
         return Order.reconstitute(
@@ -78,7 +77,7 @@ public class OrderMapper {
         );
     }
 
-    private OrderItem toItemDomain(OrderItemJpaEntity itemEntity, UUID orderId) {
+    private OrderItem toItemDomain(OrderItemJpaEntity itemEntity) {
         return OrderItem.reconstitute(
                 itemEntity.getId(),
                 itemEntity.getProductId(),
