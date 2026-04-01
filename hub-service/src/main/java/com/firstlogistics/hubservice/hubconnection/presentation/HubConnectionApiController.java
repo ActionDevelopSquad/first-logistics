@@ -22,7 +22,7 @@ public class HubConnectionApiController {
     @PostMapping
     public ResponseEntity<ApiResponse<HubConnectionResponse>> create(@Valid @RequestBody CreateHubConnectionRequest request){
         HubConnectionResponse response = HubConnectionResponse.from(commandService.create(request.toCommand()));
-        return ResponseEntity.status(HubConnectionSuccessCode.HUB_CREATED.getStatus())
-                .body(ApiResponse.success(HubConnectionSuccessCode.HUB_CREATED,response));
+        return ResponseEntity.status(HubConnectionSuccessCode.HUB_CONNECTION_CREATED.getStatus())
+                .body(ApiResponse.success(HubConnectionSuccessCode.HUB_CONNECTION_CREATED,response));
     }
 }
