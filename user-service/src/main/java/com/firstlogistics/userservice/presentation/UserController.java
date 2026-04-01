@@ -1,11 +1,10 @@
-package com.firstlogistics.userservice.presentation.controller;
+package com.firstlogistics.userservice.presentation;
 
 import com.firstlogistics.userservice.application.dto.command.LoginCommand;
 import com.firstlogistics.userservice.application.dto.command.UserCreateCommand;
 import com.firstlogistics.userservice.application.dto.command.UserUpdateCommand;
 import com.firstlogistics.userservice.application.dto.result.TokenResult;
 import com.firstlogistics.userservice.application.service.UserService;
-import com.firstlogistics.userservice.presentation.code.UserSuccessCode;
 import com.firstlogistics.userservice.presentation.dto.request.*;
 import com.firstlogistics.userservice.presentation.dto.response.TokenResponse;
 import com.firstlogistics.userservice.presentation.dto.response.UserIdResponse;
