@@ -1,6 +1,5 @@
 package com.firstlogistics.orderservice.domain.entity;
 
-import com.firstlogistics.orderservice.application.dto.CreateOrderCommand;
 import com.firstlogistics.orderservice.domain.enums.OrderStatus;
 import com.firstlogistics.orderservice.domain.event.OrderEvents;
 import com.firstlogistics.orderservice.domain.exception.OrderErrorCode;
