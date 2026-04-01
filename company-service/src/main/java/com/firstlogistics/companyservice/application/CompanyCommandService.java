@@ -58,6 +58,10 @@ public class CompanyCommandService {
     }
 
     private CompanyType resolveCompanyType(String typeStr) {
+        if (typeStr == null) {
+            throw new CompanyException(CompanyErrorCode.INVALID_COMPANY_TYPE);
+        }
+
         return switch (typeStr.toUpperCase()) {
             case "SUPPLIER" -> new Supplier();
             case "RECEIVER" -> new Receiver();
