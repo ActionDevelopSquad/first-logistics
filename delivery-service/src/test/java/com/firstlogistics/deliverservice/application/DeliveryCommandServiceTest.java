@@ -222,7 +222,7 @@ class DeliveryCommandServiceTest {
 			// then
 			ArgumentCaptor<Delivery> captor = ArgumentCaptor.forClass(Delivery.class);
 			then(deliveryRepository).should().save(captor.capture());
-			assertThat(captor.getValue().getRoutes()).hasSize(f.hubSteps().size());
+			assertThat(captor.getValue().getRoutes()).hasSize(f.hubSteps().size() + 1);
 		}
 
 		@Test

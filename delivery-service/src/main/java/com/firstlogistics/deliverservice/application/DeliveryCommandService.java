@@ -108,6 +108,16 @@ public class DeliveryCommandService {
 			delivery.assignRoute(route, hubStaffs.get(i).getId());
 		}
 
+		DeliveryRoute companyRoute = DeliveryRoute.create(
+			delivery.getId(),
+			lastStep.hubRouteSequence(),
+			lastStep.sourceHubId(),
+			lastStep.destinationHubId(),
+			lastStep.distanceMeters(),
+			lastStep.durationMinutes()
+		);
+		delivery.assignRoute(companyRoute, companyStaff.getId());
+
 		Delivery savedDelivery = deliveryRepository.save(delivery);
 
 		int timetableMinutes = 0;
@@ -125,9 +135,10 @@ public class DeliveryCommandService {
 		companyStaff.assignDelivery(savedDelivery.getId(), companyAssignmentStart, companyAssignmentEnd);
 		deliveryStaffRepository.save(companyStaff);
 
-		deliveryEventPublisher.publishedDeliveryCreated(buildDeliveryCreatedEvent(
-			savedDelivery, command, receiver, hubSteps, hubStaffs, companyStaff
-		));
+		DeliveryCreatedEvent deliveryCreatedEvent = buildDeliveryCreatedEvent(
+				savedDelivery, command, receiver, hubSteps, hubStaffs, lastStep, companyStaff
+		);
+		deliveryEventPublisher.publishedDeliveryCreated(deliveryCreatedEvent);
 
 		return DeliveryResult.from(savedDelivery, command, receiver.name());
 	}
@@ -138,6 +149,7 @@ public class DeliveryCommandService {
 			UserResponse receiver,
 			List<HubRouteStepResponse> hubSteps,
 			List<DeliveryStaff> hubStaffs,
+			HubRouteStepResponse lastStep,
 			DeliveryStaff companyStaff) {
 
 		List<DeliveryCreatedEvent.DeliveryRouteInfo> deliveryRoutes = new ArrayList<>();
@@ -152,6 +164,14 @@ public class DeliveryCommandService {
 				hubStaffs.get(i).getSlackId()
 			));
 		}
+		deliveryRoutes.add(DeliveryCreatedEvent.DeliveryRouteInfo.of(
+			lastStep.hubRouteSequence(),
+			lastStep.sourceHubId(),
+			lastStep.destinationHubId(),
+			lastStep.distanceMeters(),
+			lastStep.durationMinutes(),
+			companyStaff.getSlackId()
+		));
 
 		DeliveryCreatedEvent.OrderInfo orderInfo = DeliveryCreatedEvent.OrderInfo.of(
 			delivery.getOrderId(),
