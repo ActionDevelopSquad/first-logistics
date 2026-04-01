@@ -9,14 +9,11 @@ import com.firstlogistics.deliverservice.application.port.DeliveryQueryRepositor
 import com.firstlogistics.deliverservice.application.port.HubStaffPort;
 import com.firstlogistics.deliverservice.application.port.UserPort;
 import com.firstlogistics.deliverservice.application.port.dto.UserResponse;
-import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
-import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,8 +33,6 @@ public class DeliveryQueryService {
 	}
 
 	public DeliveryListResult getDeliveries(DeliveryListQuery query) {
-		validateDateRange(query.startDate(), query.endDate());
-
 		UserRole userRole = UserRole.valueOf(query.role());
 		UUID hubId = userRole == UserRole.HUB_MANAGER
 			? hubStaffPort.getHubStaff(query.userId()).hubId()
@@ -47,7 +42,7 @@ public class DeliveryQueryService {
 			: null;
 		DeliveryListQuery resolvedQuery = query.withScope(DeliveryScope.from(query.role(), query.userId(), hubId, companyId));
 
-		if (query.receiverName() != null || query.receiverPhone() != null) {
+		if (query.hasReceiverSearchCondition()) {
 			List<UUID> receiverIds = userPort.findByNameOrPhone(query.receiverName(), query.receiverPhone())
 				.stream().map(UserResponse::userId).toList();
 			resolvedQuery = resolvedQuery.withResolvedReceiverIds(receiverIds);
@@ -59,11 +54,5 @@ public class DeliveryQueryService {
 			results = results.subList(0, resolvedQuery.size());
 		}
 		return DeliveryListResult.from(results, hasNext);
-	}
-
-	private void validateDateRange(LocalDateTime startDate, LocalDateTime endDate) {
-		if (startDate != null && endDate != null && endDate.isBefore(startDate)) {
-			throw new DeliveryException(DeliveryErrorCode.INVALID_DATE_RANGE);
-		}
 	}
 }

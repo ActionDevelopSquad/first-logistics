@@ -15,7 +15,7 @@ import java.util.UUID;
 public interface UserClient {
 
 	@GetMapping("/api/v1/users/{userId}")
-	FeignResponse<UserResponse> getUser(@PathVariable UUID userId);
+	FeignResponse<UserResponse> getUser(@PathVariable("userId") UUID userId);
 
 	@GetMapping("/api/v1/users")
 	FeignResponse<List<UserResponse>> findByNameOrPhone(

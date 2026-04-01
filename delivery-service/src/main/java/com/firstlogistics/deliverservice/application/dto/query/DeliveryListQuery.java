@@ -37,7 +37,18 @@ public record DeliveryListQuery(
 		if (role == null) {
 			throw new DeliveryException(DeliveryErrorCode.INVALID_QUERY_PARAMS);
 		}
+		if (startDate != null && endDate != null && endDate.isBefore(startDate)) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_DATE_RANGE);
+		}
 		size = PaginationPolicy.resolveSize(size);
+	}
+
+	public boolean hasReceiverSearchCondition() {
+		return hasText(receiverName) || hasText(receiverPhone);
+	}
+
+	private static boolean hasText(String value) {
+		return value != null && !value.isBlank();
 	}
 
 	public DeliveryListQuery withScope(DeliveryScope scope) {

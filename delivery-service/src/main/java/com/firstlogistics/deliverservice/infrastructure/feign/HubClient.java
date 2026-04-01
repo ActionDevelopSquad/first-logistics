@@ -21,5 +21,5 @@ public interface HubClient {
 	);
 
 	@GetMapping("/api/v1/hub-managers/{managerId}")
-	FeignResponse<HubStaffResponse> getHubStaff(@PathVariable UUID managerId);
+	FeignResponse<HubStaffResponse> getHubStaff(@PathVariable("managerId") UUID managerId);
 }
