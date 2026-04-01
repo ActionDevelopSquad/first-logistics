@@ -1,1 +1,3 @@
 common.event.config.EventConfig
+common.kafka.config.KafkaConsumerConfig
+common.kafka.config.KafkaProducerConfig
