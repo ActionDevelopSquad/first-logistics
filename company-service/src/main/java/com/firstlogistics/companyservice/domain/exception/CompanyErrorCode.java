@@ -17,7 +17,8 @@ public enum CompanyErrorCode implements ErrorCode {
     COMPANY_INACTIVE(HttpStatus.BAD_REQUEST, "COM007", "회사가 비활성화 상태입니다."),
     INVALID_ADDRESS(HttpStatus.BAD_REQUEST, "COM008", "주소 정보가 유효하지 않습니다."),
     INVALID_GEO_LOCATION(HttpStatus.BAD_REQUEST, "COM009", "지리 정보가 유효하지 않습니다."),
-    INVALID_COMPANY_ID(HttpStatus.BAD_REQUEST, "COM010", "회사 ID가 유효하지 않습니다.")
+    INVALID_COMPANY_ID(HttpStatus.BAD_REQUEST, "COM010", "회사 ID가 유효하지 않습니다."),
+    HUB_LOCATION_OUT_OF_RANGE(HttpStatus.BAD_REQUEST, "COM011", "허브 서비스 가능 범위(대한민국)를 벗어난 위치입니다.")
     ;
 
     private final HttpStatus status;
