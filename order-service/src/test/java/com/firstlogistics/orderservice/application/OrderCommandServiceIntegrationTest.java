@@ -6,9 +6,11 @@ import com.firstlogistics.orderservice.domain.repository.OrderRepository;
 import com.firstlogistics.orderservice.domain.vo.OrderId;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -46,6 +48,9 @@ class OrderCommandServiceIntegrationTest {
     @Rollback(false) // 이벤트핸들러 동작 확인하기 위해 롤백 안함
     @DisplayName("서비스를 통해 주문 생성 시 DB 저장과 이벤트 발행이 연쇄적으로 발생하는지 확인")
     void order_create_service_test() {
+        Mockito.when(orderKafkaTemplate.send(anyString(), any(), any()))
+                .thenReturn(java.util.concurrent.CompletableFuture.completedFuture(null));
+
         // given
         CreateOrderCommand command = createTestCommand(); // 테스트 데이터 생성
 
