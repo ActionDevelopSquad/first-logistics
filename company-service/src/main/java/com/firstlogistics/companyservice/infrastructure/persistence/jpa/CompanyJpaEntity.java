@@ -35,6 +35,7 @@ public class CompanyJpaEntity extends BaseAuditEntity {
     private String name;
 
     @Enumerated(EnumType.STRING)
+    @Column(length = 20, nullable = false)
     private CompanyStatus status;
 
     @Column(name = "type", nullable = false, length = 20)
