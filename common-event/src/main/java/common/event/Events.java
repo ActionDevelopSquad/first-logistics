@@ -17,6 +17,8 @@ public class Events {
     public static void trigger(Object event) {
         if (eventPublisher != null) {
             eventPublisher.publishEvent(event);
+        } else {
+            throw new IllegalStateException("EventPublisher가 초기화되지 않았습니다. 이벤트 발행 실패: " + event);
         }
     }
 }
