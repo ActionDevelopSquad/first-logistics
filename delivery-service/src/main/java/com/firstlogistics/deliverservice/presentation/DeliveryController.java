@@ -1,15 +1,15 @@
 package com.firstlogistics.deliverservice.presentation;
 
 import com.firstlogistics.deliverservice.application.DeliveryQueryService;
-import com.firstlogistics.deliverservice.application.dto.result.DeliveryCreateResult;
+import com.firstlogistics.deliverservice.application.dto.result.CreateDeliveryResult;
 import com.firstlogistics.deliverservice.application.dto.result.DeliveryDetailResult;
 import com.firstlogistics.deliverservice.application.dto.result.DeliveryListResult;
-import com.firstlogistics.deliverservice.application.facade.DeliveryCreateFacade;
-import com.firstlogistics.deliverservice.presentation.dto.request.DeliveryCreateRequest;
+import com.firstlogistics.deliverservice.application.facade.DeliveryCommandFacade;
+import com.firstlogistics.deliverservice.presentation.dto.request.CreateDeliveryRequest;
 import com.firstlogistics.deliverservice.presentation.dto.request.DeliveryListRequest;
 import com.firstlogistics.deliverservice.presentation.dto.response.DeliveryDetailResponse;
 import com.firstlogistics.deliverservice.presentation.dto.response.DeliveryListResponse;
-import com.firstlogistics.deliverservice.presentation.dto.response.DeliveryResponse;
+import com.firstlogistics.deliverservice.presentation.dto.response.CreateDeliveryResponse;
 import common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,17 +23,17 @@ import java.util.UUID;
 @RequestMapping("/api/v1/deliveries")
 public class DeliveryController {
 
-	private final DeliveryCreateFacade deliveryCreateFacade;
+	private final DeliveryCommandFacade deliveryCreateFacade;
 	private final DeliveryQueryService deliveryQueryService;
 
 	@PostMapping
-	public ResponseEntity<ApiResponse<DeliveryResponse>> createDelivery(
-		@RequestBody @Valid DeliveryCreateRequest request,
+	public ResponseEntity<ApiResponse<CreateDeliveryResponse>> createDelivery(
+		@RequestBody @Valid CreateDeliveryRequest request,
 		@RequestHeader("X-User-Id") UUID userId,
 		@RequestHeader("X-User-Role") String role
 	) {
-		DeliveryCreateResult result = deliveryCreateFacade.createDelivery(request.toCommand());
-		DeliveryResponse response = DeliveryResponse.from(result);
+		CreateDeliveryResult result = deliveryCreateFacade.createDelivery(request.toCommand());
+		CreateDeliveryResponse response = CreateDeliveryResponse.from(result);
 		return ResponseEntity.status(DeliverySuccessCode.DELIVERY_CREATED.getStatus())
 			.body(ApiResponse.success(DeliverySuccessCode.DELIVERY_CREATED, response));
 	}

@@ -2,7 +2,7 @@ package com.firstlogistics.deliverservice.infrastructure.messaging.consumer;
 
 import com.firstlogistics.deliverservice.application.DeliveryQueryService;
 import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryCommand;
-import com.firstlogistics.deliverservice.application.facade.DeliveryCreateFacade;
+import com.firstlogistics.deliverservice.application.facade.DeliveryCommandFacade;
 import com.firstlogistics.deliverservice.infrastructure.feign.CompanyClient;
 import com.firstlogistics.deliverservice.infrastructure.feign.HubClient;
 import com.firstlogistics.deliverservice.infrastructure.feign.UserClient;
@@ -55,7 +55,7 @@ class OrderEventKafkaConsumerTest {
 	private KafkaConsumerConfig kafkaConsumerConfig;
 
 	@MockitoBean
-	private DeliveryCreateFacade deliveryCreateFacade;
+	private DeliveryCommandFacade deliveryCreateFacade;
 	@MockitoBean
 	private DeliveryQueryService deliveryQueryService;
 	@MockitoBean

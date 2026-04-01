@@ -2,7 +2,7 @@ package com.firstlogistics.deliverservice.application.facade;
 
 import com.firstlogistics.deliverservice.application.DeliveryCommandService;
 import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryCommand;
-import com.firstlogistics.deliverservice.application.dto.result.DeliveryCreateResult;
+import com.firstlogistics.deliverservice.application.dto.result.CreateDeliveryResult;
 import com.firstlogistics.deliverservice.application.port.CompanyPort;
 import com.firstlogistics.deliverservice.application.port.HubPort;
 import com.firstlogistics.deliverservice.application.port.dto.CompanyResponse;
@@ -19,14 +19,14 @@ import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
-public class DeliveryCreateFacade {
+public class DeliveryCommandFacade {
 
     private final DeliveryCommandService deliveryCommandService;
     private final CompanyPort companyPort;
     private final HubPort hubPort;
     private final DeliveryDistributedLockService deliveryDistributedLockService;
 
-    public DeliveryCreateResult createDelivery(CreateDeliveryCommand command) {
+    public CreateDeliveryResult createDelivery(CreateDeliveryCommand command) {
         CompanyResponse supplierCompany = companyPort.getCompany(command.supplierCompanyId());
         CompanyResponse receiverCompany = companyPort.getCompany(command.receiverCompanyId());
 

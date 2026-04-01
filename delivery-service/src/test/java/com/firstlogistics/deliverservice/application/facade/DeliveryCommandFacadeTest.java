@@ -27,7 +27,7 @@ import static org.mockito.BDDMockito.given;
 
 @Slf4j
 @ExtendWith(MockitoExtension.class)
-class DeliveryCreateFacadeTest {
+class DeliveryCommandFacadeTest {
 
 	@Mock
 	private DeliveryCommandService deliveryCommandService;
@@ -42,7 +42,7 @@ class DeliveryCreateFacadeTest {
 	private DeliveryDistributedLockService deliveryDistributedLockService;
 
 	@InjectMocks
-	private DeliveryCreateFacade deliveryCreateFacade;
+	private DeliveryCommandFacade deliveryCreateFacade;
 
 	@Nested
 	@DisplayName("배송 생성 실패")

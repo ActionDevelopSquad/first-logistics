@@ -1,6 +1,7 @@
-package com.firstlogistics.deliverservice.presentation.dto.response;
+package com.firstlogistics.deliverservice.application.dto.result;
 
-import com.firstlogistics.deliverservice.application.dto.result.DeliveryCreateResult;
+import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryCommand;
+import com.firstlogistics.deliverservice.domain.entity.Delivery;
 import com.firstlogistics.deliverservice.domain.enums.DeliveryStatus;
 import com.firstlogistics.deliverservice.domain.enums.RouteStatus;
 
@@ -8,40 +9,41 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-public record DeliveryResponse(
+public record CreateDeliveryResult(
 	OrderInfo order,
 	DeliveryInfo delivery
 ) {
-	public static DeliveryResponse from(DeliveryCreateResult result) {
-		return new DeliveryResponse(
+
+	public static CreateDeliveryResult from(Delivery delivery, CreateDeliveryCommand command, String receiverName) {
+		return new CreateDeliveryResult(
 			new OrderInfo(
-				result.order().orderId(),
-				result.order().orderedAt(),
-				result.order().orderDueDate(),
-				result.order().orderRequestNote(),
-				result.order().orderItems().stream()
+				delivery.getOrderId(),
+				command.orderedAt(),
+				command.orderDueDate(),
+				command.orderRequestNote(),
+				command.orderItems().stream()
 					.map(i -> new OrderItemInfo(i.productId(), i.productName(), i.quantity(), i.price()))
 					.toList()
 			),
 			new DeliveryInfo(
-				result.delivery().deliveryId(),
-				result.delivery().status(),
-				result.delivery().sourceHubId(),
-				result.delivery().destinationHubId(),
-				result.delivery().receiverName(),
-				result.delivery().receiverSlackId(),
-				result.delivery().receiverRoadAddress(),
-				result.delivery().receiverDetailAddress(),
-				result.delivery().currentHubId(),
-				result.delivery().routes().stream()
+				delivery.getId().id(),
+				delivery.getStatus(),
+				delivery.getSourceHubId(),
+				delivery.getDestinationHubId(),
+				receiverName,
+				delivery.getReceiverSlackId(),
+				delivery.getDeliveryAddress().roadAddress(),
+				delivery.getDeliveryAddress().detailAddress(),
+				delivery.getCurrentHubId(),
+				delivery.getRoutes().stream()
 					.map(route -> new RouteInfo(
-						route.routeId(),
-						route.sequence(),
-						route.sourceHubId(),
-						route.destinationHubId(),
-						route.estimatedDistanceMeters(),
-						route.estimatedDurationMinutes(),
-						route.status()
+						route.getId().id(),
+						route.getDeliveryRouteSequence(),
+						route.getSourceHubId(),
+						route.getDestinationHubId(),
+						route.getEstimatedDistance().meters(),
+						route.getEstimatedDuration().minutes(),
+						route.getStatus()
 					))
 					.toList()
 			)
