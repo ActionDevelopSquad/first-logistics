@@ -24,16 +24,20 @@ public class ConsistentHashPartitioner implements Partitioner {
 
         TreeMap<Integer, Integer> ring = ringCache.computeIfAbsent(cacheKey, k -> buildRing(numPartitions));
 
-        int keyHash = Math.abs(key.toString().hashCode());
+        int keyHash = (key.toString().hashCode() & 0x7FFFFFFF);
         Map.Entry<Integer, Integer> entry = ring.ceilingEntry(keyHash);
         return entry != null ? entry.getValue() : ring.firstEntry().getValue();
     }
 
     private TreeMap<Integer, Integer> buildRing(int numPartitions) {
         TreeMap<Integer, Integer> ring = new TreeMap<>();
+        StringBuilder sb = new StringBuilder();
+
         for (int partition = 0; partition < numPartitions; partition++) {
             for (int i = 0; i < VIRTUAL_NODES; i++) {
-                int hash = Math.abs((partition + "-" + i).hashCode());
+                sb.setLength(0);
+                sb.append(partition).append("-").append(i);
+                int hash = (sb.toString().hashCode() & 0x7FFFFFFF);
                 ring.put(hash, partition);
             }
         }
