@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class HubConnectionCommandServiceTest {
@@ -52,6 +53,7 @@ public class HubConnectionCommandServiceTest {
                 .isInstanceOf(HubConnectionException.class)
                 .extracting("errorCode")
                 .isEqualTo(HubConnectionErrorCode.HUB_NOT_FOUND);
+        verify(hubConnectionRepository, never()).save(any(HubConnection.class));
     }
 
     @Test
@@ -73,7 +75,7 @@ public class HubConnectionCommandServiceTest {
                 .isInstanceOf(HubConnectionException.class)
                 .extracting("errorCode")
                 .isEqualTo(HubConnectionErrorCode.SAME_SOURCE_AND_DESTINATION_HUB);
-
+        verify(hubConnectionRepository, never()).save(any(HubConnection.class));
     }
 
     @Test
@@ -97,6 +99,7 @@ public class HubConnectionCommandServiceTest {
                 .isInstanceOf(HubConnectionException.class)
                 .extracting("errorCode")
                 .isEqualTo(HubConnectionErrorCode.DUPLICATE_HUB_CONNECTION);
+        verify(hubConnectionRepository, never()).save(any(HubConnection.class));
     }
 
     @Test
@@ -121,7 +124,7 @@ public class HubConnectionCommandServiceTest {
         //then
         assertThat(result.sourceHubId()).isEqualTo(sourceId.id());
         assertThat(result.destinationHubId()).isEqualTo(destinationId.id());
-
+        verify(hubConnectionRepository, times(1)).save(any(HubConnection.class));
     }
 
 
