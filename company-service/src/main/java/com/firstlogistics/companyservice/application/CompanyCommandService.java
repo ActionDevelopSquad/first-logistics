@@ -12,6 +12,7 @@ import com.firstlogistics.companyservice.domain.event.CompanyCreatedEvent;
 import com.firstlogistics.companyservice.domain.exception.CompanyErrorCode;
 import com.firstlogistics.companyservice.domain.exception.CompanyException;
 import com.firstlogistics.companyservice.domain.repository.CompanyRepository;
+import com.firstlogistics.companyservice.domain.vo.GeoLocation;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,7 +27,7 @@ public class CompanyCommandService {
 
     @Transactional
     public CompanyResult register(CreateCompanyCommand command) {
-        UUID hubId = hubPort.getHubId(command.latitude(), command.longitude());
+        UUID hubId = hubPort.getHubId(GeoLocation.of(command.latitude(), command.longitude()));
 
         CompanyType type = resolveCompanyType(command.type());
 

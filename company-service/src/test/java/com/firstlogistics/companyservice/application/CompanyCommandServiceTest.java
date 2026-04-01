@@ -3,8 +3,8 @@ package com.firstlogistics.companyservice.application;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.verify;
 
 import com.firstlogistics.companyservice.application.dto.command.CreateCompanyCommand;
@@ -16,6 +16,7 @@ import com.firstlogistics.companyservice.domain.event.CompanyCreatedEvent;
 import com.firstlogistics.companyservice.domain.exception.CompanyErrorCode;
 import com.firstlogistics.companyservice.domain.exception.CompanyException;
 import com.firstlogistics.companyservice.domain.repository.CompanyRepository;
+import com.firstlogistics.companyservice.domain.vo.GeoLocation;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -63,7 +64,7 @@ class CompanyCommandServiceTest {
     @DisplayName("업체 생성 성공 - 저장된 업체 정보를 반환한다")
     void register_success() {
         // given
-        given(hubPort.getHubId(validCommand.latitude(), validCommand.longitude()))
+        given(hubPort.getHubId(any(GeoLocation.class)))
                 .willReturn(FIXED_HUB_ID);
         given(companyRepository.save(any()))
                 .willAnswer(invocation -> invocation.getArgument(0));
@@ -83,7 +84,7 @@ class CompanyCommandServiceTest {
     @DisplayName("업체 생성 성공 - 저장 후 이벤트가 발행된다")
     void register_publishesEvent() {
         // given
-        given(hubPort.getHubId(anyDouble(), anyDouble()))
+        given(hubPort.getHubId(any(GeoLocation.class)))
                 .willReturn(FIXED_HUB_ID);
         given(companyRepository.save(any()))
                 .willAnswer(invocation -> invocation.getArgument(0));
@@ -101,11 +102,11 @@ class CompanyCommandServiceTest {
     }
 
     @Test
-    @DisplayName("업체 생성 실패 - 허브 ID가 null이면 예외가 발생한다")
+    @DisplayName("업체 생성 실패 - 허브를 찾을 수 없으면 예외가 발생한다")
     void register_invalidHubId_throwsException() {
         // given
-        given(hubPort.getHubId(any(double.class), any(double.class)))
-                .willReturn(null);
+        willThrow(new CompanyException(CompanyErrorCode.INVALID_HUB_ID))
+                .given(hubPort).getHubId(any(GeoLocation.class));
 
         // when & then
         assertThatThrownBy(() -> companyCommandService.register(validCommand))
@@ -117,7 +118,7 @@ class CompanyCommandServiceTest {
     @DisplayName("업체 생성 실패 - 알 수 없는 업체 타입이면 예외가 발생한다")
     void register_invalidCompanyType_throwsException() {
         // given
-        given(hubPort.getHubId(any(double.class), any(double.class)))
+        given(hubPort.getHubId(any(GeoLocation.class)))
                 .willReturn(FIXED_HUB_ID);
 
         CreateCompanyCommand invalidTypeCommand = new CreateCompanyCommand(

@@ -2,6 +2,7 @@ package com.firstlogistics.companyservice.infrastructure.client;
 
 import com.firstlogistics.companyservice.domain.exception.CompanyErrorCode;
 import com.firstlogistics.companyservice.domain.exception.CompanyException;
+import com.firstlogistics.companyservice.domain.vo.GeoLocation;
 import common.response.ApiResponse;
 import common.response.CommonSuccessCode;
 import org.junit.jupiter.api.DisplayName;
@@ -36,7 +37,7 @@ class HubPortAdapterTest {
                 .willReturn(ApiResponse.success(CommonSuccessCode.OK, expectedHubId));
 
         // when
-        UUID result = hubPortAdapter.getHubId(37.514, 127.106);
+        UUID result = hubPortAdapter.getHubId(GeoLocation.of(37.514, 127.106));
 
         // then
         assertThat(result).isEqualTo(expectedHubId);
@@ -50,7 +51,7 @@ class HubPortAdapterTest {
                 .willReturn(null);
 
         // when & then
-        assertThatThrownBy(() -> hubPortAdapter.getHubId(37.514, 127.106))
+        assertThatThrownBy(() -> hubPortAdapter.getHubId(GeoLocation.of(37.514, 127.106)))
                 .isInstanceOf(CompanyException.class)
                 .hasMessageContaining(CompanyErrorCode.INVALID_HUB_ID.getMessage());
     }
@@ -63,7 +64,7 @@ class HubPortAdapterTest {
                 .willReturn(ApiResponse.success(CommonSuccessCode.OK, null));
 
         // when & then
-        assertThatThrownBy(() -> hubPortAdapter.getHubId(37.514, 127.106))
+        assertThatThrownBy(() -> hubPortAdapter.getHubId(GeoLocation.of(37.514, 127.106)))
                 .isInstanceOf(CompanyException.class)
                 .hasMessageContaining(CompanyErrorCode.INVALID_HUB_ID.getMessage());
     }
