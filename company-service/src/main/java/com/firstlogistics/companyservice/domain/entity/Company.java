@@ -5,16 +5,17 @@ import com.firstlogistics.companyservice.domain.exception.CompanyErrorCode;
 import com.firstlogistics.companyservice.domain.exception.CompanyException;
 import com.firstlogistics.companyservice.domain.vo.CompanyAddress;
 import com.firstlogistics.companyservice.domain.vo.GeoLocation;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.ToString;
-
-import java.util.UUID;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(onlyExplicitlyIncluded = true)
+@Getter
 public class Company {
 
     @EqualsAndHashCode.Include
@@ -28,7 +29,8 @@ public class Company {
     private CompanyAddress address;
     private GeoLocation geoLocation;
 
-    public static Company create(UUID hubId, UUID userId, String name, CompanyType type, String roadAddress, String detailAddress, double latitude, double longitude) {
+    public static Company create(UUID hubId, UUID userId, String name, CompanyType type, String roadAddress,
+                                 String detailAddress, double latitude, double longitude) {
         validate(hubId, userId, name, type);
 
         return new Company(
@@ -58,7 +60,21 @@ public class Company {
         }
     }
 
-    public void changeAddress(String roadAddress, String detailAddress,  double latitude, double longitude) {
+    public static Company reconstitute(UUID id, UUID hubId, UUID userId, String name, CompanyType companyType,
+                                       CompanyStatus status, CompanyAddress address, GeoLocation geoLocation) {
+        return new Company(
+                id,
+                hubId,
+                userId,
+                name,
+                companyType,
+                status,
+                address,
+                geoLocation
+        );
+    }
+
+    public void changeAddress(String roadAddress, String detailAddress, double latitude, double longitude) {
         if (this.status == CompanyStatus.INACTIVE) {
             throw new CompanyException(CompanyErrorCode.COMPANY_INACTIVE);
         }

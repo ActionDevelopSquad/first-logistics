@@ -17,6 +17,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,17 +50,18 @@ class DeliveryCreateFacadeTest {
 
 		@Test
 		@DisplayName("존재하지 않는 수령업체 ID")
-		void createDelivery_fail_companyNotFound() {
+		void createDelivery_fail_receiverCompanyNotFound() {
 			// given
 			UUID orderId = UUID.randomUUID();
-			UUID sourceHubId = UUID.randomUUID();
+			UUID supplierCompanyId = UUID.randomUUID();
+			UUID supplierManagerId = UUID.randomUUID();
+			UUID supplierHubId = UUID.randomUUID();
 			UUID receiverCompanyId = UUID.randomUUID();
-			UUID receiverId = UUID.randomUUID();
-			CreateDeliveryCommand command = new CreateDeliveryCommand(
-				orderId, sourceHubId, receiverCompanyId, receiverId,
-				"서울시 강남구 테헤란로 123", "101호", 37.5, 127.0
-			);
+			UUID receiverManagerId = UUID.randomUUID();
+			CreateDeliveryCommand command = stubCommand(orderId, supplierCompanyId, supplierManagerId, receiverCompanyId, receiverManagerId);
 
+			given(companyPort.getCompany(supplierCompanyId))
+				.willReturn(new CompanyResponse(supplierCompanyId, supplierHubId));
 			given(companyPort.getCompany(receiverCompanyId))
 				.willThrow(new DeliveryException(DeliveryErrorCode.COMPANY_NOT_FOUND));
 
@@ -77,18 +80,19 @@ class DeliveryCreateFacadeTest {
 		void createDelivery_fail_hubNotFound() {
 			// given
 			UUID orderId = UUID.randomUUID();
-			UUID sourceHubId = UUID.randomUUID();
+			UUID supplierCompanyId = UUID.randomUUID();
+			UUID supplierManagerId = UUID.randomUUID();
+			UUID supplierHubId = UUID.randomUUID();
 			UUID receiverCompanyId = UUID.randomUUID();
-			UUID receiverId = UUID.randomUUID();
+			UUID receiverManagerId = UUID.randomUUID();
 			UUID destinationHubId = UUID.randomUUID();
-			CreateDeliveryCommand command = new CreateDeliveryCommand(
-				orderId, sourceHubId, receiverCompanyId, receiverId,
-				"서울시 강남구 테헤란로 123", "101호", 37.5, 127.0
-			);
+			CreateDeliveryCommand command = stubCommand(orderId, supplierCompanyId, supplierManagerId, receiverCompanyId, receiverManagerId);
 
+			given(companyPort.getCompany(supplierCompanyId))
+				.willReturn(new CompanyResponse(supplierCompanyId, supplierHubId));
 			given(companyPort.getCompany(receiverCompanyId))
 				.willReturn(new CompanyResponse(receiverCompanyId, destinationHubId));
-			given(hubPort.getHubRoute(sourceHubId, destinationHubId))
+			given(hubPort.getHubRoute(supplierHubId, destinationHubId))
 				.willThrow(new DeliveryException(DeliveryErrorCode.HUB_NOT_FOUND));
 
 			// when
@@ -100,5 +104,27 @@ class DeliveryCreateFacadeTest {
 				.isInstanceOf(DeliveryException.class)
 				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.HUB_NOT_FOUND);
 		}
+	}
+
+	private CreateDeliveryCommand stubCommand(
+		UUID orderId,
+		UUID supplierCompanyId,
+		UUID supplierManagerId,
+		UUID receiverCompanyId,
+		UUID receiverManagerId
+	) {
+		return new CreateDeliveryCommand(
+			orderId,
+			LocalDateTime.now(),
+			LocalDateTime.now().plusDays(3),
+			"요청사항",
+			supplierCompanyId,
+			supplierManagerId,
+			receiverCompanyId,
+			receiverManagerId,
+			"서울시 강남구 테헤란로 123",
+			"101호",
+			List.of(new CreateDeliveryCommand.OrderItemInfo(UUID.randomUUID(), "마른 오징어", 50, 10000))
+		);
 	}
 }

@@ -27,8 +27,8 @@ public class DeliveryMapper {
 			delivery.getDestinationHubId(),
 			delivery.getDeliveryAddress().roadAddress(),
 			delivery.getDeliveryAddress().detailAddress(),
-			delivery.getDeliveryLocation().latitude(),
-			delivery.getDeliveryLocation().longitude(),
+			delivery.getDeliveryLocation() != null ? delivery.getDeliveryLocation().latitude() : null,
+			delivery.getDeliveryLocation() != null ? delivery.getDeliveryLocation().longitude() : null,
 			delivery.getReceiverId(),
 			delivery.getReceiverSlackId(),
 			delivery.getReceiverCompanyId(),
@@ -72,7 +72,9 @@ public class DeliveryMapper {
 			jpaEntity.getSourceHubId(),
 			jpaEntity.getDestinationHubId(),
 			Address.of(jpaEntity.getRoadAddress(), jpaEntity.getDetailAddress()),
-			GeoLocation.of(jpaEntity.getLatitude(), jpaEntity.getLongitude()),
+			(jpaEntity.getLatitude() != null && jpaEntity.getLongitude() != null)
+				? GeoLocation.of(jpaEntity.getLatitude(), jpaEntity.getLongitude())
+				: null,
 			jpaEntity.getReceiverId(),
 			jpaEntity.getReceiverSlackId(),
 			jpaEntity.getReceiverCompanyId(),

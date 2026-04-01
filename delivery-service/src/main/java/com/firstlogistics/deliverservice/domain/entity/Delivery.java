@@ -41,8 +41,6 @@ public class Delivery {
 		UUID destinationHubId,
 		String roadAddress,
 		String detailAddress,
-		double latitude,
-		double longitude,
 		UUID receiverId,
 		String receiverSlackId,
 		UUID receiverCompanyId,
@@ -59,7 +57,7 @@ public class Delivery {
 			DeliveryId.generate(), orderId, DeliveryStatus.CREATED,
 			sourceHubId, destinationHubId,
 			Address.of(roadAddress, detailAddress),
-			GeoLocation.of(latitude, longitude),
+			null,
 			receiverId, receiverSlackId, receiverCompanyId, receiverCompanyDeliveryStaffId,
 			sourceHubId,
 			new ArrayList<>()
