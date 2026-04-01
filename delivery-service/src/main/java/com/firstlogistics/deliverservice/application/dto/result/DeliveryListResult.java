@@ -9,11 +9,17 @@ import java.util.UUID;
 
 public record DeliveryListResult(
 	List<DeliverySummary> deliveries,
-	boolean hasNext
+	boolean hasNext,
+	UUID nextCursorId,
+	LocalDateTime nextCursorCreatedAt
 ) {
 
 	public static DeliveryListResult of(List<DeliverySummary> deliveries, boolean hasNext) {
-		return new DeliveryListResult(deliveries, hasNext);
+		if (!hasNext || deliveries.isEmpty()) {
+			return new DeliveryListResult(deliveries, hasNext, null, null);
+		}
+		DeliverySummary last = deliveries.getLast();
+		return new DeliveryListResult(deliveries, hasNext, last.deliveryId(), last.createdAt());
 	}
 
 	public record DeliverySummary(

@@ -18,4 +18,9 @@ public class CompanyFeignAdapter implements CompanyPort {
 	public CompanyResponse getCompany(UUID companyId) {
 		return companyClient.getCompany(companyId).data();
 	}
+
+	@Override
+	public CompanyResponse getCompanyByManagerId(UUID managerId) {
+		return companyClient.getCompanyByManagerId(managerId).data();
+	}
 }

@@ -6,6 +6,7 @@ import com.firstlogistics.deliverservice.infrastructure.feign.dto.FeignResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.UUID;
 
@@ -14,4 +15,7 @@ public interface CompanyClient {
 
 	@GetMapping("/api/v1/companies/{companyId}")
 	FeignResponse<CompanyResponse> getCompany(@PathVariable UUID companyId);
+
+	@GetMapping("/api/v1/companies")
+	FeignResponse<CompanyResponse> getCompanyByManagerId(@RequestParam UUID managerId);
 }

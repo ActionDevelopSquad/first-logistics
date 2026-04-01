@@ -1,8 +1,12 @@
 package com.firstlogistics.deliverservice.presentation;
 
+import com.firstlogistics.deliverservice.application.DeliveryQueryService;
+import com.firstlogistics.deliverservice.application.dto.result.DeliveryListResult;
+import com.firstlogistics.deliverservice.application.dto.result.DeliveryResult;
 import com.firstlogistics.deliverservice.application.facade.DeliveryCreateFacade;
-import com.firstlogistics.deliverservice.domain.exception.DeliverySuccessCode;
 import com.firstlogistics.deliverservice.presentation.dto.request.DeliveryCreateRequest;
+import com.firstlogistics.deliverservice.presentation.dto.request.DeliveryListRequest;
+import com.firstlogistics.deliverservice.presentation.dto.response.DeliveryListResponse;
 import com.firstlogistics.deliverservice.presentation.dto.response.DeliveryResponse;
 import common.response.ApiResponse;
 import jakarta.validation.Valid;
@@ -18,6 +22,7 @@ import java.util.UUID;
 public class DeliveryController {
 
 	private final DeliveryCreateFacade deliveryCreateFacade;
+	private final DeliveryQueryService deliveryQueryService;
 
 	@PostMapping
 	public ResponseEntity<ApiResponse<DeliveryResponse>> createDelivery(
@@ -25,8 +30,19 @@ public class DeliveryController {
 		@RequestHeader("X-User-Id") UUID userId,
 		@RequestHeader("X-User-Role") String role
 	) {
-		DeliveryResponse response = DeliveryResponse.from(deliveryCreateFacade.createDelivery(request.toCommand()));
+		DeliveryResult result = deliveryCreateFacade.createDelivery(request.toCommand());
+		DeliveryResponse response = DeliveryResponse.from(result);
 		return ResponseEntity.status(DeliverySuccessCode.DELIVERY_CREATED.getStatus())
 			.body(ApiResponse.success(DeliverySuccessCode.DELIVERY_CREATED, response));
+	}
+
+	@GetMapping
+	public ResponseEntity<ApiResponse<DeliveryListResponse>> getDeliveries(
+		@ModelAttribute DeliveryListRequest request,
+		@RequestHeader("X-User-Role") String role,
+		@RequestHeader("X-User-Id") UUID userId
+	) {
+		DeliveryListResult result = deliveryQueryService.getDeliveries(request.toQuery(role, userId));
+		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_LIST_FOUND, DeliveryListResponse.from(result)));
 	}
 }

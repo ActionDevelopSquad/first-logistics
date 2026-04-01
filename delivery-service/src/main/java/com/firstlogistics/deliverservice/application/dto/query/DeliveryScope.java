@@ -17,4 +17,15 @@ public record DeliveryScope(UserRole role, UUID scopeId) {
 	public static DeliveryScope of(UserRole role, UUID scopeId) {
 		return new DeliveryScope(role, scopeId);
 	}
+
+	public static DeliveryScope from(String role, UUID userId, UUID hubId, UUID companyId) {
+		UserRole userRole = UserRole.valueOf(role);
+		UUID scopeId = switch (userRole) {
+			case HUB_MANAGER -> hubId;
+			case DELIVERY_MANAGER -> userId;
+			case COMPANY_MANAGER -> companyId;
+			default -> null;
+		};
+		return DeliveryScope.of(userRole, scopeId);
+	}
 }
