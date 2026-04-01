@@ -5,11 +5,12 @@ plugins {
 dependencies {
     implementation project(':common')
     implementation project(':common-jpa')
+    implementation project(':common-event')
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
-//    implementation 'org.springframework.boot:spring-boot-starter-kafka'
+    implementation 'org.springframework.kafka:spring-kafka'
 //    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 
     runtimeOnly 'org.postgresql:postgresql'
@@ -18,6 +19,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
     testRuntimeOnly 'com.h2database:h2'
 }
 

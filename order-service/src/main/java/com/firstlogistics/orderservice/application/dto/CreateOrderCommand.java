@@ -1,5 +1,7 @@
 package com.firstlogistics.orderservice.application.dto;
 
+import com.firstlogistics.orderservice.domain.vo.OrderItemInput;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -20,5 +22,14 @@ public record CreateOrderCommand(
             String productName,
             Long unitPrice,
             Integer quantity
-    ) {}
+    ) {
+        public OrderItemInput toDomainInput() {
+            return new OrderItemInput(
+                    productId,
+                    productName,
+                    unitPrice,
+                    quantity
+            );
+        }
+    }
 }
