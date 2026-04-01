@@ -1,4 +1,4 @@
-package com.firstlogistics.notificationservice.domain.vo;
+package com.firstlogistics.notificationservice.ailog.domain.vo;
 
 import java.util.UUID;
 

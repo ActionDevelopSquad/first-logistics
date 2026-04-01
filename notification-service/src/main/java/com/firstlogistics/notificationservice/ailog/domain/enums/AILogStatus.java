@@ -1,4 +1,4 @@
-package com.firstlogistics.notificationservice.domain.enums;
+package com.firstlogistics.notificationservice.ailog.domain.enums;
 
 public enum AILogStatus {
     PENDING,

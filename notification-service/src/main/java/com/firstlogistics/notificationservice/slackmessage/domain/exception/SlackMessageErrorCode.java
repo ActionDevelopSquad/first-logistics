@@ -1,4 +1,4 @@
-package com.firstlogistics.notificationservice.domain.exception;
+package com.firstlogistics.notificationservice.slackmessage.domain.exception;
 
 import common.response.ErrorCode;
 import lombok.Getter;

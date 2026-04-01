@@ -1,12 +1,10 @@
-package com.firstlogistics.notificationservice.domain.entity;
+package com.firstlogistics.notificationservice.slackmessage.domain.entity;
 
-import com.firstlogistics.notificationservice.domain.enums.SlackMessageStatus;
-import com.firstlogistics.notificationservice.domain.enums.SlackMessageType;
-import com.firstlogistics.notificationservice.domain.exception.SlackMessageErrorCode;
-import com.firstlogistics.notificationservice.domain.exception.SlackMessageException;
-import com.firstlogistics.notificationservice.domain.vo.SlackMessageId;
-import common.jpa.entity.BaseAuditEntity;
-import jakarta.persistence.Table;
+import com.firstlogistics.notificationservice.slackmessage.domain.enums.SlackMessageStatus;
+import com.firstlogistics.notificationservice.slackmessage.domain.enums.SlackMessageType;
+import com.firstlogistics.notificationservice.slackmessage.domain.exception.SlackMessageErrorCode;
+import com.firstlogistics.notificationservice.slackmessage.domain.exception.SlackMessageException;
+import com.firstlogistics.notificationservice.slackmessage.domain.vo.SlackMessageId;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
