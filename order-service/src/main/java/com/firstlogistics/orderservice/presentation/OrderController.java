@@ -2,6 +2,7 @@ package com.firstlogistics.orderservice.presentation;
 
 import com.firstlogistics.orderservice.application.OrderCommandService;
 import com.firstlogistics.orderservice.presentation.dto.request.CreateOrderRequest;
+import com.firstlogistics.orderservice.presentation.dto.response.OrderIdResponse;
 import common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,13 +24,13 @@ public class OrderController {
     private final OrderCommandService orderCommandService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<UUID>> createOrder(
+    public ResponseEntity<ApiResponse<OrderIdResponse>> createOrder(
             @RequestHeader("X-User-Id") String userId,
             @RequestBody @Valid CreateOrderRequest request
     ) {
         UUID id = orderCommandService.createOrder(request.toCommand());
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(OrderSuccessCode.ORDER_CREATED, id));
+                .body(ApiResponse.success(OrderSuccessCode.ORDER_CREATED, OrderIdResponse.from(id)));
     }
 
 }
