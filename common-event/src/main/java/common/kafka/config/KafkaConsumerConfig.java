@@ -18,18 +18,23 @@ public class KafkaConsumerConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
+    private static final Map<String, Object> BASE_PROPS = Map.of(
+            ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest",
+            ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false,
+            ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, 300000
+    );
+
     /**
      * 모든 컨슈머에 공통 적용되는 기본 props
      * - 자동 커밋 비활성화 (AckMode.MANUAL 사용)
      * - 처리 시간이 길어져도 consumer group에서 제외되지 않도록 MAX_POLL_INTERVAL_MS 설정
+     * - KEY/VALUE_DESERIALIZER는 메시지 타입에 따라 각 Consumer에서 개별 설정 필요
+     * - 각 Consumer에서 GROUP_ID_CONFIG를 반드시 개별 설정 필요
+     *   ex: props.put(ConsumerConfig.GROUP_ID_CONFIG, "delivery-service-group");
      */
     public Map<String, Object> commonConsumerProps() {
-        Map<String, Object> props = new HashMap<>();
+        Map<String, Object> props = new HashMap<>(BASE_PROPS);
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "delivery-service");
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
-        props.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, 300000);
         return props;
     }
 }
