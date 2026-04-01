@@ -1,12 +1,12 @@
 package com.firstlogistics.hubservice.hubconnection.presentation;
 
 import com.firstlogistics.hubservice.hubconnection.application.HubConnectionCommandService;
-import com.firstlogistics.hubservice.hubconnection.application.dto.result.HubConnectionResult;
 import com.firstlogistics.hubservice.hubconnection.presentation.dto.request.CreateHubConnectionRequest;
 import com.firstlogistics.hubservice.hubconnection.presentation.dto.response.HubConnectionResponse;
 import common.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,6 +17,7 @@ public class HubConnectionApiController {
 
     private final HubConnectionCommandService commandService;
 
+    @PostMapping
     public ResponseEntity<ApiResponse<HubConnectionResponse>> create(CreateHubConnectionRequest request){
         HubConnectionResponse response = HubConnectionResponse.from(commandService.create(request.toCommand()));
         return ResponseEntity.status(HubConnectionSuccessCode.HUB_CREATED.getStatus())
