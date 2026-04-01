@@ -21,15 +21,5 @@ public record HubResponse(
         );
     }
 
-    public record GeoLocationResponse(
-            double latitude,
-            double longitude
-    ){
-        public static GeoLocationResponse of(double latitude, double longitude){
-            return new GeoLocationResponse(
-                    latitude,
-                    longitude
-            );
-        }
-    }
+
 }
