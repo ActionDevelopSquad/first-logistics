@@ -1,18 +1,17 @@
 package com.firstlogistics.deliverservice.domain.vo;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 
-@Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Distance {
+public record Distance(int meters) {
 
-	private int meters;
+	public Distance {
+		if (meters < 0) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_DISTANCE);
+		}
+	}
 
 	public static Distance of(int meters) {
-		Distance distance = new Distance();
-		distance.meters = meters;
-		return distance;
+		return new Distance(meters);
 	}
 }

@@ -1,5 +1,7 @@
 package com.firstlogistics.orderservice.domain.entity;
 
+import com.firstlogistics.orderservice.domain.exception.OrderErrorCode;
+import com.firstlogistics.orderservice.domain.exception.OrderException;
 import com.firstlogistics.orderservice.domain.vo.Money;
 import com.firstlogistics.orderservice.domain.vo.OrderId;
 import lombok.AccessLevel;
@@ -12,7 +14,6 @@ import java.util.UUID;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class OrderItem {
     private UUID id;
-    private OrderId orderId;
     private UUID productId;
     private String productName;
     private Money unitPrice;
@@ -20,20 +21,45 @@ public class OrderItem {
     private Money subTotal;
 
     static OrderItem create(
-            OrderId orderId,
             UUID productId,
             String productName,
-            Money unitPrice,
+            Long unitPrice,
             int quantity
     ) {
+        if (productId == null) throw new OrderException(OrderErrorCode.INVALID_PRODUCT_ID);
+        if (productName == null || productName.isBlank()) throw new OrderException(OrderErrorCode.INVALID_PRODUCT_NAME);
+        if (quantity <= 0) throw new OrderException(OrderErrorCode.INVALID_QUANTITY);
+
+        Money price = Money.of(unitPrice);
+
         return new OrderItem(
                 UUID.randomUUID(),
-                orderId,
                 productId,
                 productName,
-                unitPrice,
+                price,
                 quantity,
-                unitPrice.multiply(quantity)
+                price.multiply(quantity)
+        );
+    }
+
+    /**
+     * OrderItemJpaEntity -> OrderItem 변환 시에만 사용
+     */
+    public static OrderItem reconstitute(
+            UUID id,
+            UUID productId,
+            String productName,
+            Long unitPrice,
+            int quantity,
+            Long subTotal
+    ) {
+        return new OrderItem(
+                id,
+                productId,
+                productName,
+                Money.of(unitPrice),
+                quantity,
+                Money.of(subTotal)
         );
     }
 }

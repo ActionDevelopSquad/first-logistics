@@ -1,20 +1,20 @@
 package com.firstlogistics.deliverservice.domain.vo;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 
-@Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class GeoLocation {
+public record GeoLocation(double latitude, double longitude) {
 
-	private double latitude;
-	private double longitude;
+	public GeoLocation {
+		if (!Double.isFinite(latitude) || latitude < -90 || latitude > 90) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_GEO_LOCATION);
+		}
+		if (!Double.isFinite(longitude) || longitude < -180 || longitude > 180) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_GEO_LOCATION);
+		}
+	}
 
 	public static GeoLocation of(double latitude, double longitude) {
-		GeoLocation geoLocation = new GeoLocation();
-		geoLocation.latitude = latitude;
-		geoLocation.longitude = longitude;
-		return geoLocation;
+		return new GeoLocation(latitude, longitude);
 	}
 }

@@ -1,58 +1,79 @@
 package com.firstlogistics.deliverservice.domain.entity;
 
 import com.firstlogistics.deliverservice.domain.enums.RouteStatus;
-import com.firstlogistics.deliverservice.domain.vo.Distance;
-import com.firstlogistics.deliverservice.domain.vo.Time;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
+import com.firstlogistics.deliverservice.domain.vo.*;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EqualsAndHashCode(of = "id")
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class DeliveryRoute {
 
-	private UUID id;
-	private UUID deliveryId;
-	private int sequence;
+	private DeliveryRouteId id;
+	private DeliveryId deliveryId;
+	private int deliveryRouteSequence;
 	private UUID sourceHubId;
 	private UUID destinationHubId;
 	private Distance estimatedDistance;
 	private Time estimatedDuration;
 	private Distance actualDistance;
 	private Time actualDuration;
+	private Address actualDestinationAddress;
+	private GeoLocation actualDestinationLocation;
 	private RouteStatus status;
-	private UUID deliveryStaffId;
+	private DeliveryStaffId deliveryStaffId;
 
-	private DeliveryRoute(
-		UUID deliveryId,
-		int sequence,
+	public static DeliveryRoute create(
+		DeliveryId deliveryId,
+		int deliveryRouteSequence,
+		UUID sourceHubId,
+		UUID destinationHubId,
+		int estimatedDistanceMeters,
+		int estimatedDurationMinutes
+	) {
+		if (deliveryId == null || sourceHubId == null || destinationHubId == null) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_DELIVERY_ROUTE_PARAMS);
+		}
+		return new DeliveryRoute(
+			DeliveryRouteId.generate(), deliveryId, deliveryRouteSequence,
+			sourceHubId, destinationHubId,
+			Distance.of(estimatedDistanceMeters),
+			Time.of(estimatedDurationMinutes),
+			null, null, null, null,
+			RouteStatus.CREATED, null
+		);
+	}
+
+	public static DeliveryRoute reconstitute(
+		DeliveryRouteId id,
+		DeliveryId deliveryId,
+		int deliveryRouteSequence,
 		UUID sourceHubId,
 		UUID destinationHubId,
 		Distance estimatedDistance,
 		Time estimatedDuration,
-		RouteStatus status
+		Distance actualDistance,
+		Time actualDuration,
+		Address actualDestinationAddress,
+		GeoLocation actualDestinationLocation,
+		RouteStatus status,
+		DeliveryStaffId deliveryStaffId
 	) {
-		this.deliveryId = deliveryId;
-		this.sequence = sequence;
-		this.sourceHubId = sourceHubId;
-		this.destinationHubId = destinationHubId;
-		this.estimatedDistance = estimatedDistance;
-		this.estimatedDuration = estimatedDuration;
-		this.status = status;
-	}
-
-	public static DeliveryRoute create(
-		UUID deliveryId,
-		int sequence,
-		UUID sourceHubId,
-		UUID destinationHubId,
-		Distance estimatedDistance,
-		Time estimatedDuration
-	) {
-		RouteStatus createdStatus = RouteStatus.CREATED;
-		return new DeliveryRoute(deliveryId, sequence, sourceHubId, destinationHubId, estimatedDistance, estimatedDuration, createdStatus);
+		return new DeliveryRoute(
+			id, deliveryId, deliveryRouteSequence,
+			sourceHubId, destinationHubId,
+			estimatedDistance, estimatedDuration,
+			actualDistance, actualDuration,
+			actualDestinationAddress, actualDestinationLocation,
+			status, deliveryStaffId
+		);
 	}
 
 	public void departRoute() {
@@ -63,13 +84,7 @@ public class DeliveryRoute {
 		this.status = RouteStatus.HUB_WAITING;
 	}
 
-	public void arriveRoute(Distance actualDistance, Time actualDuration) {
-		this.actualDistance = actualDistance;
-		this.actualDuration = actualDuration;
-		this.status = RouteStatus.DESTINATION_ARRIVED;
-	}
-
-	public void assignStaff(UUID staffId) {
+	public void assignStaff(DeliveryStaffId staffId) {
 		this.deliveryStaffId = staffId;
 	}
 }

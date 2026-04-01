@@ -9,6 +9,15 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
+    // Eureka Client
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+
+    // FeignClient
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
+    // Kafka
+    implementation 'org.springframework.kafka:spring-kafka'
+
     // PostgreSQL
     runtimeOnly 'org.postgresql:postgresql'
 

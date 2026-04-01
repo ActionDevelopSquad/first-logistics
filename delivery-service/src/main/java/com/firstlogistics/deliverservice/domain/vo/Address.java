@@ -1,41 +1,20 @@
 package com.firstlogistics.deliverservice.domain.vo;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 
-@Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Address {
+public record Address(String roadAddress, String detailAddress) {
 
-	private String sidoCode;
-	private String sidoName;
-	private String sigunguCode;
-	private String sigunguName;
-	private String dongCode;
-	private String dongName;
-	private String roadAddress;
-	private String detailAddress;
+	public Address {
+		if (roadAddress == null || roadAddress.isBlank()) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_ADDRESS);
+		}
+		if (detailAddress == null || detailAddress.isBlank()) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_ADDRESS);
+		}
+	}
 
-	public static Address of(
-		String sidoCode,
-		String sidoName,
-		String sigunguCode,
-		String sigunguName,
-		String dongCode,
-		String dongName,
-		String roadAddress,
-		String detailAddress
-	) {
-		Address address = new Address();
-		address.sidoCode = sidoCode;
-		address.sidoName = sidoName;
-		address.sigunguCode = sigunguCode;
-		address.sigunguName = sigunguName;
-		address.dongCode = dongCode;
-		address.dongName = dongName;
-		address.roadAddress = roadAddress;
-		address.detailAddress = detailAddress;
-		return address;
+	public static Address of(String roadAddress, String detailAddress) {
+		return new Address(roadAddress, detailAddress);
 	}
 }

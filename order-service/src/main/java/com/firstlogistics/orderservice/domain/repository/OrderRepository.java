@@ -6,6 +6,8 @@ import com.firstlogistics.orderservice.domain.vo.OrderId;
 import java.util.Optional;
 
 public interface OrderRepository {
+
     Order save(Order order);
+
     Optional<Order> findById(OrderId id);
 }
