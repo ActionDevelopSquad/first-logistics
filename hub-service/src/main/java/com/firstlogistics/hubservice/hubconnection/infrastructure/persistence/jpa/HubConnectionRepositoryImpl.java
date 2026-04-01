@@ -2,8 +2,11 @@ package com.firstlogistics.hubservice.hubconnection.infrastructure.persistence.j
 
 import com.firstlogistics.hubservice.hub.domain.vo.HubId;
 import com.firstlogistics.hubservice.hubconnection.domain.entity.HubConnection;
+import com.firstlogistics.hubservice.hubconnection.domain.exception.HubConnectionErrorCode;
+import com.firstlogistics.hubservice.hubconnection.domain.exception.HubConnectionException;
 import com.firstlogistics.hubservice.hubconnection.domain.repository.HubConnectionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -19,7 +22,26 @@ public class HubConnectionRepositoryImpl implements HubConnectionRepository {
 
     @Override
     public HubConnection save(HubConnection hubConnection) {
-        HubConnectionJpaEntity savedEntity =  jpaRepository.save(mapper.toJpaEntity(hubConnection));
-        return mapper.toDomain(savedEntity);
+        try{
+            HubConnectionJpaEntity savedEntity =  jpaRepository.save(mapper.toJpaEntity(hubConnection));
+            return mapper.toDomain(savedEntity);
+        }
+        catch (DataIntegrityViolationException e) {
+            if(hasConstraintName(e, HubConnectionConstraints.UK_HUB_CONNECTION_HUB_ID))
+                throw new HubConnectionException(HubConnectionErrorCode.DUPLICATE_HUB_CONNECTION);
+            throw e;
+        }
+    }
+
+    private boolean hasConstraintName(Throwable throwable, String expectedConstraintName ){
+        Throwable cause = throwable;
+        while(cause!=null){
+            if(cause instanceof  org.hibernate.exception.ConstraintViolationException cve){
+                String constraintName = cve.getConstraintName();
+                return expectedConstraintName.equalsIgnoreCase(constraintName);
+            }
+            cause = cause.getCause();
+        }
+        return false;
     }
 }
