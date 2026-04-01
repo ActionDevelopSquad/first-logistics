@@ -10,4 +10,6 @@ public interface OrderRepository {
     Order save(Order order);
 
     Optional<Order> findById(OrderId id);
+
+    boolean existsById(OrderId id);
 }

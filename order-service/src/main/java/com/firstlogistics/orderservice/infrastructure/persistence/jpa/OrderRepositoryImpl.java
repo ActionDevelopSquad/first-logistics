@@ -27,4 +27,9 @@ public class OrderRepositoryImpl implements OrderRepository {
                 .map(orderMapper::toDomain);
     }
 
+    @Override
+    public boolean existsById(OrderId id) {
+        return jpaRepository.existsById(id.id());
+    }
+
 }
