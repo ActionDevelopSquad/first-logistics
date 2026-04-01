@@ -28,11 +28,13 @@ public enum UserErrorCode implements ErrorCode {
     // 404 NOT FOUND,
     ID_PASSWORD_NOT_MATCH(HttpStatus.NOT_FOUND, "USER_404_001", "아이디 또는 비밀번호가 올바르지 않습니다."),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_404_002", "존재하지 않는 회원입니다."),
+    ORGANIZATION_ID_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_404_002", "존재하지 않는 소속 ID 입니다."),
 
     // 5xx SERVER ERROR
     AUTH_SERVER_REQUEST_ERROR(HttpStatus.BAD_GATEWAY, "AUTH_502_001", "인증 서버 요청 중 오류가 발생했습니다."),
     AUTH_SERVER_INTERNAL_ERROR(HttpStatus.BAD_GATEWAY, "AUTH_502_002", "인증 서버에 일시적인 오류가 발생했습니다."),
-    AUTH_SERVER_CONNECTION_ERROR(HttpStatus.SERVICE_UNAVAILABLE, "AUTH_504_003", "인증 서버와 통신할 수 없습니다.");
+    AUTH_SERVER_CONNECTION_ERROR(HttpStatus.SERVICE_UNAVAILABLE, "AUTH_504_003", "인증 서버와 통신할 수 없습니다."),
+    FEIGN_SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "AUTH_504_003", "해당 서비스를 이용할 수 없습니다.");
 
     private final HttpStatus status;
     private final String code;

@@ -93,7 +93,6 @@ public class UserController {
             @RequestBody UpdateRoleRequest request
     )
     {
-        // todo role 검증
         userService.updateRole(userId, request.role());
 
         return ResponseEntity
@@ -111,7 +110,6 @@ public class UserController {
             @PathVariable("userId") UUID userId,
             @RequestBody UpdateStatusRequest request)
     {
-        // todo role 검증
         userService.updateStatus(userId, request.status());
 
         return ResponseEntity

@@ -12,8 +12,10 @@ import com.firstlogistics.userservice.domain.enums.Status;
 import com.firstlogistics.userservice.domain.exception.UserErrorCode;
 import com.firstlogistics.userservice.domain.exception.UserException;
 import com.firstlogistics.userservice.domain.repository.UserRepository;
+import com.firstlogistics.userservice.infrastructure.fegin.OrganizationValidationService;
 import common.jpa.entity.enums.UserRole;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,11 +23,13 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class UserService {
 
     private final KeycloakTokenService tokenService;
     private final KeycloakService keycloakService;
+    private final OrganizationValidationService organizationValidationService;
     private final UserRepository userRepository;
 
     @Transactional
@@ -36,7 +40,6 @@ public class UserService {
 
         TokenInfo tokenInfo = tokenService.generate(command.username(), command.password());
 
-        // todo 후처리
         user.recordLogin();
         userRepository.update(user);
 
@@ -59,22 +62,43 @@ public class UserService {
 
     @Transactional
     public UUID signup(UserCreateCommand command) {
-        // todo 소속 아이디가 존재하는지 확인하는 이벤트
+        // 권한별 소속 아이디가 존재하는지 확인
+        organizationValidationService.validateOrganizationExists(command.organizationId(), command.userRole());
+
         UUID userId = keycloakService.signup(command);
 
-        User user = User.create(
-                userId,
-                command.username(),
-                command.lastName() + command.firstName(),
-                command.phone(),
-                command.email(),
-                command.slackId(),
-                command.userRole()
-        );
+        try {
+            User user = User.create(
+                    userId,
+                    command.username(),
+                    command.lastName() + command.firstName(),
+                    command.phone(),
+                    command.email(),
+                    command.slackId(),
+                    command.userRole()
+            );
 
-        userRepository.save(user);
+            userRepository.save(user);
 
-        return userId;
+            return userId;
+
+        } catch (Exception e) {
+            if (userId != null) {
+                try {
+                    keycloakService.deleteUser(userId);
+                    log.warn("회원가입 실패로 Keycloak 사용자 삭제 보상 완료. userId={}", userId);
+                } catch (Exception deleteException) {
+                    log.error(
+                            "회원가입 실패 후 Keycloak 사용자 삭제 보상 실패. userId={}, originalError={}, deleteError={}",
+                            userId,
+                            e.getMessage(),
+                            deleteException.getMessage(),
+                            deleteException
+                    );
+                }
+            }
+            throw e;
+        }
     }
 
     @Transactional

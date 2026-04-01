@@ -10,6 +10,7 @@ import common.jpa.entity.enums.UserRole;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RoleScopeResource;
@@ -26,6 +27,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import java.util.*;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 @EnableConfigurationProperties(KeycloakProperties.class)
 public class KeycloakServiceImpl implements KeycloakService {
@@ -35,62 +37,20 @@ public class KeycloakServiceImpl implements KeycloakService {
 
     @Override
     public UUID signup(UserCreateCommand command) {
+        // 해당 realm의 사용자 관리 API 객체를 가져옴
         UsersResource usersResource = keycloak.realm(properties.getRealm()).users();
 
-        UserRepresentation user = new UserRepresentation();
-        user.setEnabled(true);
-        user.setEmailVerified(true);
-        user.setUsername(command.username());
-        user.setFirstName(command.firstName());
-        user.setLastName(command.lastName());
-        user.setEmail(command.email());
-
-        // 커스텀 attributes
-        Map<String, List<String>> attributes = new HashMap<>();
-        attributes.put("phone", List.of(command.phone()));
-        attributes.put("slackId", List.of(command.slackId()));
-        user.setAttributes(attributes);
-
-        // 사용자 생성 요청
-        Response response = usersResource.create(user);
-
-        // 사용자 생성 성공 여부
-        if (response.getStatus() != 201) {
-
-            String errorBody = "";
-            try {
-                errorBody = response.readEntity(String.class);
-            } catch (Exception ignored) {}
-
-            if (errorBody.contains("same username")) {
-                throw new UserException(UserErrorCode.DUPLICATED_USERNAME);
-            }
-
-            if (errorBody.contains("same email")) {
-                throw new UserException(UserErrorCode.DUPLICATED_EMAIL);
-            }
-
-            throw new HttpClientErrorException(
-                    HttpStatus.valueOf(response.getStatus()),
-                    errorBody
-            );
+        // 사용자 생성
+        String userId = createUser(usersResource, command);
+        try {
+            // 비밀번호 설정
+            setPassword(command, usersResource, userId);
+            // 권한 부여
+            assignRole(command, usersResource, userId);
+        } catch (Exception e) {
+            log.warn("비밀번호 or 권한 설정 중 오류 발생. userId={}", userId);
+            throw e;
         }
-
-        // 생성된 사용자 ID 추출
-        String userId = CreatedResponseUtil.getCreatedId(response);
-
-        // 비밀번호 객체 생성
-        CredentialRepresentation passwordCred = new CredentialRepresentation();
-        passwordCred.setTemporary(false);
-        passwordCred.setType(CredentialRepresentation.PASSWORD);
-        passwordCred.setValue(command.password());
-
-        // 생성한 사용자 비밀번호 설정
-        usersResource.get(userId).resetPassword(passwordCred);
-
-        // realm role 조회 & 추가
-        RoleRepresentation userRole = keycloak.realm(properties.getRealm()).roles().get(command.userRole().name()).toRepresentation();
-        usersResource.get(userId).roles().realmLevel().add(List.of(userRole));
 
         return UUID.fromString(userId);
     }
@@ -150,6 +110,66 @@ public class KeycloakServiceImpl implements KeycloakService {
         } catch (Exception e) {
             throw new UserException(UserErrorCode.AUTH_SERVER_INTERNAL_ERROR);
         }
+    }
+
+    private String createUser(UsersResource usersResource, UserCreateCommand command) {
+        UserRepresentation user = new UserRepresentation();
+        user.setEnabled(true);
+        user.setEmailVerified(true);
+        user.setUsername(command.username());
+        user.setFirstName(command.firstName());
+        user.setLastName(command.lastName());
+        user.setEmail(command.email());
+
+        // 커스텀 attributes
+        Map<String, List<String>> attributes = new HashMap<>();
+        attributes.put("phone", List.of(command.phone()));
+        attributes.put("slackId", List.of(command.slackId()));
+        user.setAttributes(attributes);
+
+        // 사용자 생성 요청
+        try (Response response = usersResource.create(user)) {
+
+            // 사용자 생성 성공 여부
+            if (response.getStatus() != 201) {
+
+                String errorBody = "";
+                try {
+                    errorBody = response.readEntity(String.class);
+                } catch (Exception ignored) {
+                }
+
+                if (errorBody.contains("same username")) {
+                    throw new UserException(UserErrorCode.DUPLICATED_USERNAME);
+                }
+
+                if (errorBody.contains("same email")) {
+                    throw new UserException(UserErrorCode.DUPLICATED_EMAIL);
+                }
+
+                throw new HttpClientErrorException(HttpStatus.valueOf(response.getStatus()), errorBody);
+            }
+
+            // 생성된 사용자 ID 추출
+            return CreatedResponseUtil.getCreatedId(response);
+        }
+    }
+
+    private static void setPassword(UserCreateCommand command, UsersResource usersResource, String userId) {
+        // 비밀번호 객체 생성
+        CredentialRepresentation passwordCred = new CredentialRepresentation();
+        passwordCred.setTemporary(false);
+        passwordCred.setType(CredentialRepresentation.PASSWORD);
+        passwordCred.setValue(command.password());
+
+        // 생성한 사용자 비밀번호 설정
+        usersResource.get(userId).resetPassword(passwordCred);
+    }
+
+    private void assignRole(UserCreateCommand command, UsersResource usersResource, String userId) {
+        // realm role 조회 & 추가
+        RoleRepresentation userRole = keycloak.realm(properties.getRealm()).roles().get(command.userRole().name()).toRepresentation();
+        usersResource.get(userId).roles().realmLevel().add(List.of(userRole));
     }
 
     private UserRepresentation getUserProfile(UUID userId) {
