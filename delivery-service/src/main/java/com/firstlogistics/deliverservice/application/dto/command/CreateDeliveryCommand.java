@@ -1,6 +1,8 @@
 package com.firstlogistics.deliverservice.application.dto.command;
 
 import com.firstlogistics.deliverservice.domain.event.OrderAcceptedEvent;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,6 +21,15 @@ public record CreateDeliveryCommand(
 	String receiverDetailAddress,
 	List<OrderItemInfo> orderItems
 ) {
+	public CreateDeliveryCommand {
+		if (orderId == null || supplierCompanyId == null || supplierManagerId == null
+			|| receiverCompanyId == null || receiverManagerId == null
+			|| receiverRoadAddress == null || receiverDetailAddress == null
+			|| orderItems == null) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_COMMAND_PARAMS);
+		}
+	}
+
 	public record OrderItemInfo(
 		UUID productId,
 		String productName,

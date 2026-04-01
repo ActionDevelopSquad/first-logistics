@@ -9,6 +9,9 @@ import java.util.UUID;
 public record DeliveryScope(UserRole role, UUID scopeId) {
 
 	public DeliveryScope {
+		if (role == null) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_ROLE_SCOPE);
+		}
 		if (role.isRequiresScope() && scopeId == null) {
 			throw new DeliveryException(DeliveryErrorCode.INVALID_ROLE_SCOPE);
 		}
@@ -19,7 +22,12 @@ public record DeliveryScope(UserRole role, UUID scopeId) {
 	}
 
 	public static DeliveryScope from(String role, UUID userId, UUID hubId, UUID companyId) {
-		UserRole userRole = UserRole.valueOf(role);
+		UserRole userRole;
+		try {
+			userRole = UserRole.valueOf(role);
+		} catch (IllegalArgumentException | NullPointerException e) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_ROLE_SCOPE);
+		}
 		UUID scopeId = switch (userRole) {
 			case HUB_MANAGER -> hubId;
 			case DELIVERY_MANAGER -> userId;

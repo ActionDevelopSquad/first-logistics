@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 
 import java.time.LocalDateTime;
@@ -35,7 +36,7 @@ public record DeliveryCreateRequest(
 	public record OrderItemInfo(
 		@NotNull UUID productId,
 		@NotBlank String productName,
-		@PositiveOrZero int quantity,
+		@Positive int quantity,
 		@PositiveOrZero int price
 	) {}
 

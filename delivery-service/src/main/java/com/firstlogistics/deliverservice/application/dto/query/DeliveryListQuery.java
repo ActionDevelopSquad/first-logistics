@@ -1,6 +1,9 @@
 package com.firstlogistics.deliverservice.application.dto.query;
 
+import com.firstlogistics.deliverservice.application.policy.PaginationPolicy;
 import com.firstlogistics.deliverservice.domain.enums.DeliveryStatus;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,12 +33,11 @@ public record DeliveryListQuery(
 	LocalDateTime cursorCreatedAt,
 	int size
 ) {
-
-	private static final List<Integer> ALLOWED_SIZES = List.of(10, 30, 50);
-	private static final int DEFAULT_SIZE = 10;
-
-	public int resolvedSize() {
-		return ALLOWED_SIZES.contains(size) ? size : DEFAULT_SIZE;
+	public DeliveryListQuery {
+		if (role == null) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_QUERY_PARAMS);
+		}
+		size = PaginationPolicy.resolveSize(size);
 	}
 
 	public DeliveryListQuery withScope(DeliveryScope scope) {
@@ -55,7 +57,9 @@ public record DeliveryListQuery(
 			this.role, this.userId, this.scope,
 			this.orderId, this.status,
 			this.sourceHubId, this.destinationHubId,
-			this.receiverCompanyId, this.receiverId, resolvedReceiverIds, this.receiverName, this.receiverPhone,
+			this.receiverCompanyId, this.receiverId,
+			resolvedReceiverIds != null ? List.copyOf(resolvedReceiverIds) : null,
+			this.receiverName, this.receiverPhone,
 			this.staffName, this.staffPhone,
 			this.startDate, this.endDate,
 			this.cursorId, this.cursorCreatedAt, this.size

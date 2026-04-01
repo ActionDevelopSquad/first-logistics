@@ -54,9 +54,9 @@ public class DeliveryQueryService {
 		}
 
 		List<DeliveryListResult.DeliverySummary> results = deliveryQueryRepositoryPort.findDeliveries(resolvedQuery);
-		boolean hasNext = results.size() > resolvedQuery.resolvedSize();
+		boolean hasNext = results.size() > resolvedQuery.size();
 		if (hasNext) {
-			results = results.subList(0, resolvedQuery.resolvedSize());
+			results = results.subList(0, resolvedQuery.size());
 		}
 		return DeliveryListResult.from(results, hasNext);
 	}

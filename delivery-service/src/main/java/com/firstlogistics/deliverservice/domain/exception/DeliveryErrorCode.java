@@ -16,6 +16,10 @@ public enum DeliveryErrorCode implements ErrorCode {
 	INVALID_TIME(HttpStatus.BAD_REQUEST, "DR004", "시간 정보는 0 이상이어야 합니다."),
 	INVALID_STAFF_DETAIL(HttpStatus.BAD_REQUEST, "DR005", "담당자 정보가 유효하지 않습니다."),
 
+	// Command / Query 유효성
+	INVALID_COMMAND_PARAMS(HttpStatus.BAD_REQUEST, "DR010", "커맨드 파라미터가 유효하지 않습니다."),
+	INVALID_QUERY_PARAMS(HttpStatus.BAD_REQUEST, "DR011", "쿼리 파라미터가 유효하지 않습니다."),
+
 	// 엔티티 유효성
 	INVALID_DELIVERY_PARAMS(HttpStatus.BAD_REQUEST, "DR006", "배송 생성 파라미터가 유효하지 않습니다."),
 	INVALID_DELIVERY_ROUTE_PARAMS(HttpStatus.BAD_REQUEST, "DR007", "배송 경로 생성 파라미터가 유효하지 않습니다."),

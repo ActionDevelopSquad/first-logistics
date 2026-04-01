@@ -59,7 +59,7 @@ public class DeliveryQueryRepositoryImpl implements DeliveryQueryRepositoryPort 
 				cursorCondition(query)
 			)
 			.orderBy(delivery.createdAt.desc(), delivery.id.desc())
-			.limit(query.resolvedSize() + 1L)
+			.limit(query.size() + 1L)
 			.fetch();
 	}
 }

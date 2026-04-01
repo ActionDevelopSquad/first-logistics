@@ -19,7 +19,7 @@ public interface UserClient {
 
 	@GetMapping("/api/v1/users")
 	FeignResponse<List<UserResponse>> findByNameOrPhone(
-		@RequestParam(required = false) String name,
-		@RequestParam(required = false) String phone
+		@RequestParam(value = "name", required = false) String name,
+		@RequestParam(value = "phone", required = false) String phone
 	);
 }

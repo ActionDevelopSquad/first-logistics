@@ -72,7 +72,9 @@ public class DeliveryMapper {
 			jpaEntity.getSourceHubId(),
 			jpaEntity.getDestinationHubId(),
 			Address.of(jpaEntity.getRoadAddress(), jpaEntity.getDetailAddress()),
-			GeoLocation.of(jpaEntity.getLatitude(), jpaEntity.getLongitude()),
+			(jpaEntity.getLatitude() != null && jpaEntity.getLongitude() != null)
+				? GeoLocation.of(jpaEntity.getLatitude(), jpaEntity.getLongitude())
+				: null,
 			jpaEntity.getReceiverId(),
 			jpaEntity.getReceiverSlackId(),
 			jpaEntity.getReceiverCompanyId(),

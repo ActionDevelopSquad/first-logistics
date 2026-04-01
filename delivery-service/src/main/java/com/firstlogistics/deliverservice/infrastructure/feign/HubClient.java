@@ -16,8 +16,8 @@ public interface HubClient {
 
 	@GetMapping("/api/v1/hub-connections/routes")
 	FeignResponse<HubRouteResponse> getHubRoute(
-		@RequestParam UUID sourceHubId,
-		@RequestParam UUID destinationHubId
+		@RequestParam("sourceHubId") UUID sourceHubId,
+		@RequestParam("destinationHubId") UUID destinationHubId
 	);
 
 	@GetMapping("/api/v1/hub-managers/{managerId}")
