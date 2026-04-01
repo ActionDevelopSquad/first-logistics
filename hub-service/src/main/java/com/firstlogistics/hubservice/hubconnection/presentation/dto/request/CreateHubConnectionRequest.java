@@ -8,8 +8,8 @@ import jakarta.validation.constraints.PositiveOrZero;
 import java.util.UUID;
 
 public record CreateHubConnectionRequest(
-        @NotNull UUID sourceHubId,
-        @NotNull UUID destinationHubId,
+        @NotNull(message = "출발 허브 ID는 필수입니다.") UUID sourceHubId,
+        @NotNull(message = "도착 허브 ID는 필수입니다.") UUID destinationHubId,
         @NotNull(message = "소요 시간은 필수입니다.")
         @Min(value = 1, message = "시간은 최소 1분 이상이어야 합니다.")
         Integer minutes,
