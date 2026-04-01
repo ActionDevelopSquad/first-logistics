@@ -3,7 +3,7 @@ package com.firstlogistics.userservice.domain.entity;
 import com.firstlogistics.userservice.domain.enums.Status;
 import com.firstlogistics.userservice.domain.exception.UserErrorCode;
 import com.firstlogistics.userservice.domain.exception.UserException;
-import common.jpa.domain.enums.UserRole;
+import common.jpa.entity.enums.UserRole;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -39,16 +39,16 @@ public class User {
     }
 
     public void canLogin() {
-        if (this.status != Status.APPROVE) {
+        if (this.status != Status.APPROVED) {
             throw new UserException(UserErrorCode.CAN_LOGIN_ONLY_APPROVE);
         }
     }
 
     public void approve() {
-        if (this.status == Status.APPROVE) {
+        if (this.status == Status.APPROVED) {
             throw new UserException(UserErrorCode.ALREADY_APPROVE);
         }
-        this.status = Status.APPROVE;
+        this.status = Status.APPROVED;
     }
 
     public void reject() {

@@ -1,8 +1,9 @@
 package com.firstlogistics.userservice.infrastructure.persistence.jpa;
 
+import com.firstlogistics.userservice.domain.entity.User;
 import com.firstlogistics.userservice.domain.enums.Status;
-import common.jpa.domain.enums.UserRole;
 import common.jpa.entity.BaseAuditEntity;
+import common.jpa.entity.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -49,4 +50,13 @@ public class UserJpaEntity extends BaseAuditEntity {
     @Column(name = "slack_id", length = 100)
     private String slackId;
 
+    public void update(User domain) {
+        this.name = domain.getName();
+        this.phone = domain.getPhone();
+        this.email = domain.getEmail();
+        this.slackId = domain.getSlackId();
+        this.status = domain.getStatus();
+        this.userRole = domain.getUserRole();
+        this.lastLoginAt = domain.getLastLoginAt();
+    }
 }

@@ -1,7 +1,7 @@
 package com.firstlogistics.userservice.infrastructure.keycloak.service;
 
-import com.firstlogistics.userservice.application.dto.TokenInfo;
-import com.firstlogistics.userservice.application.port.KeycloackTokenService;
+import com.firstlogistics.userservice.application.dto.result.TokenInfo;
+import com.firstlogistics.userservice.application.port.KeycloakTokenService;
 import com.firstlogistics.userservice.domain.exception.UserErrorCode;
 import com.firstlogistics.userservice.domain.exception.UserException;
 import com.firstlogistics.userservice.infrastructure.keycloak.KeycloakProperties;
@@ -11,15 +11,14 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.*;
+import org.springframework.web.client.HttpClientErrorException.BadRequest;
+import org.springframework.web.client.HttpClientErrorException.Unauthorized;
 
 @Component
 @RequiredArgsConstructor
 @EnableConfigurationProperties(KeycloakProperties.class)
-public class KeycloakTokenService implements KeycloackTokenService {
+public class KeycloakTokenServiceImpl implements KeycloakTokenService {
 
     private final KeycloakProperties properties;
 
@@ -42,7 +41,7 @@ public class KeycloakTokenService implements KeycloackTokenService {
                     .body(form)
                     .retrieve()
                     .body(TokenInfo.class);
-        } catch (HttpClientErrorException.Unauthorized | HttpClientErrorException.BadRequest e) {
+        } catch (Unauthorized | BadRequest e) {
             throw new UserException(UserErrorCode.ID_PASSWORD_NOT_MATCH);
 
         } catch (HttpClientErrorException e) {
@@ -75,8 +74,11 @@ public class KeycloakTokenService implements KeycloackTokenService {
         } catch (HttpClientErrorException e) {
             throw new UserException(UserErrorCode.AUTH_SERVER_REQUEST_ERROR);
 
-        } catch (Exception e) {
+        } catch (HttpServerErrorException e) {
             throw new UserException(UserErrorCode.AUTH_SERVER_INTERNAL_ERROR);
+
+        } catch (ResourceAccessException e) {
+            throw new UserException(UserErrorCode.AUTH_SERVER_CONNECTION_ERROR);
         }
     }
 }
