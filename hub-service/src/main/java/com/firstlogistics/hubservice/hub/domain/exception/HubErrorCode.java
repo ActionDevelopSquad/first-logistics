@@ -18,7 +18,8 @@ public enum HubErrorCode implements ErrorCode {
     ALREADY_HUB_ACTIVE(HttpStatus.CONFLICT, "HB_E008", "이미 활성화된 허브입니다."),
     ALREADY_HUB_INACTIVE(HttpStatus.CONFLICT, "HB_E009", "이미 비활성화된 허브입니다."),
     INVALID_HUB_STATUS(HttpStatus.BAD_REQUEST, "HB_E010", "허브 상태가 유효하지 않습니다."),
-    INVALID_SERVICE_AREA(HttpStatus.BAD_REQUEST, "HB_E011", "허브 서비스 가능 범위(대한민국)를 벗어난 위치입니다.");
+    INVALID_SERVICE_AREA(HttpStatus.BAD_REQUEST, "HB_E011", "허브 서비스 가능 범위(대한민국)를 벗어난 위치입니다."),
+    INVALID_HUB_SEARCH_COORDINATE(HttpStatus.BAD_REQUEST, "HB_E012", "위도와 경도는 함께 입력되어야 합니다.");
 
     private final HttpStatus status;
     private final String code;
