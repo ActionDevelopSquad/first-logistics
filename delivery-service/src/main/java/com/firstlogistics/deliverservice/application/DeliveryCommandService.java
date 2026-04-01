@@ -153,7 +153,7 @@ public class DeliveryCommandService {
 		);
 		deliveryEventPublisher.publishedDeliveryCreated(deliveryCreatedEvent);
 
-		return CreateDeliveryResult.from(savedDelivery, command, receiver.name());
+		return CreateDeliveryResult.from(savedDelivery);
 	}
 
 	private DeliveryCreatedEvent buildDeliveryCreatedEvent(

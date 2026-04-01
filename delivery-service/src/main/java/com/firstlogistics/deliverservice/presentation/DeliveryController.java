@@ -23,7 +23,7 @@ import java.util.UUID;
 @RequestMapping("/api/v1/deliveries")
 public class DeliveryController {
 
-	private final DeliveryCommandFacade deliveryCreateFacade;
+	private final DeliveryCommandFacade deliveryCommandFacade;
 	private final DeliveryQueryService deliveryQueryService;
 
 	@PostMapping
@@ -32,7 +32,7 @@ public class DeliveryController {
 		@RequestHeader("X-User-Id") UUID userId,
 		@RequestHeader("X-User-Role") String role
 	) {
-		CreateDeliveryResult result = deliveryCreateFacade.createDelivery(request.toCommand());
+		CreateDeliveryResult result = deliveryCommandFacade.createDelivery(request.toCommand());
 		CreateDeliveryResponse response = CreateDeliveryResponse.from(result);
 		return ResponseEntity.status(DeliverySuccessCode.DELIVERY_CREATED.getStatus())
 			.body(ApiResponse.success(DeliverySuccessCode.DELIVERY_CREATED, response));
