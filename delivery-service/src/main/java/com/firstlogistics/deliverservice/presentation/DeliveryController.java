@@ -2,7 +2,7 @@ package com.firstlogistics.deliverservice.presentation;
 
 import com.firstlogistics.deliverservice.application.DeliveryQueryService;
 import com.firstlogistics.deliverservice.application.dto.result.DeliveryListResult;
-import com.firstlogistics.deliverservice.application.dto.result.DeliveryResult;
+import com.firstlogistics.deliverservice.application.dto.result.DeliveryCreateResult;
 import com.firstlogistics.deliverservice.application.facade.DeliveryCreateFacade;
 import com.firstlogistics.deliverservice.presentation.dto.request.DeliveryCreateRequest;
 import com.firstlogistics.deliverservice.presentation.dto.request.DeliveryListRequest;
@@ -30,7 +30,7 @@ public class DeliveryController {
 		@RequestHeader("X-User-Id") UUID userId,
 		@RequestHeader("X-User-Role") String role
 	) {
-		DeliveryResult result = deliveryCreateFacade.createDelivery(request.toCommand());
+		DeliveryCreateResult result = deliveryCreateFacade.createDelivery(request.toCommand());
 		DeliveryResponse response = DeliveryResponse.from(result);
 		return ResponseEntity.status(DeliverySuccessCode.DELIVERY_CREATED.getStatus())
 			.body(ApiResponse.success(DeliverySuccessCode.DELIVERY_CREATED, response));

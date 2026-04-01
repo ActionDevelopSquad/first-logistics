@@ -34,7 +34,7 @@ public record CreateDeliveryCommand(
 		UUID productId,
 		String productName,
 		int quantity,
-		int price
+		Long price
 	) {}
 
 	public static CreateDeliveryCommand from(OrderAcceptedEvent event) {

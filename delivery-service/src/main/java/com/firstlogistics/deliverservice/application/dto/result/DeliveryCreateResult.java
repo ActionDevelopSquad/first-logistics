@@ -9,13 +9,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-public record DeliveryResult(
+public record DeliveryCreateResult(
 	OrderInfo order,
 	DeliveryInfo delivery
 ) {
 
-	public static DeliveryResult from(Delivery delivery, CreateDeliveryCommand command, String receiverName) {
-		return new DeliveryResult(
+	public static DeliveryCreateResult from(Delivery delivery, CreateDeliveryCommand command, String receiverName) {
+		return new DeliveryCreateResult(
 			new OrderInfo(
 				delivery.getOrderId(),
 				command.orderedAt(),
@@ -36,14 +36,14 @@ public record DeliveryResult(
 				delivery.getDeliveryAddress().detailAddress(),
 				delivery.getCurrentHubId(),
 				delivery.getRoutes().stream()
-					.map(r -> new RouteInfo(
-						r.getId().id(),
-						r.getDeliveryRouteSequence(),
-						r.getSourceHubId(),
-						r.getDestinationHubId(),
-						r.getEstimatedDistance().meters(),
-						r.getEstimatedDuration().minutes(),
-						r.getStatus()
+					.map(route -> new RouteInfo(
+						route.getId().id(),
+						route.getDeliveryRouteSequence(),
+						route.getSourceHubId(),
+						route.getDestinationHubId(),
+						route.getEstimatedDistance().meters(),
+						route.getEstimatedDuration().minutes(),
+						route.getStatus()
 					))
 					.toList()
 			)
@@ -62,7 +62,7 @@ public record DeliveryResult(
 		UUID productId,
 		String productName,
 		int quantity,
-		int price
+		Long price
 	) {}
 
 	public record DeliveryInfo(

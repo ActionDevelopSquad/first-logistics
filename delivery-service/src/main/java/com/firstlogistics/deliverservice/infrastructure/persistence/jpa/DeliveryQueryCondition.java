@@ -71,22 +71,22 @@ public class DeliveryQueryCondition {
 
 	public static BooleanExpression staffNameContains(
 		DeliveryListQuery query,
-		QDeliveryStaffJpaEntity routeStaff,
-		QDeliveryStaffJpaEntity companyStaff
+		QDeliveryStaffJpaEntity hubDeliveryStaff,
+		QDeliveryStaffJpaEntity companyDeliveryStaff
 	) {
 		if (query.staffName() == null) return null;
-		return routeStaff.staffName.containsIgnoreCase(query.staffName())
-			.or(companyStaff.staffName.containsIgnoreCase(query.staffName()));
+		return hubDeliveryStaff.staffName.containsIgnoreCase(query.staffName())
+			.or(companyDeliveryStaff.staffName.containsIgnoreCase(query.staffName()));
 	}
 
 	public static BooleanExpression staffPhoneContains(
 		DeliveryListQuery query,
-		QDeliveryStaffJpaEntity routeStaff,
-		QDeliveryStaffJpaEntity companyStaff
+		QDeliveryStaffJpaEntity hubDeliveryStaff,
+		QDeliveryStaffJpaEntity companyDeliveryStaff
 	) {
 		if (query.staffPhone() == null) return null;
-		return routeStaff.phoneNumber.containsIgnoreCase(query.staffPhone())
-			.or(companyStaff.phoneNumber.containsIgnoreCase(query.staffPhone()));
+		return hubDeliveryStaff.phoneNumber.containsIgnoreCase(query.staffPhone())
+			.or(companyDeliveryStaff.phoneNumber.containsIgnoreCase(query.staffPhone()));
 	}
 
 	public static BooleanExpression dateRange(DeliveryListQuery query) {

@@ -76,7 +76,7 @@ class DeliveryEventKafkaProducerTest {
             LocalDateTime.now(),
             LocalDateTime.now().plusDays(3),
             "빠른 배송 부탁드립니다.",
-            List.of(DeliveryCreatedEvent.OrderItemInfo.of(UUID.randomUUID(), "마른 오징어", 50, 10000))
+            List.of(DeliveryCreatedEvent.OrderItemInfo.of(UUID.randomUUID(), "마른 오징어", 50, 10000L))
         );
         DeliveryCreatedEvent.DeliveryInfo deliveryInfo = DeliveryCreatedEvent.DeliveryInfo.of(
             deliveryId,

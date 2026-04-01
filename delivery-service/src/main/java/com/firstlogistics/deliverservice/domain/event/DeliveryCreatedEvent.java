@@ -30,9 +30,9 @@ public record DeliveryCreatedEvent(
 		UUID productId,
 		String productName,
 		int quantity,
-		int price
+		Long price
 	) {
-		public static OrderItemInfo of(UUID productId, String productName, int quantity, int price) {
+		public static OrderItemInfo of(UUID productId, String productName, int quantity, Long price) {
 			return new OrderItemInfo(productId, productName, quantity, price);
 		}
 	}

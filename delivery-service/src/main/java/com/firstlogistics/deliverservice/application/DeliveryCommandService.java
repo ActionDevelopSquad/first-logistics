@@ -1,7 +1,7 @@
 package com.firstlogistics.deliverservice.application;
 
 import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryCommand;
-import com.firstlogistics.deliverservice.application.dto.result.DeliveryResult;
+import com.firstlogistics.deliverservice.application.dto.result.DeliveryCreateResult;
 import com.firstlogistics.deliverservice.application.publisher.DeliveryEventPublisher;
 import com.firstlogistics.deliverservice.domain.entity.Delivery;
 import com.firstlogistics.deliverservice.domain.entity.DeliveryRoute;
@@ -37,7 +37,7 @@ public class DeliveryCommandService {
 	private final UserPort userPort;
 	private final DeliveryEventPublisher deliveryEventPublisher;
 
-	public DeliveryResult createDelivery(
+	public DeliveryCreateResult createDelivery(
 			CreateDeliveryCommand command,
 			CompanyResponse supplierCompany,
 			CompanyResponse receiverCompany,
@@ -140,7 +140,7 @@ public class DeliveryCommandService {
 		);
 		deliveryEventPublisher.publishedDeliveryCreated(deliveryCreatedEvent);
 
-		return DeliveryResult.from(savedDelivery, command, receiver.name());
+		return DeliveryCreateResult.from(savedDelivery, command, receiver.name());
 	}
 
 	private DeliveryCreatedEvent buildDeliveryCreatedEvent(

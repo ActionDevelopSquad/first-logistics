@@ -157,7 +157,7 @@ class OrderEventKafkaConsumerTest {
 				"빠른 배송 부탁드립니다.",
 				new OrderAcceptedEvent.SupplierInfo(UUID.randomUUID(), UUID.randomUUID()),
 				new OrderAcceptedEvent.ReceiverInfo(UUID.randomUUID(), UUID.randomUUID(), "서울시 강남구 테헤란로 123", "101호"),
-				List.of(new OrderAcceptedEvent.OrderItemInfo(UUID.randomUUID(), "마른 오징어", 50, 10000))
+				List.of(new OrderAcceptedEvent.OrderItemInfo(UUID.randomUUID(), "마른 오징어", 50, 10000L))
 		);
 	}
 }

@@ -61,7 +61,7 @@ class DeliveryCreateFacadeTest {
 			CreateDeliveryCommand command = stubCommand(orderId, supplierCompanyId, supplierManagerId, receiverCompanyId, receiverManagerId);
 
 			given(companyPort.getCompany(supplierCompanyId))
-				.willReturn(new CompanyResponse(supplierCompanyId, supplierHubId));
+				.willReturn(new CompanyResponse(supplierCompanyId, supplierHubId, "공급업체", "서울시 송파구"));
 			given(companyPort.getCompany(receiverCompanyId))
 				.willThrow(new DeliveryException(DeliveryErrorCode.COMPANY_NOT_FOUND));
 
@@ -89,9 +89,9 @@ class DeliveryCreateFacadeTest {
 			CreateDeliveryCommand command = stubCommand(orderId, supplierCompanyId, supplierManagerId, receiverCompanyId, receiverManagerId);
 
 			given(companyPort.getCompany(supplierCompanyId))
-				.willReturn(new CompanyResponse(supplierCompanyId, supplierHubId));
+				.willReturn(new CompanyResponse(supplierCompanyId, supplierHubId, "공급업체", "서울시 송파구"));
 			given(companyPort.getCompany(receiverCompanyId))
-				.willReturn(new CompanyResponse(receiverCompanyId, destinationHubId));
+				.willReturn(new CompanyResponse(receiverCompanyId, destinationHubId, "수령업체", "서울시 강남구"));
 			given(hubPort.getHubRoute(supplierHubId, destinationHubId))
 				.willThrow(new DeliveryException(DeliveryErrorCode.HUB_NOT_FOUND));
 
@@ -124,7 +124,7 @@ class DeliveryCreateFacadeTest {
 			receiverManagerId,
 			"서울시 강남구 테헤란로 123",
 			"101호",
-			List.of(new CreateDeliveryCommand.OrderItemInfo(UUID.randomUUID(), "마른 오징어", 50, 10000))
+			List.of(new CreateDeliveryCommand.OrderItemInfo(UUID.randomUUID(), "마른 오징어", 50, 10000L))
 		);
 	}
 }

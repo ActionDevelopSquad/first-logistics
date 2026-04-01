@@ -1,6 +1,6 @@
 package com.firstlogistics.deliverservice.presentation.dto.response;
 
-import com.firstlogistics.deliverservice.application.dto.result.DeliveryResult;
+import com.firstlogistics.deliverservice.application.dto.result.DeliveryCreateResult;
 import com.firstlogistics.deliverservice.domain.enums.DeliveryStatus;
 import com.firstlogistics.deliverservice.domain.enums.RouteStatus;
 
@@ -12,7 +12,7 @@ public record DeliveryResponse(
 	OrderInfo order,
 	DeliveryInfo delivery
 ) {
-	public static DeliveryResponse from(DeliveryResult result) {
+	public static DeliveryResponse from(DeliveryCreateResult result) {
 		return new DeliveryResponse(
 			new OrderInfo(
 				result.order().orderId(),
@@ -34,14 +34,14 @@ public record DeliveryResponse(
 				result.delivery().receiverDetailAddress(),
 				result.delivery().currentHubId(),
 				result.delivery().routes().stream()
-					.map(r -> new RouteInfo(
-						r.routeId(),
-						r.sequence(),
-						r.sourceHubId(),
-						r.destinationHubId(),
-						r.estimatedDistanceMeters(),
-						r.estimatedDurationMinutes(),
-						r.status()
+					.map(route -> new RouteInfo(
+						route.routeId(),
+						route.sequence(),
+						route.sourceHubId(),
+						route.destinationHubId(),
+						route.estimatedDistanceMeters(),
+						route.estimatedDurationMinutes(),
+						route.status()
 					))
 					.toList()
 			)
@@ -60,7 +60,7 @@ public record DeliveryResponse(
 		UUID productId,
 		String productName,
 		int quantity,
-		int price
+		Long price
 	) {}
 
 	public record DeliveryInfo(
