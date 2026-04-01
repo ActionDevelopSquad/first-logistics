@@ -1,5 +1,12 @@
 package com.firstlogistics.companyservice.application;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
+
 import com.firstlogistics.companyservice.application.dto.command.CreateCompanyCommand;
 import com.firstlogistics.companyservice.application.dto.result.CompanyResult;
 import com.firstlogistics.companyservice.application.port.CompanyEventPublisher;
@@ -9,6 +16,7 @@ import com.firstlogistics.companyservice.domain.event.CompanyCreatedEvent;
 import com.firstlogistics.companyservice.domain.exception.CompanyErrorCode;
 import com.firstlogistics.companyservice.domain.exception.CompanyException;
 import com.firstlogistics.companyservice.domain.repository.CompanyRepository;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,14 +25,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class CompanyCommandServiceTest {
@@ -83,7 +83,7 @@ class CompanyCommandServiceTest {
     @DisplayName("업체 생성 성공 - 저장 후 이벤트가 발행된다")
     void register_publishesEvent() {
         // given
-        given(hubPort.getHubId(any(double.class), any(double.class)))
+        given(hubPort.getHubId(anyDouble(), anyDouble()))
                 .willReturn(FIXED_HUB_ID);
         given(companyRepository.save(any()))
                 .willAnswer(invocation -> invocation.getArgument(0));
