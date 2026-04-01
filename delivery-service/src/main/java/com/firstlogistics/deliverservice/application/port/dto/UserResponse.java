@@ -9,6 +9,7 @@ public record UserResponse(
 	UUID userId,
 	String name,
 	String phone,
-	String slackId
+	String slackId,
+	String email
 ) {
 }

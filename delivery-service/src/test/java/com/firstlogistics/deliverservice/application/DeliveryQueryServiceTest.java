@@ -202,7 +202,7 @@ class DeliveryQueryServiceTest {
 			DeliveryListResult expected = DeliveryListResult.from(List.of(stubSummary()), false);
 
 			given(userPort.findByNameOrPhone("홍길동", null))
-				.willReturn(List.of(new UserResponse(receiverId, "홍길동", "010-1234-5678", "slack-123")));
+				.willReturn(List.of(new UserResponse(receiverId, "홍길동", "010-1234-5678", "slack-123", "hong@test.com")));
 			given(deliveryQueryRepositoryPort.findDeliveries(any(DeliveryListQuery.class))).willReturn(expected.deliveries());
 
 			// when
@@ -392,7 +392,7 @@ class DeliveryQueryServiceTest {
 			given(deliveryQueryRepositoryPort.findById(deliveryId)).willReturn(Optional.of(projection));
 			given(deliveryQueryRepositoryPort.findRoutesByDeliveryId(deliveryId)).willReturn(routes);
 			given(hubPort.getHubs(any())).willReturn(stubHubResponses(projection, routes));
-			given(userPort.getUser(receiverId)).willReturn(new UserResponse(receiverId, "홍길동", "010-1234-5678", "slack-123"));
+			given(userPort.getUser(receiverId)).willReturn(new UserResponse(receiverId, "홍길동", "010-1234-5678", "slack-123", "hong@test.com"));
 			given(companyPort.getCompany(receiverCompanyId)).willReturn(new CompanyResponse(receiverCompanyId, UUID.randomUUID(), "테스트업체", "서울시 강남구 테헤란로 123", "101동 202호"));
 
 			// when

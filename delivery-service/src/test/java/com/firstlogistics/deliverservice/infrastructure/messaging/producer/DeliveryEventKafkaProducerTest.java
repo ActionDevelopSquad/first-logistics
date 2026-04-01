@@ -85,7 +85,10 @@ class DeliveryEventKafkaProducerTest {
             "서울시 강남구 테헤란로 123",
             "101호",
             List.of(),
-            "slack-company"
+            "slack-company",
+            "업체담당자",
+            "010-3333-3333",
+            "company-staff@test.com"
         );
         DeliveryCreatedEvent deliveryCreatedEvent = DeliveryCreatedEvent.create(orderInfo, deliveryInfo);
 

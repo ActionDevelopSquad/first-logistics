@@ -8,9 +8,9 @@ import java.util.UUID;
 
 public interface DeliveryStaffRepository {
 
-	Optional<DeliveryStaff> findNextHubStaff(UUID hubId, LocalDateTime assignmentStart, LocalDateTime assignmentEnd);
+	Optional<DeliveryStaff> findNextHubDeliveryStaff(UUID hubId, LocalDateTime assignmentStart, LocalDateTime assignmentEnd);
 
-	Optional<DeliveryStaff> findNextCompanyStaff(UUID hubId, LocalDateTime assignmentStart, LocalDateTime assignmentEnd);
+	Optional<DeliveryStaff> findNextCompanyDeliveryStaff(UUID hubId, LocalDateTime assignmentStart, LocalDateTime assignmentEnd);
 
 	int findNextSequence();
 

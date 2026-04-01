@@ -11,8 +11,10 @@ import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryRepository;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryStaffRepository;
+import com.firstlogistics.deliverservice.application.port.HubPort;
 import com.firstlogistics.deliverservice.application.port.UserPort;
 import com.firstlogistics.deliverservice.application.port.dto.CompanyResponse;
+import com.firstlogistics.deliverservice.application.port.dto.HubResponse;
 import com.firstlogistics.deliverservice.application.port.dto.HubRouteResponse;
 import com.firstlogistics.deliverservice.application.port.dto.HubRouteStepResponse;
 import com.firstlogistics.deliverservice.application.port.dto.UserResponse;
@@ -51,6 +53,9 @@ class DeliveryCommandServiceTest {
 
 	@Mock
 	private UserPort userPort;
+
+	@Mock
+	private HubPort hubPort;
 
 	@Mock
 	private DeliveryEventPublisher deliveryEventPublisher;
@@ -104,9 +109,9 @@ class DeliveryCommandServiceTest {
 			HubRouteResponse hubRoute = stubHubRoute(sourceHubId, middleHubId, destinationHubId);
 
 			given(deliveryRepository.existsByOrderId(orderId)).willReturn(false);
-			given(deliveryStaffRepository.findNextHubStaff(eq(sourceHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
+			given(deliveryStaffRepository.findNextHubDeliveryStaff(eq(sourceHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
 				.willReturn(Optional.of(stubHubStaff(sourceHubId)));
-			given(deliveryStaffRepository.findNextHubStaff(eq(middleHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
+			given(deliveryStaffRepository.findNextHubDeliveryStaff(eq(middleHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
 				.willReturn(Optional.empty());
 
 			// when
@@ -135,11 +140,11 @@ class DeliveryCommandServiceTest {
 			HubRouteResponse hubRoute = stubHubRoute(sourceHubId, middleHubId, destinationHubId);
 
 			given(deliveryRepository.existsByOrderId(orderId)).willReturn(false);
-			given(deliveryStaffRepository.findNextHubStaff(eq(sourceHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
+			given(deliveryStaffRepository.findNextHubDeliveryStaff(eq(sourceHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
 				.willReturn(Optional.of(stubHubStaff(sourceHubId)));
-			given(deliveryStaffRepository.findNextHubStaff(eq(middleHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
+			given(deliveryStaffRepository.findNextHubDeliveryStaff(eq(middleHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
 				.willReturn(Optional.of(stubHubStaff(middleHubId)));
-			given(deliveryStaffRepository.findNextCompanyStaff(eq(destinationHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
+			given(deliveryStaffRepository.findNextCompanyDeliveryStaff(eq(destinationHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
 				.willReturn(Optional.empty());
 
 			// when
@@ -168,11 +173,11 @@ class DeliveryCommandServiceTest {
 			HubRouteResponse hubRoute = stubHubRoute(sourceHubId, middleHubId, destinationHubId);
 
 			given(deliveryRepository.existsByOrderId(orderId)).willReturn(false);
-			given(deliveryStaffRepository.findNextHubStaff(eq(sourceHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
+			given(deliveryStaffRepository.findNextHubDeliveryStaff(eq(sourceHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
 				.willReturn(Optional.of(stubHubStaff(sourceHubId)));
-			given(deliveryStaffRepository.findNextHubStaff(eq(middleHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
+			given(deliveryStaffRepository.findNextHubDeliveryStaff(eq(middleHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
 				.willReturn(Optional.of(stubHubStaff(middleHubId)));
-			given(deliveryStaffRepository.findNextCompanyStaff(eq(destinationHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
+			given(deliveryStaffRepository.findNextCompanyDeliveryStaff(eq(destinationHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
 				.willReturn(Optional.of(stubCompanyStaff(destinationHubId)));
 			given(userPort.getUser(receiverManagerId))
 				.willThrow(new DeliveryException(DeliveryErrorCode.USER_NOT_FOUND));
@@ -238,13 +243,13 @@ class DeliveryCommandServiceTest {
 			// then
 			ArgumentCaptor<Delivery> captor = ArgumentCaptor.forClass(Delivery.class);
 			then(deliveryRepository).should().save(captor.capture());
-			assertThat(captor.getValue().getRoutes().get(0).getDeliveryStaffId()).isEqualTo(f.hubStaff1().getId());
-			assertThat(captor.getValue().getRoutes().get(1).getDeliveryStaffId()).isEqualTo(f.hubStaff2().getId());
+			assertThat(captor.getValue().getRoutes().get(0).getDeliveryStaffId()).isEqualTo(f.hubDeliveryStaff1().getId());
+			assertThat(captor.getValue().getRoutes().get(1).getDeliveryStaffId()).isEqualTo(f.hubDeliveryStaff2().getId());
 		}
 
 		@Test
 		@DisplayName("배송 생성 시 업체 배송담당자 순번 기준 배정")
-		void createDelivery_success_companyStaffAssignedToDelivery() {
+		void createDelivery_success_companyDeliveryStaffAssignedToDelivery() {
 			// given
 			SuccessFixture f = SuccessFixture.create();
 			setupSuccessMocks(f);
@@ -255,7 +260,7 @@ class DeliveryCommandServiceTest {
 			// then
 			ArgumentCaptor<Delivery> captor = ArgumentCaptor.forClass(Delivery.class);
 			then(deliveryRepository).should().save(captor.capture());
-			assertThat(captor.getValue().getReceiverCompanyDeliveryStaffId()).isEqualTo(f.companyStaff().getId());
+			assertThat(captor.getValue().getReceiverCompanyDeliveryStaffId()).isEqualTo(f.companyDeliveryStaff().getId());
 		}
 
 		@Test
@@ -280,7 +285,7 @@ class DeliveryCommandServiceTest {
 
 		@Test
 		@DisplayName("배송 생성 시 업체 배송담당자 타임테이블 생성")
-		void createDelivery_success_companyStaffTimetableCreated() {
+		void createDelivery_success_companyDeliveryStaffTimetableCreated() {
 			// given
 			SuccessFixture f = SuccessFixture.create();
 			setupSuccessMocks(f);
@@ -304,9 +309,9 @@ class DeliveryCommandServiceTest {
 		CompanyResponse supplierCompany,
 		CompanyResponse receiverCompany,
 		HubRouteResponse hubRoute,
-		DeliveryStaff hubStaff1,
-		DeliveryStaff hubStaff2,
-		DeliveryStaff companyStaff,
+		DeliveryStaff hubDeliveryStaff1,
+		DeliveryStaff hubDeliveryStaff2,
+		DeliveryStaff companyDeliveryStaff,
 		String receiverSlackId
 	) {
 		List<HubRouteStepResponse> hubSteps() {
@@ -345,11 +350,11 @@ class DeliveryCommandServiceTest {
 				new HubRouteStepResponse(1, middleHubId, destinationHubId, 8000, 25),
 				new HubRouteStepResponse(2, destinationHubId, UUID.randomUUID(), 5000, 20)
 			));
-			DeliveryStaff hubStaff1 = DeliveryStaff.create("허브담당1", "010-1111-1111", sourceHubId, "slack-hub1", StaffType.HUB_DELIVERY, 0);
-			DeliveryStaff hubStaff2 = DeliveryStaff.create("허브담당2", "010-2222-2222", middleHubId, "slack-hub2", StaffType.HUB_DELIVERY, 1);
-			DeliveryStaff companyStaff = DeliveryStaff.create("업체담당1", "010-3333-3333", destinationHubId, "slack-company", StaffType.COMPANY_DELIVERY, 0);
+			DeliveryStaff hubDeliveryStaff1 = DeliveryStaff.create("허브담당1", "010-1111-1111", sourceHubId, "slack-hub1", StaffType.HUB_DELIVERY, 0);
+			DeliveryStaff hubDeliveryStaff2 = DeliveryStaff.create("허브담당2", "010-2222-2222", middleHubId, "slack-hub2", StaffType.HUB_DELIVERY, 1);
+			DeliveryStaff companyDeliveryStaff = DeliveryStaff.create("업체담당1", "010-3333-3333", destinationHubId, "slack-company", StaffType.COMPANY_DELIVERY, 0);
 
-			return new SuccessFixture(command, supplierCompany, receiverCompany, hubRoute, hubStaff1, hubStaff2, companyStaff, "slack-receiver");
+			return new SuccessFixture(command, supplierCompany, receiverCompany, hubRoute, hubDeliveryStaff1, hubDeliveryStaff2, companyDeliveryStaff, "slack-receiver");
 		}
 	}
 
@@ -359,16 +364,25 @@ class DeliveryCommandServiceTest {
 		UUID receiverManagerId = f.command().receiverManagerId();
 
 		given(deliveryRepository.existsByOrderId(f.command().orderId())).willReturn(false);
-		given(deliveryStaffRepository.findNextHubStaff(eq(sourceHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
-			.willReturn(Optional.of(f.hubStaff1()));
-		given(deliveryStaffRepository.findNextHubStaff(eq(middleHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
-			.willReturn(Optional.of(f.hubStaff2()));
-		given(deliveryStaffRepository.findNextCompanyStaff(eq(f.receiverCompany().hubId()), any(LocalDateTime.class), any(LocalDateTime.class)))
-			.willReturn(Optional.of(f.companyStaff()));
+		given(deliveryStaffRepository.findNextHubDeliveryStaff(eq(sourceHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
+			.willReturn(Optional.of(f.hubDeliveryStaff1()));
+		given(deliveryStaffRepository.findNextHubDeliveryStaff(eq(middleHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
+			.willReturn(Optional.of(f.hubDeliveryStaff2()));
+		given(deliveryStaffRepository.findNextCompanyDeliveryStaff(eq(f.receiverCompany().hubId()), any(LocalDateTime.class), any(LocalDateTime.class)))
+			.willReturn(Optional.of(f.companyDeliveryStaff()));
 		given(userPort.getUser(receiverManagerId))
-			.willReturn(new UserResponse(receiverManagerId, "수령인", "010-0000-0000", f.receiverSlackId()));
+			.willReturn(new UserResponse(receiverManagerId, "수령인", "010-0000-0000", f.receiverSlackId(), "receiver@test.com"));
 		given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
 		given(deliveryStaffRepository.save(any(DeliveryStaff.class))).willAnswer(inv -> inv.getArgument(0));
+		given(hubPort.getHubs(any())).willReturn(
+			f.hubRoute().routes().stream()
+				.flatMap(step -> java.util.stream.Stream.of(step.sourceHubId(), step.destinationHubId()))
+				.distinct()
+				.map(id -> new HubResponse(id, "허브-" + id.toString().substring(0, 4), "허브주소-" + id.toString().substring(0, 4)))
+				.toList()
+		);
+		given(userPort.getUser(f.companyDeliveryStaff().getId().id()))
+			.willReturn(new UserResponse(f.companyDeliveryStaff().getId().id(), "업체담당1", "010-3333-3333", "slack-company", "company-staff@test.com"));
 	}
 
 	private CreateDeliveryCommand stubCommand(UUID orderId, UUID receiverCompanyId, UUID receiverManagerId) {

@@ -12,8 +12,10 @@ import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryRepository;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryStaffRepository;
+import com.firstlogistics.deliverservice.application.port.HubPort;
 import com.firstlogistics.deliverservice.application.port.UserPort;
 import com.firstlogistics.deliverservice.application.port.dto.CompanyResponse;
+import com.firstlogistics.deliverservice.application.port.dto.HubResponse;
 import com.firstlogistics.deliverservice.application.port.dto.HubRouteResponse;
 import com.firstlogistics.deliverservice.application.port.dto.HubRouteStepResponse;
 import com.firstlogistics.deliverservice.application.port.dto.UserResponse;
@@ -25,7 +27,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +40,7 @@ public class DeliveryCommandService {
 	private final DeliveryRepository deliveryRepository;
 	private final DeliveryStaffRepository deliveryStaffRepository;
 	private final UserPort userPort;
+	private final HubPort hubPort;
 	private final DeliveryEventPublisher deliveryEventPublisher;
 
 	public CreateDeliveryResult createDelivery(
@@ -62,23 +68,23 @@ public class DeliveryCommandService {
 
 		LocalDateTime now = LocalDateTime.now();
 		int cumulativeMinutes = 0;
-		List<DeliveryStaff> hubStaffs = new ArrayList<>();
+		List<DeliveryStaff> hubDeliveryStaffs = new ArrayList<>();
 
 		for (HubRouteStepResponse step : hubSteps) {
 			LocalDateTime assignmentStart = now.plusMinutes(cumulativeMinutes);
 			LocalDateTime assignmentEnd = now.plusMinutes(cumulativeMinutes + step.durationMinutes());
 
-			DeliveryStaff hubStaff = deliveryStaffRepository.findNextHubStaff(step.sourceHubId(), assignmentStart, assignmentEnd)
+			DeliveryStaff hubDeliveryStaff = deliveryStaffRepository.findNextHubDeliveryStaff(step.sourceHubId(), assignmentStart, assignmentEnd)
 				.orElseThrow(() -> new DeliveryCreationException(DeliveryErrorCode.HUB_DELIVERY_STAFF_NOT_AVAILABLE));
 
-			hubStaffs.add(hubStaff);
+			hubDeliveryStaffs.add(hubDeliveryStaff);
 			cumulativeMinutes += step.durationMinutes();
 		}
 
 		LocalDateTime companyAssignmentStart = now.plusMinutes(cumulativeMinutes);
 		LocalDateTime companyAssignmentEnd = companyAssignmentStart.plusMinutes(lastStep.durationMinutes());
 
-		DeliveryStaff companyStaff = deliveryStaffRepository.findNextCompanyStaff(destinationHubId, companyAssignmentStart, companyAssignmentEnd)
+		DeliveryStaff companyDeliveryStaff = deliveryStaffRepository.findNextCompanyDeliveryStaff(destinationHubId, companyAssignmentStart, companyAssignmentEnd)
 			.orElseThrow(() -> new DeliveryCreationException(DeliveryErrorCode.COMPANY_DELIVERY_STAFF_NOT_AVAILABLE));
 
 		UserResponse receiver = userPort.getUser(command.receiverManagerId());
@@ -92,7 +98,7 @@ public class DeliveryCommandService {
 			command.receiverManagerId(),
 			receiver.slackId(),
 			command.receiverCompanyId(),
-			companyStaff.getId()
+			companyDeliveryStaff.getId()
 		);
 
 		for (int i = 0; i < hubSteps.size(); i++) {
@@ -105,7 +111,7 @@ public class DeliveryCommandService {
 				step.distanceMeters(),
 				step.durationMinutes()
 			);
-			delivery.assignRoute(route, hubStaffs.get(i).getId());
+			delivery.assignRoute(route, hubDeliveryStaffs.get(i).getId());
 		}
 
 		DeliveryRoute companyRoute = DeliveryRoute.create(
@@ -116,7 +122,7 @@ public class DeliveryCommandService {
 			lastStep.distanceMeters(),
 			lastStep.durationMinutes()
 		);
-		delivery.assignRoute(companyRoute, companyStaff.getId());
+		delivery.assignRoute(companyRoute, companyDeliveryStaff.getId());
 
 		Delivery savedDelivery = deliveryRepository.save(delivery);
 
@@ -126,17 +132,24 @@ public class DeliveryCommandService {
 			LocalDateTime assignmentStart = now.plusMinutes(timetableMinutes);
 			LocalDateTime assignmentEnd = now.plusMinutes(timetableMinutes + step.durationMinutes());
 
-			hubStaffs.get(i).assignDelivery(savedDelivery.getId(), assignmentStart, assignmentEnd);
-			deliveryStaffRepository.save(hubStaffs.get(i));
+			hubDeliveryStaffs.get(i).assignDelivery(savedDelivery.getId(), assignmentStart, assignmentEnd);
+			deliveryStaffRepository.save(hubDeliveryStaffs.get(i));
 
 			timetableMinutes += step.durationMinutes();
 		}
 
-		companyStaff.assignDelivery(savedDelivery.getId(), companyAssignmentStart, companyAssignmentEnd);
-		deliveryStaffRepository.save(companyStaff);
+		companyDeliveryStaff.assignDelivery(savedDelivery.getId(), companyAssignmentStart, companyAssignmentEnd);
+		deliveryStaffRepository.save(companyDeliveryStaff);
+
+		List<UUID> hubIds = orderedRoutes.stream()
+			.flatMap(step -> Stream.of(step.sourceHubId(), step.destinationHubId()))
+			.distinct().toList();
+		Map<UUID, HubResponse> hubMap = hubPort.getHubs(hubIds).stream()
+			.collect(Collectors.toMap(HubResponse::hubId, hub -> hub));
+		UserResponse companyDeliveryStaffUser = userPort.getUser(companyDeliveryStaff.getId().id());
 
 		DeliveryCreatedEvent deliveryCreatedEvent = buildDeliveryCreatedEvent(
-				savedDelivery, command, receiver, hubSteps, hubStaffs, lastStep, companyStaff
+				savedDelivery, command, receiver, hubSteps, hubDeliveryStaffs, lastStep, companyDeliveryStaff, hubMap, companyDeliveryStaffUser
 		);
 		deliveryEventPublisher.publishedDeliveryCreated(deliveryCreatedEvent);
 
@@ -148,29 +161,36 @@ public class DeliveryCommandService {
 			CreateDeliveryCommand command,
 			UserResponse receiver,
 			List<HubRouteStepResponse> hubSteps,
-			List<DeliveryStaff> hubStaffs,
+			List<DeliveryStaff> hubDeliveryStaffs,
 			HubRouteStepResponse lastStep,
-			DeliveryStaff companyStaff) {
+			DeliveryStaff companyDeliveryStaff,
+			Map<UUID, HubResponse> hubMap,
+			UserResponse companyDeliveryStaffUser) {
 
 		List<DeliveryCreatedEvent.DeliveryRouteInfo> deliveryRoutes = new ArrayList<>();
 		for (int i = 0; i < hubSteps.size(); i++) {
 			HubRouteStepResponse step = hubSteps.get(i);
+			HubResponse sourceHub = hubMap.get(step.sourceHubId());
+			HubResponse destinationHub = hubMap.get(step.destinationHubId());
 			deliveryRoutes.add(DeliveryCreatedEvent.DeliveryRouteInfo.of(
 				step.hubRouteSequence(),
-				step.sourceHubId(),
-				step.destinationHubId(),
+				step.sourceHubId(), sourceHub.name(), sourceHub.roadAddress(),
+				step.destinationHubId(), destinationHub.name(), destinationHub.roadAddress(),
 				step.distanceMeters(),
 				step.durationMinutes(),
-				hubStaffs.get(i).getSlackId()
+				hubDeliveryStaffs.get(i).getSlackId()
 			));
 		}
+
+		HubResponse lastSourceHub = hubMap.get(lastStep.sourceHubId());
+		HubResponse lastDestinationHub = hubMap.get(lastStep.destinationHubId());
 		deliveryRoutes.add(DeliveryCreatedEvent.DeliveryRouteInfo.of(
 			lastStep.hubRouteSequence(),
-			lastStep.sourceHubId(),
-			lastStep.destinationHubId(),
+			lastStep.sourceHubId(), lastSourceHub.name(), lastSourceHub.roadAddress(),
+			lastStep.destinationHubId(), lastDestinationHub.name(), lastDestinationHub.roadAddress(),
 			lastStep.distanceMeters(),
 			lastStep.durationMinutes(),
-			companyStaff.getSlackId()
+			companyDeliveryStaff.getSlackId()
 		));
 
 		DeliveryCreatedEvent.OrderInfo orderInfo = DeliveryCreatedEvent.OrderInfo.of(
@@ -179,7 +199,7 @@ public class DeliveryCommandService {
 			command.orderDueDate(),
 			command.orderRequestNote(),
 			command.orderItems().stream()
-				.map(i -> DeliveryCreatedEvent.OrderItemInfo.of(i.productId(), i.productName(), i.quantity(), i.price()))
+				.map(item -> DeliveryCreatedEvent.OrderItemInfo.of(item.productId(), item.productName(), item.quantity(), item.price()))
 				.toList()
 		);
 
@@ -190,7 +210,10 @@ public class DeliveryCommandService {
 			command.receiverRoadAddress(),
 			command.receiverDetailAddress(),
 			deliveryRoutes,
-			companyStaff.getSlackId()
+			companyDeliveryStaff.getSlackId(),
+			companyDeliveryStaff.getStaffDetail().staffName(),
+			companyDeliveryStaff.getStaffDetail().phoneNumber(),
+			companyDeliveryStaffUser.email()
 		);
 
 		return DeliveryCreatedEvent.create(orderInfo, deliveryInfo);

@@ -44,28 +44,43 @@ public record DeliveryCreatedEvent(
 		String receiverRoadAddress,
 		String receiverDetailAddress,
 		List<DeliveryRouteInfo> deliveryRoutes,
-		String companyStaffSlackId
+		String companyDeliveryStaffSlackId,
+		String companyDeliveryStaffName,
+		String companyDeliveryStaffPhone,
+		String companyDeliveryStaffEmail
 	) {
 		public static DeliveryInfo of(UUID deliveryId, String receiverName, String receiverSlackId,
 				String receiverRoadAddress, String receiverDetailAddress,
-				List<DeliveryRouteInfo> deliveryRoutes, String companyStaffSlackId) {
+				List<DeliveryRouteInfo> deliveryRoutes,
+				String companyDeliveryStaffSlackId, String companyDeliveryStaffName,
+				String companyDeliveryStaffPhone, String companyDeliveryStaffEmail) {
 			return new DeliveryInfo(deliveryId, receiverName, receiverSlackId,
-				receiverRoadAddress, receiverDetailAddress, deliveryRoutes, companyStaffSlackId);
+				receiverRoadAddress, receiverDetailAddress, deliveryRoutes,
+				companyDeliveryStaffSlackId, companyDeliveryStaffName,
+				companyDeliveryStaffPhone, companyDeliveryStaffEmail);
 		}
 	}
 
 	public record DeliveryRouteInfo(
 		int sequence,
 		UUID sourceHubId,
+		String sourceHubName,
+		String sourceHubRoadAddress,
 		UUID destinationHubId,
+		String destinationHubName,
+		String destinationHubRoadAddress,
 		int estimatedDistanceMeters,
 		int estimatedDurationMinutes,
-		String hubStaffSlackId
+		String hubDeliveryStaffSlackId
 	) {
-		public static DeliveryRouteInfo of(int sequence, UUID sourceHubId, UUID destinationHubId,
-				int estimatedDistanceMeters, int estimatedDurationMinutes, String hubStaffSlackId) {
-			return new DeliveryRouteInfo(sequence, sourceHubId, destinationHubId,
-				estimatedDistanceMeters, estimatedDurationMinutes, hubStaffSlackId);
+		public static DeliveryRouteInfo of(int sequence,
+				UUID sourceHubId, String sourceHubName, String sourceHubRoadAddress,
+				UUID destinationHubId, String destinationHubName, String destinationHubRoadAddress,
+				int estimatedDistanceMeters, int estimatedDurationMinutes, String hubDeliveryStaffSlackId) {
+			return new DeliveryRouteInfo(sequence,
+				sourceHubId, sourceHubName, sourceHubRoadAddress,
+				destinationHubId, destinationHubName, destinationHubRoadAddress,
+				estimatedDistanceMeters, estimatedDurationMinutes, hubDeliveryStaffSlackId);
 		}
 	}
 }

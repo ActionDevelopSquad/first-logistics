@@ -20,14 +20,14 @@ public class DeliveryStaffRepositoryImpl implements DeliveryStaffRepository {
 	private final DeliveryStaffMapper deliveryStaffMapper;
 
 	@Override
-	public Optional<DeliveryStaff> findNextHubStaff(UUID hubId, LocalDateTime assignmentStart, LocalDateTime assignmentEnd) {
+	public Optional<DeliveryStaff> findNextHubDeliveryStaff(UUID hubId, LocalDateTime assignmentStart, LocalDateTime assignmentEnd) {
 		List<DeliveryStaffJpaEntity> results = deliveryStaffJpaRepository
 			.findNextAvailableStaff(hubId, StaffType.HUB_DELIVERY, assignmentStart, assignmentEnd, PageRequest.of(0, 1));
 		return results.isEmpty() ? Optional.empty() : Optional.of(deliveryStaffMapper.toDomain(results.get(0)));
 	}
 
 	@Override
-	public Optional<DeliveryStaff> findNextCompanyStaff(UUID hubId, LocalDateTime assignmentStart, LocalDateTime assignmentEnd) {
+	public Optional<DeliveryStaff> findNextCompanyDeliveryStaff(UUID hubId, LocalDateTime assignmentStart, LocalDateTime assignmentEnd) {
 		List<DeliveryStaffJpaEntity> results = deliveryStaffJpaRepository
 			.findNextAvailableStaff(hubId, StaffType.COMPANY_DELIVERY, assignmentStart, assignmentEnd, PageRequest.of(0, 1));
 		return results.isEmpty() ? Optional.empty() : Optional.of(deliveryStaffMapper.toDomain(results.get(0)));
