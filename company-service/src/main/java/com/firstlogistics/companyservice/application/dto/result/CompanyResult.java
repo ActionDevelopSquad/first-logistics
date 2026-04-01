@@ -21,7 +21,7 @@ public record CompanyResult(
                 company.getHubId(),
                 company.getManagerId(),
                 company.getName(),
-                company.getType().getClass().getSimpleName().toUpperCase(),
+                company.getType().getTypeName(),
                 company.getStatus().name(),
                 company.getAddress().roadAddress(),
                 company.getAddress().detailAddress(),
