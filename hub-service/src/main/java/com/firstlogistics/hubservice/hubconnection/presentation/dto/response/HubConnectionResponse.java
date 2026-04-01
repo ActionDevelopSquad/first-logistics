@@ -1,6 +1,7 @@
 package com.firstlogistics.hubservice.hubconnection.presentation.dto.response;
 
 import com.firstlogistics.hubservice.hubconnection.application.dto.result.HubConnectionResult;
+import com.firstlogistics.hubservice.hubconnection.domain.enums.HubConnectionStatus;
 
 import java.util.UUID;
 
@@ -9,7 +10,7 @@ public record HubConnectionResponse(
         UUID destinationHubId,
         int minutes,
         int meters,
-        String status
+        HubConnectionStatus status
 ) {
     public static HubConnectionResponse from(HubConnectionResult result){
         return new HubConnectionResponse(
@@ -17,7 +18,7 @@ public record HubConnectionResponse(
                 result.destinationHubId(),
                 result.minutes(),
                 result.meters(),
-                result.status().name()
+                result.status()
         );
     }
 }

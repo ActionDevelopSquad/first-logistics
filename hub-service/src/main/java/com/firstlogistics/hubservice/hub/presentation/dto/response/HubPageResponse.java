@@ -1,6 +1,7 @@
 package com.firstlogistics.hubservice.hub.presentation.dto.response;
 
 import com.firstlogistics.hubservice.hub.application.dto.result.SearchHubResult;
+import com.firstlogistics.hubservice.hub.domain.enums.HubStatus;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -33,13 +34,13 @@ public record HubPageResponse(
     public record HubSummary(
             UUID hubId,
             String name,
-            String status
+            HubStatus status
     ){
         public static HubSummary from(SearchHubResult result){
             return new HubSummary(
                     result.hubId(),
                     result.name(),
-                    result.status().name()
+                    result.status()
             );
         }
     }
