@@ -52,6 +52,7 @@ public class OrderCommandService {
     public String acceptOrder(String userId, UUID orderId) {
         Order order = getOrder(orderId);
         order.accept(orderEvents);
+        orderRepository.save(order);
 
         return order.getStatus().name();
     }
