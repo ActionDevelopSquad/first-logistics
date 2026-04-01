@@ -15,7 +15,7 @@ public record CreateHubConnectionRequest(
         Integer minutes,
         @NotNull(message = "거리는 필수입니다.")
         @PositiveOrZero(message = "거리는 0 이상이어야 합니다.")
-        @NotNull Integer meters
+        Integer meters
 ) {
     public CreateHubConnectionCommand toCommand(){
         return new CreateHubConnectionCommand(
