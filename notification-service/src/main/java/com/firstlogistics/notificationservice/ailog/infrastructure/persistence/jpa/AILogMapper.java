@@ -5,6 +5,8 @@ import com.firstlogistics.notificationservice.ailog.domain.vo.AILogId;
 import com.firstlogistics.notificationservice.ailog.domain.vo.MessengerMessageId;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 public class AILogMapper {
 
@@ -12,7 +14,9 @@ public class AILogMapper {
     public AILogJpaEntity toEntity(AILog aiLog) {
         return new AILogJpaEntity(
                 aiLog.getId().id(),
-                aiLog.getMessageId().id(),
+                Optional.ofNullable(aiLog.getMessageId())  // messageId가 나중에 대입됨
+                        .map(MessengerMessageId::id)
+                        .orElse(null),
                 aiLog.getRequestContent(),
                 aiLog.getResponseContent(),
                 aiLog.getSystemPrompt(),
@@ -25,7 +29,9 @@ public class AILogMapper {
     public AILog toDomain(AILogJpaEntity entity) {
         return AILog.reconstitute(
                 AILogId.of(entity.getId()),
-                MessengerMessageId.of(entity.getMessageId()),
+                Optional.ofNullable(entity.getMessageId())  // messageId가 나중에 대입됨
+                        .map(MessengerMessageId::of)
+                        .orElse(null),
                 entity.getRequestContent(),
                 entity.getResponseContent(),
                 entity.getSystemPrompt(),
