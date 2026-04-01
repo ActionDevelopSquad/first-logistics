@@ -1,11 +1,13 @@
 package com.firstlogistics.deliverservice.presentation;
 
 import com.firstlogistics.deliverservice.application.DeliveryQueryService;
-import com.firstlogistics.deliverservice.application.dto.result.DeliveryListResult;
 import com.firstlogistics.deliverservice.application.dto.result.DeliveryCreateResult;
+import com.firstlogistics.deliverservice.application.dto.result.DeliveryDetailResult;
+import com.firstlogistics.deliverservice.application.dto.result.DeliveryListResult;
 import com.firstlogistics.deliverservice.application.facade.DeliveryCreateFacade;
 import com.firstlogistics.deliverservice.presentation.dto.request.DeliveryCreateRequest;
 import com.firstlogistics.deliverservice.presentation.dto.request.DeliveryListRequest;
+import com.firstlogistics.deliverservice.presentation.dto.response.DeliveryDetailResponse;
 import com.firstlogistics.deliverservice.presentation.dto.response.DeliveryListResponse;
 import com.firstlogistics.deliverservice.presentation.dto.response.DeliveryResponse;
 import common.response.ApiResponse;
@@ -44,5 +46,15 @@ public class DeliveryController {
 	) {
 		DeliveryListResult result = deliveryQueryService.getDeliveries(request.toQuery(role, userId));
 		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_LIST_FOUND, DeliveryListResponse.from(result)));
+	}
+
+	@GetMapping("/{deliveryId}")
+	public ResponseEntity<ApiResponse<DeliveryDetailResponse>> getDelivery(
+		@PathVariable UUID deliveryId,
+		@RequestHeader("X-User-Role") String role,
+		@RequestHeader("X-User-Id") UUID userId
+	) {
+		DeliveryDetailResult result = deliveryQueryService.getDelivery(deliveryId, role, userId);
+		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_DETAIL_FOUND, DeliveryDetailResponse.from(result)));
 	}
 }
