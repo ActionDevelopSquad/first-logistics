@@ -29,7 +29,7 @@ public class CompanyJpaEntity extends BaseAuditEntity {
     private UUID hubId;
 
     @Column(columnDefinition = "uuid", nullable = false)
-    private UUID userId;
+    private UUID managerId;
 
     @Column(length = 50, nullable = false)
     private String name;

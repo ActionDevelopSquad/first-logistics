@@ -16,6 +16,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
@@ -53,6 +55,18 @@ public class CompanyRepositoryImpl implements CompanyRepository {
                 .fetchOne();
 
         return new PageImpl<>(content, pageable, total);
+    }
+
+    @Override
+    public Optional<Company> findById(UUID companyId) {
+        return companyJpaRepository.findByIdAndDeletedAtIsNull(companyId)
+                .map(CompanyMapper::toDomain);
+    }
+
+    @Override
+    public Optional<Company> findByManagerId(UUID managerId) {
+        return companyJpaRepository.findByManagerIdAndDeletedAtIsNull(managerId)
+                .map(CompanyMapper::toDomain);
     }
 
     private BooleanBuilder buildPredicate(CompanyQueryCondition condition) {

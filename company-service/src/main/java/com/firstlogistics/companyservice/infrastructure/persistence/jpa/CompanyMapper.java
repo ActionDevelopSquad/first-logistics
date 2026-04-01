@@ -22,7 +22,7 @@ public class CompanyMapper {
         return new CompanyJpaEntity(
                 company.getId(),
                 company.getHubId(),
-                company.getUserId(),
+                company.getManagerId(),
                 company.getName(),
                 company.getStatus(),
                 typeStr,
@@ -43,7 +43,7 @@ public class CompanyMapper {
         return Company.reconstitute(
                 entity.getId(),
                 entity.getHubId(),
-                entity.getUserId(),
+                entity.getManagerId(),
                 entity.getName(),
                 companyType,
                 entity.getStatus(),

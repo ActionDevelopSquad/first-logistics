@@ -33,7 +33,7 @@ public class CompanyCommandService {
 
         Company company = Company.create(
                 hubId,
-                command.userId(),
+                command.managerId(),
                 command.name(),
                 type,
                 command.roadAddress(),
