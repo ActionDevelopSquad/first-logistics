@@ -43,14 +43,14 @@ class CompanyCommandServiceTest {
     private CompanyCommandService companyCommandService;
 
     private static final UUID FIXED_HUB_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
-    private static final UUID FIXED_USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
+    private static final UUID FIXED_MANAGER_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
 
     private CreateCompanyCommand validCommand;
 
     @BeforeEach
     void setUp() {
         validCommand = new CreateCompanyCommand(
-                FIXED_USER_ID,
+                FIXED_MANAGER_ID,
                 "테스트업체",
                 "SUPPLIER",
                 "서울특별시 송파구 송파대로 55",
@@ -74,7 +74,7 @@ class CompanyCommandServiceTest {
 
         // then
         assertThat(result.hubId()).isEqualTo(FIXED_HUB_ID);
-        assertThat(result.userId()).isEqualTo(FIXED_USER_ID);
+        assertThat(result.managerId()).isEqualTo(FIXED_MANAGER_ID);
         assertThat(result.name()).isEqualTo("테스트업체");
         assertThat(result.type()).isEqualTo("SUPPLIER");
         assertThat(result.status()).isEqualTo(CompanyStatus.ACTIVE.name());
@@ -122,7 +122,7 @@ class CompanyCommandServiceTest {
                 .willReturn(FIXED_HUB_ID);
 
         CreateCompanyCommand invalidTypeCommand = new CreateCompanyCommand(
-                FIXED_USER_ID, "테스트업체", "INVALID_TYPE",
+                FIXED_MANAGER_ID, "테스트업체", "INVALID_TYPE",
                 "서울특별시 송파구 송파대로 55", "3층", 37.514, 127.106
         );
 
