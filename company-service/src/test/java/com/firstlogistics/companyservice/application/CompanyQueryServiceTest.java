@@ -67,12 +67,10 @@ class CompanyQueryServiceTest {
             Page<Company> page = new PageImpl<>(List.of(company), PageRequest.of(0, 10), 1);
             given(companyRepository.findAll(any(), any())).willReturn(page);
 
-            CompanySearchQuery query = new CompanySearchQuery(
-                    null, null, null, null, 0, 10, "createdAt", "DESC"
-            );
+            CompanySearchQuery query = new CompanySearchQuery(null, null, null, null);
 
             // when
-            Page<CompanyResult> result = companyQueryService.search(query);
+            Page<CompanyResult> result = companyQueryService.search(query, PageRequest.of(0, 10));
 
             // then
             assertThat(result.getTotalElements()).isEqualTo(1);
@@ -94,12 +92,10 @@ class CompanyQueryServiceTest {
             Page<Company> emptyPage = new PageImpl<>(List.of(), PageRequest.of(0, 10), 0);
             given(companyRepository.findAll(any(), any())).willReturn(emptyPage);
 
-            CompanySearchQuery query = new CompanySearchQuery(
-                    "없는업체", null, null, null, 0, 10, "createdAt", "DESC"
-            );
+            CompanySearchQuery query = new CompanySearchQuery("없는업체", null, null, null);
 
             // when
-            Page<CompanyResult> result = companyQueryService.search(query);
+            Page<CompanyResult> result = companyQueryService.search(query, PageRequest.of(0, 10));
 
             // then
             assertThat(result.getTotalElements()).isZero();

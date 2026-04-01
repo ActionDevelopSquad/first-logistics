@@ -11,6 +11,7 @@ import common.response.ApiResponse;
 import common.response.CommonSuccessCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,9 +42,10 @@ public class CompanyController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<CompanyPageResponse>> getCompanies(
-            @ModelAttribute GetCompaniesRequest request) {
+            @ModelAttribute GetCompaniesRequest request,
+            Pageable pageable) {
         CompanyPageResponse response = CompanyPageResponse.from(
-                companyQueryService.search(request.toQuery()));
+                companyQueryService.search(request.toQuery(), pageable));
         return ResponseEntity.ok(ApiResponse.success(CommonSuccessCode.OK, response));
     }
 

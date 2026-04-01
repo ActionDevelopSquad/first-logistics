@@ -8,16 +8,16 @@ import com.firstlogistics.companyservice.domain.repository.CompanyRepository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
@@ -37,22 +37,26 @@ public class CompanyRepositoryImpl implements CompanyRepository {
     public Page<Company> findAll(CompanyQueryCondition condition, Pageable pageable) {
         BooleanBuilder builder = buildPredicate(condition);
 
-        List<Company> content = queryFactory
+        List<CompanyJpaEntity> entities = queryFactory
                 .selectFrom(companyJpaEntity)
                 .where(builder)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .orderBy(resolveOrderSpecifier(pageable.getSort()))
-                .fetch()
-                .stream()
-                .map(CompanyMapper::toDomain)
-                .toList();
+                .fetch();
 
-        long total = queryFactory
+        List<Company> content = new ArrayList<>(entities.size());
+        for (CompanyJpaEntity entity : entities) {
+            content.add(CompanyMapper.toDomain(entity));
+        }
+
+        Long totalCount = queryFactory
                 .select(companyJpaEntity.count())
                 .from(companyJpaEntity)
                 .where(builder)
                 .fetchOne();
+
+        long total = totalCount != null ? totalCount : 0L;
 
         return new PageImpl<>(content, pageable, total);
     }
@@ -95,7 +99,8 @@ public class CompanyRepositoryImpl implements CompanyRepository {
                 .map(order -> {
                     boolean isAsc = order.isAscending();
                     return switch (order.getProperty()) {
-                        case "updatedAt" -> isAsc ? companyJpaEntity.updatedAt.asc() : companyJpaEntity.updatedAt.desc();
+                        case "updatedAt" ->
+                                isAsc ? companyJpaEntity.updatedAt.asc() : companyJpaEntity.updatedAt.desc();
                         default -> isAsc ? companyJpaEntity.createdAt.asc() : companyJpaEntity.createdAt.desc();
                     };
                 })
