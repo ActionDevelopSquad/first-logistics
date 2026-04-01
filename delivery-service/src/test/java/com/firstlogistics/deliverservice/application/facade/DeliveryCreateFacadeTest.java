@@ -124,7 +124,7 @@ class DeliveryCreateFacadeTest {
 			receiverManagerId,
 			"서울시 강남구 테헤란로 123",
 			"101호",
-			List.of(new CreateDeliveryCommand.OrderItemInfo("마른 오징어", 50, 10000))
+			List.of(new CreateDeliveryCommand.OrderItemInfo(UUID.randomUUID(), "마른 오징어", 50, 10000))
 		);
 	}
 }

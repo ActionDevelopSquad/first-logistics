@@ -36,6 +36,7 @@ public record OrderAcceptedEvent(
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public record OrderItemInfo(
+		UUID productId,
 		String productName,
 		int quantity,
 		int price

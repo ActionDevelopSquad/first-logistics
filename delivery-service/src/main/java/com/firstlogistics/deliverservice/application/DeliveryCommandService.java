@@ -179,7 +179,7 @@ public class DeliveryCommandService {
 			command.orderDueDate(),
 			command.orderRequestNote(),
 			command.orderItems().stream()
-				.map(i -> DeliveryCreatedEvent.OrderItemInfo.of(i.productName(), i.quantity(), i.price()))
+				.map(i -> DeliveryCreatedEvent.OrderItemInfo.of(i.productId(), i.productName(), i.quantity(), i.price()))
 				.toList()
 		);
 

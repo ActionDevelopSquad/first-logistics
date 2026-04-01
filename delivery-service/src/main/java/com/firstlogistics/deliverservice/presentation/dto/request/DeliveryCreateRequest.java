@@ -33,6 +33,7 @@ public record DeliveryCreateRequest(
 	) {}
 
 	public record OrderItemInfo(
+		@NotNull UUID productId,
 		@NotBlank String productName,
 		@PositiveOrZero int quantity,
 		@PositiveOrZero int price
@@ -51,7 +52,7 @@ public record DeliveryCreateRequest(
 			receiver.roadAddress(),
 			receiver.detailAddress(),
 			orderItems.stream()
-				.map(i -> new CreateDeliveryCommand.OrderItemInfo(i.productName(), i.quantity(), i.price()))
+				.map(i -> new CreateDeliveryCommand.OrderItemInfo(i.productId(), i.productName(), i.quantity(), i.price()))
 				.toList()
 		);
 	}

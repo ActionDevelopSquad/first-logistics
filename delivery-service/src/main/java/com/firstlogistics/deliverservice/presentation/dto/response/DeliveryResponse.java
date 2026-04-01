@@ -20,7 +20,7 @@ public record DeliveryResponse(
 				result.order().orderDueDate(),
 				result.order().orderRequestNote(),
 				result.order().orderItems().stream()
-					.map(i -> new OrderItemInfo(i.productName(), i.quantity(), i.price()))
+					.map(i -> new OrderItemInfo(i.productId(), i.productName(), i.quantity(), i.price()))
 					.toList()
 			),
 			new DeliveryInfo(
@@ -57,6 +57,7 @@ public record DeliveryResponse(
 	) {}
 
 	public record OrderItemInfo(
+		UUID productId,
 		String productName,
 		int quantity,
 		int price

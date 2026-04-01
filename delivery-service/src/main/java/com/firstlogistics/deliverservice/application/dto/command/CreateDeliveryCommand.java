@@ -20,6 +20,7 @@ public record CreateDeliveryCommand(
 	List<OrderItemInfo> orderItems
 ) {
 	public record OrderItemInfo(
+		UUID productId,
 		String productName,
 		int quantity,
 		int price
@@ -38,7 +39,7 @@ public record CreateDeliveryCommand(
 			event.receiver().roadAddress(),
 			event.receiver().detailAddress(),
 			event.orderItems().stream()
-				.map(i -> new OrderItemInfo(i.productName(), i.quantity(), i.price()))
+				.map(i -> new OrderItemInfo(i.productId(), i.productName(), i.quantity(), i.price()))
 				.toList()
 		);
 	}

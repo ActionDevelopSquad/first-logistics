@@ -27,12 +27,13 @@ public record DeliveryCreatedEvent(
 	}
 
 	public record OrderItemInfo(
+		UUID productId,
 		String productName,
 		int quantity,
 		int price
 	) {
-		public static OrderItemInfo of(String productName, int quantity, int price) {
-			return new OrderItemInfo(productName, quantity, price);
+		public static OrderItemInfo of(UUID productId, String productName, int quantity, int price) {
+			return new OrderItemInfo(productId, productName, quantity, price);
 		}
 	}
 

@@ -17,10 +17,6 @@ import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.util.backoff.FixedBackOff;
 
-/**
- * order.accepted 토픽 컨슈머 설정
- * 새 컨슈머 추가 시 이 파일을 참고해 동일한 구조로 작성하세요.
- */
 @Configuration
 @RequiredArgsConstructor
 public class OrderAcceptedConsumerConfig {
