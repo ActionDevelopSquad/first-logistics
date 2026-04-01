@@ -1,6 +1,5 @@
 package com.firstlogistics.hubservice.hubconnection.presentation.dto.request;
 
-import com.firstlogistics.hubservice.hub.application.dto.command.CreateHubCommand;
 import com.firstlogistics.hubservice.hubconnection.application.dto.command.CreateHubConnectionCommand;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
