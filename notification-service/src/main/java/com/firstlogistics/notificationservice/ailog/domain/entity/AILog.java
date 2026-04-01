@@ -10,6 +10,8 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Objects;
+
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class AILog {
@@ -28,6 +30,10 @@ public class AILog {
             AILogStatus status,
             MessengerType messengerType
     ) {
+        validateRequired(requestContent, "Request content");
+        validateRequired(responseContent, "Response content");
+        Objects.requireNonNull(status, "Status is required");
+        Objects.requireNonNull(messengerType, "Messenger type is required");
         return new AILog(
                 AILogId.of(),
                 null,  // 슬랙 메시지 생성 후 저장
@@ -66,10 +72,22 @@ public class AILog {
     }
 
     public void updateStatus(AILogStatus status) {
+        Objects.requireNonNull(status, "Target status cannot be null");
+
         if (!this.status.canTransitionTo(status)) {
             throw new AILogException(AILogErrorCode.CANNOT_UPDATE_STATUS);
         }
-        this.status = status;
 
+        if (status == AILogStatus.SUCCESS && this.messageId == null) {
+            throw new AILogException(AILogErrorCode.MESSAGE_NOT_EXIST);
+        }
+
+        this.status = status;
+    }
+
+    private static void validateRequired(String value, String fieldName) {
+        if (value == null || value.isBlank()) {
+            throw new AILogException(AILogErrorCode.INVALID_PARAMETER);
+        }
     }
 }
