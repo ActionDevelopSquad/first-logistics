@@ -44,12 +44,12 @@ public class CompanyCommandService {
 
         Company saved = companyRepository.save(company);
 
-        publishAfterCommit(saved);
+        publishEvent(saved);
 
         return CompanyResult.from(saved);
     }
 
-    private void publishAfterCommit(Company company) {
+    private void publishEvent(Company company) {
         eventPublisher.publish(
                 new CompanyCreatedEvent(
                         company.getId(),
