@@ -17,7 +17,8 @@ public class Events {
         if (eventPublisher != null) {
             eventPublisher.publishEvent(event);
         } else {
-            throw new IllegalStateException("EventPublisher가 초기화되지 않았습니다. 이벤트 발행 실패: " + event);
+            throw new IllegalStateException("EventPublisher가 초기화되지 않았습니다. 이벤트 발행 실패: "
+                    + (event != null ? event.getClass().getSimpleName() : "null"));
         }
     }
 }
