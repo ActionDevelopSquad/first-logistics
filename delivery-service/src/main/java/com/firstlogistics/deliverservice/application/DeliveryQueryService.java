@@ -53,7 +53,12 @@ public class DeliveryQueryService {
 			resolvedQuery = resolvedQuery.withResolvedReceiverIds(receiverIds);
 		}
 
-		return deliveryQueryRepositoryPort.findDeliveries(resolvedQuery);
+		List<DeliveryListResult.DeliverySummary> results = deliveryQueryRepositoryPort.findDeliveries(resolvedQuery);
+		boolean hasNext = results.size() > resolvedQuery.resolvedSize();
+		if (hasNext) {
+			results = results.subList(0, resolvedQuery.resolvedSize());
+		}
+		return DeliveryListResult.from(results, hasNext);
 	}
 
 	private void validateDateRange(LocalDateTime startDate, LocalDateTime endDate) {

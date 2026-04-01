@@ -25,8 +25,8 @@ public class DeliveryQueryRepositoryImpl implements DeliveryQueryRepositoryPort 
 	private static final QDeliveryStaffJpaEntity companyStaff = new QDeliveryStaffJpaEntity("companyStaff");
 
 	@Override
-	public DeliveryListResult findDeliveries(DeliveryListQuery query) {
-		List<DeliveryListResult.DeliverySummary> results = queryFactory
+	public List<DeliveryListResult.DeliverySummary> findDeliveries(DeliveryListQuery query) {
+		return queryFactory
 			.selectDistinct(Projections.constructor(DeliveryListResult.DeliverySummary.class,
 				delivery.id,
 				delivery.orderId,
@@ -34,6 +34,7 @@ public class DeliveryQueryRepositoryImpl implements DeliveryQueryRepositoryPort 
 				delivery.sourceHubId,
 				delivery.destinationHubId,
 				delivery.roadAddress,
+				delivery.detailAddress,
 				delivery.receiverCompanyId,
 				delivery.currentHubId,
 				delivery.createdAt
@@ -60,21 +61,5 @@ public class DeliveryQueryRepositoryImpl implements DeliveryQueryRepositoryPort 
 			.orderBy(delivery.createdAt.desc(), delivery.id.desc())
 			.limit(query.resolvedSize() + 1L)
 			.fetch();
-
-		boolean hasNext = results.size() > query.resolvedSize();
-		if (hasNext) {
-			results = results.subList(0, query.resolvedSize());
-		}
-
-		return DeliveryListResult.of(results, hasNext);
-	}
-
-	private BooleanExpression scopeCondition(DeliveryListQuery query) {
-		return switch (query.scope().role()) {
-			case HUB_MANAGER -> scopeForHubManager(query.scope().scopeId());
-			case DELIVERY_MANAGER -> scopeForDeliveryManager(query.scope().scopeId());
-			case COMPANY_MANAGER -> scopeForCompanyManager(query.scope().scopeId());
-			default -> null;
-		};
 	}
 }

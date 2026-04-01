@@ -32,6 +32,7 @@ public record DeliveryListResponse(
 		UUID sourceHubId,
 		UUID destinationHubId,
 		String receiverRoadAddress,
+		String receiverDetailAddress,
 		UUID receiverCompanyId,
 		UUID currentHubId,
 		LocalDateTime createdAt
@@ -44,6 +45,7 @@ public record DeliveryListResponse(
 				summary.sourceHubId(),
 				summary.destinationHubId(),
 				summary.receiverRoadAddress(),
+				summary.receiverDetailAddress(),
 				summary.receiverCompanyId(),
 				summary.currentHubId(),
 				summary.createdAt()

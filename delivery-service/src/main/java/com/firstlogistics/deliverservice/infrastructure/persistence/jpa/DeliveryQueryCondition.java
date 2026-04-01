@@ -11,6 +11,15 @@ public class DeliveryQueryCondition {
 	private static final QDeliveryJpaEntity delivery = QDeliveryJpaEntity.deliveryJpaEntity;
 	private static final QDeliveryRouteJpaEntity route = QDeliveryRouteJpaEntity.deliveryRouteJpaEntity;
 
+	public static BooleanExpression scopeCondition(DeliveryListQuery query) {
+		return switch (query.scope().role()) {
+			case HUB_MANAGER -> scopeForHubManager(query.scope().scopeId());
+			case DELIVERY_MANAGER -> scopeForDeliveryManager(query.scope().scopeId());
+			case COMPANY_MANAGER -> scopeForCompanyManager(query.scope().scopeId());
+			default -> null;
+		};
+	}
+
 	public static BooleanExpression notDeleted() {
 		return delivery.deletedAt.isNull();
 	}

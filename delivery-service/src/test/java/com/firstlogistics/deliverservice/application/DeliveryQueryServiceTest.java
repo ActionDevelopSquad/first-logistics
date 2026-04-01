@@ -97,10 +97,10 @@ class DeliveryQueryServiceTest {
 		void getDeliveries_receiverNotFound_queriesWithoutReceiverFilter() {
 			// given
 			DeliveryListQuery query = stubQueryWithReceiver(null, null, "없는사람", null);
-			DeliveryListResult expected = DeliveryListResult.of(List.of(), false);
+			DeliveryListResult expected = DeliveryListResult.from(List.of(), false);
 
 			given(userPort.findByNameOrPhone("없는사람", null)).willReturn(List.of());
-			given(deliveryQueryRepositoryPort.findDeliveries(any(DeliveryListQuery.class))).willReturn(expected);
+			given(deliveryQueryRepositoryPort.findDeliveries(any(DeliveryListQuery.class))).willReturn(expected.deliveries());
 
 			// when
 			DeliveryListResult result = deliveryQueryService.getDeliveries(query);
@@ -119,9 +119,9 @@ class DeliveryQueryServiceTest {
 		void getDeliveries_success_masterReturnsDeliveries() {
 			// given
 			DeliveryListQuery query = stubQueryForMaster(null, null);
-			DeliveryListResult expected = DeliveryListResult.of(List.of(stubSummary()), false);
+			DeliveryListResult expected = DeliveryListResult.from(List.of(stubSummary()), false);
 
-			given(deliveryQueryRepositoryPort.findDeliveries(any(DeliveryListQuery.class))).willReturn(expected);
+			given(deliveryQueryRepositoryPort.findDeliveries(any(DeliveryListQuery.class))).willReturn(expected.deliveries());
 
 			// when
 			DeliveryListResult result = deliveryQueryService.getDeliveries(query);
@@ -137,10 +137,10 @@ class DeliveryQueryServiceTest {
 			UUID managerId = UUID.randomUUID();
 			UUID hubId = UUID.randomUUID();
 			DeliveryListQuery query = stubQueryForRole(UserRole.HUB_MANAGER, managerId);
-			DeliveryListResult expected = DeliveryListResult.of(List.of(stubSummary()), false);
+			DeliveryListResult expected = DeliveryListResult.from(List.of(stubSummary()), false);
 
 			given(hubStaffPort.getHubStaff(managerId)).willReturn(new HubStaffResponse(managerId, hubId));
-			given(deliveryQueryRepositoryPort.findDeliveries(any(DeliveryListQuery.class))).willReturn(expected);
+			given(deliveryQueryRepositoryPort.findDeliveries(any(DeliveryListQuery.class))).willReturn(expected.deliveries());
 
 			// when
 			DeliveryListResult result = deliveryQueryService.getDeliveries(query);
@@ -154,9 +154,9 @@ class DeliveryQueryServiceTest {
 		void getDeliveries_success_deliveryManagerReturnsOwnDeliveries() {
 			// given
 			DeliveryListQuery query = stubQueryForRole(UserRole.DELIVERY_MANAGER, UUID.randomUUID());
-			DeliveryListResult expected = DeliveryListResult.of(List.of(stubSummary()), false);
+			DeliveryListResult expected = DeliveryListResult.from(List.of(stubSummary()), false);
 
-			given(deliveryQueryRepositoryPort.findDeliveries(any(DeliveryListQuery.class))).willReturn(expected);
+			given(deliveryQueryRepositoryPort.findDeliveries(any(DeliveryListQuery.class))).willReturn(expected.deliveries());
 
 			// when
 			DeliveryListResult result = deliveryQueryService.getDeliveries(query);
@@ -172,10 +172,10 @@ class DeliveryQueryServiceTest {
 			UUID managerId = UUID.randomUUID();
 			UUID companyId = UUID.randomUUID();
 			DeliveryListQuery query = stubQueryForRole(UserRole.COMPANY_MANAGER, managerId);
-			DeliveryListResult expected = DeliveryListResult.of(List.of(stubSummary()), false);
+			DeliveryListResult expected = DeliveryListResult.from(List.of(stubSummary()), false);
 
 			given(companyPort.getCompanyByManagerId(managerId)).willReturn(new CompanyResponse(companyId, UUID.randomUUID()));
-			given(deliveryQueryRepositoryPort.findDeliveries(any(DeliveryListQuery.class))).willReturn(expected);
+			given(deliveryQueryRepositoryPort.findDeliveries(any(DeliveryListQuery.class))).willReturn(expected.deliveries());
 
 			// when
 			DeliveryListResult result = deliveryQueryService.getDeliveries(query);
@@ -190,11 +190,11 @@ class DeliveryQueryServiceTest {
 			// given
 			UUID receiverId = UUID.randomUUID();
 			DeliveryListQuery query = stubQueryWithReceiver(null, null, "홍길동", null);
-			DeliveryListResult expected = DeliveryListResult.of(List.of(stubSummary()), false);
+			DeliveryListResult expected = DeliveryListResult.from(List.of(stubSummary()), false);
 
 			given(userPort.findByNameOrPhone("홍길동", null))
 				.willReturn(List.of(new UserResponse(receiverId, "홍길동", "slack-123")));
-			given(deliveryQueryRepositoryPort.findDeliveries(any(DeliveryListQuery.class))).willReturn(expected);
+			given(deliveryQueryRepositoryPort.findDeliveries(any(DeliveryListQuery.class))).willReturn(expected.deliveries());
 
 			// when
 			DeliveryListResult result = deliveryQueryService.getDeliveries(query);
@@ -217,9 +217,9 @@ class DeliveryQueryServiceTest {
 				null, null, null, null, null, null, null,
 				startDate, endDate, null, null, 10
 			);
-			DeliveryListResult expected = DeliveryListResult.of(List.of(stubSummary(), stubSummary()), false);
+			DeliveryListResult expected = DeliveryListResult.from(List.of(stubSummary(), stubSummary()), false);
 
-			given(deliveryQueryRepositoryPort.findDeliveries(any(DeliveryListQuery.class))).willReturn(expected);
+			given(deliveryQueryRepositoryPort.findDeliveries(any(DeliveryListQuery.class))).willReturn(expected.deliveries());
 
 			// when
 			DeliveryListResult result = deliveryQueryService.getDeliveries(query);
@@ -239,8 +239,11 @@ class DeliveryQueryServiceTest {
 				null, null, null, null, null, null, null, null, null, null, null,
 				null, null, cursorId, cursorCreatedAt, 10
 			);
+			List<DeliveryListResult.DeliverySummary> elevenResults = java.util.stream.IntStream.range(0, 11)
+				.mapToObj(i -> stubSummary())
+				.toList();
 			given(deliveryQueryRepositoryPort.findDeliveries(any(DeliveryListQuery.class)))
-				.willReturn(DeliveryListResult.of(List.of(stubSummary()), true));
+				.willReturn(elevenResults);
 
 			// when
 			DeliveryListResult result = deliveryQueryService.getDeliveries(query);
@@ -261,7 +264,7 @@ class DeliveryQueryServiceTest {
 				null, null, cursorId, cursorCreatedAt, 10
 			);
 			given(deliveryQueryRepositoryPort.findDeliveries(any(DeliveryListQuery.class)))
-				.willReturn(DeliveryListResult.of(List.of(stubSummary()), false));
+				.willReturn(List.of(stubSummary()));
 
 			// when
 			DeliveryListResult result = deliveryQueryService.getDeliveries(query);
@@ -303,6 +306,7 @@ class DeliveryQueryServiceTest {
 			UUID.randomUUID(),
 			UUID.randomUUID(),
 			"서울시 강남구 테헤란로 123",
+			"101동 202호",
 			UUID.randomUUID(),
 			UUID.randomUUID(),
 			LocalDateTime.now()

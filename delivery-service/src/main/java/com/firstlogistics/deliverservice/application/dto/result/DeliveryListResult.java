@@ -14,7 +14,7 @@ public record DeliveryListResult(
 	LocalDateTime nextCursorCreatedAt
 ) {
 
-	public static DeliveryListResult of(List<DeliverySummary> deliveries, boolean hasNext) {
+	public static DeliveryListResult from(List<DeliverySummary> deliveries, boolean hasNext) {
 		if (!hasNext || deliveries.isEmpty()) {
 			return new DeliveryListResult(deliveries, hasNext, null, null);
 		}
@@ -29,6 +29,7 @@ public record DeliveryListResult(
 		UUID sourceHubId,
 		UUID destinationHubId,
 		String receiverRoadAddress,
+		String receiverDetailAddress,
 		UUID receiverCompanyId,
 		UUID currentHubId,
 		LocalDateTime createdAt
@@ -41,6 +42,7 @@ public record DeliveryListResult(
 				delivery.getSourceHubId(),
 				delivery.getDestinationHubId(),
 				delivery.getDeliveryAddress().roadAddress(),
+				delivery.getDeliveryAddress().detailAddress(),
 				delivery.getReceiverCompanyId(),
 				delivery.getCurrentHubId(),
 				createdAt
