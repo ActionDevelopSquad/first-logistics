@@ -1,4 +1,4 @@
-package common.jpa.security.config;
+package common.security.security.config;
 
 public final class SecurityHeader {
     private SecurityHeader() {

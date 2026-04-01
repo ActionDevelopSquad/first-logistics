@@ -1,6 +1,6 @@
-package common.jpa.security.config;
+package common.security.security.config;
 
-import common.jpa.security.filter.InternalAuthFilter;
+import common.security.security.filter.InternalAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;

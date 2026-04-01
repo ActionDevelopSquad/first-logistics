@@ -1,6 +1,6 @@
-package common.jpa.security.domain;
+package common.security.security.domain;
 
-import common.jpa.entity.enums.UserRole;
+import common.security.entity.enums.UserRole;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -30,6 +30,7 @@ public class CustomUserDetails implements UserDetails {
         this.role = role;
     }
 
+    @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.singleton(new SimpleGrantedAuthority(role.name()));
     }

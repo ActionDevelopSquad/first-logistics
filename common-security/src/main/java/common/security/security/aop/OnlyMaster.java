@@ -1,6 +1,4 @@
-package common.jpa.security.aop;
-
-import common.jpa.entity.enums.UserRole;
+package common.security.security.aop;
 
 import java.lang.annotation.*;
 
@@ -8,5 +6,4 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface OnlyMaster {
-    UserRole value();
 }

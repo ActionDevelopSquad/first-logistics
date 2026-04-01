@@ -1,4 +1,4 @@
-package common.jpa.entity.exception;
+package common.security.entity.exception;
 
 import common.response.ErrorCode;
 import lombok.Getter;
@@ -13,7 +13,7 @@ public enum AuthErrorCode implements ErrorCode {
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "USER_401_001", "인증이 필요합니다."),
 
     // 403 FORBIDDEN
-    FORBIDDEN(HttpStatus.FORBIDDEN, "USER_401_001", "권한이 필요합니다.");
+    FORBIDDEN(HttpStatus.FORBIDDEN, "USER_403_001", "권한이 필요합니다.");
 
     private final HttpStatus status;
     private final String code;

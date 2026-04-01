@@ -1,8 +1,8 @@
-package common.jpa.security.filter;
+package common.security.security.filter;
 
-import common.jpa.entity.enums.UserRole;
-import common.jpa.security.domain.CustomUserDetails;
-import common.jpa.security.config.SecurityHeader;
+import common.security.entity.enums.UserRole;
+import common.security.security.domain.CustomUserDetails;
+import common.security.security.config.SecurityHeader;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,9 +15,15 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class InternalAuthFilter extends OncePerRequestFilter {
+
+    private static final Set<String> VALID_ROLES = Arrays.stream(UserRole.values())
+            .map(Enum::name)
+            .collect(Collectors.toSet());
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -32,7 +38,13 @@ public class InternalAuthFilter extends OncePerRequestFilter {
             StringUtils.hasText(nameHeader) &&
             SecurityContextHolder.getContext().getAuthentication() == null)
         {
-            UUID userId = UUID.fromString(userIdHeader);
+            UUID userId;
+            try {
+                userId = UUID.fromString(userIdHeader);
+            } catch (IllegalArgumentException e) {
+                filterChain.doFilter(request, response);
+                return;
+            }
 
             List<UserRole> roles = Arrays.stream(roleHeader.split(","))
                     .map(String::trim)
@@ -63,8 +75,6 @@ public class InternalAuthFilter extends OncePerRequestFilter {
     }
 
     private boolean isUserRole(String role) {
-        return Arrays.stream(UserRole.values())
-                .map(Enum::name)
-                .anyMatch(role::equals);
+        return VALID_ROLES.contains(role);
     }
 }

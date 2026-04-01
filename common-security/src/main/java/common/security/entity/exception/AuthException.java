@@ -1,4 +1,4 @@
-package common.jpa.entity.exception;
+package common.security.entity.exception;
 
 import common.exception.BaseException;
 
