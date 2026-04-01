@@ -6,6 +6,7 @@ import com.firstlogistics.hubservice.hub.application.dto.result.SearchHubResult;
 import com.firstlogistics.hubservice.hub.presentation.dto.request.CreateHubRequest;
 import com.firstlogistics.hubservice.hub.presentation.dto.request.SearchHubsRequest;
 import com.firstlogistics.hubservice.hub.presentation.dto.response.HubDetailResponse;
+import com.firstlogistics.hubservice.hub.presentation.dto.response.HubPageResponse;
 import com.firstlogistics.hubservice.hub.presentation.dto.response.HubResponse;
 import com.firstlogistics.hubservice.hub.presentation.dto.response.NearestHubResponse;
 import common.response.ApiResponse;
@@ -46,11 +47,11 @@ public class HubApiController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<SearchHubResult>>> search(
+    public ResponseEntity<ApiResponse<HubPageResponse>> search(
             @Valid @ModelAttribute SearchHubsRequest request,
             @PageableDefault Pageable pageable
             ){
-        Page<SearchHubResult> response = hubQueryService.searchHubs(request.toQuery(),pageable);
+        HubPageResponse response = HubPageResponse.from(hubQueryService.searchHubs(request.toQuery(),pageable));
         return ResponseEntity.status(HubSuccessCode.HUB_LIST_RETRIEVED.getStatus())
                 .body(ApiResponse.success(HubSuccessCode.HUB_LIST_RETRIEVED, response));
     }
