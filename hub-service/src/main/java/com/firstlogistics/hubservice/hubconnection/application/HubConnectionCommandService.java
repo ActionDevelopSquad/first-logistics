@@ -31,7 +31,9 @@ public class HubConnectionCommandService {
 
         HubConnection hubConnection = HubConnection.create(sourceHubId, destinationHubId, time, distance);
 
-        return HubConnectionResult.from(hubConnection);
+        HubConnection savedHubConnection = hubConnectionRepository.save(hubConnection);
+
+        return HubConnectionResult.from(savedHubConnection);
     }
 
     private void validateHubExists(HubId id){
