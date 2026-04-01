@@ -1,6 +1,7 @@
 package common.security.security.config;
 
 import common.jpa.config.CurrentAuditorProvider;
+import common.security.entity.exception.AuthException;
 import common.security.security.util.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -16,9 +17,12 @@ public class SecurityContextAuditingConfig implements CurrentAuditorProvider {
     public Optional<UUID> getCurrentAuditor() {
         try {
             return Optional.of(SecurityUtils.currentUser().getUserId());
-        } catch (Exception e) {
+        } catch (AuthException e) {
             log.debug("현재 사용자 정보를 가져올 수 없습니다: {}", e.getMessage());
             return Optional.empty();
+        } catch (RuntimeException e) {
+            log.error("인증 조회 중 예기치 않은 오류가 발생했습니다.", e);
+            throw e;
         }
     }
 }
