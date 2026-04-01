@@ -1,6 +1,6 @@
 package com.firstlogistics.orderservice.infrastructure.messaging.producer;
 
-import com.firstlogistics.orderservice.application.port.OrderEventKafkaProducerPort;
+import com.firstlogistics.orderservice.application.port.OrderEventProducer;
 import com.firstlogistics.orderservice.domain.event.OrderCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +12,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class OrderEventKafkaProducer implements OrderEventKafkaProducerPort {
+public class OrderEventKafkaProducer implements OrderEventProducer {
 
     private static final String TOPIC_CREATED = "order.created";
     private static final String TOPIC_ACCEPTED = "order.accepted";
