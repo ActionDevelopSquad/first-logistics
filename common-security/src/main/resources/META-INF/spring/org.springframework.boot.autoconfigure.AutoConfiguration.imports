@@ -1,0 +1,3 @@
+common.jpa.config.JpaAuditingConfig
+common.jpa.security.config.CommonSecurityAutoConfig
+common.jpa.security.config.SecurityConfig
