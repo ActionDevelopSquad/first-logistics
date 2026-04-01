@@ -16,13 +16,13 @@ public class HubManager {
     private UserId userId;
     private HubId hubId;
 
-    public HubManager create(UserId userId, HubId hubId){
+    public static HubManager create(UserId userId, HubId hubId){
         validateUserId(userId);
         validateHubId(hubId);
         return new HubManager(HubManagerId.generate(), userId, hubId);
     }
 
-    public HubManager reconstitute(
+    public static HubManager reconstitute(
             HubManagerId id,
             UserId userId,
             HubId hubId
@@ -32,15 +32,15 @@ public class HubManager {
         validateHubId(hubId);
         return new HubManager(id, userId, hubId);
     }
-    private void validateHubManagerId(HubManagerId id){
+    private static void validateHubManagerId(HubManagerId id){
         if(id == null)
             throw new HubManagerException(HubManagerErrorCode.INVALID_HUB_MANAGER_ID);
     }
-    private void validateUserId(UserId userId){
+    private static void validateUserId(UserId userId){
         if(userId == null)
             throw new HubManagerException(HubManagerErrorCode.INVALID_USER_ID);
     }
-    private void validateHubId(HubId hubId){
+    private static void validateHubId(HubId hubId){
         if(hubId == null)
             throw new HubManagerException(HubManagerErrorCode.INVALID_HUB_ID);
     }
