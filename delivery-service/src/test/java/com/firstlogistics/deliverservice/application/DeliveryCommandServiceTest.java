@@ -73,7 +73,7 @@ class DeliveryCommandServiceTest {
 			UUID receiverManagerId = UUID.randomUUID();
 			UUID destinationHubId = UUID.randomUUID();
 			CreateDeliveryCommand command = stubCommand(orderId, receiverCompanyId, receiverManagerId);
-			CompanyResponse receiverCompany = new CompanyResponse(receiverCompanyId, destinationHubId, "수령업체", "서울시 강남구");
+			CompanyResponse receiverCompany = new CompanyResponse(receiverCompanyId, destinationHubId, "수령업체", "서울시 강남구 테헤란로 123", "101동 202호");
 			HubRouteResponse hubRoute = stubHubRoute(sourceHubId, middleHubId, destinationHubId);
 
 			given(deliveryRepository.existsByOrderId(orderId)).willReturn(true);
@@ -100,7 +100,7 @@ class DeliveryCommandServiceTest {
 			UUID receiverManagerId = UUID.randomUUID();
 			UUID destinationHubId = UUID.randomUUID();
 			CreateDeliveryCommand command = stubCommand(orderId, receiverCompanyId, receiverManagerId);
-			CompanyResponse receiverCompany = new CompanyResponse(receiverCompanyId, destinationHubId, "수령업체", "서울시 강남구");
+			CompanyResponse receiverCompany = new CompanyResponse(receiverCompanyId, destinationHubId, "수령업체", "서울시 강남구 테헤란로 123", "101동 202호");
 			HubRouteResponse hubRoute = stubHubRoute(sourceHubId, middleHubId, destinationHubId);
 
 			given(deliveryRepository.existsByOrderId(orderId)).willReturn(false);
@@ -131,7 +131,7 @@ class DeliveryCommandServiceTest {
 			UUID receiverManagerId = UUID.randomUUID();
 			UUID destinationHubId = UUID.randomUUID();
 			CreateDeliveryCommand command = stubCommand(orderId, receiverCompanyId, receiverManagerId);
-			CompanyResponse receiverCompany = new CompanyResponse(receiverCompanyId, destinationHubId, "수령업체", "서울시 강남구");
+			CompanyResponse receiverCompany = new CompanyResponse(receiverCompanyId, destinationHubId, "수령업체", "서울시 강남구 테헤란로 123", "101동 202호");
 			HubRouteResponse hubRoute = stubHubRoute(sourceHubId, middleHubId, destinationHubId);
 
 			given(deliveryRepository.existsByOrderId(orderId)).willReturn(false);
@@ -164,7 +164,7 @@ class DeliveryCommandServiceTest {
 			UUID receiverManagerId = UUID.randomUUID();
 			UUID destinationHubId = UUID.randomUUID();
 			CreateDeliveryCommand command = stubCommand(orderId, receiverCompanyId, receiverManagerId);
-			CompanyResponse receiverCompany = new CompanyResponse(receiverCompanyId, destinationHubId, "수령업체", "서울시 강남구");
+			CompanyResponse receiverCompany = new CompanyResponse(receiverCompanyId, destinationHubId, "수령업체", "서울시 강남구 테헤란로 123", "101동 202호");
 			HubRouteResponse hubRoute = stubHubRoute(sourceHubId, middleHubId, destinationHubId);
 
 			given(deliveryRepository.existsByOrderId(orderId)).willReturn(false);
@@ -338,8 +338,8 @@ class DeliveryCommandServiceTest {
 				"101호",
 				List.of(new CreateDeliveryCommand.OrderItemInfo(UUID.randomUUID(), "마른 오징어", 50, 10000L))
 			);
-			CompanyResponse supplierCompany = new CompanyResponse(supplierCompanyId, supplierHubId, "공급업체", "서울시 송파구");
-			CompanyResponse receiverCompany = new CompanyResponse(receiverCompanyId, destinationHubId, "수령업체", "서울시 강남구");
+			CompanyResponse supplierCompany = new CompanyResponse(supplierCompanyId, supplierHubId, "공급업체", "서울시 송파구 올림픽로 300", "A동 1층");
+			CompanyResponse receiverCompany = new CompanyResponse(receiverCompanyId, destinationHubId, "수령업체", "서울시 강남구 테헤란로 123", "101동 202호");
 			HubRouteResponse hubRoute = new HubRouteResponse(sourceHubId, destinationHubId, List.of(
 				new HubRouteStepResponse(0, sourceHubId, middleHubId, 10000, 30),
 				new HubRouteStepResponse(1, middleHubId, destinationHubId, 8000, 25),
@@ -396,7 +396,7 @@ class DeliveryCommandServiceTest {
 	}
 
 	private CompanyResponse stubSupplierCompany(UUID sourceHubId) {
-		return new CompanyResponse(UUID.randomUUID(), sourceHubId, "공급업체", "서울시 송파구");
+		return new CompanyResponse(UUID.randomUUID(), sourceHubId, "공급업체", "서울시 송파구 올림픽로 300", "A동 1층");
 	}
 
 	private DeliveryStaff stubHubStaff(UUID hubId) {

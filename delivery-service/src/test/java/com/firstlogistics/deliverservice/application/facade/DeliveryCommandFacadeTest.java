@@ -61,7 +61,7 @@ class DeliveryCommandFacadeTest {
 			CreateDeliveryCommand command = stubCommand(orderId, supplierCompanyId, supplierManagerId, receiverCompanyId, receiverManagerId);
 
 			given(companyPort.getCompany(supplierCompanyId))
-				.willReturn(new CompanyResponse(supplierCompanyId, supplierHubId, "공급업체", "서울시 송파구"));
+				.willReturn(new CompanyResponse(supplierCompanyId, supplierHubId, "공급업체", "서울시 송파구 올림픽로 300", "A동 1층"));
 			given(companyPort.getCompany(receiverCompanyId))
 				.willThrow(new DeliveryException(DeliveryErrorCode.COMPANY_NOT_FOUND));
 
@@ -89,9 +89,9 @@ class DeliveryCommandFacadeTest {
 			CreateDeliveryCommand command = stubCommand(orderId, supplierCompanyId, supplierManagerId, receiverCompanyId, receiverManagerId);
 
 			given(companyPort.getCompany(supplierCompanyId))
-				.willReturn(new CompanyResponse(supplierCompanyId, supplierHubId, "공급업체", "서울시 송파구"));
+				.willReturn(new CompanyResponse(supplierCompanyId, supplierHubId, "공급업체", "서울시 송파구 올림픽로 300", "A동 1층"));
 			given(companyPort.getCompany(receiverCompanyId))
-				.willReturn(new CompanyResponse(receiverCompanyId, destinationHubId, "수령업체", "서울시 강남구"));
+				.willReturn(new CompanyResponse(receiverCompanyId, destinationHubId, "수령업체", "서울시 강남구 테헤란로 123", "101동 202호"));
 			given(hubPort.getHubRoute(supplierHubId, destinationHubId))
 				.willThrow(new DeliveryException(DeliveryErrorCode.HUB_NOT_FOUND));
 

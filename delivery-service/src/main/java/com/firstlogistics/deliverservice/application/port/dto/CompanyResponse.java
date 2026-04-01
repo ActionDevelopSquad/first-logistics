@@ -9,6 +9,7 @@ public record CompanyResponse(
 	UUID companyId,
 	UUID hubId,
 	String name,
-	String address
+	String roadAddress,
+	String detailAddress
 ) {
 }

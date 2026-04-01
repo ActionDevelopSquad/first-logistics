@@ -8,6 +8,6 @@ import java.util.UUID;
 public record HubResponse(
 	UUID hubId,
 	String name,
-	String address
+	String roadAddress
 ) {
 }

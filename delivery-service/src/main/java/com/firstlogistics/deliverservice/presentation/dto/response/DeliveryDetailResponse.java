@@ -44,10 +44,10 @@ public record DeliveryDetailResponse(
 		);
 	}
 
-	public record HubInfo(UUID hubId, String name, String address) {
+	public record HubInfo(UUID hubId, String name, String roadAddress) {
 		public static HubInfo from(DeliveryDetailResult.HubInfo hub) {
 			if (hub == null) return null;
-			return new HubInfo(hub.hubId(), hub.name(), hub.address());
+			return new HubInfo(hub.hubId(), hub.name(), hub.roadAddress());
 		}
 	}
 
@@ -58,10 +58,10 @@ public record DeliveryDetailResponse(
 		}
 	}
 
-	public record CompanyInfo(UUID companyId, String name, String address) {
+	public record CompanyInfo(UUID companyId, String name, String roadAddress, String detailAddress) {
 		public static CompanyInfo from(DeliveryDetailResult.CompanyInfo company) {
 			if (company == null) return null;
-			return new CompanyInfo(company.companyId(), company.name(), company.address());
+			return new CompanyInfo(company.companyId(), company.name(), company.roadAddress(), company.detailAddress());
 		}
 	}
 
