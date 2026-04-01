@@ -5,6 +5,7 @@ import com.firstlogistics.hubservice.hub.domain.repository.HubRepository;
 import com.firstlogistics.hubservice.hub.domain.vo.HubId;
 import com.firstlogistics.hubservice.hubconnection.application.dto.command.CreateHubConnectionCommand;
 import com.firstlogistics.hubservice.hubconnection.application.dto.result.HubConnectionResult;
+import com.firstlogistics.hubservice.hubconnection.domain.entity.HubConnection;
 import com.firstlogistics.hubservice.hubconnection.domain.exception.HubConnectionErrorCode;
 import com.firstlogistics.hubservice.hubconnection.domain.exception.HubConnectionException;
 import com.firstlogistics.hubservice.hubconnection.domain.repository.HubConnectionRepository;
@@ -17,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
@@ -110,7 +112,8 @@ public class HubConnectionCommandServiceTest {
         given(hubRepository.existsByHubId(sourceId)).willReturn(true);
         given(hubRepository.existsByHubId(destinationId)).willReturn(true);
         given(hubConnectionRepository.existsBySourceAndDestination(sourceId, destinationId)).willReturn(false);
-
+        given(hubConnectionRepository.save(any(HubConnection.class)))
+                .willAnswer(invocation -> invocation.getArgument(0));
 
         //when
         HubConnectionResult result = hubConnectionCommandService.create(command);
