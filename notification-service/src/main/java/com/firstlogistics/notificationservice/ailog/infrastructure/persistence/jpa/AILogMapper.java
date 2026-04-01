@@ -2,6 +2,7 @@ package com.firstlogistics.notificationservice.ailog.infrastructure.persistence.
 
 import com.firstlogistics.notificationservice.ailog.domain.entity.AILog;
 import com.firstlogistics.notificationservice.ailog.domain.vo.AILogId;
+import com.firstlogistics.notificationservice.ailog.domain.vo.MessengerMessageId;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -11,7 +12,7 @@ public class AILogMapper {
     public AILogJpaEntity toEntity(AILog aiLog) {
         return new AILogJpaEntity(
                 aiLog.getId().id(),
-                aiLog.getMessageId(),
+                aiLog.getMessageId().id(),
                 aiLog.getRequestContent(),
                 aiLog.getResponseContent(),
                 aiLog.getSystemPrompt(),
@@ -24,7 +25,7 @@ public class AILogMapper {
     public AILog toDomain(AILogJpaEntity entity) {
         return AILog.reconstitute(
                 AILogId.of(entity.getId()),
-                entity.getMessageId(),
+                MessengerMessageId.of(entity.getMessageId()),
                 entity.getRequestContent(),
                 entity.getResponseContent(),
                 entity.getSystemPrompt(),

@@ -5,17 +5,16 @@ import com.firstlogistics.notificationservice.ailog.domain.enums.MessengerType;
 import com.firstlogistics.notificationservice.ailog.domain.exception.AILogErrorCode;
 import com.firstlogistics.notificationservice.ailog.domain.exception.AILogException;
 import com.firstlogistics.notificationservice.ailog.domain.vo.AILogId;
+import com.firstlogistics.notificationservice.ailog.domain.vo.MessengerMessageId;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-
-import java.util.UUID;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class AILog {
     private final AILogId id;
-    private UUID messageId;
+    private MessengerMessageId messageId;
     private String requestContent;
     private String responseContent;
     private String systemPrompt;
@@ -42,7 +41,7 @@ public class AILog {
 
     public static AILog reconstitute(
             AILogId id,
-            UUID messageId,
+            MessengerMessageId messageId,
             String requestContent,
             String responseContent,
             String systemPrompt,
@@ -52,7 +51,7 @@ public class AILog {
         return new AILog(id, messageId, requestContent, responseContent, systemPrompt, status, messengerType);
     }
 
-    public void updateSlackMessageId(UUID slackMessageId) {
+    public void updateSlackMessageId(MessengerMessageId slackMessageId) {
         // null 체크
         if (slackMessageId == null) {
             throw new AILogException(AILogErrorCode.MESSAGE_NOT_EXIST);
