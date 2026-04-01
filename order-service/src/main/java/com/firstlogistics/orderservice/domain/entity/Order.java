@@ -169,9 +169,12 @@ public class Order {
         this.status = resultStatus;
     }
 
-    public void accept() {
+    public void accept(OrderEvents events) {
+        // TODO: 공급 업체 담당자 or 관리자 권한 검증
         this.status.validateNext(OrderStatus.ACCEPTED);
         this.status = OrderStatus.ACCEPTED;
+
+        events.accepted(this);
     }
 
     public void assignDelivery(UUID deliveryId) {
