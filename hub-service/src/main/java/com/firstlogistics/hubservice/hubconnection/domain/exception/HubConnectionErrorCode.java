@@ -18,7 +18,9 @@ public enum HubConnectionErrorCode implements ErrorCode {
     ALREADY_HUB_CONNECTION_ACTIVE(HttpStatus.CONFLICT, "HBC_E008", "이미 활성화된 허브 연결 정보입니다."),
     ALREADY_HUB_CONNECTION_INACTIVE(HttpStatus.CONFLICT, "HBC_E009", "이미 비활성화된 허브 연결 정보입니다."),
     INVALID_HUB_CONNECTION_STATUS(HttpStatus.BAD_REQUEST, "HBC_E010", "허브 연결 정보 상태가 유효하지 않습니다."),
-    INVALID_HUB_ID(HttpStatus.BAD_REQUEST, "HBC_E011", "허브 ID가 유효하지 않습니다.");
+    INVALID_HUB_ID(HttpStatus.BAD_REQUEST, "HBC_E011", "허브 ID가 유효하지 않습니다."),
+    SAME_SOURCE_AND_DESTINATION_HUB(HttpStatus.BAD_REQUEST, "HBC_E012", "출발 허브와 도착 허브가 같습니다."),
+    HUB_NOT_FOUND(HttpStatus.NOT_FOUND, "HBC_E013", "해당 허브 정보를 찾을 수 없습니다.");
 
 
     private final HttpStatus status;

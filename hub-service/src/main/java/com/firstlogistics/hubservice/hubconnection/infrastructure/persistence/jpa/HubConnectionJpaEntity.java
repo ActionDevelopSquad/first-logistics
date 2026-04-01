@@ -7,6 +7,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.util.UUID;
 
@@ -15,11 +16,12 @@ import java.util.UUID;
 @Table(
         name = "p_hub_connection",
         uniqueConstraints = {
-            @UniqueConstraint(name = "uk_hub_connection_hub_id", columnNames = {"source_hub_id", "destination_hub_id"})
+            @UniqueConstraint(name = HubConnectionConstraints.UK_HUB_CONNECTION_HUB_ID, columnNames = {"source_hub_id", "destination_hub_id"})
         }
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
+@SQLRestriction("deleted_at IS NULL")
 public class HubConnectionJpaEntity extends BaseAuditEntity {
     @Id
     private UUID id;
