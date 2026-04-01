@@ -17,6 +17,7 @@ public class OrderEventKafkaProducer implements OrderEventKafkaProducerPort {
     private static final String TOPIC_CREATED = "order.created";
     private static final String TOPIC_ACCEPTED = "order.accepted";
     private static final String TOPIC_CANCELLED = "order.cancelled";
+    private static final String TOPIC_CREATED_DLT = "order.created.DLT";
 
     private final KafkaTemplate<String, Object> orderKafkaTemplate;
 
@@ -26,7 +27,17 @@ public class OrderEventKafkaProducer implements OrderEventKafkaProducerPort {
     @Override
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOrderCreatedEvent(OrderCreatedEvent event) {
-        orderKafkaTemplate.send(TOPIC_CREATED, event.supplierCompanyId().toString(), event);
-        log.info("이벤트 발행 - topic: {}, orderId: {}", TOPIC_CREATED, event.orderId());
+        orderKafkaTemplate.send(TOPIC_CREATED, event.supplierCompanyId().toString(), event)
+                .whenComplete((result, ex) -> {
+                    if (ex != null) {
+                        log.error("이벤트 발행 실패 - topic: {}, orderId: {}", TOPIC_CREATED, event.orderId(), ex);
+                    } else {
+                        log.info("이벤트 발행 성공 - topic: {}, orderId: {}, partition: {}, offset: {}",
+                                TOPIC_CREATED,
+                                event.orderId(),
+                                result.getRecordMetadata().partition(),
+                                result.getRecordMetadata().offset());
+                    }
+                });
     }
 }
