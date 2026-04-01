@@ -8,6 +8,7 @@ import com.firstlogistics.orderservice.domain.exception.OrderException;
 import com.firstlogistics.orderservice.domain.vo.Address;
 import com.firstlogistics.orderservice.domain.vo.Money;
 import com.firstlogistics.orderservice.domain.vo.OrderId;
+import com.firstlogistics.orderservice.domain.vo.OrderItemInput;
 import com.firstlogistics.orderservice.domain.vo.Receiver;
 import com.firstlogistics.orderservice.domain.vo.Supplier;
 import lombok.AccessLevel;
@@ -48,7 +49,7 @@ public class Order {
             String detailAddress,
             LocalDateTime dueDate,
             String requestMemo,
-            List<CreateOrderCommand.OrderItemCommand> items,
+            List<OrderItemInput> items,
             OrderEvents orderEvents
     ) {
         validateInput(dueDate);
@@ -122,7 +123,7 @@ public class Order {
         }
     }
 
-    private void createOrderItems(List<CreateOrderCommand.OrderItemCommand> items) {
+    private void createOrderItems(List<OrderItemInput> items) {
         // 주문 상세 존재 여부 체크
         if (items == null || items.isEmpty()) {
             throw new OrderException(OrderErrorCode.ORDER_ITEM_NOT_EXIST);
