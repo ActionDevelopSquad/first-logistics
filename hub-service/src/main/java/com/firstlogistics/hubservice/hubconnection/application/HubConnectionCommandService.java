@@ -12,6 +12,7 @@ import com.firstlogistics.hubservice.hubconnection.domain.vo.Distance;
 import com.firstlogistics.hubservice.hubconnection.domain.vo.Time;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
@@ -19,6 +20,7 @@ public class HubConnectionCommandService {
     private final HubConnectionRepository hubConnectionRepository;
     private final HubRepository hubRepository;
 
+    @Transactional
     public HubConnectionResult create(CreateHubConnectionCommand command) {
         HubId sourceHubId = HubId.of(command.sourceHubId());
         HubId destinationHubId = HubId.of(command.destinationHubId());
