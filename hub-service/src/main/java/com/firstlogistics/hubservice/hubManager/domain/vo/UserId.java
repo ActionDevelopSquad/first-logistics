@@ -8,7 +8,7 @@ import java.util.UUID;
 public record UserId(UUID id) {
     public UserId{
         if(id == null)
-            throw new HubManagerException(HubManagerErrorCode.INVALID_HUB_MANAGER_ID);
+            throw new HubManagerException(HubManagerErrorCode.INVALID_USER_ID);
     }
     public static UserId of(UUID id){
         return new UserId(id);
