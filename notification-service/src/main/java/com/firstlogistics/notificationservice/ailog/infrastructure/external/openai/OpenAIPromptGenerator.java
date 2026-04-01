@@ -2,6 +2,8 @@ package com.firstlogistics.notificationservice.ailog.infrastructure.external.ope
 
 import com.firstlogistics.notificationservice.ailog.application.dto.command.CreateAILogCommand;
 import com.firstlogistics.notificationservice.ailog.application.external.AIPromptGenerator;
+import com.firstlogistics.notificationservice.ailog.domain.exception.AILogErrorCode;
+import com.firstlogistics.notificationservice.ailog.domain.exception.AILogException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -29,12 +31,17 @@ public class OpenAIPromptGenerator implements AIPromptGenerator {
 
         log.info("AI 배송 가이드 생성 요청 시작 - 주문번호: {}", command.orderId());
 
-        // AI 호출 및 결과 반환
-        return chatClient.prompt()
+        try {
+            // AI 호출 및 결과 반환
+            return chatClient.prompt()
                 .system(SYSTEM_PROMPT)
                 .user(userContent)
                 .call()
                 .content();
+        } catch (Exception e) {
+            log.error("AI 배송 가이드 생성 실패 - 주문번호: {}", command.orderId(), e);
+            throw new AILogException(AILogErrorCode.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Override
