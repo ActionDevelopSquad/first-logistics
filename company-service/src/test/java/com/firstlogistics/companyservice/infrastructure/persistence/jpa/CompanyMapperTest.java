@@ -4,6 +4,8 @@ import com.firstlogistics.companyservice.domain.entity.Company;
 import com.firstlogistics.companyservice.domain.entity.Receiver;
 import com.firstlogistics.companyservice.domain.entity.Supplier;
 import com.firstlogistics.companyservice.domain.enums.CompanyStatus;
+import com.firstlogistics.companyservice.domain.exception.CompanyErrorCode;
+import com.firstlogistics.companyservice.domain.exception.CompanyException;
 import com.firstlogistics.companyservice.domain.vo.CompanyAddress;
 import com.firstlogistics.companyservice.domain.vo.GeoLocation;
 import org.junit.jupiter.api.DisplayName;
@@ -116,7 +118,8 @@ class CompanyMapperTest {
 
         // when & then
         assertThatThrownBy(() -> CompanyMapper.toDomain(jpaEntity))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("알 수 없는 업체 타입");
+                .isInstanceOf(CompanyException.class)
+                .extracting(ex -> ((CompanyException) ex).getErrorCode())
+                .isEqualTo(CompanyErrorCode.INVALID_COMPANY_TYPE);
     }
 }

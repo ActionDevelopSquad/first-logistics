@@ -4,6 +4,8 @@ import com.firstlogistics.companyservice.domain.entity.Company;
 import com.firstlogistics.companyservice.domain.entity.CompanyType;
 import com.firstlogistics.companyservice.domain.entity.Receiver;
 import com.firstlogistics.companyservice.domain.entity.Supplier;
+import com.firstlogistics.companyservice.domain.exception.CompanyErrorCode;
+import com.firstlogistics.companyservice.domain.exception.CompanyException;
 import com.firstlogistics.companyservice.domain.vo.CompanyAddress;
 import com.firstlogistics.companyservice.domain.vo.GeoLocation;
 import lombok.NoArgsConstructor;
@@ -35,7 +37,7 @@ public class CompanyMapper {
         CompanyType companyType = switch (entity.getType().toUpperCase()) {
             case "SUPPLIER" -> new Supplier();
             case "RECEIVER" -> new Receiver();
-            default -> throw new IllegalStateException("알 수 없는 업체 타입: " + entity.getType());
+            default -> throw new CompanyException(CompanyErrorCode.INVALID_COMPANY_TYPE);
         };
 
         return Company.reconstitute(
