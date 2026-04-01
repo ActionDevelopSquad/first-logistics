@@ -11,7 +11,7 @@ public interface HubFeignClient {
 
     @GetMapping("/nearest")
     ApiResponse<UUID> findNearestHubId(
-            @RequestParam double latitude,
-            @RequestParam double longitude
+            @RequestParam("latitude") double latitude,
+            @RequestParam("longitude") double longitude
     );
 }
