@@ -2,6 +2,7 @@ package com.firstlogistics.orderservice.application;
 
 import com.firstlogistics.orderservice.application.dto.CreateOrderCommand;
 import com.firstlogistics.orderservice.domain.entity.Order;
+import com.firstlogistics.orderservice.domain.event.OrderEvents;
 import com.firstlogistics.orderservice.domain.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import java.util.UUID;
 public class OrderCommandService {
 
     private final OrderRepository orderRepository;
+    private final OrderEvents orderEvents;
 
     @Transactional
     public UUID createOrder(CreateOrderCommand command) {
@@ -28,7 +30,8 @@ public class OrderCommandService {
                 command.detailAddress(),
                 command.dueDate(),
                 command.requestMemo(),
-                command.items()
+                command.items(),
+                orderEvents
         );
 
         orderRepository.save(order);

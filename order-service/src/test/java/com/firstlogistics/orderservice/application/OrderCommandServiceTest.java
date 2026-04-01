@@ -2,6 +2,7 @@ package com.firstlogistics.orderservice.application;
 
 import com.firstlogistics.orderservice.application.dto.CreateOrderCommand;
 import com.firstlogistics.orderservice.domain.entity.Order;
+import com.firstlogistics.orderservice.domain.event.OrderEvents;
 import com.firstlogistics.orderservice.domain.repository.OrderRepository;
 import com.firstlogistics.orderservice.domain.exception.OrderException;
 import com.firstlogistics.orderservice.domain.exception.OrderErrorCode;
@@ -26,6 +27,9 @@ class OrderCommandServiceTest {
 
     @Mock
     private OrderRepository orderRepository;
+
+    @Mock
+    private OrderEvents orderEvents;
 
     @InjectMocks
     private OrderCommandService orderCommandService;

@@ -2,6 +2,7 @@ package com.firstlogistics.orderservice.domain.entity;
 
 import com.firstlogistics.orderservice.application.dto.CreateOrderCommand;
 import com.firstlogistics.orderservice.domain.enums.OrderStatus;
+import com.firstlogistics.orderservice.domain.event.OrderEvents;
 import com.firstlogistics.orderservice.domain.exception.OrderErrorCode;
 import com.firstlogistics.orderservice.domain.exception.OrderException;
 import com.firstlogistics.orderservice.domain.vo.Address;
@@ -47,7 +48,8 @@ public class Order {
             String detailAddress,
             LocalDateTime dueDate,
             String requestMemo,
-            List<CreateOrderCommand.OrderItemCommand> items
+            List<CreateOrderCommand.OrderItemCommand> items,
+            OrderEvents orderEvents
     ) {
         validateInput(dueDate);
         Order order = new Order(
@@ -68,7 +70,7 @@ public class Order {
         order.createOrderItems(items);
         order.calculateTotalAmount();
 
-        // TODO: 주문 생성 이벤트 발행
+        orderEvents.created(order);
 
         return order;
     }
