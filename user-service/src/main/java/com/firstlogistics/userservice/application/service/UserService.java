@@ -9,13 +9,15 @@ import com.firstlogistics.userservice.application.port.KeycloakTokenService;
 import com.firstlogistics.userservice.application.port.KeycloakService;
 import com.firstlogistics.userservice.domain.entity.User;
 import com.firstlogistics.userservice.domain.enums.Status;
+import com.firstlogistics.userservice.domain.event.UserStatusChangedEvent;
 import com.firstlogistics.userservice.domain.exception.UserErrorCode;
 import com.firstlogistics.userservice.domain.exception.UserException;
 import com.firstlogistics.userservice.domain.repository.UserRepository;
-import com.firstlogistics.userservice.infrastructure.fegin.OrganizationValidationService;
+import com.firstlogistics.userservice.infrastructure.fegin.service.OrganizationValidationService;
 import common.jpa.entity.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,8 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 public class UserService {
+
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     private final KeycloakTokenService tokenService;
     private final KeycloakService keycloakService;
@@ -124,6 +128,8 @@ public class UserService {
         }
 
         userRepository.update(user);
+
+        applicationEventPublisher.publishEvent(UserStatusChangedEvent.of(user, UUID.randomUUID()));
     }
 
     @Transactional

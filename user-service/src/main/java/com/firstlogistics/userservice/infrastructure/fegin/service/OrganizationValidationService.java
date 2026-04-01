@@ -1,4 +1,4 @@
-package com.firstlogistics.userservice.infrastructure.fegin;
+package com.firstlogistics.userservice.infrastructure.fegin.service;
 
 import common.jpa.entity.enums.UserRole;
 

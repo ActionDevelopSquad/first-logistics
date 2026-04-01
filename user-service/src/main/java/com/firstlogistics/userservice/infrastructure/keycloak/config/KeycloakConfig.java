@@ -1,4 +1,4 @@
-package com.firstlogistics.userservice.infrastructure.config;
+package com.firstlogistics.userservice.infrastructure.keycloak.config;
 
 import com.firstlogistics.userservice.infrastructure.keycloak.KeycloakProperties;
 import lombok.RequiredArgsConstructor;
