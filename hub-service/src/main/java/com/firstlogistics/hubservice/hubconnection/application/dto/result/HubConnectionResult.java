@@ -14,13 +14,13 @@ public record HubConnectionResult(
         HubConnectionStatus status
 ) {
 
-    public static HubConnectionResult from(HubConnection hubconnection){
+    public static HubConnectionResult from(HubConnection hubConnection){
         return new HubConnectionResult(
-                hubconnection.getSourceHubId().id(),
-                hubconnection.getDestinationHubId().id(),
-                hubconnection.getTime().minutes(),
-                hubconnection.getDistance().meters(),
-                hubconnection.getStatus()
+                hubConnection.getSourceHubId().id(),
+                hubConnection.getDestinationHubId().id(),
+                hubConnection.getTime().minutes(),
+                hubConnection.getDistance().meters(),
+                hubConnection.getStatus()
         );
     }
 }
