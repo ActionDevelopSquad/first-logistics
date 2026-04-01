@@ -1,5 +1,6 @@
 package com.firstlogistics.hubservice.hubconnection.infrastructure.persistence.jpa;
 
+import com.firstlogistics.hubservice.hub.domain.vo.HubId;
 import com.firstlogistics.hubservice.hubconnection.domain.repository.HubConnectionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -9,4 +10,9 @@ import org.springframework.stereotype.Repository;
 public class HubConnectionRepositoryImpl implements HubConnectionRepository {
     private final HubConnectionJpaRepository jpaRepository;
     private final HubConnectionMapper mapper;
+
+    @Override
+    public boolean existsBySourceAndDestination(HubId sourceHubId, HubId destinationHubId) {
+        return jpaRepository.existsBySourceHubIdAndDestinationHubId(sourceHubId.id(), destinationHubId.id());
+    }
 }

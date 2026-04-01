@@ -7,6 +7,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.util.UUID;
 
@@ -20,6 +21,7 @@ import java.util.UUID;
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
+@SQLRestriction("deleted_at IS NULL")
 public class HubConnectionJpaEntity extends BaseAuditEntity {
     @Id
     private UUID id;

@@ -31,6 +31,7 @@ public class HubConnection {
         validateHubId(destinationHubId);
         validateTime(time);
         validateDistance(distance);
+        validateDifferentHub(sourceHubId, destinationHubId);
         HubConnectionStatus status = HubConnectionStatus.ACTIVE;
         return new HubConnection(HubConnectionId.generate(), sourceHubId, destinationHubId, time, distance, status);
     }
@@ -97,6 +98,10 @@ public class HubConnection {
     private static void validateStatus(HubConnectionStatus status){
         if(status == null)
             throw new HubConnectionException(HubConnectionErrorCode.INVALID_HUB_CONNECTION_STATUS);
+    }
+    private static void validateDifferentHub(HubId sourceHubId, HubId destinationHubId){
+        if(sourceHubId.equals(destinationHubId))
+            throw new HubConnectionException(HubConnectionErrorCode.SAME_SOURCE_AND_DESTINATION_HUB);
     }
 
 }
