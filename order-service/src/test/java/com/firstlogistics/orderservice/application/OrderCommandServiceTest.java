@@ -22,13 +22,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class OrderServiceTest {
+class OrderCommandServiceTest {
 
     @Mock
     private OrderRepository orderRepository;
 
     @InjectMocks
-    private OrderService orderService;
+    private OrderCommandService orderCommandService;
 
     @Test
     @DisplayName("성공: 올바른 주문 생성 요청 시 주문 ID를 반환한다")
@@ -45,7 +45,7 @@ class OrderServiceTest {
         );
 
         // when
-        UUID orderId = orderService.createOrder(command);
+        UUID orderId = orderCommandService.createOrder(command);
 
         // then
         assertThat(orderId).isNotNull();
@@ -64,7 +64,7 @@ class OrderServiceTest {
         );
 
         // when & then
-        assertThatThrownBy(() -> orderService.createOrder(command))
+        assertThatThrownBy(() -> orderCommandService.createOrder(command))
                 .isInstanceOf(OrderException.class)
                 .hasMessage(OrderErrorCode.ORDER_ITEM_NOT_EXIST.getMessage());
     }
