@@ -1,6 +1,6 @@
 package com.firstlogistics.orderservice.presentation;
 
-import com.firstlogistics.orderservice.application.OrderService;
+import com.firstlogistics.orderservice.application.OrderCommandService;
 import com.firstlogistics.orderservice.presentation.dto.request.CreateOrderRequest;
 import common.response.ApiResponse;
 import jakarta.validation.Valid;
@@ -20,14 +20,14 @@ import java.util.UUID;
 @RequestMapping("/api/v1/orders")
 public class OrderController {
 
-    private final OrderService orderService;
+    private final OrderCommandService orderCommandService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<UUID>> createOrder(
             @RequestHeader("X-User-Id") String userId,
             @RequestBody @Valid CreateOrderRequest request
     ) {
-        UUID id = orderService.createOrder(request.toCommand());
+        UUID id = orderCommandService.createOrder(request.toCommand());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(OrderSuccessCode.ORDER_CREATED, id));
     }

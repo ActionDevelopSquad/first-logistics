@@ -2,6 +2,7 @@ package com.firstlogistics.orderservice.application;
 
 import com.firstlogistics.orderservice.application.dto.CreateOrderCommand;
 import com.firstlogistics.orderservice.domain.entity.Order;
+import com.firstlogistics.orderservice.domain.event.OrderEvents;
 import com.firstlogistics.orderservice.domain.repository.OrderRepository;
 import com.firstlogistics.orderservice.domain.exception.OrderException;
 import com.firstlogistics.orderservice.domain.exception.OrderErrorCode;
@@ -22,13 +23,16 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class OrderServiceTest {
+class OrderCommandServiceTest {
 
     @Mock
     private OrderRepository orderRepository;
 
+    @Mock
+    private OrderEvents orderEvents;
+
     @InjectMocks
-    private OrderService orderService;
+    private OrderCommandService orderCommandService;
 
     @Test
     @DisplayName("성공: 올바른 주문 생성 요청 시 주문 ID를 반환한다")
@@ -45,7 +49,7 @@ class OrderServiceTest {
         );
 
         // when
-        UUID orderId = orderService.createOrder(command);
+        UUID orderId = orderCommandService.createOrder(command);
 
         // then
         assertThat(orderId).isNotNull();
@@ -64,7 +68,7 @@ class OrderServiceTest {
         );
 
         // when & then
-        assertThatThrownBy(() -> orderService.createOrder(command))
+        assertThatThrownBy(() -> orderCommandService.createOrder(command))
                 .isInstanceOf(OrderException.class)
                 .hasMessage(OrderErrorCode.ORDER_ITEM_NOT_EXIST.getMessage());
     }
