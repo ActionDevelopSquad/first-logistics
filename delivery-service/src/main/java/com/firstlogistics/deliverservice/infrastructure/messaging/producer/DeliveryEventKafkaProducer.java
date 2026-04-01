@@ -21,19 +21,13 @@ public class DeliveryEventKafkaProducer implements DeliveryEventKafkaProducerPor
 
 	private final KafkaTemplate<String, Object> deliveryKafkaTemplate;
 
-	/**
-	 * 트랜잭션 커밋 이후 발행 — DB 커밋 실패 시 이벤트 유출 방지
-	 */
 	@Override
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleDeliveryCreated(DeliveryCreatedEvent event) {
-		deliveryKafkaTemplate.send(TOPIC_CREATED, event.deliveryId().toString(), event);
-		log.info("이벤트 발행 - topic: {}, deliveryId: {}", TOPIC_CREATED, event.deliveryId());
+		deliveryKafkaTemplate.send(TOPIC_CREATED, event.delivery().deliveryId().toString(), event);
+		log.info("이벤트 발행 - topic: {}, deliveryId: {}", TOPIC_CREATED, event.delivery().deliveryId());
 	}
 
-	/**
-	 * 즉시 발행 — Recoverer는 트랜잭션 컨텍스트 밖에서 호출되므로 @TransactionalEventListener 불가
-	 */
 	@Override
 	public void handleDeliveryCreationFailed(DeliveryCreationFailedEvent event) {
 		deliveryKafkaTemplate.send(TOPIC_CREATION_FAILED, event.orderId().toString(), event);

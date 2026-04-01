@@ -15,6 +15,6 @@ public class DeliveryEventPublisher {
 
 	public void publishedDeliveryCreated(DeliveryCreatedEvent event) {
 		applicationEventPublisher.publishEvent(event);
-		log.debug("DeliveryCreatedEvent 등록 - deliveryId: {}", event.deliveryId());
+		log.debug("DeliveryCreatedEvent 등록 - deliveryId: {}", event.delivery().deliveryId());
 	}
 }

@@ -27,6 +27,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -151,13 +152,12 @@ class OrderEventKafkaConsumerTest {
 	private OrderAcceptedEvent createEvent() {
 		return new OrderAcceptedEvent(
 				UUID.randomUUID(),
-				UUID.randomUUID(),
-				UUID.randomUUID(),
-				UUID.randomUUID(),
-				"서울시 강남구 테헤란로 123",
-				"101호",
-				37.5665,
-				126.9780
+				LocalDateTime.now(),
+				LocalDateTime.now().plusDays(3),
+				"빠른 배송 부탁드립니다.",
+				new OrderAcceptedEvent.SupplierInfo(UUID.randomUUID(), UUID.randomUUID()),
+				new OrderAcceptedEvent.ReceiverInfo(UUID.randomUUID(), UUID.randomUUID(), "서울시 강남구 테헤란로 123", "101호"),
+				List.of(new OrderAcceptedEvent.OrderItemInfo(UUID.randomUUID(), "마른 오징어", 50, 10000))
 		);
 	}
 }

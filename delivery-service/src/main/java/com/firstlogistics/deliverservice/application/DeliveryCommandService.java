@@ -39,8 +39,9 @@ public class DeliveryCommandService {
 
 	public DeliveryResult createDelivery(
 			CreateDeliveryCommand command,
-			CompanyResponse company,
-            HubRouteResponse hubRoute) {
+			CompanyResponse supplierCompany,
+			CompanyResponse receiverCompany,
+			HubRouteResponse hubRoute) {
 		if (deliveryRepository.existsByOrderId(command.orderId())) {
 			throw new DeliveryException(DeliveryErrorCode.DELIVERY_ALREADY_EXISTS);
 		}
@@ -49,7 +50,8 @@ public class DeliveryCommandService {
 			throw new DeliveryCreationException(DeliveryErrorCode.HUB_ROUTE_INVALID);
 		}
 
-		UUID destinationHubId = company.hubId();
+		UUID sourceHubId = supplierCompany.hubId();
+		UUID destinationHubId = receiverCompany.hubId();
 
 		List<HubRouteStepResponse> orderedRoutes = hubRoute.routes().stream()
 			.sorted(Comparator.comparingInt(HubRouteStepResponse::hubRouteSequence))
@@ -79,17 +81,15 @@ public class DeliveryCommandService {
 		DeliveryStaff companyStaff = deliveryStaffRepository.findNextCompanyStaff(destinationHubId, companyAssignmentStart, companyAssignmentEnd)
 			.orElseThrow(() -> new DeliveryCreationException(DeliveryErrorCode.COMPANY_DELIVERY_STAFF_NOT_AVAILABLE));
 
-		UserResponse receiver = userPort.getUser(command.receiverId());
+		UserResponse receiver = userPort.getUser(command.receiverManagerId());
 
 		Delivery delivery = Delivery.create(
 			command.orderId(),
-			command.sourceHubId(),
+			sourceHubId,
 			destinationHubId,
-			command.roadAddress(),
-			command.detailAddress(),
-			command.latitude(),
-			command.longitude(),
-			command.receiverId(),
+			command.receiverRoadAddress(),
+			command.receiverDetailAddress(),
+			command.receiverManagerId(),
 			receiver.slackId(),
 			command.receiverCompanyId(),
 			companyStaff.getId()
@@ -108,6 +108,16 @@ public class DeliveryCommandService {
 			delivery.assignRoute(route, hubStaffs.get(i).getId());
 		}
 
+		DeliveryRoute companyRoute = DeliveryRoute.create(
+			delivery.getId(),
+			lastStep.hubRouteSequence(),
+			lastStep.sourceHubId(),
+			lastStep.destinationHubId(),
+			lastStep.distanceMeters(),
+			lastStep.durationMinutes()
+		);
+		delivery.assignRoute(companyRoute, companyStaff.getId());
+
 		Delivery savedDelivery = deliveryRepository.save(delivery);
 
 		int timetableMinutes = 0;
@@ -125,10 +135,64 @@ public class DeliveryCommandService {
 		companyStaff.assignDelivery(savedDelivery.getId(), companyAssignmentStart, companyAssignmentEnd);
 		deliveryStaffRepository.save(companyStaff);
 
-		deliveryEventPublisher.publishedDeliveryCreated(
-				DeliveryCreatedEvent.create(savedDelivery.getId().id(), savedDelivery.getOrderId(), savedDelivery.getReceiverSlackId())
+		DeliveryCreatedEvent deliveryCreatedEvent = buildDeliveryCreatedEvent(
+				savedDelivery, command, receiver, hubSteps, hubStaffs, lastStep, companyStaff
+		);
+		deliveryEventPublisher.publishedDeliveryCreated(deliveryCreatedEvent);
+
+		return DeliveryResult.from(savedDelivery, command, receiver.name());
+	}
+
+	private DeliveryCreatedEvent buildDeliveryCreatedEvent(
+			Delivery delivery,
+			CreateDeliveryCommand command,
+			UserResponse receiver,
+			List<HubRouteStepResponse> hubSteps,
+			List<DeliveryStaff> hubStaffs,
+			HubRouteStepResponse lastStep,
+			DeliveryStaff companyStaff) {
+
+		List<DeliveryCreatedEvent.DeliveryRouteInfo> deliveryRoutes = new ArrayList<>();
+		for (int i = 0; i < hubSteps.size(); i++) {
+			HubRouteStepResponse step = hubSteps.get(i);
+			deliveryRoutes.add(DeliveryCreatedEvent.DeliveryRouteInfo.of(
+				step.hubRouteSequence(),
+				step.sourceHubId(),
+				step.destinationHubId(),
+				step.distanceMeters(),
+				step.durationMinutes(),
+				hubStaffs.get(i).getSlackId()
+			));
+		}
+		deliveryRoutes.add(DeliveryCreatedEvent.DeliveryRouteInfo.of(
+			lastStep.hubRouteSequence(),
+			lastStep.sourceHubId(),
+			lastStep.destinationHubId(),
+			lastStep.distanceMeters(),
+			lastStep.durationMinutes(),
+			companyStaff.getSlackId()
+		));
+
+		DeliveryCreatedEvent.OrderInfo orderInfo = DeliveryCreatedEvent.OrderInfo.of(
+			delivery.getOrderId(),
+			command.orderedAt(),
+			command.orderDueDate(),
+			command.orderRequestNote(),
+			command.orderItems().stream()
+				.map(i -> DeliveryCreatedEvent.OrderItemInfo.of(i.productId(), i.productName(), i.quantity(), i.price()))
+				.toList()
 		);
 
-		return DeliveryResult.from(savedDelivery);
+		DeliveryCreatedEvent.DeliveryInfo deliveryInfo = DeliveryCreatedEvent.DeliveryInfo.of(
+			delivery.getId().id(),
+			receiver.name(),
+			delivery.getReceiverSlackId(),
+			command.receiverRoadAddress(),
+			command.receiverDetailAddress(),
+			deliveryRoutes,
+			companyStaff.getSlackId()
+		);
+
+		return DeliveryCreatedEvent.create(orderInfo, deliveryInfo);
 	}
 }

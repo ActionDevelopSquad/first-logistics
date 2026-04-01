@@ -51,11 +51,11 @@ public class DeliveryJpaEntity extends BaseAuditEntity {
 	@Column(name = "detail_address", nullable = false)
 	private String detailAddress;
 
-	@Column(name = "latitude", nullable = false)
-	private double latitude;
+	@Column(name = "latitude")
+	private Double latitude;
 
-	@Column(name = "longitude", nullable = false)
-	private double longitude;
+	@Column(name = "longitude")
+	private Double longitude;
 
 	@Column(name = "receiver_id", nullable = false, columnDefinition = "uuid")
 	private UUID receiverId;
@@ -84,8 +84,8 @@ public class DeliveryJpaEntity extends BaseAuditEntity {
 		UUID destinationHubId,
 		String roadAddress,
 		String detailAddress,
-		double latitude,
-		double longitude,
+		Double latitude,
+		Double longitude,
 		UUID receiverId,
 		String receiverSlackId,
 		UUID receiverCompanyId,
