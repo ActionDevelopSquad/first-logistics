@@ -27,6 +27,7 @@ public class DeliveryQueryRepositoryImpl implements DeliveryQueryRepositoryPort 
 	private static final QDeliveryRouteJpaEntity route = QDeliveryRouteJpaEntity.deliveryRouteJpaEntity;
 	private static final QDeliveryStaffJpaEntity hubDeliveryStaff = new QDeliveryStaffJpaEntity("hubDeliveryStaff");
 	private static final QDeliveryStaffJpaEntity companyDeliveryStaff = new QDeliveryStaffJpaEntity("companyDeliveryStaff");
+	private static final QStaffTimetableJpaEntity staffTimetable = QStaffTimetableJpaEntity.staffTimetableJpaEntity;
 
 	@Override
 	public Optional<DeliveryDetail> findById(UUID deliveryId) {
@@ -43,7 +44,8 @@ public class DeliveryQueryRepositoryImpl implements DeliveryQueryRepositoryPort 
 				delivery.receiverCompanyId,
 				delivery.currentHubId,
 				companyDeliveryStaff.staffName,
-				companyDeliveryStaff.phoneNumber
+				companyDeliveryStaff.phoneNumber,
+				delivery.createdAt
 			))
 			.from(delivery)
 			.leftJoin(companyDeliveryStaff).on(companyDeliveryStaff.id.eq(delivery.receiverCompanyDeliveryStaffId))
@@ -68,10 +70,16 @@ public class DeliveryQueryRepositoryImpl implements DeliveryQueryRepositoryPort 
 				route.status,
 				route.deliveryStaffId,
 				hubDeliveryStaff.staffName,
-				hubDeliveryStaff.phoneNumber
+				hubDeliveryStaff.phoneNumber,
+				staffTimetable.expectedStartAt,
+				staffTimetable.expectedEndAt
 			))
 			.from(route)
 			.leftJoin(hubDeliveryStaff).on(hubDeliveryStaff.id.eq(route.deliveryStaffId))
+			.leftJoin(staffTimetable).on(
+				staffTimetable.deliveryStaff.id.eq(route.deliveryStaffId)
+					.and(staffTimetable.deliveryId.eq(route.deliveryId))
+			)
 			.where(route.deliveryId.eq(deliveryId))
 			.orderBy(route.deliveryRouteSequence.asc())
 			.fetch();

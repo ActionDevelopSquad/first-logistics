@@ -4,6 +4,7 @@ import com.firstlogistics.deliverservice.application.dto.result.DeliveryDetailRe
 import com.firstlogistics.deliverservice.domain.enums.DeliveryStatus;
 import com.firstlogistics.deliverservice.domain.enums.RouteStatus;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,7 +20,8 @@ public record DeliveryDetailResponse(
 	ReceiverInfo receiver,
 	CompanyInfo receiverCompany,
 	DeliveryStaffInfo companyDeliveryStaff,
-	List<RouteDetail> routes
+	List<RouteDetail> routes,
+	LocalDateTime createdAt
 ) {
 
 	public static DeliveryDetailResponse from(DeliveryDetailResult result) {
@@ -37,7 +39,8 @@ public record DeliveryDetailResponse(
 			DeliveryStaffInfo.from(result.companyDeliveryStaff()),
 			result.routes().stream()
 				.map(RouteDetail::from)
-				.toList()
+				.toList(),
+			result.createdAt()
 		);
 	}
 
@@ -79,7 +82,9 @@ public record DeliveryDetailResponse(
 		int actualDistanceMeters,
 		int actualDurationMinutes,
 		RouteStatus status,
-		DeliveryStaffInfo hubDeliveryStaff
+		DeliveryStaffInfo hubDeliveryStaff,
+		LocalDateTime expectedStartAt,
+		LocalDateTime expectedEndAt
 	) {
 		public static RouteDetail from(DeliveryDetailResult.RouteDetail route) {
 			return new RouteDetail(
@@ -92,7 +97,9 @@ public record DeliveryDetailResponse(
 				route.actualDistanceMeters(),
 				route.actualDurationMinutes(),
 				route.status(),
-				DeliveryStaffInfo.from(route.hubDeliveryStaff())
+				DeliveryStaffInfo.from(route.hubDeliveryStaff()),
+				route.expectedStartAt(),
+				route.expectedEndAt()
 			);
 		}
 	}

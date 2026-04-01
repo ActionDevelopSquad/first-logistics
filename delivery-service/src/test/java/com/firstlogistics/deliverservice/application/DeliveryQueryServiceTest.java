@@ -452,20 +452,23 @@ class DeliveryQueryServiceTest {
 			UUID.randomUUID(), UUID.randomUUID(),
 			"서울시 강남구 테헤란로 123", "101동 202호",
 			UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-			"업체담당자", "010-9999-9999"
+			"업체담당자", "010-9999-9999",
+			LocalDateTime.now()
 		);
 	}
 
 	private List<DeliveryDetail.RouteDetail> stubRoutes(int routeCount) {
 		List<DeliveryDetail.RouteDetail> routes = new ArrayList<>();
 		for (int i = 0; i < routeCount; i++) {
+			LocalDateTime startAt = LocalDateTime.now().plusHours(i);
 			routes.add(new DeliveryDetail.RouteDetail(
 				UUID.randomUUID(), i,
 				UUID.randomUUID(), UUID.randomUUID(),
 				10000, 30, 0, 0,
 				RouteStatus.CREATED,
 				UUID.randomUUID(),
-				"담당자" + i, "010-0000-000" + i
+				"담당자" + i, "010-0000-000" + i,
+				startAt, startAt.plusHours(2)
 			));
 		}
 		return routes;
@@ -476,9 +479,9 @@ class DeliveryQueryServiceTest {
 		hubIds.add(projection.sourceHubId());
 		hubIds.add(projection.destinationHubId());
 		hubIds.add(projection.currentHubId());
-		routes.forEach(r -> {
-			hubIds.add(r.sourceHubId());
-			hubIds.add(r.destinationHubId());
+		routes.forEach(route -> {
+			hubIds.add(route.sourceHubId());
+			hubIds.add(route.destinationHubId());
 		});
 		return hubIds.stream().distinct()
 			.map(id -> new HubResponse(id, "허브-" + id.toString().substring(0, 4), "허브주소"))

@@ -3,6 +3,7 @@ package com.firstlogistics.deliverservice.application.dto.result;
 import com.firstlogistics.deliverservice.domain.enums.DeliveryStatus;
 import com.firstlogistics.deliverservice.domain.enums.RouteStatus;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record DeliveryDetail(
@@ -17,7 +18,8 @@ public record DeliveryDetail(
 	UUID receiverCompanyId,
 	UUID currentHubId,
 	String companyStaffName,
-	String companyStaffPhone
+	String companyStaffPhone,
+	LocalDateTime createdAt
 ) {
 
 	public record RouteDetail(
@@ -32,6 +34,8 @@ public record DeliveryDetail(
 		RouteStatus status,
 		UUID deliveryStaffId,
 		String staffName,
-		String staffPhone
+		String staffPhone,
+		LocalDateTime expectedStartAt,
+		LocalDateTime expectedEndAt
 	) {}
 }
