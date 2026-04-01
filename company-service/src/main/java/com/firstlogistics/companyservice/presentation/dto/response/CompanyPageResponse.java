@@ -26,6 +26,7 @@ public record CompanyPageResponse(
     public record CompanyItem(
             UUID id,
             UUID hubId,
+            UUID managerId,
             String name,
             String type,
             String status,
@@ -36,6 +37,7 @@ public record CompanyPageResponse(
             return new CompanyItem(
                     result.id(),
                     result.hubId(),
+                    result.managerId(),
                     result.name(),
                     result.type(),
                     result.status(),
