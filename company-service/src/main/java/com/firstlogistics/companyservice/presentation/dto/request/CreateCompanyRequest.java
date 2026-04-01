@@ -1,4 +1,4 @@
-package com.firstlogistics.companyservice.presentation.dto;
+package com.firstlogistics.companyservice.presentation.dto.request;
 
 import com.firstlogistics.companyservice.application.dto.command.CreateCompanyCommand;
 import jakarta.validation.constraints.NotBlank;

@@ -2,12 +2,14 @@ package com.firstlogistics.companyservice.presentation;
 
 import com.firstlogistics.companyservice.application.CompanyCommandService;
 import com.firstlogistics.companyservice.application.dto.result.CompanyResult;
-import com.firstlogistics.companyservice.presentation.dto.CreateCompanyRequest;
+import com.firstlogistics.companyservice.presentation.dto.request.CreateCompanyRequest;
+import com.firstlogistics.companyservice.presentation.dto.response.CreateCompanyResponse;
 import common.response.ApiResponse;
 import common.response.CommonSuccessCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,8 +25,8 @@ public class CompanyController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<CompanyResult> register(@Valid @RequestBody CreateCompanyRequest request) {
-        CompanyResult result = companyCommandService.register(request.toCommand());
-        return ApiResponse.success(CommonSuccessCode.CREATED, result);
+    public ResponseEntity<ApiResponse<CreateCompanyResponse>> register(@Valid @RequestBody CreateCompanyRequest request) {
+        CreateCompanyResponse response = CreateCompanyResponse.from(companyCommandService.register(request.toCommand()));
+        return ResponseEntity.ok(ApiResponse.success(CommonSuccessCode.CREATED, response));
     }
 }
