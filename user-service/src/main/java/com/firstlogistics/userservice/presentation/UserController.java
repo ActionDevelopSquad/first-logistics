@@ -163,7 +163,6 @@ public class UserController {
     /**
      * 엑세스 토큰 재발급
      * POST /api/v1/users/refresh
-     * Role : MASTER
      */
     @GetMapping("/refresh")
     public ResponseEntity<ApiResponse<TokenResponse>> refresh(@RequestHeader("X-Refresh-Token") String refreshToken) {

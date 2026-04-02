@@ -18,7 +18,6 @@ public class KafkaUserEventDlqConsumer {
     @KafkaListener(
             topics = {
                     "user.hub.status.changed.dlq",
-                    "user.company.status.changed.dlq",
                     "user.delivery.status.changed.dlq"
             },
             groupId = "user-status-dlq-handler"

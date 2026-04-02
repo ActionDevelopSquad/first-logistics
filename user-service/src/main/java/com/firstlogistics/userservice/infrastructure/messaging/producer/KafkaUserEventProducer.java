@@ -22,13 +22,12 @@ public class KafkaUserEventProducer {
     public void publish(UserStatusChangedEvent event) {
         String topic = switch (event.userRole()) {
             case HUB_MANAGER -> "user.hub.status.changed";
-            case COMPANY_MANAGER -> "user.company.status.changed";
             case DELIVERY_MANAGER -> "user.delivery.status.changed";
-            case MASTER -> null;
+            case COMPANY_MANAGER, MASTER -> null;
         };
 
         if (topic == null) {
-            // MASTER는 발행하지 않음
+            // MASTER, COMPANY_MANAGER는 발행하지 않음
             return;
         }
 
