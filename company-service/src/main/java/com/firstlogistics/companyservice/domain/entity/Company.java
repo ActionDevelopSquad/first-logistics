@@ -74,6 +74,28 @@ public class Company {
         );
     }
 
+    public void update(String name, CompanyType type, UUID hubId,
+                       String roadAddress, String detailAddress, double latitude, double longitude) {
+        if (this.status == CompanyStatus.INACTIVE) {
+            throw new CompanyException(CompanyErrorCode.COMPANY_INACTIVE);
+        }
+        if (name == null || name.isBlank()) {
+            throw new CompanyException(CompanyErrorCode.INVALID_COMPANY_NAME);
+        }
+        if (type == null) {
+            throw new CompanyException(CompanyErrorCode.INVALID_COMPANY_TYPE);
+        }
+        if (hubId == null) {
+            throw new CompanyException(CompanyErrorCode.INVALID_HUB_ID);
+        }
+
+        this.name = name;
+        this.type = type;
+        this.hubId = hubId;
+        this.address = CompanyAddress.of(roadAddress, detailAddress);
+        this.geoLocation = GeoLocation.of(latitude, longitude);
+    }
+
     public void changeAddress(String roadAddress, String detailAddress, double latitude, double longitude) {
         if (this.status == CompanyStatus.INACTIVE) {
             throw new CompanyException(CompanyErrorCode.COMPANY_INACTIVE);

@@ -4,6 +4,7 @@ import com.firstlogistics.companyservice.application.CompanyCommandService;
 import com.firstlogistics.companyservice.application.CompanyQueryService;
 import com.firstlogistics.companyservice.presentation.dto.request.CreateCompanyRequest;
 import com.firstlogistics.companyservice.presentation.dto.request.GetCompaniesRequest;
+import com.firstlogistics.companyservice.presentation.dto.request.UpdateCompanyRequest;
 import com.firstlogistics.companyservice.presentation.dto.response.CompanyPageResponse;
 import com.firstlogistics.companyservice.presentation.dto.response.CompanyResponse;
 import com.firstlogistics.companyservice.presentation.dto.response.CreateCompanyResponse;
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,6 +55,15 @@ public class CompanyController {
     public ResponseEntity<ApiResponse<CompanyResponse>> getCompany(
             @PathVariable UUID companyId) {
         CompanyResponse response = CompanyResponse.from(companyQueryService.getById(companyId));
+        return ResponseEntity.ok(ApiResponse.success(CommonSuccessCode.OK, response));
+    }
+
+    @PatchMapping("/{companyId}")
+    public ResponseEntity<ApiResponse<CompanyResponse>> updateCompany(
+            @PathVariable UUID companyId,
+            @Valid @RequestBody UpdateCompanyRequest request) {
+        CompanyResponse response = CompanyResponse.from(
+                companyCommandService.update(request.toCommand(companyId)));
         return ResponseEntity.ok(ApiResponse.success(CommonSuccessCode.OK, response));
     }
 
