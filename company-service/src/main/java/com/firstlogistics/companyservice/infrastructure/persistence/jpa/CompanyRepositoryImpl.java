@@ -65,24 +65,24 @@ public class CompanyRepositoryImpl implements CompanyRepository {
 
     @Override
     public Optional<Company> findById(UUID companyId) {
-        return companyJpaRepository.findByIdAndDeletedAtIsNull(companyId)
+        return companyJpaRepository.findById(companyId)
                 .map(CompanyMapper::toDomain);
     }
 
     @Override
     public Optional<Company> findByManagerId(UUID managerId) {
-        return companyJpaRepository.findByManagerIdAndDeletedAtIsNull(managerId)
+        return companyJpaRepository.findByManagerId(managerId)
                 .map(CompanyMapper::toDomain);
     }
 
     @Override
     public boolean existsByManagerId(UUID managerId) {
-        return companyJpaRepository.existsByManagerIdAndDeletedAtIsNull(managerId);
+        return companyJpaRepository.existsByManagerId(managerId);
     }
 
     @Override
     public void delete(UUID companyId, UUID deletedBy) {
-        CompanyJpaEntity entity = companyJpaRepository.findByIdAndDeletedAtIsNull(companyId)
+        CompanyJpaEntity entity = companyJpaRepository.findById(companyId)
                 .orElseThrow(() -> new CompanyException(CompanyErrorCode.COMPANY_NOT_FOUND));
         entity.softDelete(deletedBy);
         companyJpaRepository.save(entity);
