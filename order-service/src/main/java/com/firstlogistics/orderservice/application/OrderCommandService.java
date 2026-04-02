@@ -3,6 +3,7 @@ package com.firstlogistics.orderservice.application;
 import com.firstlogistics.orderservice.application.dto.CreateOrderCommand;
 import com.firstlogistics.orderservice.domain.entity.Order;
 import com.firstlogistics.orderservice.domain.event.OrderAcceptedEvent;
+import com.firstlogistics.orderservice.domain.event.OrderCancelledEvent;
 import com.firstlogistics.orderservice.domain.event.OrderCreatedEvent;
 import com.firstlogistics.orderservice.domain.exception.OrderErrorCode;
 import com.firstlogistics.orderservice.domain.exception.OrderException;
@@ -58,6 +59,18 @@ public class OrderCommandService {
         orderRepository.save(order);
 
         Events.trigger(OrderAcceptedEvent.from(order));
+
+        return order.getStatus().name();
+    }
+
+    @Transactional
+    public String rejectOrder(String userId, UUID orderId) {
+        Order order = getOrder(orderId);
+        order.cancel();
+
+        orderRepository.save(order);
+
+        Events.trigger(OrderCancelledEvent.from(order));
 
         return order.getStatus().name();
     }
