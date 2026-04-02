@@ -1,7 +1,6 @@
 package com.firstlogistics.hubservice.hub.presentation.dto.response;
 
 import com.firstlogistics.hubservice.hub.application.dto.result.HubDetailsResult;
-import com.firstlogistics.hubservice.hub.domain.enums.HubStatus;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -11,7 +10,7 @@ public record HubDetailResponse(
         String name,
         String roadAddress,
         GeoLocationResponse geoLocation,
-        HubStatus status,
+        String status,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
@@ -21,7 +20,7 @@ public record HubDetailResponse(
                 result.name(),
                 result.roadAddress(),
                 GeoLocationResponse.of(result.latitude(), result.longitude()),
-                result.status(),
+                result.status().name(),
                 result.createdAt(),
                 result.updatedAt()
         );

@@ -112,7 +112,7 @@ public class HubQueryServiceTest {
     void searchHub_success(){
         //given
         SearchHubsQuery query = new SearchHubsQuery(
-            "서울", null, null, null
+            "서울", "", null, null
         );
         Pageable pageable = PageRequest.of(0,10);
         HubPageDto dto = new HubPageDto(
