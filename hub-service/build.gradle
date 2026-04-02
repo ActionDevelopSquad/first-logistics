@@ -1,6 +1,17 @@
 plugins {
     id 'org.springframework.boot'
 }
+
+def generated = layout.buildDirectory.dir("generated/querydsl").get().asFile
+
+tasks.withType(JavaCompile).configureEach {
+    options.getGeneratedSourceOutputDirectory().set(file(generated))
+}
+
+sourceSets {
+    main.java.srcDirs += [generated]
+}
+
 dependencies {
     implementation project(':common')
     implementation project(':common-jpa')
