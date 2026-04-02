@@ -1,7 +1,6 @@
 package com.firstlogistics.orderservice.domain.entity;
 
 import com.firstlogistics.orderservice.domain.enums.OrderStatus;
-import com.firstlogistics.orderservice.domain.event.OrderEvents;
 import com.firstlogistics.orderservice.domain.exception.OrderErrorCode;
 import com.firstlogistics.orderservice.domain.exception.OrderException;
 import com.firstlogistics.orderservice.domain.vo.Address;
@@ -39,6 +38,8 @@ public class Order {
     @Getter(AccessLevel.NONE)
     private List<OrderItem> orderItems;
 
+    private Long version;
+
     public static Order create(
             UUID supplierCompanyId,
             UUID supplierManagerId,
@@ -48,8 +49,7 @@ public class Order {
             String detailAddress,
             LocalDateTime dueDate,
             String requestMemo,
-            List<OrderItemInput> items,
-            OrderEvents orderEvents
+            List<OrderItemInput> items
     ) {
         validateInput(dueDate);
         Order order = new Order(
@@ -64,13 +64,12 @@ public class Order {
                 OrderStatus.PENDING,
                 null,
                 null,
-                new ArrayList<>()
+                new ArrayList<>(),
+                null
         );
 
         order.createOrderItems(items);
         order.calculateTotalAmount();
-
-        orderEvents.created(order);
 
         return order;
     }
@@ -93,7 +92,8 @@ public class Order {
             OrderStatus status,
             OrderStatus previousStatus,
             LocalDateTime orderedAt,
-            List<OrderItem> orderItems
+            List<OrderItem> orderItems,
+            Long version
     ) {
         return new Order(
                 OrderId.of(id),
@@ -107,7 +107,8 @@ public class Order {
                 status,
                 previousStatus,
                 orderedAt,
-                orderItems
+                orderItems,
+                version
         );
     }
 
@@ -170,6 +171,12 @@ public class Order {
     }
 
     public void accept() {
+        // TODO: 공급 업체 담당자 or 관리자 권한 검증
+
+        if (this.status == OrderStatus.ACCEPTED) {
+            throw new OrderException(OrderErrorCode.ALREADY_ACCEPTED);
+        }
+
         this.status.validateNext(OrderStatus.ACCEPTED);
         this.status = OrderStatus.ACCEPTED;
     }
@@ -201,6 +208,12 @@ public class Order {
 
     // 주문 취소 / 거절 / 취소 요청 승인 (나중에 필요하면 분리)
     public void cancel() {
+        // TODO: 권한 검증
+
+        if (this.status == OrderStatus.CANCELLED) {
+            throw new OrderException(OrderErrorCode.ALREADY_CANCELLED);
+        }
+
         this.status.validateNext(OrderStatus.CANCELLED);
         this.status = OrderStatus.CANCELLED;
         this.previousStatus = null; // 취소 요청이었다면 이전 상태 초기화

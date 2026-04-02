@@ -32,7 +32,8 @@ public class OrderMapper {
                 order.getPreviousStatus(),
                 order.getOrderItems().stream()
                         .map(this::toItemEntity)
-                        .toList()
+                        .toList(),
+                order.getVersion()
         );
     }
 
@@ -62,7 +63,8 @@ public class OrderMapper {
                 entity.getStatus(),
                 entity.getPreviousStatus(),
                 entity.getCreatedAt(),
-                items
+                items,
+                entity.getVersion()
         );
     }
 
