@@ -80,6 +80,13 @@ public class CompanyCommandService {
     }
 
     @Transactional
+    public void delete(UUID companyId, UUID deletedBy) {
+        companyRepository.findById(companyId)
+                .orElseThrow(() -> new CompanyException(CompanyErrorCode.COMPANY_NOT_FOUND));
+        companyRepository.delete(companyId, deletedBy);
+    }
+
+    @Transactional
     public CompanyResult activate(UUID companyId) {
         Company company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new CompanyException(CompanyErrorCode.COMPANY_NOT_FOUND));
