@@ -4,6 +4,9 @@ import com.firstlogistics.orderservice.application.dto.CreateOrderCommand;
 import com.firstlogistics.orderservice.domain.entity.Order;
 import com.firstlogistics.orderservice.domain.entity.OrderTestBuilder;
 import com.firstlogistics.orderservice.domain.enums.OrderStatus;
+import com.firstlogistics.orderservice.domain.event.OrderAcceptedEvent;
+import com.firstlogistics.orderservice.domain.event.OrderCancelledEvent;
+import com.firstlogistics.orderservice.domain.event.OrderCreatedEvent;
 import com.firstlogistics.orderservice.domain.repository.OrderRepository;
 import com.firstlogistics.orderservice.domain.exception.OrderException;
 import com.firstlogistics.orderservice.domain.exception.OrderErrorCode;
@@ -75,7 +78,7 @@ class OrderCommandServiceTest {
         // then
         assertThat(orderId).isNotNull();
         verify(orderRepository, times(1)).save(any(Order.class));
-        verify(eventPublisher, times(1)).publishEvent(any(Object.class));
+        verify(eventPublisher, times(1)).publishEvent(any(OrderCreatedEvent.class));
     }
 
     // --- 주문 승인 테스트 ---
@@ -98,7 +101,7 @@ class OrderCommandServiceTest {
         // then
         assertThat(resultStatus).isEqualTo("ACCEPTED");
         verify(orderRepository).save(any(Order.class));
-        verify(eventPublisher).publishEvent(any(Object.class));
+        verify(eventPublisher).publishEvent(any(OrderAcceptedEvent.class));
     }
 
     @Test
@@ -157,6 +160,7 @@ class OrderCommandServiceTest {
         // then
         assertThat(resultStatus).isEqualTo("CANCELLED");
         verify(orderRepository).save(any(Order.class));
+        verify(eventPublisher).publishEvent(any(OrderCancelledEvent.class));
     }
 
     @Test
