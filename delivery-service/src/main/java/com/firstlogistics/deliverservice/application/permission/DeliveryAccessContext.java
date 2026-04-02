@@ -20,7 +20,9 @@ public record DeliveryAccessContext(
 			delivery.getDestinationHubId(),
 			delivery.getReceiverCompanyId(),
 			delivery.getRoutes().stream()
-				.map(route -> route.getDeliveryManagerId().id())
+				.map(route -> route.getDeliveryManagerId())
+				.filter(Objects::nonNull)
+				.map(managerId -> managerId.id())
 				.toList()
 		);
 	}

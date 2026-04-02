@@ -16,5 +16,8 @@ public record UpdateDeliveryCommand(
 		if (deliveryId == null || role == null || userId == null) {
 			throw new DeliveryException(DeliveryErrorCode.INVALID_COMMAND_PARAMS);
 		}
+		if (receiverId == null && (receiverSlackId == null || receiverSlackId.isBlank())) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_COMMAND_PARAMS);
+		}
 	}
 }

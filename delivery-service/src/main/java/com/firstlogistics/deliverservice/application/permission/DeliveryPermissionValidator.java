@@ -35,6 +35,10 @@ public class DeliveryPermissionValidator {
 		if (!allowedRoles.contains(userRole)) {
 			throw new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
 		}
-		strategies.get(userRole).validate(context, userId);
+		RolePermissionStrategy strategy = strategies.get(userRole);
+		if (strategy == null) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_ROLE_SCOPE);
+		}
+		strategy.validate(context, userId);
 	}
 }

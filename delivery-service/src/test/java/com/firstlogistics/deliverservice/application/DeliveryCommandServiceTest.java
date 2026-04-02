@@ -320,6 +320,40 @@ class DeliveryCommandServiceTest {
 	class UpdateDeliveryFail {
 
 		@Test
+		@DisplayName("수정할 필드가 없는 경우 (receiverId, receiverSlackId 모두 null)")
+		void updateDelivery_fail_noFieldToUpdate() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+
+			// when
+			Throwable throwable = catchThrowable(() -> new UpdateDeliveryCommand(deliveryId, "MASTER", userId, null, null));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.INVALID_COMMAND_PARAMS);
+		}
+
+		@Test
+		@DisplayName("수정할 필드가 없는 경우 (receiverSlackId 빈 문자열)")
+		void updateDelivery_fail_noFieldToUpdate_blankSlackId() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+
+			// when
+			Throwable throwable = catchThrowable(() -> new UpdateDeliveryCommand(deliveryId, "MASTER", userId, null, "   "));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.INVALID_COMMAND_PARAMS);
+		}
+
+		@Test
 		@DisplayName("존재하지 않는 배송")
 		void updateDelivery_fail_deliveryNotFound() {
 			// given
