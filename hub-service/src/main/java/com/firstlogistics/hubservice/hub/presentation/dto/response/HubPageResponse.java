@@ -4,7 +4,6 @@ import com.firstlogistics.hubservice.hub.application.dto.result.HubSummaryResult
 import org.springframework.data.domain.Page;
 
 import java.util.List;
-import java.util.UUID;
 
 public record HubPageResponse(
         List<HubSummaryResponse> content,
