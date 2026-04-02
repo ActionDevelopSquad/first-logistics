@@ -1,13 +1,12 @@
 package com.firstlogistics.deliverservice.presentation;
 
 import com.firstlogistics.deliverservice.application.DeliveryQueryService;
-import com.firstlogistics.deliverservice.application.dto.result.DeliveryListResult;
-import com.firstlogistics.deliverservice.application.dto.result.DeliveryResult;
-import com.firstlogistics.deliverservice.application.facade.DeliveryCreateFacade;
-import com.firstlogistics.deliverservice.presentation.dto.request.DeliveryCreateRequest;
+import com.firstlogistics.deliverservice.application.facade.DeliveryCommandFacade;
+import com.firstlogistics.deliverservice.presentation.dto.request.CreateDeliveryRequest;
 import com.firstlogistics.deliverservice.presentation.dto.request.DeliveryListRequest;
+import com.firstlogistics.deliverservice.presentation.dto.response.DeliveryDetailResponse;
 import com.firstlogistics.deliverservice.presentation.dto.response.DeliveryListResponse;
-import com.firstlogistics.deliverservice.presentation.dto.response.DeliveryResponse;
+import com.firstlogistics.deliverservice.presentation.dto.response.CreateDeliveryResponse;
 import common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,19 +20,19 @@ import java.util.UUID;
 @RequestMapping("/api/v1/deliveries")
 public class DeliveryController {
 
-	private final DeliveryCreateFacade deliveryCreateFacade;
+	private final DeliveryCommandFacade deliveryCommandFacade;
 	private final DeliveryQueryService deliveryQueryService;
 
 	@PostMapping
-	public ResponseEntity<ApiResponse<DeliveryResponse>> createDelivery(
-		@RequestBody @Valid DeliveryCreateRequest request,
+	public ResponseEntity<ApiResponse<CreateDeliveryResponse>> createDelivery(
+		@RequestBody @Valid CreateDeliveryRequest request,
 		@RequestHeader("X-User-Id") UUID userId,
 		@RequestHeader("X-User-Role") String role
 	) {
-		DeliveryResult result = deliveryCreateFacade.createDelivery(request.toCommand());
-		DeliveryResponse response = DeliveryResponse.from(result);
 		return ResponseEntity.status(DeliverySuccessCode.DELIVERY_CREATED.getStatus())
-			.body(ApiResponse.success(DeliverySuccessCode.DELIVERY_CREATED, response));
+			.body(ApiResponse.success(DeliverySuccessCode.DELIVERY_CREATED,
+					CreateDeliveryResponse.from(deliveryCommandFacade.createDelivery(request.toCommand()))
+			));
 	}
 
 	@GetMapping
@@ -42,7 +41,19 @@ public class DeliveryController {
 		@RequestHeader("X-User-Role") String role,
 		@RequestHeader("X-User-Id") UUID userId
 	) {
-		DeliveryListResult result = deliveryQueryService.getDeliveries(request.toQuery(role, userId));
-		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_LIST_FOUND, DeliveryListResponse.from(result)));
+		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_LIST_FOUND,
+				DeliveryListResponse.from(deliveryQueryService.getDeliveries(request.toQuery(role, userId))))
+		);
+	}
+
+	@GetMapping("/{deliveryId}")
+	public ResponseEntity<ApiResponse<DeliveryDetailResponse>> getDelivery(
+		@PathVariable UUID deliveryId,
+		@RequestHeader("X-User-Role") String role,
+		@RequestHeader("X-User-Id") UUID userId
+	) {
+		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_DETAIL_FOUND,
+				DeliveryDetailResponse.from(deliveryQueryService.getDelivery(deliveryId, role, userId)))
+		);
 	}
 }

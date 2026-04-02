@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-public record DeliveryCreateRequest(
+public record CreateDeliveryRequest(
 	@NotNull UUID orderId,
 	@NotNull LocalDateTime orderedAt,
 	@NotNull LocalDateTime orderDueDate,
@@ -37,7 +37,7 @@ public record DeliveryCreateRequest(
 		@NotNull UUID productId,
 		@NotBlank String productName,
 		@Positive int quantity,
-		@PositiveOrZero int price
+		@NotNull @PositiveOrZero Long price
 	) {}
 
 	public CreateDeliveryCommand toCommand() {

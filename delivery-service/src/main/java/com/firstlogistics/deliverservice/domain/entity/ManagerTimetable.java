@@ -4,8 +4,8 @@ import com.firstlogistics.deliverservice.domain.enums.TimetableStatus;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.vo.DeliveryId;
-import com.firstlogistics.deliverservice.domain.vo.DeliveryStaffId;
-import com.firstlogistics.deliverservice.domain.vo.StaffTimetableId;
+import com.firstlogistics.deliverservice.domain.vo.DeliveryManagerId;
+import com.firstlogistics.deliverservice.domain.vo.ManagerTimetableId;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -16,41 +16,44 @@ import java.time.LocalDateTime;
 @Getter
 @EqualsAndHashCode(of = "id")
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class StaffTimetable {
+public class ManagerTimetable {
 
-	private StaffTimetableId id;
-	private DeliveryStaffId staffId;
+	private ManagerTimetableId id;
+	private DeliveryManagerId managerId;
 	private DeliveryId deliveryId;
 	private LocalDateTime expectedStartAt;
 	private LocalDateTime expectedEndAt;
 	private TimetableStatus status;
 
-	public static StaffTimetable create(
-		DeliveryStaffId staffId,
+	public static ManagerTimetable create(
+		DeliveryManagerId managerId,
 		DeliveryId deliveryId,
 		LocalDateTime expectedStartAt,
 		LocalDateTime expectedEndAt
 	) {
-		if (staffId == null || deliveryId == null || expectedStartAt == null || expectedEndAt == null) {
+		if (managerId == null || deliveryId == null || expectedStartAt == null || expectedEndAt == null) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_TIMETABLE_PARAMS);
+		}
+		if (!expectedEndAt.isAfter(expectedStartAt)) {
 			throw new DeliveryException(DeliveryErrorCode.INVALID_TIMETABLE_PARAMS);
 		}
 		TimetableStatus createdStatus = TimetableStatus.CREATED;
-		return new StaffTimetable(
-			StaffTimetableId.generate(), staffId, deliveryId,
+		return new ManagerTimetable(
+			ManagerTimetableId.generate(), managerId, deliveryId,
 			expectedStartAt, expectedEndAt,
 			createdStatus
 		);
 	}
 
-	public static StaffTimetable reconstitute(
-		StaffTimetableId id,
-		DeliveryStaffId staffId,
+	public static ManagerTimetable reconstitute(
+		ManagerTimetableId id,
+		DeliveryManagerId managerId,
 		DeliveryId deliveryId,
 		LocalDateTime expectedStartAt,
 		LocalDateTime expectedEndAt,
 		TimetableStatus status
 	) {
-		return new StaffTimetable(id, staffId, deliveryId, expectedStartAt, expectedEndAt, status);
+		return new ManagerTimetable(id, managerId, deliveryId, expectedStartAt, expectedEndAt, status);
 	}
 
 	public void start() {

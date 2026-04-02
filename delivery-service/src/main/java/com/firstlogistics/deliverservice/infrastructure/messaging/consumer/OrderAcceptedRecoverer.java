@@ -1,7 +1,7 @@
 package com.firstlogistics.deliverservice.infrastructure.messaging.consumer;
 
-import com.firstlogistics.deliverservice.application.port.DeliveryEventKafkaProducerPort;
 import com.firstlogistics.deliverservice.domain.event.DeliveryCreationFailedEvent;
+import com.firstlogistics.deliverservice.infrastructure.messaging.producer.DeliveryEventKafkaProducer;
 import com.firstlogistics.deliverservice.domain.event.OrderAcceptedEvent;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryCreationException;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class OrderAcceptedRecoverer implements ConsumerRecordRecoverer {
 
-	private final DeliveryEventKafkaProducerPort deliveryEventKafkaProducer;
+	private final DeliveryEventKafkaProducer deliveryEventKafkaProducer;
 
 	@Override
 	public void accept(ConsumerRecord<?, ?> record, Exception exception) {

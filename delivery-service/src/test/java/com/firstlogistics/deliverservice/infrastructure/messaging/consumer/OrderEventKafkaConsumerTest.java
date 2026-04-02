@@ -2,7 +2,7 @@ package com.firstlogistics.deliverservice.infrastructure.messaging.consumer;
 
 import com.firstlogistics.deliverservice.application.DeliveryQueryService;
 import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryCommand;
-import com.firstlogistics.deliverservice.application.facade.DeliveryCreateFacade;
+import com.firstlogistics.deliverservice.application.facade.DeliveryCommandFacade;
 import com.firstlogistics.deliverservice.infrastructure.feign.CompanyClient;
 import com.firstlogistics.deliverservice.infrastructure.feign.HubClient;
 import com.firstlogistics.deliverservice.infrastructure.feign.UserClient;
@@ -55,7 +55,7 @@ class OrderEventKafkaConsumerTest {
 	private KafkaConsumerConfig kafkaConsumerConfig;
 
 	@MockitoBean
-	private DeliveryCreateFacade deliveryCreateFacade;
+	private DeliveryCommandFacade deliveryCommandFacade;
 	@MockitoBean
 	private DeliveryQueryService deliveryQueryService;
 	@MockitoBean
@@ -84,7 +84,7 @@ class OrderEventKafkaConsumerTest {
 
 			// then
 			await().atMost(5, TimeUnit.SECONDS).untilAsserted(() ->
-					then(deliveryCreateFacade).should().createDelivery(any(CreateDeliveryCommand.class))
+					then(deliveryCommandFacade).should().createDelivery(any(CreateDeliveryCommand.class))
 			);
 		}
 
@@ -105,7 +105,7 @@ class OrderEventKafkaConsumerTest {
 			// createDelivery 호출 여부를 확정하기 전에 단언이 통과하는 레이스 컨디션이 발생한다.
 			await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
 				then(deliveryQueryService).should().existsByOrderId(event.orderId());
-				then(deliveryCreateFacade).should(never()).createDelivery(any());
+				then(deliveryCommandFacade).should(never()).createDelivery(any());
 			});
 		}
 
@@ -115,7 +115,7 @@ class OrderEventKafkaConsumerTest {
 			// given
 			OrderAcceptedEvent event = createEvent();
 			given(deliveryQueryService.existsByOrderId(event.orderId())).willReturn(false);
-			given(deliveryCreateFacade.createDelivery(any()))
+			given(deliveryCommandFacade.createDelivery(any()))
 					.willThrow(new DeliveryCreationException(DeliveryErrorCode.HUB_NOT_FOUND));
 
 			// subscribe 대신 assign + seekToBeginning: 그룹 조인 없이 바로 파티션 읽기 (타이밍 문제 방지)
@@ -157,7 +157,7 @@ class OrderEventKafkaConsumerTest {
 				"빠른 배송 부탁드립니다.",
 				new OrderAcceptedEvent.SupplierInfo(UUID.randomUUID(), UUID.randomUUID()),
 				new OrderAcceptedEvent.ReceiverInfo(UUID.randomUUID(), UUID.randomUUID(), "서울시 강남구 테헤란로 123", "101호"),
-				List.of(new OrderAcceptedEvent.OrderItemInfo(UUID.randomUUID(), "마른 오징어", 50, 10000))
+				List.of(new OrderAcceptedEvent.OrderItemInfo(UUID.randomUUID(), "마른 오징어", 50, 10000L))
 		);
 	}
 }

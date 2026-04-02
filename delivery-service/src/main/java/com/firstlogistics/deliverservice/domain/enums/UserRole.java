@@ -1,4 +1,4 @@
-package com.firstlogistics.deliverservice.application.enums;
+package com.firstlogistics.deliverservice.domain.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -13,4 +13,13 @@ public enum UserRole {
 	COMPANY_MANAGER(true);
 
 	private final boolean requiresScope;
+
+	public static boolean isValid(String role) {
+		try {
+			valueOf(role);
+			return true;
+		} catch (IllegalArgumentException | NullPointerException e) {
+			return false;
+		}
+	}
 }

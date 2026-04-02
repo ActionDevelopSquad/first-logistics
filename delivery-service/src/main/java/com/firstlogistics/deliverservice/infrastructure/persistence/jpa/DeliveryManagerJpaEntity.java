@@ -1,6 +1,6 @@
 package com.firstlogistics.deliverservice.infrastructure.persistence.jpa;
 
-import com.firstlogistics.deliverservice.domain.enums.StaffType;
+import com.firstlogistics.deliverservice.domain.enums.ManagerType;
 import common.jpa.entity.BaseAuditEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -9,6 +9,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -22,17 +23,17 @@ import java.util.UUID;
 
 @Getter
 @Entity
-@Table(name = "p_delivery_staff")
+@Table(name = "p_delivery_manager")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class DeliveryStaffJpaEntity extends BaseAuditEntity {
+public class DeliveryManagerJpaEntity extends BaseAuditEntity {
 
 	@Id
 	@Column(name = "id", columnDefinition = "uuid")
 	private UUID id;
 
-	@Column(name = "staff_name", nullable = false)
-	private String staffName;
+	@Column(name = "manager_name", nullable = false)
+	private String managerName;
 
 	@Column(name = "phone_number", nullable = false)
 	private String phoneNumber;
@@ -44,32 +45,33 @@ public class DeliveryStaffJpaEntity extends BaseAuditEntity {
 	private String slackId;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "staff_type", nullable = false)
-	private StaffType staffType;
+	@Column(name = "manager_type", nullable = false)
+	private ManagerType managerType;
 
 	@Column(name = "delivery_sequence", nullable = false)
 	private int deliverySequence;
 
-	@OneToMany(mappedBy = "deliveryStaff", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-	private List<StaffTimetableJpaEntity> timetables = new ArrayList<>();
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+	@JoinColumn(name = "delivery_manager_id", nullable = false)
+	private List<ManagerTimetableJpaEntity> timetables = new ArrayList<>();
 
-	public static DeliveryStaffJpaEntity create(
+	public static DeliveryManagerJpaEntity create(
 		UUID id,
-		String staffName,
+		String managerName,
 		String phoneNumber,
 		UUID hubId,
 		String slackId,
-		StaffType staffType,
+		ManagerType managerType,
 		int deliverySequence
 	) {
-		return new DeliveryStaffJpaEntity(
-			id, staffName, phoneNumber,
-			hubId, slackId, staffType,
+		return new DeliveryManagerJpaEntity(
+			id, managerName, phoneNumber,
+			hubId, slackId, managerType,
 			deliverySequence, new ArrayList<>()
 		);
 	}
 
-	public void addTimetable(StaffTimetableJpaEntity timetable) {
+	public void addTimetable(ManagerTimetableJpaEntity timetable) {
 		this.timetables.add(timetable);
 	}
 }

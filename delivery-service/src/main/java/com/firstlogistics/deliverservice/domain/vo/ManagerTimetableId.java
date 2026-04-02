@@ -5,19 +5,19 @@ import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 
 import java.util.UUID;
 
-public record DeliveryRouteId(UUID id) {
+public record ManagerTimetableId(UUID id) {
 
-	public DeliveryRouteId {
+	public ManagerTimetableId {
 		if (id == null) {
 			throw new DeliveryException(DeliveryErrorCode.INVALID_ID);
 		}
 	}
 
-	public static DeliveryRouteId of(UUID id) {
-		return new DeliveryRouteId(id);
+	public static ManagerTimetableId of(UUID id) {
+		return new ManagerTimetableId(id);
 	}
 
-	public static DeliveryRouteId generate() {
-		return new DeliveryRouteId(UUID.randomUUID());
+	public static ManagerTimetableId generate() {
+		return new ManagerTimetableId(UUID.randomUUID());
 	}
 }

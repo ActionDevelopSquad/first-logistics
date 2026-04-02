@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.UUID;
 
-@FeignClient(name = "company-service", configuration = FeignErrorDecoder.class)
+@FeignClient(name = "company-service", url = "${company-service.url:}", configuration = FeignErrorDecoder.class)
 public interface CompanyClient {
 
 	@GetMapping("/api/v1/companies/{companyId}")

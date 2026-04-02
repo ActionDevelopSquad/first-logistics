@@ -76,7 +76,7 @@ class DeliveryEventKafkaProducerTest {
             LocalDateTime.now(),
             LocalDateTime.now().plusDays(3),
             "빠른 배송 부탁드립니다.",
-            List.of(DeliveryCreatedEvent.OrderItemInfo.of(UUID.randomUUID(), "마른 오징어", 50, 10000))
+            List.of(DeliveryCreatedEvent.OrderItemInfo.of(UUID.randomUUID(), "마른 오징어", 50, 10000L))
         );
         DeliveryCreatedEvent.DeliveryInfo deliveryInfo = DeliveryCreatedEvent.DeliveryInfo.of(
             deliveryId,
@@ -85,7 +85,10 @@ class DeliveryEventKafkaProducerTest {
             "서울시 강남구 테헤란로 123",
             "101호",
             List.of(),
-            "slack-company"
+            "slack-company",
+            "업체담당자",
+            "010-3333-3333",
+            "company-manager@test.com"
         );
         DeliveryCreatedEvent deliveryCreatedEvent = DeliveryCreatedEvent.create(orderInfo, deliveryInfo);
 

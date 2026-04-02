@@ -39,6 +39,6 @@ public record OrderAcceptedEvent(
 		UUID productId,
 		String productName,
 		int quantity,
-		int price
+		Long price
 	) {}
 }

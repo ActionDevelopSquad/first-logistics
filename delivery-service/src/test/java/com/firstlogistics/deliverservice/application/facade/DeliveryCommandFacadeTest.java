@@ -7,7 +7,7 @@ import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.application.port.CompanyPort;
 import com.firstlogistics.deliverservice.application.port.HubPort;
 import com.firstlogistics.deliverservice.application.port.dto.CompanyResponse;
-import com.firstlogistics.deliverservice.infrastructure.redis.lock.DeliveryDistributedLockService;
+import com.firstlogistics.deliverservice.application.port.DistributedLockPort;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -27,7 +27,7 @@ import static org.mockito.BDDMockito.given;
 
 @Slf4j
 @ExtendWith(MockitoExtension.class)
-class DeliveryCreateFacadeTest {
+class DeliveryCommandFacadeTest {
 
 	@Mock
 	private DeliveryCommandService deliveryCommandService;
@@ -39,10 +39,10 @@ class DeliveryCreateFacadeTest {
 	private HubPort hubPort;
 
 	@Mock
-	private DeliveryDistributedLockService deliveryDistributedLockService;
+	private DistributedLockPort distributedLockPort;
 
 	@InjectMocks
-	private DeliveryCreateFacade deliveryCreateFacade;
+	private DeliveryCommandFacade deliveryCreateFacade;
 
 	@Nested
 	@DisplayName("배송 생성 실패")
@@ -61,7 +61,7 @@ class DeliveryCreateFacadeTest {
 			CreateDeliveryCommand command = stubCommand(orderId, supplierCompanyId, supplierManagerId, receiverCompanyId, receiverManagerId);
 
 			given(companyPort.getCompany(supplierCompanyId))
-				.willReturn(new CompanyResponse(supplierCompanyId, supplierHubId));
+				.willReturn(new CompanyResponse(supplierCompanyId, supplierHubId, "공급업체", "서울시 송파구 올림픽로 300", "A동 1층"));
 			given(companyPort.getCompany(receiverCompanyId))
 				.willThrow(new DeliveryException(DeliveryErrorCode.COMPANY_NOT_FOUND));
 
@@ -89,9 +89,9 @@ class DeliveryCreateFacadeTest {
 			CreateDeliveryCommand command = stubCommand(orderId, supplierCompanyId, supplierManagerId, receiverCompanyId, receiverManagerId);
 
 			given(companyPort.getCompany(supplierCompanyId))
-				.willReturn(new CompanyResponse(supplierCompanyId, supplierHubId));
+				.willReturn(new CompanyResponse(supplierCompanyId, supplierHubId, "공급업체", "서울시 송파구 올림픽로 300", "A동 1층"));
 			given(companyPort.getCompany(receiverCompanyId))
-				.willReturn(new CompanyResponse(receiverCompanyId, destinationHubId));
+				.willReturn(new CompanyResponse(receiverCompanyId, destinationHubId, "수령업체", "서울시 강남구 테헤란로 123", "101동 202호"));
 			given(hubPort.getHubRoute(supplierHubId, destinationHubId))
 				.willThrow(new DeliveryException(DeliveryErrorCode.HUB_NOT_FOUND));
 
@@ -124,7 +124,7 @@ class DeliveryCreateFacadeTest {
 			receiverManagerId,
 			"서울시 강남구 테헤란로 123",
 			"101호",
-			List.of(new CreateDeliveryCommand.OrderItemInfo(UUID.randomUUID(), "마른 오징어", 50, 10000))
+			List.of(new CreateDeliveryCommand.OrderItemInfo(UUID.randomUUID(), "마른 오징어", 50, 10000L))
 		);
 	}
 }

@@ -1,5 +1,6 @@
 package com.firstlogistics.deliverservice.infrastructure.redis.lock;
 
+import com.firstlogistics.deliverservice.application.support.DeliveryLockKeyGenerator;
 import com.firstlogistics.deliverservice.domain.exception.DistributedLockException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
@@ -49,7 +50,7 @@ class DeliveryDistributedLockServiceTest {
         @DisplayName("락 획득 실패 시 DistributedLockException 발생")
         void executeWithMultiLock_fail_lockNotAcquired() throws InterruptedException {
             // given
-            String lockKey = DeliveryLockKeyGenerator.hubStaffAssignKey(UUID.randomUUID());
+            String lockKey = DeliveryLockKeyGenerator.hubManagerAssignKey(UUID.randomUUID());
             RLock mockLock = mock(RLock.class);
 
             given(redissonClient.getLock(lockKey)).willReturn(mockLock);
@@ -71,7 +72,7 @@ class DeliveryDistributedLockServiceTest {
         void executeWithMultiLock_fail_interruptedException() throws InterruptedException {
             try {
                 // given
-                String lockKey = DeliveryLockKeyGenerator.hubStaffAssignKey(UUID.randomUUID());
+                String lockKey = DeliveryLockKeyGenerator.hubManagerAssignKey(UUID.randomUUID());
                 RLock mockLock = mock(RLock.class);
 
                 given(redissonClient.getLock(lockKey)).willReturn(mockLock);
@@ -97,8 +98,8 @@ class DeliveryDistributedLockServiceTest {
         @DisplayName("멀티락 - 첫 번째 락 획득 후 두 번째 락 획득 실패 시 첫 번째 락만 해제")
         void executeWithMultiLock_fail_secondLockNotAcquired_firstLockReleased() throws InterruptedException {
             // given
-            String firstKey = DeliveryLockKeyGenerator.hubStaffAssignKey(UUID.randomUUID());
-            String secondKey = DeliveryLockKeyGenerator.hubStaffAssignKey(UUID.randomUUID());
+            String firstKey = DeliveryLockKeyGenerator.hubManagerAssignKey(UUID.randomUUID());
+            String secondKey = DeliveryLockKeyGenerator.hubManagerAssignKey(UUID.randomUUID());
             RLock firstLock = mock(RLock.class);
             RLock secondLock = mock(RLock.class);
 
@@ -131,7 +132,7 @@ class DeliveryDistributedLockServiceTest {
         @DisplayName("락 획득 성공 시 action 실행 후 unlock 호출")
         void executeWithMultiLock_success_actionExecutedAndUnlocked() throws InterruptedException {
             // given
-            String lockKey = DeliveryLockKeyGenerator.hubStaffAssignKey(UUID.randomUUID());
+            String lockKey = DeliveryLockKeyGenerator.hubManagerAssignKey(UUID.randomUUID());
             RLock mockLock = mock(RLock.class);
 
             given(redissonClient.getLock(lockKey)).willReturn(mockLock);
@@ -152,7 +153,7 @@ class DeliveryDistributedLockServiceTest {
         @DisplayName("action 예외 발생 시에도 finally에서 unlock 보장")
         void executeWithMultiLock_success_unlockCalledEvenOnActionException() throws InterruptedException {
             // given
-            String lockKey = DeliveryLockKeyGenerator.hubStaffAssignKey(UUID.randomUUID());
+            String lockKey = DeliveryLockKeyGenerator.hubManagerAssignKey(UUID.randomUUID());
             RLock mockLock = mock(RLock.class);
 
             given(redissonClient.getLock(lockKey)).willReturn(mockLock);
@@ -177,7 +178,7 @@ class DeliveryDistributedLockServiceTest {
         @DisplayName("멀티스레드 동시 접근 시 최대 1개 스레드만 임계 구역 진입")
         void executeWithMultiLock_concurrent_maxOneConcurrent() throws InterruptedException {
             // given
-            String lockKey = DeliveryLockKeyGenerator.hubStaffAssignKey(UUID.randomUUID());
+            String lockKey = DeliveryLockKeyGenerator.hubManagerAssignKey(UUID.randomUUID());
             RLock mockLock = mock(RLock.class);
             given(redissonClient.getLock(lockKey)).willReturn(mockLock);
 
