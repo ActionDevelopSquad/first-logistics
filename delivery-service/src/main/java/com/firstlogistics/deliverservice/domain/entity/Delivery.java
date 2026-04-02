@@ -112,8 +112,8 @@ public class Delivery {
 		this.status = DeliveryStatus.CANCELLED;
 	}
 
-	public void updateBasicInfo(UUID receiverId, String receiverSlackId) {
-		validateModifiable();
+	public void reassignReceiver(UUID receiverId, String receiverSlackId) {
+		validateBeforeDelivery();
 		if (receiverId != null) {
 			this.receiverId = receiverId;
 		}
@@ -127,8 +127,8 @@ public class Delivery {
 		this.routes.add(route);
 	}
 
-	private void validateModifiable() {
-		if (this.status == DeliveryStatus.COMPLETED || this.status == DeliveryStatus.CANCELLED) {
+	private void validateBeforeDelivery() {
+		if (this.status != DeliveryStatus.CREATED) {
 			throw new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_MODIFIABLE);
 		}
 	}

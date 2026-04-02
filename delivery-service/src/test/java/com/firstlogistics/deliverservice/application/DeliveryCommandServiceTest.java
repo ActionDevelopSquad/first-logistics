@@ -363,6 +363,27 @@ class DeliveryCommandServiceTest {
 		}
 
 		@Test
+		@DisplayName("배송 중인 배송 수정 시도 (HUB_MOVING)")
+		void updateDelivery_fail_deliveryInProgress() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.HUB_MOVING);
+			UpdateDeliveryCommand command = new UpdateDeliveryCommand(deliveryId, "MASTER", userId, UUID.randomUUID(), null);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.updateDelivery(command));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.DELIVERY_NOT_MODIFIABLE);
+		}
+
+		@Test
 		@DisplayName("이미 완료된 배송 수정 시도 (COMPLETED)")
 		void updateDelivery_fail_deliveryCompleted() {
 			// given

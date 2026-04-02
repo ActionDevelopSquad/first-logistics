@@ -176,7 +176,7 @@ public class DeliveryCommandService {
 		deliveryPermissionValidator.validate(accessContext, command.role(), command.userId(),
 			Set.of(UserRole.MASTER, UserRole.HUB_MANAGER, UserRole.DELIVERY_MANAGER));
 
-		delivery.updateBasicInfo(command.receiverId(), command.receiverSlackId());
+		delivery.reassignReceiver(command.receiverId(), command.receiverSlackId());
 		Delivery savedDelivery = deliveryRepository.save(delivery);
 
 		DeliveryUpdatedEvent deliveryUpdatedEvent = DeliveryUpdatedEvent.create(
