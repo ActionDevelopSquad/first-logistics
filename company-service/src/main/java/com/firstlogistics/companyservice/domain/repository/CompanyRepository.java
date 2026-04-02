@@ -19,4 +19,6 @@ public interface CompanyRepository {
     Optional<Company> findByManagerId(UUID managerId);
 
     boolean existsByManagerId(UUID managerId);
+
+    void delete(UUID companyId, UUID deletedBy);
 }

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.verify;
 
@@ -260,6 +261,53 @@ class CompanyCommandServiceTest {
             assertThatThrownBy(() -> companyCommandService.update(invalidTypeCommand))
                     .isInstanceOf(CompanyException.class)
                     .hasMessageContaining(CompanyErrorCode.INVALID_COMPANY_TYPE.getMessage());
+        }
+    }
+
+    @Nested
+    @DisplayName("업체 삭제 (delete)")
+    class Delete {
+
+        private static final UUID FIXED_DELETED_BY = UUID.fromString("00000000-0000-0000-0000-000000000010");
+
+        private Company activeCompany;
+
+        @BeforeEach
+        void setUp() {
+            activeCompany = Company.reconstitute(
+                    FIXED_COMPANY_ID, FIXED_HUB_ID, FIXED_MANAGER_ID, "테스트업체",
+                    new Supplier(), CompanyStatus.ACTIVE,
+                    CompanyAddress.of("서울특별시 송파구 송파대로 55", "3층"),
+                    GeoLocation.of(37.514, 127.106)
+            );
+        }
+
+        @Test
+        @DisplayName("존재하는 업체를 삭제하면 성공한다")
+        void delete_success() {
+            // given
+            given(companyRepository.findById(FIXED_COMPANY_ID))
+                    .willReturn(Optional.of(activeCompany));
+            willDoNothing().given(companyRepository).delete(FIXED_COMPANY_ID, FIXED_DELETED_BY);
+
+            // when
+            companyCommandService.delete(FIXED_COMPANY_ID, FIXED_DELETED_BY);
+
+            // then
+            verify(companyRepository).delete(FIXED_COMPANY_ID, FIXED_DELETED_BY);
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 companyId로 삭제하면 예외가 발생한다")
+        void delete_companyNotFound_throwsException() {
+            // given
+            given(companyRepository.findById(FIXED_COMPANY_ID))
+                    .willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> companyCommandService.delete(FIXED_COMPANY_ID, FIXED_DELETED_BY))
+                    .isInstanceOf(CompanyException.class)
+                    .hasMessageContaining(CompanyErrorCode.COMPANY_NOT_FOUND.getMessage());
         }
     }
 

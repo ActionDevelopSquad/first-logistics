@@ -2,6 +2,8 @@ package com.firstlogistics.companyservice.infrastructure.persistence.jpa;
 
 import static com.firstlogistics.companyservice.infrastructure.persistence.jpa.QCompanyJpaEntity.companyJpaEntity;
 
+import com.firstlogistics.companyservice.domain.exception.CompanyErrorCode;
+import com.firstlogistics.companyservice.domain.exception.CompanyException;
 import com.firstlogistics.companyservice.domain.specification.CompanySearchSpec;
 import com.firstlogistics.companyservice.domain.entity.Company;
 import com.firstlogistics.companyservice.domain.repository.CompanyRepository;
@@ -76,6 +78,14 @@ public class CompanyRepositoryImpl implements CompanyRepository {
     @Override
     public boolean existsByManagerId(UUID managerId) {
         return companyJpaRepository.existsByManagerIdAndDeletedAtIsNull(managerId);
+    }
+
+    @Override
+    public void delete(UUID companyId, UUID deletedBy) {
+        CompanyJpaEntity entity = companyJpaRepository.findByIdAndDeletedAtIsNull(companyId)
+                .orElseThrow(() -> new CompanyException(CompanyErrorCode.COMPANY_NOT_FOUND));
+        entity.softDelete(deletedBy);
+        companyJpaRepository.save(entity);
     }
 
     private OrderSpecifier<?>[] resolveOrderSpecifiers(Sort sort) {
