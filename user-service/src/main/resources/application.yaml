@@ -1,5 +1,5 @@
 server:
-  port: 8081
+  port: 8080
 
 spring:
   application:
@@ -8,12 +8,12 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
     driver-class-name: org.postgresql.Driver
     username: postgres
-    password: redrock1004!
+    password:
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
@@ -30,6 +30,6 @@ keycloak:
   server-url: http://localhost:3300
   realm: codefactory
   client-id: spring-app
-  client-secret: Eju0knPo8BsChh39Gn2aNa4Hep01PKux
-  admin-username: admin
-  admin-password: admin
+  client-secret:
+  admin-username:
+  admin-password:
