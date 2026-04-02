@@ -9,6 +9,7 @@ import com.firstlogistics.deliverservice.presentation.dto.request.UpdateDelivery
 import com.firstlogistics.deliverservice.presentation.dto.response.DeliveryDetailResponse;
 import com.firstlogistics.deliverservice.presentation.dto.response.DeliveryListResponse;
 import com.firstlogistics.deliverservice.presentation.dto.response.CreateDeliveryResponse;
+import com.firstlogistics.deliverservice.presentation.dto.response.UpdateDeliveryResponse;
 import common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -50,14 +51,15 @@ public class DeliveryController {
 	}
 
 	@PatchMapping("/{deliveryId}")
-	public ResponseEntity<ApiResponse<Void>> updateDelivery(
+	public ResponseEntity<ApiResponse<UpdateDeliveryResponse>> updateDelivery(
 		@PathVariable UUID deliveryId,
 		@RequestBody UpdateDeliveryRequest request,
 		@RequestHeader("X-User-Id") UUID userId,
 		@RequestHeader("X-User-Role") String role
 	) {
-		deliveryCommandService.updateDelivery(request.toCommand(deliveryId, role, userId));
-		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_UPDATED, null));
+		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_UPDATED,
+				UpdateDeliveryResponse.from(deliveryCommandService.updateDelivery(request.toCommand(deliveryId, role, userId)))
+		));
 	}
 
 	@GetMapping("/{deliveryId}")

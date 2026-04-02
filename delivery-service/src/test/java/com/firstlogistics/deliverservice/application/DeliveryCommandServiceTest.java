@@ -2,6 +2,7 @@ package com.firstlogistics.deliverservice.application;
 
 import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryCommand;
 import com.firstlogistics.deliverservice.application.dto.command.UpdateDeliveryCommand;
+import com.firstlogistics.deliverservice.application.dto.result.UpdateDeliveryResult;
 import com.firstlogistics.deliverservice.application.publisher.DeliveryEventPublisher;
 import com.firstlogistics.deliverservice.domain.entity.Delivery;
 import com.firstlogistics.deliverservice.domain.entity.DeliveryManager;
@@ -422,9 +423,10 @@ class DeliveryCommandServiceTest {
 			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
 
 			// when
-			deliveryCommandService.updateDelivery(command);
+			UpdateDeliveryResult result = deliveryCommandService.updateDelivery(command);
 
 			// then
+			assertThat(result.deliveryId()).isEqualTo(deliveryId);
 			ArgumentCaptor<Delivery> captor = ArgumentCaptor.forClass(Delivery.class);
 			then(deliveryRepository).should().save(captor.capture());
 			assertThat(captor.getValue().getReceiverId()).isEqualTo(newReceiverId);
@@ -444,9 +446,10 @@ class DeliveryCommandServiceTest {
 			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
 
 			// when
-			deliveryCommandService.updateDelivery(command);
+			UpdateDeliveryResult result = deliveryCommandService.updateDelivery(command);
 
 			// then
+			assertThat(result.deliveryId()).isEqualTo(deliveryId);
 			ArgumentCaptor<Delivery> captor = ArgumentCaptor.forClass(Delivery.class);
 			then(deliveryRepository).should().save(captor.capture());
 			assertThat(captor.getValue().getReceiverSlackId()).isEqualTo(newSlackId);
@@ -467,7 +470,8 @@ class DeliveryCommandServiceTest {
 			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
 
 			// when
-			deliveryCommandService.updateDelivery(command);
+			UpdateDeliveryResult result = deliveryCommandService.updateDelivery(command);
+			assertThat(result.deliveryId()).isEqualTo(deliveryId);
 
 			// then
 			ArgumentCaptor<DeliveryUpdatedEvent> eventCaptor = ArgumentCaptor.forClass(DeliveryUpdatedEvent.class);

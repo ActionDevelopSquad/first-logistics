@@ -3,6 +3,7 @@ package com.firstlogistics.deliverservice.application;
 import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryCommand;
 import com.firstlogistics.deliverservice.application.dto.command.UpdateDeliveryCommand;
 import com.firstlogistics.deliverservice.application.dto.result.CreateDeliveryResult;
+import com.firstlogistics.deliverservice.application.dto.result.UpdateDeliveryResult;
 import com.firstlogistics.deliverservice.application.permission.DeliveryAccessContext;
 import com.firstlogistics.deliverservice.application.permission.DeliveryPermissionValidator;
 import com.firstlogistics.deliverservice.application.publisher.DeliveryEventPublisher;
@@ -167,7 +168,7 @@ public class DeliveryCommandService {
 		return CreateDeliveryResult.from(savedDelivery);
 	}
 
-	public void updateDelivery(UpdateDeliveryCommand command) {
+	public UpdateDeliveryResult updateDelivery(UpdateDeliveryCommand command) {
 		Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
 
@@ -176,12 +177,14 @@ public class DeliveryCommandService {
 			Set.of(UserRole.MASTER, UserRole.HUB_MANAGER, UserRole.DELIVERY_MANAGER));
 
 		delivery.updateBasicInfo(command.receiverId(), command.receiverSlackId());
-		deliveryRepository.save(delivery);
+		Delivery savedDelivery = deliveryRepository.save(delivery);
 
-		DeliveryUpdatedEvent event = DeliveryUpdatedEvent.create(
-			command.deliveryId(), delivery.getReceiverId(), delivery.getReceiverSlackId()
+		DeliveryUpdatedEvent deliveryUpdatedEvent = DeliveryUpdatedEvent.create(
+			command.deliveryId(), savedDelivery.getReceiverId(), savedDelivery.getReceiverSlackId()
 		);
-		deliveryEventPublisher.publishDeliveryUpdated(event);
+		deliveryEventPublisher.publishDeliveryUpdated(deliveryUpdatedEvent);
+
+		return UpdateDeliveryResult.from(savedDelivery);
 	}
 
 	private DeliveryCreatedEvent buildDeliveryCreatedEvent(
