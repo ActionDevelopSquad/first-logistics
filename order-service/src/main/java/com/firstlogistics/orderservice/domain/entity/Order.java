@@ -38,6 +38,8 @@ public class Order {
     @Getter(AccessLevel.NONE)
     private List<OrderItem> orderItems;
 
+    private Long version;
+
     public static Order create(
             UUID supplierCompanyId,
             UUID supplierManagerId,
@@ -62,7 +64,8 @@ public class Order {
                 OrderStatus.PENDING,
                 null,
                 null,
-                new ArrayList<>()
+                new ArrayList<>(),
+                null
         );
 
         order.createOrderItems(items);
@@ -89,7 +92,8 @@ public class Order {
             OrderStatus status,
             OrderStatus previousStatus,
             LocalDateTime orderedAt,
-            List<OrderItem> orderItems
+            List<OrderItem> orderItems,
+            Long version
     ) {
         return new Order(
                 OrderId.of(id),
@@ -103,7 +107,8 @@ public class Order {
                 status,
                 previousStatus,
                 orderedAt,
-                orderItems
+                orderItems,
+                version
         );
     }
 

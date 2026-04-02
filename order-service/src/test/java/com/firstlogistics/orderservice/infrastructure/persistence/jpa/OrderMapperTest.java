@@ -52,7 +52,8 @@ class OrderMapperTest {
                 "배송 메시지",
                 OrderStatus.PENDING,
                 null,
-                new ArrayList<>()
+                new ArrayList<>(),
+                null
         );
 
         // 3. 주문 아이템 생성 및 추가 (Long 타입 가격 반영)

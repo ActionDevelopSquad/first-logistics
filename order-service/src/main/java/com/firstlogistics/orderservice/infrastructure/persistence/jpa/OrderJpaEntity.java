@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -78,4 +79,8 @@ public class OrderJpaEntity extends BaseAuditEntity {
     )
     @JoinColumn(name = "order_id")
     private List<OrderItemJpaEntity> orderItems;
+
+    @Version
+    @Column(nullable = false)
+    private Long version; // JPA가 자동으로 관리하는 버전 필드
 }
