@@ -22,13 +22,13 @@ public interface DeliveryManagerJpaRepository extends JpaRepository<DeliveryMana
 	 */
 	@Query("""
 		SELECT ds FROM DeliveryManagerJpaEntity ds
-		LEFT JOIN ManagerTimetableJpaEntity st1 ON st1.deliveryManager = ds
+		LEFT JOIN ManagerTimetableJpaEntity st1 ON st1.deliveryManagerId = ds.id
 		WHERE ds.hubId = :hubId
 		  AND ds.managerType = :managerType
 		  AND ds.deletedAt IS NULL
 		  AND NOT EXISTS (
 		      SELECT 1 FROM ManagerTimetableJpaEntity st2
-		      WHERE st2.deliveryManager = ds
+		      WHERE st2.deliveryManagerId = ds.id
 		        AND st2.status IN ('CREATED', 'HUB_MOVING')
 		        AND st2.expectedStartAt < :assignmentEnd
 		        AND st2.expectedEndAt > :assignmentStart
