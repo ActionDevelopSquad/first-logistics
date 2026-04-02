@@ -6,6 +6,7 @@ import com.firstlogistics.orderservice.domain.repository.OrderRepository;
 import com.firstlogistics.orderservice.domain.exception.OrderException;
 import com.firstlogistics.orderservice.domain.exception.OrderErrorCode;
 import common.event.Events;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,12 @@ class OrderCommandServiceTest {
     void setUp() {
         // Events 클래스의 static field를 테스트용 Mock으로 초기화
         new Events().init(eventPublisher);
+    }
+
+    @AfterEach
+    void tearDown() {
+        // 다음 테스트에 static 상태가 누수되지 않도록 초기화
+        new Events().init(null);
     }
 
 

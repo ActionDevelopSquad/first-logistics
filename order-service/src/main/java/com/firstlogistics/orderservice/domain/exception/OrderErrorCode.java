@@ -21,7 +21,7 @@ public enum OrderErrorCode implements ErrorCode {
     ALREADY_CANCEL_REQUESTED(HttpStatus.BAD_REQUEST, "ORD007", "이미 취소 요청된 주문입니다."),
     CANNOT_REJECT_CANCEL(HttpStatus.BAD_REQUEST, "ORD008", "취소 요청 상태 주문이 아닙니다."),
     INVALID_PRODUCT_ID(HttpStatus.BAD_REQUEST, "ORD009", "유효한 상품 ID가 아닙니다."),
-    INVALID_QUANTITY(HttpStatus.BAD_REQUEST, "ORD0010", "주문 수량은 최소 1개 이상이어야 합니다."),
+    INVALID_QUANTITY(HttpStatus.BAD_REQUEST, "ORD010", "주문 수량은 최소 1개 이상이어야 합니다."),
     INVALID_PRODUCT_NAME(HttpStatus.BAD_REQUEST, "ORD011", "유효한 상품 이름이 아닙니다."),
     INVALID_DUE_DATE(HttpStatus.BAD_REQUEST, "ORD012", "유효하지 않은 납품기한입니다."),
     DELIVERY_ADDRESS_REQUIRED(HttpStatus.BAD_REQUEST, "ORD013", "배송 주소는 필수입니다."),

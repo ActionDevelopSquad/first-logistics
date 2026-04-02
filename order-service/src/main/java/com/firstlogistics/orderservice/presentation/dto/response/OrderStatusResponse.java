@@ -6,7 +6,7 @@ public record OrderStatusResponse(
         UUID orderId,
         String status
 ) {
-    public static OrderStatusResponse of(UUID userId, String status) {
-        return new OrderStatusResponse(userId, status);
+    public static OrderStatusResponse of(UUID orderId, String status) {
+        return new OrderStatusResponse(orderId, status);
     }
 }
