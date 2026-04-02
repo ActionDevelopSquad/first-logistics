@@ -8,9 +8,12 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface DeliveryManagerJpaRepository extends JpaRepository<DeliveryManagerJpaEntity, UUID> {
+
+	Optional<DeliveryManagerJpaEntity> findByUserIdAndDeletedAtIsNull(UUID userId);
 
 	@Query("SELECT COALESCE(MAX(ds.deliverySequence), 0) FROM DeliveryManagerJpaEntity ds WHERE ds.deletedAt IS NULL")
 	int findMaxSequence();
@@ -22,13 +25,13 @@ public interface DeliveryManagerJpaRepository extends JpaRepository<DeliveryMana
 	 */
 	@Query("""
 		SELECT ds FROM DeliveryManagerJpaEntity ds
-		LEFT JOIN ManagerTimetableJpaEntity st1 ON st1.deliveryManager = ds
+		LEFT JOIN ManagerTimetableJpaEntity st1 ON st1.deliveryManagerId = ds.id
 		WHERE ds.hubId = :hubId
 		  AND ds.managerType = :managerType
 		  AND ds.deletedAt IS NULL
 		  AND NOT EXISTS (
 		      SELECT 1 FROM ManagerTimetableJpaEntity st2
-		      WHERE st2.deliveryManager = ds
+		      WHERE st2.deliveryManagerId = ds.id
 		        AND st2.status IN ('CREATED', 'HUB_MOVING')
 		        AND st2.expectedStartAt < :assignmentEnd
 		        AND st2.expectedEndAt > :assignmentStart

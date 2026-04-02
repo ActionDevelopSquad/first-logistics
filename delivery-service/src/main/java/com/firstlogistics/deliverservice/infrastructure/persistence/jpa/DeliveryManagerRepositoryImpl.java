@@ -34,6 +34,12 @@ public class DeliveryManagerRepositoryImpl implements DeliveryManagerRepository 
 	}
 
 	@Override
+	public Optional<DeliveryManager> findByUserId(UUID userId) {
+		return deliveryManagerJpaRepository.findByUserIdAndDeletedAtIsNull(userId)
+			.map(deliveryManagerMapper::toDomain);
+	}
+
+	@Override
 	public int findNextSequence() {
 		return deliveryManagerJpaRepository.findMaxSequence() + 1;
 	}

@@ -32,6 +32,9 @@ public class DeliveryManagerJpaEntity extends BaseAuditEntity {
 	@Column(name = "id", columnDefinition = "uuid")
 	private UUID id;
 
+	@Column(name = "user_id", nullable = false, columnDefinition = "uuid", unique = true)
+	private UUID userId;
+
 	@Column(name = "manager_name", nullable = false)
 	private String managerName;
 
@@ -57,6 +60,7 @@ public class DeliveryManagerJpaEntity extends BaseAuditEntity {
 
 	public static DeliveryManagerJpaEntity create(
 		UUID id,
+		UUID userId,
 		String managerName,
 		String phoneNumber,
 		UUID hubId,
@@ -65,7 +69,7 @@ public class DeliveryManagerJpaEntity extends BaseAuditEntity {
 		int deliverySequence
 	) {
 		return new DeliveryManagerJpaEntity(
-			id, managerName, phoneNumber,
+			id, userId, managerName, phoneNumber,
 			hubId, slackId, managerType,
 			deliverySequence, new ArrayList<>()
 		);

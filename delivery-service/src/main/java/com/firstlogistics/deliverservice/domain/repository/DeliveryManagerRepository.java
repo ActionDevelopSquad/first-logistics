@@ -14,5 +14,7 @@ public interface DeliveryManagerRepository {
 
 	int findNextSequence();
 
+	Optional<DeliveryManager> findByUserId(UUID userId);
+
 	DeliveryManager save(DeliveryManager deliveryManager);
 }

@@ -7,8 +7,11 @@ import com.firstlogistics.deliverservice.domain.projection.DeliveryDetailProject
 import com.firstlogistics.deliverservice.domain.projection.DeliverySummaryProjection;
 import com.firstlogistics.deliverservice.application.dto.result.DeliveryDetailResult;
 import com.firstlogistics.deliverservice.application.dto.result.DeliveryListResult;
+import com.firstlogistics.deliverservice.domain.entity.DeliveryManager;
+import com.firstlogistics.deliverservice.domain.enums.ManagerType;
 import com.firstlogistics.deliverservice.domain.enums.UserRole;
 import com.firstlogistics.deliverservice.application.port.CompanyPort;
+import com.firstlogistics.deliverservice.domain.repository.DeliveryManagerRepository;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryQueryRepository;
 import com.firstlogistics.deliverservice.application.port.HubPort;
 import com.firstlogistics.deliverservice.application.port.HubManagerPort;
@@ -49,6 +52,9 @@ class DeliveryQueryServiceTest {
 
 	@Mock
 	private DeliveryRepository deliveryRepository;
+
+	@Mock
+	private DeliveryManagerRepository deliveryManagerRepository;
 
 	@Mock
 	private DeliveryQueryRepository deliveryQueryRepository;
@@ -195,8 +201,11 @@ class DeliveryQueryServiceTest {
 		@DisplayName("본인 담당 배송 목록 조회 - DELIVERY_MANAGER")
 		void getDeliveries_success_deliveryManagerReturnsOwnDeliveries() {
 			// given
-			DeliveryListQuery query = stubQueryForRole(UserRole.DELIVERY_MANAGER, UUID.randomUUID());
+			UUID userId = UUID.randomUUID();
+			DeliveryListQuery query = stubQueryForRole(UserRole.DELIVERY_MANAGER, userId);
+			DeliveryManager manager = DeliveryManager.create(userId, "담당자", "010-0000-0000", UUID.randomUUID(), "slack", ManagerType.HUB_DELIVERY, 0);
 
+			given(deliveryManagerRepository.findByUserId(userId)).willReturn(Optional.of(manager));
 			given(deliveryQueryRepository.findDeliveries(any(DeliverySearchSpec.class))).willReturn(List.of(stubSummary()));
 
 			// when
@@ -361,15 +370,17 @@ class DeliveryQueryServiceTest {
 		void getDelivery_fail_deliveryManagerAccessDenied() {
 			// given
 			UUID deliveryId = UUID.randomUUID();
-			UUID otherManagerId = UUID.randomUUID();
+			UUID otherUserId = UUID.randomUUID();
+			DeliveryManager otherManager = DeliveryManager.create(otherUserId, "다른담당자", "010-0000-0000", UUID.randomUUID(), "slack-other", ManagerType.HUB_DELIVERY, 0);
 			List<DeliveryDetailProjection.RouteDetail> routes = stubRoutes(2);
 			DeliveryDetailProjection projection = stubProjection(deliveryId);
 			given(deliveryQueryRepository.findById(deliveryId)).willReturn(Optional.of(projection));
 			given(deliveryQueryRepository.findRoutesByDeliveryId(deliveryId)).willReturn(routes);
+			given(deliveryManagerRepository.findByUserId(otherUserId)).willReturn(Optional.of(otherManager));
 
 			// when
 			Throwable throwable = catchThrowable(() ->
-				deliveryQueryService.getDelivery(deliveryId, UserRole.DELIVERY_MANAGER.name(), otherManagerId));
+				deliveryQueryService.getDelivery(deliveryId, UserRole.DELIVERY_MANAGER.name(), otherUserId));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -485,7 +496,9 @@ class DeliveryQueryServiceTest {
 		void getDelivery_success_deliveryManagerAssigned() {
 			// given
 			UUID deliveryId = UUID.randomUUID();
-			UUID managerId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			DeliveryManager manager = DeliveryManager.create(userId, "담당자", "010-0000-0000", UUID.randomUUID(), "slack", ManagerType.HUB_DELIVERY, 0);
+			UUID managerId = manager.getId().id();
 			DeliveryDetailProjection projection = stubProjection(deliveryId);
 			List<DeliveryDetailProjection.RouteDetail> routes = List.of(
 				new DeliveryDetailProjection.RouteDetail(
@@ -501,12 +514,13 @@ class DeliveryQueryServiceTest {
 
 			given(deliveryQueryRepository.findById(deliveryId)).willReturn(Optional.of(projection));
 			given(deliveryQueryRepository.findRoutesByDeliveryId(deliveryId)).willReturn(routes);
+			given(deliveryManagerRepository.findByUserId(userId)).willReturn(Optional.of(manager));
 			given(hubPort.getHubs(any())).willReturn(stubHubResponses(projection, routes));
 			given(userPort.getUser(projection.receiverId())).willReturn(new UserResponse(projection.receiverId(), "홍길동", "010-1234-5678", "slack-123", "hong@test.com"));
 			given(companyPort.getCompany(projection.receiverCompanyId())).willReturn(new CompanyResponse(projection.receiverCompanyId(), UUID.randomUUID(), "테스트업체", "서울시 강남구 테헤란로 123", "101동 202호"));
 
 			// when
-			DeliveryDetailResult result = deliveryQueryService.getDelivery(deliveryId, UserRole.DELIVERY_MANAGER.name(), managerId);
+			DeliveryDetailResult result = deliveryQueryService.getDelivery(deliveryId, UserRole.DELIVERY_MANAGER.name(), userId);
 
 			// then
 			assertThat(result.deliveryId()).isEqualTo(deliveryId);

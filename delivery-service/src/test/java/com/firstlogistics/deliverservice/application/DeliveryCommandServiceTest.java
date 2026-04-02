@@ -329,6 +329,9 @@ class DeliveryCommandServiceTest {
 			UUID receiverCompanyId = UUID.randomUUID();
 			UUID receiverManagerId = UUID.randomUUID();
 			UUID destinationHubId = UUID.randomUUID();
+			UUID hubManager1UserId = UUID.randomUUID();
+			UUID hubManager2UserId = UUID.randomUUID();
+			UUID companyManagerUserId = UUID.randomUUID();
 
 			CreateDeliveryCommand command = new CreateDeliveryCommand(
 				orderId,
@@ -350,9 +353,9 @@ class DeliveryCommandServiceTest {
 				new HubRouteStepResponse(1, middleHubId, destinationHubId, 8000, 25),
 				new HubRouteStepResponse(2, destinationHubId, UUID.randomUUID(), 5000, 20)
 			));
-			DeliveryManager hubDeliveryManager1 = DeliveryManager.create("허브담당1", "010-1111-1111", sourceHubId, "slack-hub1", ManagerType.HUB_DELIVERY, 0);
-			DeliveryManager hubDeliveryManager2 = DeliveryManager.create("허브담당2", "010-2222-2222", middleHubId, "slack-hub2", ManagerType.HUB_DELIVERY, 1);
-			DeliveryManager companyDeliveryManager = DeliveryManager.create("업체담당1", "010-3333-3333", destinationHubId, "slack-company", ManagerType.COMPANY_DELIVERY, 0);
+			DeliveryManager hubDeliveryManager1 = DeliveryManager.create(hubManager1UserId, "허브담당1", "010-1111-1111", sourceHubId, "slack-hub1", ManagerType.HUB_DELIVERY, 0);
+			DeliveryManager hubDeliveryManager2 = DeliveryManager.create(hubManager2UserId, "허브담당2", "010-2222-2222", middleHubId, "slack-hub2", ManagerType.HUB_DELIVERY, 1);
+			DeliveryManager companyDeliveryManager = DeliveryManager.create(companyManagerUserId, "업체담당1", "010-3333-3333", destinationHubId, "slack-company", ManagerType.COMPANY_DELIVERY, 0);
 
 			return new SuccessFixture(command, supplierCompany, receiverCompany, hubRoute, hubDeliveryManager1, hubDeliveryManager2, companyDeliveryManager, "slack-receiver");
 		}
@@ -381,8 +384,8 @@ class DeliveryCommandServiceTest {
 				.map(id -> new HubResponse(id, "허브-" + id.toString().substring(0, 4), "허브주소-" + id.toString().substring(0, 4)))
 				.toList()
 		);
-		given(userPort.getUser(f.companyDeliveryManager().getId().id()))
-			.willReturn(new UserResponse(f.companyDeliveryManager().getId().id(), "업체담당1", "010-3333-3333", "slack-company", "company-manager@test.com"));
+		given(userPort.getUser(f.companyDeliveryManager().getUserId()))
+			.willReturn(new UserResponse(f.companyDeliveryManager().getUserId(), "업체담당1", "010-3333-3333", "slack-company", "company-manager@test.com"));
 	}
 
 	private CreateDeliveryCommand stubCommand(UUID orderId, UUID receiverCompanyId, UUID receiverManagerId) {
@@ -414,10 +417,10 @@ class DeliveryCommandServiceTest {
 	}
 
 	private DeliveryManager stubHubManager(UUID hubId) {
-		return DeliveryManager.create("홍길동", "010-1234-5678", hubId, "slack-hub", ManagerType.HUB_DELIVERY, 0);
+		return DeliveryManager.create(UUID.randomUUID(), "홍길동", "010-1234-5678", hubId, "slack-hub", ManagerType.HUB_DELIVERY, 0);
 	}
 
 	private DeliveryManager stubCompanyManager(UUID hubId) {
-		return DeliveryManager.create("김영희", "010-9876-5432", hubId, "slack-company", ManagerType.COMPANY_DELIVERY, 0);
+		return DeliveryManager.create(UUID.randomUUID(), "김영희", "010-9876-5432", hubId, "slack-company", ManagerType.COMPANY_DELIVERY, 0);
 	}
 }

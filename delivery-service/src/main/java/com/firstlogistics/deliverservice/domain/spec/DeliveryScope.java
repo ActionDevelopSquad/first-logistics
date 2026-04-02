@@ -21,7 +21,7 @@ public record DeliveryScope(UserRole role, UUID scopeId) {
 		return new DeliveryScope(role, scopeId);
 	}
 
-	public static DeliveryScope from(String role, UUID userId, UUID hubId, UUID companyId) {
+	public static DeliveryScope from(String role, UUID hubId, UUID companyId, UUID deliveryManagerId) {
 		UserRole userRole;
 		try {
 			userRole = UserRole.valueOf(role);
@@ -30,7 +30,7 @@ public record DeliveryScope(UserRole role, UUID scopeId) {
 		}
 		UUID scopeId = switch (userRole) {
 			case HUB_MANAGER -> hubId;
-			case DELIVERY_MANAGER -> userId;
+			case DELIVERY_MANAGER -> deliveryManagerId;
 			case COMPANY_MANAGER -> companyId;
 			default -> null;
 		};

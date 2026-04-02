@@ -15,6 +15,8 @@ import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.projection.DeliveryDetailProjection;
 import com.firstlogistics.deliverservice.domain.projection.DeliverySummaryProjection;
+import com.firstlogistics.deliverservice.domain.entity.DeliveryManager;
+import com.firstlogistics.deliverservice.domain.repository.DeliveryManagerRepository;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryQueryRepository;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryRepository;
 import com.firstlogistics.deliverservice.domain.spec.DeliveryScope;
@@ -35,6 +37,7 @@ import java.util.stream.Stream;
 public class DeliveryQueryService {
 
 	private final DeliveryRepository deliveryRepository;
+	private final DeliveryManagerRepository deliveryManagerRepository;
 	private final DeliveryQueryRepository deliveryQueryRepository;
 	private final UserPort userPort;
 	private final HubPort hubPort;
@@ -56,7 +59,11 @@ public class DeliveryQueryService {
 				userRole == UserRole.COMPANY_MANAGER
 						? companyPort.getCompanyByManagerId(query.userId()).companyId()
 						: null;
-		DeliveryListQuery resolvedQuery = query.withScope(DeliveryScope.from(query.role(), query.userId(), hubId, companyId));
+		UUID deliveryManagerId =
+				userRole == UserRole.DELIVERY_MANAGER
+						? resolveDeliveryManagerId(query.userId())
+						: null;
+		DeliveryListQuery resolvedQuery = query.withScope(DeliveryScope.from(query.role(), hubId, companyId, deliveryManagerId));
 
 		if (query.hasReceiverNameOrPhoneFilter()) {
 			List<UUID> receiverIds = userPort
@@ -108,8 +115,9 @@ public class DeliveryQueryService {
 				}
 			}
 			case DELIVERY_MANAGER -> {
+				UUID managerId = resolveDeliveryManagerId(userId);
 				boolean isAssigned = routes.stream()
-					.anyMatch(route -> userId.equals(route.deliveryManagerId()));
+					.anyMatch(route -> managerId.equals(route.deliveryManagerId()));
 				if (!isAssigned) {
 					throw new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
 				}
@@ -122,6 +130,12 @@ public class DeliveryQueryService {
 			}
 			default -> throw new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
 		}
+	}
+
+	private UUID resolveDeliveryManagerId(UUID userId) {
+		return deliveryManagerRepository.findByUserId(userId)
+			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_MANAGER_NOT_FOUND))
+			.getId().id();
 	}
 
 	private UserRole parseUserRole(String role) {
