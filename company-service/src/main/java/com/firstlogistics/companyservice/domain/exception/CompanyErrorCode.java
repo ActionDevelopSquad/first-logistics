@@ -20,7 +20,8 @@ public enum CompanyErrorCode implements ErrorCode {
     INVALID_GEO_LOCATION(HttpStatus.BAD_REQUEST, "COM009", "지리 정보가 유효하지 않습니다."),
     INVALID_COMPANY_ID(HttpStatus.BAD_REQUEST, "COM010", "회사 ID가 유효하지 않습니다."),
     HUB_LOCATION_OUT_OF_RANGE(HttpStatus.BAD_REQUEST, "COM011", "허브 서비스 가능 범위(대한민국)를 벗어난 위치입니다."),
-    INVALID_COMPANY_STATUS(HttpStatus.BAD_REQUEST, "COM013", "회사 상태가 유효하지 않습니다.");
+    INVALID_COMPANY_STATUS(HttpStatus.BAD_REQUEST, "COM013", "회사 상태가 유효하지 않습니다."),
+    DUPLICATE_MANAGER_ID(HttpStatus.CONFLICT, "COM014", "이미 업체를 관리하고 있는 담당자입니다.");
 
     private final HttpStatus status;
     private final String code;

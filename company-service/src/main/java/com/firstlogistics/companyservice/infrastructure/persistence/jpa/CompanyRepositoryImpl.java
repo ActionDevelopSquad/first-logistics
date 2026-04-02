@@ -73,6 +73,11 @@ public class CompanyRepositoryImpl implements CompanyRepository {
                 .map(CompanyMapper::toDomain);
     }
 
+    @Override
+    public boolean existsByManagerId(UUID managerId) {
+        return companyJpaRepository.existsByManagerIdAndDeletedAtIsNull(managerId);
+    }
+
     private BooleanBuilder buildPredicate(CompanyQueryCondition condition) {
         BooleanBuilder builder = new BooleanBuilder();
 

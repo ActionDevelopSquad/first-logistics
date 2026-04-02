@@ -17,4 +17,6 @@ public interface CompanyRepository {
     Optional<Company> findById(UUID companyId);
 
     Optional<Company> findByManagerId(UUID managerId);
+
+    boolean existsByManagerId(UUID managerId);
 }

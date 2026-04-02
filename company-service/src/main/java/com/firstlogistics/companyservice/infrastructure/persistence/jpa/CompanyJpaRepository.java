@@ -10,4 +10,6 @@ public interface CompanyJpaRepository extends JpaRepository<CompanyJpaEntity, UU
     Optional<CompanyJpaEntity> findByIdAndDeletedAtIsNull(UUID id);
 
     Optional<CompanyJpaEntity> findByManagerIdAndDeletedAtIsNull(UUID managerId);
+
+    boolean existsByManagerIdAndDeletedAtIsNull(UUID managerId);
 }
