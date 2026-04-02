@@ -7,7 +7,7 @@ import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.application.port.CompanyPort;
 import com.firstlogistics.deliverservice.application.port.HubPort;
 import com.firstlogistics.deliverservice.application.port.dto.CompanyResponse;
-import com.firstlogistics.deliverservice.infrastructure.redis.lock.DeliveryDistributedLockService;
+import com.firstlogistics.deliverservice.application.port.DistributedLockPort;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -39,7 +39,7 @@ class DeliveryCommandFacadeTest {
 	private HubPort hubPort;
 
 	@Mock
-	private DeliveryDistributedLockService deliveryDistributedLockService;
+	private DistributedLockPort distributedLockPort;
 
 	@InjectMocks
 	private DeliveryCommandFacade deliveryCreateFacade;

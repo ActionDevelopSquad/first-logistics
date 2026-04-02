@@ -1,4 +1,4 @@
-package com.firstlogistics.deliverservice.infrastructure.redis.lock;
+package com.firstlogistics.deliverservice.application.support;
 
 import java.util.UUID;
 

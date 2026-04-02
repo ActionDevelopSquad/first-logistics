@@ -1,5 +1,6 @@
 package com.firstlogistics.deliverservice.infrastructure.redis.lock;
 
+import com.firstlogistics.deliverservice.application.port.DistributedLockPort;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DistributedLockException;
 import lombok.RequiredArgsConstructor;
@@ -13,13 +14,14 @@ import java.util.function.Supplier;
 
 @Component
 @RequiredArgsConstructor
-public class DeliveryDistributedLockService {
+public class DeliveryDistributedLockService implements DistributedLockPort {
 
     private static final long WAIT_TIME_SECONDS = 3L;
     private static final long LEASE_TIME_SECONDS = 10L;
 
     private final RedissonClient redissonClient;
 
+    @Override
     public <T> T executeWithMultiLock(List<String> lockKeys, Supplier<T> action) {
         List<RLock> locks = lockKeys.stream()
                 .map(redissonClient::getLock)

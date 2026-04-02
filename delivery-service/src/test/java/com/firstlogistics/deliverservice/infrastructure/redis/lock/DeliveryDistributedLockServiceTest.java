@@ -1,5 +1,6 @@
 package com.firstlogistics.deliverservice.infrastructure.redis.lock;
 
+import com.firstlogistics.deliverservice.application.support.DeliveryLockKeyGenerator;
 import com.firstlogistics.deliverservice.domain.exception.DistributedLockException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
