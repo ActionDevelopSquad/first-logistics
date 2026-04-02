@@ -1,5 +1,6 @@
 package com.firstlogistics.userservice.infrastructure.fegin.service;
 
+import com.firstlogistics.userservice.application.port.OrganizationValidationService;
 import com.firstlogistics.userservice.domain.exception.UserErrorCode;
 import com.firstlogistics.userservice.domain.exception.UserException;
 import com.firstlogistics.userservice.infrastructure.fegin.client.CompanyClient;

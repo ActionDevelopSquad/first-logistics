@@ -25,7 +25,7 @@ public class UserController {
     private final UserService userService;
 
     /**
-     * 로그인 시도 -> keyCloack 토큰 발급
+     * 로그인 시도 -> keyCloak 토큰 발급
      * POST /api/v1/users/login
      */
     @PostMapping("/login")
@@ -158,6 +158,27 @@ public class UserController {
         return ResponseEntity
                 .status(UserSuccessCode.USER_DELETED.getStatus())
                 .body(ApiResponse.success(UserSuccessCode.USER_DELETED, null));
+    }
+
+    /**
+     * 엑세스 토큰 재발급
+     * POST /api/v1/users/refresh
+     * Role : MASTER
+     */
+    @GetMapping("/refresh")
+    public ResponseEntity<ApiResponse<TokenResponse>> refresh(@RequestHeader("X-Refresh-Token") String refreshToken) {
+        TokenResult refresh = userService.refresh(refreshToken);
+        TokenResponse tokenResponse = new TokenResponse(
+                refresh.accessToken(),
+                refresh.expiresIn(),
+                refresh.refreshToken(),
+                refresh.refreshExpiresIn(),
+                refresh.tokenType()
+        );
+
+        return ResponseEntity
+                .status(UserSuccessCode.TOKEN_REFRESHED.getStatus())
+                .body(ApiResponse.success(UserSuccessCode.TOKEN_REFRESHED, tokenResponse));
     }
 
 //    // 로그인한 사용자 정보 조회 (gw-service가 주입한 헤더 사용)

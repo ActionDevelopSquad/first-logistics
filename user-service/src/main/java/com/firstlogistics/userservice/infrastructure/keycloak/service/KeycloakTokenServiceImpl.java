@@ -81,4 +81,32 @@ public class KeycloakTokenServiceImpl implements KeycloakTokenService {
             throw new UserException(UserErrorCode.AUTH_SERVER_CONNECTION_ERROR);
         }
     }
+
+    @Override
+    public TokenInfo refresh(String refreshToken) {
+        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+        form.add("grant_type", "refresh_token");
+        form.add("client_id", properties.getClientId());
+        form.add("client_secret", properties.getClientSecret());
+        form.add("refresh_token", refreshToken);
+
+        try {
+            return RestClient.create()
+                    .post()
+                    .uri("%s/realms/%s/protocol/openid-connect/token"
+                            .formatted(properties.getServerUrl(), properties.getRealm()))
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                    .body(form)
+                    .retrieve()
+                    .body(TokenInfo.class);
+        } catch (HttpClientErrorException e) {
+            throw new UserException(UserErrorCode.AUTH_SERVER_REQUEST_ERROR);
+
+        } catch (HttpServerErrorException e) {
+            throw new UserException(UserErrorCode.AUTH_SERVER_INTERNAL_ERROR);
+
+        } catch (ResourceAccessException e) {
+            throw new UserException(UserErrorCode.AUTH_SERVER_CONNECTION_ERROR);
+        }
+    }
 }

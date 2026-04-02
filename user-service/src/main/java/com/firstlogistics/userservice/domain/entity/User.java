@@ -25,10 +25,30 @@ public class User {
     private String slackId;
     private Status status;
     private UserRole userRole;
+    private UUID organizationId;
     private LocalDateTime lastLoginAt;
 
-    public static User create(UUID userId, String username, String name, String phone, String email, String slackId, UserRole role) {
-        return new User(userId, username, name, phone, email, slackId, Status.PENDING, role, null);
+    public static User create(
+            UUID userId,
+            String username,
+            String name,
+            String phone,
+            String email,
+            String slackId,
+            UserRole role,
+            UUID organizationId) {
+        return new User(
+                userId,
+                username,
+                name,
+                phone,
+                email,
+                slackId,
+                Status.PENDING,
+                role,
+                organizationId,
+                null
+        );
     }
 
     public void update(String name, String email, String phone, String slackId) {
@@ -58,6 +78,13 @@ public class User {
         this.status = Status.REJECTED;
     }
 
+    public void rollbackStatus() {
+        if (this.status == Status.PENDING) {
+            return;
+        }
+        this.status = Status.PENDING;
+    }
+
     public void updateRole(UserRole role) {
         if (userRole == role) {
             throw new UserException(UserErrorCode.SAME_ROLE_SELECTED);
@@ -78,6 +105,7 @@ public class User {
             String slackId,
             Status status,
             UserRole userRole,
+            UUID organizationId,
             LocalDateTime lastLoginAt
     ) {
         return new User(
@@ -89,6 +117,7 @@ public class User {
                 slackId,
                 status,
                 userRole,
+                organizationId,
                 lastLoginAt
         );
     }

@@ -36,19 +36,22 @@ public class UserJpaEntity extends BaseAuditEntity {
     @Column(name = "email", nullable = false, length = 100)
     private String email;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "user_role", nullable = false, length = 30)
-    private UserRole userRole;
+    @Column(name = "slack_id", length = 100)
+    private String slackId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     private Status status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_role", nullable = false, length = 30)
+    private UserRole userRole;
+
+    @Column(name = "organization_id")
+    private UUID organizationId;
+
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;
-
-    @Column(name = "slack_id", length = 100)
-    private String slackId;
 
     public void update(User domain) {
         this.name = domain.getName();

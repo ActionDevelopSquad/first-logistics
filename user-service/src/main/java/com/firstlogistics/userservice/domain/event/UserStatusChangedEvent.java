@@ -11,18 +11,20 @@ public record UserStatusChangedEvent(
         UUID organizationId,
         UserRole userRole,
         Status status,
+        Status previousStatus,
         String username,
         String name,
         String email,
         String phone,
         String slackId
 ) {
-    public static UserStatusChangedEvent of(User user, UUID organizationId) {
+    public static UserStatusChangedEvent of(User user, UUID organizationId, Status previousStatus) {
         return new UserStatusChangedEvent(
                 user.getId(),
                 organizationId,
                 user.getUserRole(),
                 user.getStatus(),
+                previousStatus,
                 user.getUsername(),
                 user.getName(),
                 user.getEmail(),

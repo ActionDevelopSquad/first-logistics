@@ -15,7 +15,9 @@ public enum UserSuccessCode implements SuccessCode {
     ROLE_UPDATED(HttpStatus.OK, "USER_004", "권한이 변경되었습니다."),
     STATUS_UPDATED(HttpStatus.OK, "USER_005", "회원 상태가 변경되었습니다."),
     USER_UPDATED(HttpStatus.OK, "USER_006", "회원 정보가 변경되었습니다."),
-    USER_DELETED(HttpStatus.OK, "USER_007", "회원 탈퇴 되었습니다.");
+    USER_DELETED(HttpStatus.OK, "USER_007", "회원 탈퇴 되었습니다."),
+    TOKEN_REFRESHED(HttpStatus.OK, "USER_008", "토큰이 재발급 되었습니다."),
+    KAFKA_FAILURE_REPUBLISHED(HttpStatus.OK, "USER_009", "Kafka 실패 이력이 재발행됐습니다.");
 
     private final HttpStatus status;
     private final String code;

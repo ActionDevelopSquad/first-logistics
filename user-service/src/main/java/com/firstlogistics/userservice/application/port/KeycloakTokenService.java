@@ -6,4 +6,6 @@ public interface KeycloakTokenService {
     TokenInfo generate(String username, String password);
 
     void logout(String refreshToken);
+
+    TokenInfo refresh(String refreshToken);
 }

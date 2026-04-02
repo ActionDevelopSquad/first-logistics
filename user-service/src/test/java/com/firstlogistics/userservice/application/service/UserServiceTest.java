@@ -1,14 +1,16 @@
 package com.firstlogistics.userservice.application.service;
 
-import com.firstlogistics.userservice.application.dto.result.TokenInfo;
 import com.firstlogistics.userservice.application.dto.command.LoginCommand;
 import com.firstlogistics.userservice.application.dto.command.UserCreateCommand;
 import com.firstlogistics.userservice.application.dto.command.UserUpdateCommand;
+import com.firstlogistics.userservice.application.dto.result.TokenInfo;
 import com.firstlogistics.userservice.application.dto.result.TokenResult;
-import com.firstlogistics.userservice.application.port.KeycloakTokenService;
 import com.firstlogistics.userservice.application.port.KeycloakService;
+import com.firstlogistics.userservice.application.port.KeycloakTokenService;
 import com.firstlogistics.userservice.domain.entity.User;
 import com.firstlogistics.userservice.domain.enums.Status;
+import com.firstlogistics.userservice.domain.event.UserEvents;
+import com.firstlogistics.userservice.domain.event.UserStatusChangedEvent;
 import com.firstlogistics.userservice.domain.exception.UserErrorCode;
 import com.firstlogistics.userservice.domain.exception.UserException;
 import com.firstlogistics.userservice.domain.repository.UserRepository;
@@ -43,6 +45,9 @@ class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private UserEvents userEvents;
 
     @InjectMocks
     private UserService userService;
@@ -310,7 +315,7 @@ class UserServiceTest {
 
         @Test
         @Order(1)
-        @DisplayName("승인 요청이면 approve() 호출")
+        @DisplayName("승인 요청이면 approve() 호출 및 이벤트 발행")
         void updateStatus_approve() {
             // given
             UUID userId = UUID.randomUUID();
@@ -325,11 +330,21 @@ class UserServiceTest {
             assertThat(user.getStatus()).isEqualTo(Status.APPROVED);
             then(userRepository).should(times(1)).findByIdNotDeleted(userId);
             then(userRepository).should(times(1)).update(user);
+
+            ArgumentCaptor<UserStatusChangedEvent> eventCaptor = ArgumentCaptor.forClass(UserStatusChangedEvent.class);
+            then(userEvents).should(times(1)).publish(eventCaptor.capture());
+
+            UserStatusChangedEvent publishedEvent = eventCaptor.getValue();
+            assertThat(publishedEvent.userId()).isEqualTo(user.getId());
+            assertThat(publishedEvent.organizationId()).isEqualTo(user.getOrganizationId());
+            assertThat(publishedEvent.userRole()).isEqualTo(user.getUserRole());
+            assertThat(publishedEvent.status()).isEqualTo(Status.APPROVED);
+            assertThat(publishedEvent.previousStatus()).isEqualTo(Status.PENDING);
         }
 
         @Test
         @Order(2)
-        @DisplayName("이미 승인된 상태면 오류")
+        @DisplayName("이미 승인된 상태면 오류이며 이벤트 미발행")
         void updateStatus_approve_fail() {
             // given
             UUID userId = UUID.randomUUID();
@@ -344,11 +359,12 @@ class UserServiceTest {
 
             then(userRepository).should(times(1)).findByIdNotDeleted(any());
             then(userRepository).should(never()).update(any());
+            then(userEvents).should(never()).publish(any());
         }
 
         @Test
         @Order(3)
-        @DisplayName("거절 요청이면 reject() 호출")
+        @DisplayName("거절 요청이면 reject() 호출 및 이벤트 발행")
         void updateStatus_rejected() {
             // given
             UUID userId = UUID.randomUUID();
@@ -363,11 +379,21 @@ class UserServiceTest {
             assertThat(user.getStatus()).isEqualTo(Status.REJECTED);
             then(userRepository).should().findByIdNotDeleted(userId);
             then(userRepository).should(times(1)).update(user);
+
+            ArgumentCaptor<UserStatusChangedEvent> eventCaptor = ArgumentCaptor.forClass(UserStatusChangedEvent.class);
+            then(userEvents).should(times(1)).publish(eventCaptor.capture());
+
+            UserStatusChangedEvent publishedEvent = eventCaptor.getValue();
+            assertThat(publishedEvent.userId()).isEqualTo(user.getId());
+            assertThat(publishedEvent.organizationId()).isEqualTo(user.getOrganizationId());
+            assertThat(publishedEvent.userRole()).isEqualTo(user.getUserRole());
+            assertThat(publishedEvent.status()).isEqualTo(Status.REJECTED);
+            assertThat(publishedEvent.previousStatus()).isEqualTo(Status.PENDING);
         }
 
         @Test
         @Order(4)
-        @DisplayName("이미 거절된 상태면 오류")
+        @DisplayName("이미 거절된 상태면 오류이며 이벤트 미발행")
         void updateStatus_rejected_fail() {
             // given
             UUID userId = UUID.randomUUID();
@@ -382,6 +408,7 @@ class UserServiceTest {
 
             then(userRepository).should(times(1)).findByIdNotDeleted(any());
             then(userRepository).should(never()).update(user);
+            then(userEvents).should(never()).publish(any());
         }
     }
 
@@ -565,6 +592,7 @@ class UserServiceTest {
                 "slack-123",
                 Status.PENDING,
                 UserRole.COMPANY_MANAGER,
+                UUID.randomUUID(),
                 null
         );
     }
@@ -579,6 +607,7 @@ class UserServiceTest {
                 "slack-123",
                 Status.APPROVED,
                 UserRole.COMPANY_MANAGER,
+                UUID.randomUUID(),
                 null
         );
     }
@@ -593,6 +622,7 @@ class UserServiceTest {
                 "slack-123",
                 Status.REJECTED,
                 UserRole.COMPANY_MANAGER,
+                UUID.randomUUID(),
                 null
         );
     }

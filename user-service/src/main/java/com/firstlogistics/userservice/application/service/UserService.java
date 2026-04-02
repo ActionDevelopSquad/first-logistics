@@ -1,23 +1,23 @@
 package com.firstlogistics.userservice.application.service;
 
-import com.firstlogistics.userservice.application.dto.result.TokenInfo;
 import com.firstlogistics.userservice.application.dto.command.LoginCommand;
 import com.firstlogistics.userservice.application.dto.command.UserCreateCommand;
 import com.firstlogistics.userservice.application.dto.command.UserUpdateCommand;
+import com.firstlogistics.userservice.application.dto.result.TokenInfo;
 import com.firstlogistics.userservice.application.dto.result.TokenResult;
-import com.firstlogistics.userservice.application.port.KeycloakTokenService;
 import com.firstlogistics.userservice.application.port.KeycloakService;
+import com.firstlogistics.userservice.application.port.KeycloakTokenService;
+import com.firstlogistics.userservice.application.port.OrganizationValidationService;
 import com.firstlogistics.userservice.domain.entity.User;
 import com.firstlogistics.userservice.domain.enums.Status;
+import com.firstlogistics.userservice.domain.event.UserEvents;
 import com.firstlogistics.userservice.domain.event.UserStatusChangedEvent;
 import com.firstlogistics.userservice.domain.exception.UserErrorCode;
 import com.firstlogistics.userservice.domain.exception.UserException;
 import com.firstlogistics.userservice.domain.repository.UserRepository;
-import com.firstlogistics.userservice.infrastructure.fegin.service.OrganizationValidationService;
 import common.jpa.entity.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,12 +29,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserService {
 
-    private final ApplicationEventPublisher applicationEventPublisher;
-
     private final KeycloakTokenService tokenService;
     private final KeycloakService keycloakService;
     private final OrganizationValidationService organizationValidationService;
     private final UserRepository userRepository;
+    private final UserEvents userEvents;
 
     @Transactional
     public TokenResult login(LoginCommand command) {
@@ -79,7 +78,8 @@ public class UserService {
                     command.phone(),
                     command.email(),
                     command.slackId(),
-                    command.userRole()
+                    command.userRole(),
+                    command.organizationId()
             );
 
             userRepository.save(user);
@@ -93,7 +93,7 @@ public class UserService {
                     log.warn("회원가입 실패로 Keycloak 사용자 삭제 보상 완료. userId={}", userId);
                 } catch (Exception deleteException) {
                     log.error(
-                            "회원가입 실패 후 Keycloak 사용자 삭제 보상 실패. userId={}, originalError={}, deleteError={}",
+                            "회원가입 실패 후 Keycloak 사용자 삭제 보상 실패. 수동 삭제 필요. userId={}, originalError={}, deleteError={}",
                             userId,
                             e.getMessage(),
                             deleteException.getMessage(),
@@ -118,18 +118,15 @@ public class UserService {
     public void updateStatus(UUID userId, Status status) {
         User user = userRepository.findByIdNotDeleted(userId);
 
-        // todo 보상 트랜잭션
         if (status == Status.APPROVED) {
             user.approve();
-            // todo 소속 아이디와 정보들 보내주는 이벤트
         } else {
             user.reject();
-            // todo 소속 아이디와 정보들 보내주는 이벤트
         }
 
-        userRepository.update(user);
+        userEvents.publish(UserStatusChangedEvent.of(user, user.getOrganizationId(), user.getStatus()));
 
-        applicationEventPublisher.publishEvent(UserStatusChangedEvent.of(user, UUID.randomUUID()));
+        userRepository.update(user);
     }
 
     @Transactional
@@ -146,5 +143,17 @@ public class UserService {
         userRepository.delete(userId, deletedUserId);
 
         keycloakService.deleteUser(userId);
+    }
+
+    public TokenResult refresh(String refreshToken) {
+        TokenInfo refresh = tokenService.refresh(refreshToken);
+
+        return new TokenResult(
+                refresh.accessToken(),
+                refresh.expiresIn(),
+                refresh.refreshToken(),
+                refresh.refreshExpiresIn(),
+                refresh.tokenType()
+        );
     }
 }
