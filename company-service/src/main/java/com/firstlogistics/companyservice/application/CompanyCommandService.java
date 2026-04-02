@@ -3,17 +3,20 @@ package com.firstlogistics.companyservice.application;
 import com.firstlogistics.companyservice.application.dto.command.CreateCompanyCommand;
 import com.firstlogistics.companyservice.application.dto.command.UpdateCompanyCommand;
 import com.firstlogistics.companyservice.application.dto.result.CompanyResult;
-import com.firstlogistics.companyservice.application.port.CompanyEventPublisher;
 import com.firstlogistics.companyservice.application.port.HubPort;
 import com.firstlogistics.companyservice.domain.entity.Company;
 import com.firstlogistics.companyservice.domain.entity.CompanyType;
 import com.firstlogistics.companyservice.domain.entity.Receiver;
 import com.firstlogistics.companyservice.domain.entity.Supplier;
+import com.firstlogistics.companyservice.domain.event.CompanyActivatedEvent;
 import com.firstlogistics.companyservice.domain.event.CompanyCreatedEvent;
+import com.firstlogistics.companyservice.domain.event.CompanyDeactivatedEvent;
+import com.firstlogistics.companyservice.domain.event.CompanyDeletedEvent;
 import com.firstlogistics.companyservice.domain.exception.CompanyErrorCode;
 import com.firstlogistics.companyservice.domain.exception.CompanyException;
 import com.firstlogistics.companyservice.domain.repository.CompanyRepository;
 import com.firstlogistics.companyservice.domain.vo.GeoLocation;
+import common.event.Events;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class CompanyCommandService {
     private final CompanyRepository companyRepository;
     private final HubPort hubPort;
-    private final CompanyEventPublisher eventPublisher;
 
     @Transactional
     public CompanyResult register(CreateCompanyCommand command) {
@@ -49,7 +51,7 @@ public class CompanyCommandService {
 
         Company saved = companyRepository.save(company);
 
-        publishEvent(saved);
+        Events.trigger(new CompanyCreatedEvent(saved.getId(), saved.getName()));
 
         return CompanyResult.from(saved);
     }
@@ -76,14 +78,9 @@ public class CompanyCommandService {
 
         company.deactivate();
 
-        return CompanyResult.from(companyRepository.save(company));
-    }
-
-    @Transactional
-    public void delete(UUID companyId, UUID deletedBy) {
-        companyRepository.findById(companyId)
-                .orElseThrow(() -> new CompanyException(CompanyErrorCode.COMPANY_NOT_FOUND));
-        companyRepository.delete(companyId, deletedBy);
+        CompanyResult result = CompanyResult.from(companyRepository.save(company));
+        Events.trigger(new CompanyDeactivatedEvent(companyId));
+        return result;
     }
 
     @Transactional
@@ -93,16 +90,17 @@ public class CompanyCommandService {
 
         company.activate();
 
-        return CompanyResult.from(companyRepository.save(company));
+        CompanyResult result = CompanyResult.from(companyRepository.save(company));
+        Events.trigger(new CompanyActivatedEvent(companyId));
+        return result;
     }
 
-    private void publishEvent(Company company) {
-        eventPublisher.publish(
-                new CompanyCreatedEvent(
-                        company.getId(),
-                        company.getName()
-                )
-        );
+    @Transactional
+    public void delete(UUID companyId, UUID deletedBy) {
+        companyRepository.findById(companyId)
+                .orElseThrow(() -> new CompanyException(CompanyErrorCode.COMPANY_NOT_FOUND));
+        companyRepository.delete(companyId, deletedBy);
+        Events.trigger(new CompanyDeletedEvent(companyId));
     }
 
     private CompanyType resolveCompanyType(String typeStr) {
