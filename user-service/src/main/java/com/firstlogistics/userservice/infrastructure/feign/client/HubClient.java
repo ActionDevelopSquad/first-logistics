@@ -1,4 +1,4 @@
-package com.firstlogistics.userservice.infrastructure.fegin.client;
+package com.firstlogistics.userservice.infrastructure.feign.client;
 
 import common.response.ApiResponse;
 import org.springframework.cloud.openfeign.FeignClient;

@@ -13,7 +13,7 @@ public record UserStatusChangedDlqEvent(
         String originalTopic,
         String errorMessage,
         LocalDateTime failedAt
-) {
+) implements UserEvents {
     public static UserStatusChangedDlqEvent from(
             UserStatusChangedEvent event,
             String originalTopic,

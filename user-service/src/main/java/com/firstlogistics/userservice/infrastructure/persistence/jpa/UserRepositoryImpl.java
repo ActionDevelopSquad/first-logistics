@@ -41,7 +41,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User update(User user) {
-        UserJpaEntity existing = jpaUserRepository.findById(user.getId())
+        UserJpaEntity existing = jpaUserRepository.findByIdAndDeletedAtIsNull(user.getId())
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
         existing.update(user);

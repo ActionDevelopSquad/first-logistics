@@ -12,14 +12,17 @@ import com.firstlogistics.userservice.application.port.KeycloakTokenService;
 import com.firstlogistics.userservice.application.port.OrganizationValidationService;
 import com.firstlogistics.userservice.domain.entity.User;
 import com.firstlogistics.userservice.domain.enums.Status;
-import com.firstlogistics.userservice.domain.event.UserEvents;
+import com.firstlogistics.userservice.domain.event.DomainEvent;
 import com.firstlogistics.userservice.domain.event.UserStatusChangedEvent;
 import com.firstlogistics.userservice.domain.exception.UserErrorCode;
 import com.firstlogistics.userservice.domain.exception.UserException;
+import com.firstlogistics.userservice.domain.repository.UserQueryRepository;
 import com.firstlogistics.userservice.domain.repository.UserRepository;
 import common.jpa.entity.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,8 +37,10 @@ public class UserService {
     private final KeycloakTokenService tokenService;
     private final KeycloakService keycloakService;
     private final OrganizationValidationService organizationValidationService;
+
     private final UserRepository userRepository;
-    private final UserEvents userEvents;
+    private final UserQueryRepository userQueryRepository;
+    private final DomainEvent event;
 
     @Transactional
     public TokenResult login(LoginCommand command) {
@@ -117,18 +122,24 @@ public class UserService {
     }
 
     @Transactional
-    public void updateStatus(UUID userId, Status status) {
-        User user = userRepository.findByIdNotDeleted(userId);
+    public void updateStatus(UUID userId, Status status, UUID loginId) {
+        User targetUser = userRepository.findByIdNotDeleted(userId);
+        User loginUser = userRepository.findByIdNotDeleted(loginId);
 
-        if (status == Status.APPROVED) {
-            user.approve();
-        } else {
-            user.reject();
+        // HUB_MANAGER일 경우 targetUser의 소속이 본인이 속한 허브인지 확인
+        if (!loginUser.canManage(targetUser)) {
+            throw new UserException(UserErrorCode.FORBIDDEN);
         }
 
-        userEvents.publish(UserStatusChangedEvent.of(user, user.getOrganizationId(), user.getStatus()));
+        if (status == Status.APPROVED) {
+            targetUser.approve();
+        } else {
+            targetUser.reject();
+        }
 
-        userRepository.update(user);
+        event.publish(UserStatusChangedEvent.of(targetUser, targetUser.getOrganizationId(), targetUser.getStatus()));
+
+        userRepository.update(targetUser);
     }
 
     @Transactional
@@ -168,7 +179,9 @@ public class UserService {
         return UserResult.from(userRepository.findByIdNotDeleted(userId));
     }
 
-    public UserResult getUsers(UserGetQuery query) {
-        return null;
+    public Page<UserResult> getUsers(UserGetQuery query, Pageable pageable) {
+        UserGetQuery spec = query.toSpec();
+
+        return userQueryRepository.getUsers(spec, pageable);
     }
 }

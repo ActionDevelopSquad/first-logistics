@@ -9,7 +9,7 @@ import com.firstlogistics.userservice.application.port.KeycloakService;
 import com.firstlogistics.userservice.application.port.KeycloakTokenService;
 import com.firstlogistics.userservice.domain.entity.User;
 import com.firstlogistics.userservice.domain.enums.Status;
-import com.firstlogistics.userservice.domain.event.UserEvents;
+import com.firstlogistics.userservice.domain.event.DomainEvent;
 import com.firstlogistics.userservice.domain.event.UserStatusChangedEvent;
 import com.firstlogistics.userservice.domain.exception.UserErrorCode;
 import com.firstlogistics.userservice.domain.exception.UserException;
@@ -47,7 +47,7 @@ class UserServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private UserEvents userEvents;
+    private DomainEvent event;
 
     @InjectMocks
     private UserService userService;
@@ -319,20 +319,21 @@ class UserServiceTest {
         void updateStatus_approve() {
             // given
             UUID userId = UUID.randomUUID();
+            UUID loginId = UUID.randomUUID();
             User user = pendingUser();
 
-            given(userRepository.findByIdNotDeleted(userId)).willReturn(user);
+            given(userRepository.findByIdNotDeleted(loginId)).willReturn(user);
 
             // when
-            userService.updateStatus(userId, Status.APPROVED);
+            userService.updateStatus(loginId, Status.APPROVED, loginId);
 
             // then
             assertThat(user.getStatus()).isEqualTo(Status.APPROVED);
-            then(userRepository).should(times(1)).findByIdNotDeleted(userId);
+            then(userRepository).should(times(1)).findByIdNotDeleted(loginId);
             then(userRepository).should(times(1)).update(user);
 
             ArgumentCaptor<UserStatusChangedEvent> eventCaptor = ArgumentCaptor.forClass(UserStatusChangedEvent.class);
-            then(userEvents).should(times(1)).publish(eventCaptor.capture());
+            then(event).should(times(1)).publish(eventCaptor.capture());
 
             UserStatusChangedEvent publishedEvent = eventCaptor.getValue();
             assertThat(publishedEvent.userId()).isEqualTo(user.getId());
@@ -348,18 +349,19 @@ class UserServiceTest {
         void updateStatus_approve_fail() {
             // given
             UUID userId = UUID.randomUUID();
+            UUID loginId = UUID.randomUUID();
             User user = approvedUser();
 
             given(userRepository.findByIdNotDeleted(userId)).willReturn(user);
 
             // when & then
-            assertThatThrownBy(() -> userService.updateStatus(userId, Status.APPROVED))
+            assertThatThrownBy(() -> userService.updateStatus(userId, Status.APPROVED, loginId))
                     .isInstanceOf(UserException.class)
                     .hasMessageContaining(UserErrorCode.ALREADY_APPROVE.getMessage());
 
             then(userRepository).should(times(1)).findByIdNotDeleted(any());
             then(userRepository).should(never()).update(any());
-            then(userEvents).should(never()).publish(any());
+            then(event).should(never()).publish(any());
         }
 
         @Test
@@ -368,12 +370,13 @@ class UserServiceTest {
         void updateStatus_rejected() {
             // given
             UUID userId = UUID.randomUUID();
+            UUID loginId = UUID.randomUUID();
             User user = pendingUser();
 
             given(userRepository.findByIdNotDeleted(userId)).willReturn(user);
 
             // when
-            userService.updateStatus(userId, Status.REJECTED);
+            userService.updateStatus(userId, Status.REJECTED, loginId);
 
             // then
             assertThat(user.getStatus()).isEqualTo(Status.REJECTED);
@@ -381,7 +384,7 @@ class UserServiceTest {
             then(userRepository).should(times(1)).update(user);
 
             ArgumentCaptor<UserStatusChangedEvent> eventCaptor = ArgumentCaptor.forClass(UserStatusChangedEvent.class);
-            then(userEvents).should(times(1)).publish(eventCaptor.capture());
+            then(event).should(times(1)).publish(eventCaptor.capture());
 
             UserStatusChangedEvent publishedEvent = eventCaptor.getValue();
             assertThat(publishedEvent.userId()).isEqualTo(user.getId());
@@ -397,18 +400,19 @@ class UserServiceTest {
         void updateStatus_rejected_fail() {
             // given
             UUID userId = UUID.randomUUID();
+            UUID loginId = UUID.randomUUID();
             User user = rejectedUser();
 
             given(userRepository.findByIdNotDeleted(userId)).willReturn(user);
 
             // when & then
-            assertThatThrownBy(() -> userService.updateStatus(userId, Status.REJECTED))
+            assertThatThrownBy(() -> userService.updateStatus(userId, Status.REJECTED, loginId))
                     .isInstanceOf(UserException.class)
                     .hasMessageContaining(UserErrorCode.ALREADY_REJECTED.getMessage());
 
             then(userRepository).should(times(1)).findByIdNotDeleted(any());
             then(userRepository).should(never()).update(user);
-            then(userEvents).should(never()).publish(any());
+            then(event).should(never()).publish(any());
         }
     }
 

@@ -1,7 +1,6 @@
 package com.firstlogistics.userservice.domain.entity;
 
 import com.firstlogistics.userservice.domain.enums.Status;
-import com.firstlogistics.userservice.domain.event.UserEvents;
 import com.firstlogistics.userservice.domain.exception.UserErrorCode;
 import com.firstlogistics.userservice.domain.exception.UserException;
 import common.jpa.entity.enums.UserRole;
@@ -9,7 +8,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.UUID;
@@ -22,9 +20,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("User 도메인 단위 테스트")
 class UserTest {
-
-    @Mock
-    private UserEvents userEvents;
 
     @Nested
     @DisplayName("canLogin")

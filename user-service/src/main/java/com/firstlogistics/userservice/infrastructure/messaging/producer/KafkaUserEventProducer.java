@@ -47,11 +47,12 @@ public class KafkaUserEventProducer {
     }
 
     private void publishDlq(UserStatusChangedEvent event, Throwable ex, String topic) {
-        kafkaTemplate.send(topic + ".dlq", event.userId().toString(), event)
+        UserStatusChangedDlqEvent dlqEvent = UserStatusChangedDlqEvent.from(event, topic, ex);
+        kafkaTemplate.send(topic + ".dlq", event.userId().toString(), dlqEvent)
                 .whenComplete((dlqResult, dlqEx) -> {
                     if (dlqEx != null) {
                         log.error("DLQ 발행이 실패했습니다. 수동 처리가 필요합니다. DLQ_Topic={}, userId={}", topic + ".dlq", event.userId(), dlqEx);
-                        dlqAlert.alertStatus(UserStatusChangedDlqEvent.from(event, topic, ex));
+                        dlqAlert.alertStatus(dlqEvent);
 
                         return;
                     }

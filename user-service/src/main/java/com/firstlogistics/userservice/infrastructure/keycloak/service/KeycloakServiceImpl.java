@@ -47,8 +47,16 @@ public class KeycloakServiceImpl implements KeycloakService {
             setPassword(command, usersResource, userId);
             // 권한 부여
             assignRole(command, usersResource, userId);
+
         } catch (Exception e) {
             log.warn("비밀번호 or 권한 설정 중 오류 발생. userId={}", userId);
+
+            try {
+                usersResource.get(userId).remove();
+
+            } catch (Exception cleanupEx) {
+                log.error("부분 생성된 Keycloak 사용자 정리에 실패했습니다. userId={}", userId, cleanupEx);
+            }
             throw e;
         }
 
@@ -87,8 +95,10 @@ public class KeycloakServiceImpl implements KeycloakService {
 
         Map<String, List<String>> attributes = Objects.requireNonNullElseGet(user.getAttributes(), HashMap::new);
 
-        if (StringUtils.hasText(command.phone())) {
+        if (StringUtils.hasText(command.phone()) ) {
             attributes.put("phone", List.of(command.phone()));
+        }
+        if (StringUtils.hasText(command.phone()) ) {
             attributes.put("slackId", List.of(command.slackId()));
         }
 

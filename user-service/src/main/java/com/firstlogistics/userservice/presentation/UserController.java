@@ -10,10 +10,13 @@ import com.firstlogistics.userservice.application.service.UserService;
 import com.firstlogistics.userservice.presentation.dto.request.*;
 import com.firstlogistics.userservice.presentation.dto.response.TokenResponse;
 import com.firstlogistics.userservice.presentation.dto.response.UserIdResponse;
+import com.firstlogistics.userservice.presentation.dto.response.UserListResponse;
 import com.firstlogistics.userservice.presentation.dto.response.UserResponse;
 import common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,7 +35,7 @@ public class UserController {
      */
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<TokenResponse>> login(@Valid @RequestBody LoginRequest request) {
-        TokenResult tokenResult = userService.login(new LoginCommand(request.username().trim(), request.password().trim()));
+        TokenResult tokenResult = userService.login(new LoginCommand(request.username().trim(), request.password()));
 
         TokenResponse tokenResponse = TokenResponse.from(tokenResult);
 
@@ -89,8 +92,13 @@ public class UserController {
      * Role : MASTER, HUB_MANAGER
      */
     @PatchMapping("/{userId}/status")
-    public ResponseEntity<ApiResponse<UserIdResponse>> updateStatus(@PathVariable("userId") UUID userId, @RequestBody UpdateStatusRequest request) {
-        userService.updateStatus(userId, request.status());
+    public ResponseEntity<ApiResponse<UserIdResponse>> updateStatus(
+            @PathVariable("userId") UUID userId,
+            @RequestBody UpdateStatusRequest request,
+            @RequestHeader("X-User-Id") UUID loginId
+    )
+    {
+        userService.updateStatus(userId, request.status(), loginId);
 
         return ResponseEntity
                 .status(UserSuccessCode.STATUS_UPDATED.getStatus())
@@ -182,8 +190,8 @@ public class UserController {
         UserResponse response = UserResponse.from(result);
 
         return ResponseEntity
-                .status(UserSuccessCode.GET_USERS.getStatus())
-                .body(ApiResponse.success(UserSuccessCode.GET_USERS, response));
+                .status(UserSuccessCode.GET_USER.getStatus())
+                .body(ApiResponse.success(UserSuccessCode.GET_USER, response));
     }
 
     /**
@@ -192,11 +200,11 @@ public class UserController {
      * Role : MASTER
      */
     @GetMapping()
-    public ResponseEntity<ApiResponse<UserResponse>> getUsers(@ModelAttribute UsersGetRequest request) {
+    public ResponseEntity<ApiResponse<UserResponse>> getUsers(@ModelAttribute UsersGetRequest request, Pageable pageable) {
         UserGetQuery query = request.toQuery();
-        UserResult result = userService.getUsers(query);
+        Page<UserResult> result = userService.getUsers(query, pageable);
 
-        UserResponse response = UserResponse.from(result);
+        UserListResponse response = new UserListResponse(result);
 
         return ResponseEntity
                 .status(UserSuccessCode.GET_USERS.getStatus())

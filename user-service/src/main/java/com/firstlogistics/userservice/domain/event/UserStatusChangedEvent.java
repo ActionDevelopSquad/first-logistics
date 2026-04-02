@@ -17,7 +17,8 @@ public record UserStatusChangedEvent(
         String email,
         String phone,
         String slackId
-) {
+) implements UserEvents
+{
     public static UserStatusChangedEvent of(User user, UUID organizationId, Status previousStatus) {
         return new UserStatusChangedEvent(
                 user.getId(),

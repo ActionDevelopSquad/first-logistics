@@ -78,10 +78,19 @@ public class User {
         this.status = Status.REJECTED;
     }
 
-    public void rollbackStatus() {
-        if (this.status == Status.PENDING) {
-            return;
+    public boolean canManage(User targetUser) {
+        if (this.userRole == UserRole.MASTER) {
+            return true;
         }
+
+        if (this.userRole == UserRole.HUB_MANAGER) {
+            return this.organizationId != null && this.organizationId.equals(targetUser.getOrganizationId());
+        }
+
+        return false;
+    }
+
+    public void rollbackStatus() {
         this.status = Status.PENDING;
     }
 
