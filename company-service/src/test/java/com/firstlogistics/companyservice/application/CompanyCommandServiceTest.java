@@ -16,7 +16,6 @@ import com.firstlogistics.companyservice.domain.entity.Company;
 import com.firstlogistics.companyservice.domain.entity.Supplier;
 import com.firstlogistics.companyservice.domain.enums.CompanyStatus;
 import com.firstlogistics.companyservice.domain.event.CompanyActivatedEvent;
-import com.firstlogistics.companyservice.domain.event.CompanyCreatedEvent;
 import com.firstlogistics.companyservice.domain.event.CompanyDeactivatedEvent;
 import com.firstlogistics.companyservice.domain.event.CompanyDeletedEvent;
 import com.firstlogistics.companyservice.domain.exception.CompanyErrorCode;
@@ -99,22 +98,6 @@ class CompanyCommandServiceTest {
             assertThat(result.name()).isEqualTo("테스트업체");
             assertThat(result.type()).isEqualTo("SUPPLIER");
             assertThat(result.status()).isEqualTo(CompanyStatus.ACTIVE.name());
-        }
-
-        @Test
-        @DisplayName("저장 후 CompanyCreatedEvent가 발행된다")
-        void register_publishesEvent() {
-            // given
-            given(hubPort.getHubId(any(GeoLocation.class)))
-                    .willReturn(FIXED_HUB_ID);
-            given(companyRepository.save(any()))
-                    .willAnswer(invocation -> invocation.getArgument(0));
-
-            // when
-            companyCommandService.register(validCommand);
-
-            // then
-            verify(applicationEventPublisher).publishEvent(any(CompanyCreatedEvent.class));
         }
 
         @Test

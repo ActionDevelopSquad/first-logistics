@@ -9,7 +9,6 @@ import com.firstlogistics.companyservice.domain.entity.CompanyType;
 import com.firstlogistics.companyservice.domain.entity.Receiver;
 import com.firstlogistics.companyservice.domain.entity.Supplier;
 import com.firstlogistics.companyservice.domain.event.CompanyActivatedEvent;
-import com.firstlogistics.companyservice.domain.event.CompanyCreatedEvent;
 import com.firstlogistics.companyservice.domain.event.CompanyDeactivatedEvent;
 import com.firstlogistics.companyservice.domain.event.CompanyDeletedEvent;
 import com.firstlogistics.companyservice.domain.exception.CompanyErrorCode;
@@ -50,8 +49,6 @@ public class CompanyCommandService {
         );
 
         Company saved = companyRepository.save(company);
-
-        Events.trigger(new CompanyCreatedEvent(saved.getId(), saved.getName()));
 
         return CompanyResult.from(saved);
     }

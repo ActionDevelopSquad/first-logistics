@@ -1,7 +1,6 @@
 package com.firstlogistics.companyservice.infrastructure.messaging;
 
 import com.firstlogistics.companyservice.domain.event.CompanyActivatedEvent;
-import com.firstlogistics.companyservice.domain.event.CompanyCreatedEvent;
 import com.firstlogistics.companyservice.domain.event.CompanyDeactivatedEvent;
 import com.firstlogistics.companyservice.domain.event.CompanyDeletedEvent;
 import org.junit.jupiter.api.DisplayName;
@@ -24,20 +23,6 @@ class CompanyEventKafkaProducerTest {
 
     @InjectMocks
     private CompanyEventKafkaProducer companyEventKafkaProducer;
-
-    @Test
-    @DisplayName("CompanyCreatedEvent를 Kafka 토픽으로 발행한다")
-    void handle_companyCreated_sendsToKafka() {
-        // given
-        UUID companyId = UUID.randomUUID();
-        CompanyCreatedEvent event = new CompanyCreatedEvent(companyId, "테스트업체");
-
-        // when
-        companyEventKafkaProducer.handle(event);
-
-        // then
-        verify(kafkaTemplate).send("company.registered", companyId.toString(), event);
-    }
 
     @Test
     @DisplayName("CompanyActivatedEvent를 Kafka 토픽으로 발행한다")
