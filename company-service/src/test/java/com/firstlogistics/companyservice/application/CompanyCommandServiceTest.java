@@ -11,26 +11,29 @@ import static org.mockito.Mockito.verify;
 import com.firstlogistics.companyservice.application.dto.command.CreateCompanyCommand;
 import com.firstlogistics.companyservice.application.dto.command.UpdateCompanyCommand;
 import com.firstlogistics.companyservice.application.dto.result.CompanyResult;
-import com.firstlogistics.companyservice.application.port.CompanyEventPublisher;
 import com.firstlogistics.companyservice.application.port.HubPort;
 import com.firstlogistics.companyservice.domain.entity.Company;
 import com.firstlogistics.companyservice.domain.entity.Supplier;
 import com.firstlogistics.companyservice.domain.enums.CompanyStatus;
+import com.firstlogistics.companyservice.domain.event.CompanyActivatedEvent;
 import com.firstlogistics.companyservice.domain.event.CompanyCreatedEvent;
+import com.firstlogistics.companyservice.domain.event.CompanyDeactivatedEvent;
+import com.firstlogistics.companyservice.domain.event.CompanyDeletedEvent;
 import com.firstlogistics.companyservice.domain.exception.CompanyErrorCode;
 import com.firstlogistics.companyservice.domain.exception.CompanyException;
 import com.firstlogistics.companyservice.domain.repository.CompanyRepository;
 import com.firstlogistics.companyservice.domain.vo.CompanyAddress;
 import com.firstlogistics.companyservice.domain.vo.GeoLocation;
+import common.event.Events;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -45,7 +48,7 @@ class CompanyCommandServiceTest {
     private HubPort hubPort;
 
     @Mock
-    private CompanyEventPublisher eventPublisher;
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @InjectMocks
     private CompanyCommandService companyCommandService;
@@ -53,6 +56,11 @@ class CompanyCommandServiceTest {
     private static final UUID FIXED_HUB_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID FIXED_MANAGER_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
     private static final UUID FIXED_COMPANY_ID = UUID.fromString("00000000-0000-0000-0000-000000000003");
+
+    @BeforeEach
+    void initEvents() {
+        new Events().init(applicationEventPublisher);
+    }
 
     @Nested
     @DisplayName("업체 생성 (register)")
@@ -102,16 +110,11 @@ class CompanyCommandServiceTest {
             given(companyRepository.save(any()))
                     .willAnswer(invocation -> invocation.getArgument(0));
 
-            ArgumentCaptor<CompanyCreatedEvent> eventCaptor = ArgumentCaptor.forClass(CompanyCreatedEvent.class);
-
             // when
-            CompanyResult result = companyCommandService.register(validCommand);
+            companyCommandService.register(validCommand);
 
             // then
-            verify(eventPublisher).publish(eventCaptor.capture());
-            CompanyCreatedEvent publishedEvent = eventCaptor.getValue();
-            assertThat(publishedEvent.companyId()).isEqualTo(result.id());
-            assertThat(publishedEvent.companyName()).isEqualTo("테스트업체");
+            verify(applicationEventPublisher).publishEvent(any(CompanyCreatedEvent.class));
         }
 
         @Test
@@ -295,6 +298,7 @@ class CompanyCommandServiceTest {
 
             // then
             verify(companyRepository).delete(FIXED_COMPANY_ID, FIXED_DELETED_BY);
+            verify(applicationEventPublisher).publishEvent(any(CompanyDeletedEvent.class));
         }
 
         @Test
@@ -341,6 +345,7 @@ class CompanyCommandServiceTest {
 
             // then
             assertThat(result.status()).isEqualTo(CompanyStatus.INACTIVE.name());
+            verify(applicationEventPublisher).publishEvent(any(CompanyDeactivatedEvent.class));
         }
 
         @Test
@@ -406,6 +411,7 @@ class CompanyCommandServiceTest {
 
             // then
             assertThat(result.status()).isEqualTo(CompanyStatus.ACTIVE.name());
+            verify(applicationEventPublisher).publishEvent(any(CompanyActivatedEvent.class));
         }
 
         @Test
