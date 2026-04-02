@@ -48,11 +48,11 @@ public class OrderEventKafkaProducer implements OrderEventProducer {
         orderKafkaTemplate.send(topic, key, event)
                 .whenComplete((result, ex) -> {
                     if (ex != null) {
-                        log.error("이벤트 발행 실패 - topic: {}, orderId: {}", topic, orderId, ex);
+                        log.error("[Kafka] Failed to send: topic={}, orderId={}, error={}",
+                                topic, orderId, ex.getMessage(), ex);
                     } else {
-                        log.info("이벤트 발행 성공 - topic: {}, orderId: {}, partition: {}, offset: {}",
-                                topic,
-                                orderId,
+                        log.info("[Kafka] Sent: topic={}, orderId={}, partition={}, offset={}",
+                                topic, orderId,
                                 result.getRecordMetadata().partition(),
                                 result.getRecordMetadata().offset());
                     }
