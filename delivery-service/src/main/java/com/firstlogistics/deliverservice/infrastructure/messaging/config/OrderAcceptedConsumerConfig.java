@@ -1,5 +1,6 @@
 package com.firstlogistics.deliverservice.infrastructure.messaging.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryCreationException;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.exception.DistributedLockException;
@@ -22,10 +23,11 @@ import org.springframework.util.backoff.FixedBackOff;
 public class OrderAcceptedConsumerConfig {
 
 	private final KafkaConsumerConfig kafkaConsumerConfig;
+	private final ObjectMapper objectMapper;
 
 	@Bean
 	public ConsumerFactory<String, OrderAcceptedEvent> orderAcceptedConsumerFactory() {
-		JsonDeserializer<OrderAcceptedEvent> deserializer = new JsonDeserializer<>(OrderAcceptedEvent.class);
+		JsonDeserializer<OrderAcceptedEvent> deserializer = new JsonDeserializer<>(OrderAcceptedEvent.class, objectMapper);
 		deserializer.addTrustedPackages("*");
 		deserializer.setUseTypeHeaders(false);
 		return new DefaultKafkaConsumerFactory<>(kafkaConsumerConfig.commonConsumerProps(), new StringDeserializer(), deserializer);
