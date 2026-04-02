@@ -29,7 +29,9 @@ public enum OrderErrorCode implements ErrorCode {
     SUPPLIER_MANAGER_REQUIRED(HttpStatus.BAD_REQUEST, "ORD015", "공급 담당자 ID는 필수 항목입니다."),
     RECEIVER_COMPANY_REQUIRED(HttpStatus.BAD_REQUEST, "ORD016", "수신 업체 ID는 필수 항목입니다."),
     RECEIVER_MANAGER_REQUIRED(HttpStatus.BAD_REQUEST, "ORD017", "수신 담당자 ID는 필수 항목입니다."),
-    INVALID_ORDER_ID(HttpStatus.BAD_REQUEST, "ORD018", "유효하지 않은 주문 ID 입니다.");;
+    INVALID_ORDER_ID(HttpStatus.BAD_REQUEST, "ORD018", "유효하지 않은 주문 ID 입니다."),
+    ALREADY_ACCEPTED(HttpStatus.BAD_REQUEST, "ORD019", "이미 승인된 주문입니다."),
+    ALREADY_CANCELLED(HttpStatus.BAD_REQUEST, "ORD020", "이미 취소된 주문입니다.");
 
     private final HttpStatus status;
     private final String code;

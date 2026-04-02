@@ -167,6 +167,11 @@ public class Order {
 
     public void accept() {
         // TODO: 공급 업체 담당자 or 관리자 권한 검증
+
+        if (this.status == OrderStatus.ACCEPTED) {
+            throw new OrderException(OrderErrorCode.ALREADY_ACCEPTED);
+        }
+
         this.status.validateNext(OrderStatus.ACCEPTED);
         this.status = OrderStatus.ACCEPTED;
     }
@@ -198,6 +203,12 @@ public class Order {
 
     // 주문 취소 / 거절 / 취소 요청 승인 (나중에 필요하면 분리)
     public void cancel() {
+        // TODO: 권한 검증
+
+        if (this.status == OrderStatus.CANCELLED) {
+            throw new OrderException(OrderErrorCode.ALREADY_CANCELLED);
+        }
+
         this.status.validateNext(OrderStatus.CANCELLED);
         this.status = OrderStatus.CANCELLED;
         this.previousStatus = null; // 취소 요청이었다면 이전 상태 초기화
