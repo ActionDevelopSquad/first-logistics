@@ -322,10 +322,10 @@ class UserServiceTest {
             UUID loginId = UUID.randomUUID();
             User user = pendingUser();
 
-            given(userRepository.findByIdNotDeleted(loginId)).willReturn(user);
+            given(userRepository.findByIdNotDeleted(userId)).willReturn(user);
 
             // when
-            userService.updateStatus(loginId, Status.APPROVED, loginId);
+            userService.updateStatus(userId, Status.APPROVED, loginId);
 
             // then
             assertThat(user.getStatus()).isEqualTo(Status.APPROVED);

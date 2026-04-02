@@ -3,20 +3,16 @@ package com.firstlogistics.userservice.presentation;
 import com.firstlogistics.userservice.application.dto.command.LoginCommand;
 import com.firstlogistics.userservice.application.dto.command.UserCreateCommand;
 import com.firstlogistics.userservice.application.dto.command.UserUpdateCommand;
-import com.firstlogistics.userservice.application.dto.query.UserGetQuery;
 import com.firstlogistics.userservice.application.dto.result.TokenResult;
 import com.firstlogistics.userservice.application.dto.result.UserResult;
 import com.firstlogistics.userservice.application.service.UserService;
 import com.firstlogistics.userservice.presentation.dto.request.*;
 import com.firstlogistics.userservice.presentation.dto.response.TokenResponse;
 import com.firstlogistics.userservice.presentation.dto.response.UserIdResponse;
-import com.firstlogistics.userservice.presentation.dto.response.UserListResponse;
 import com.firstlogistics.userservice.presentation.dto.response.UserResponse;
 import common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -152,7 +148,7 @@ public class UserController {
      * 엑세스 토큰 재발급
      * POST /api/v1/users/refresh
      */
-    @GetMapping("/refresh")
+    @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<TokenResponse>> refresh(@RequestHeader("X-Refresh-Token") String refreshToken) {
         TokenResult refresh = userService.refresh(refreshToken);
 
@@ -184,8 +180,8 @@ public class UserController {
      * GET /api/v1/users/me
      */
     @GetMapping("/me")
-    public ResponseEntity<ApiResponse<UserResponse>> getMyPage(@RequestHeader("X-User-Id") String userId) {
-        UserResult result = userService.getMyPage(UUID.fromString(userId));
+    public ResponseEntity<ApiResponse<UserResponse>> getMyPage(@RequestHeader("X-User-Id") UUID userId) {
+        UserResult result = userService.getMyPage(userId);
 
         UserResponse response = UserResponse.from(result);
 
@@ -199,16 +195,16 @@ public class UserController {
      * GET /api/v1/users
      * Role : MASTER
      */
-    @GetMapping()
-    public ResponseEntity<ApiResponse<UserResponse>> getUsers(@ModelAttribute UsersGetRequest request, Pageable pageable) {
-        UserGetQuery query = request.toQuery();
-        Page<UserResult> result = userService.getUsers(query, pageable);
-
-        UserListResponse response = new UserListResponse(result);
-
-        return ResponseEntity
-                .status(UserSuccessCode.GET_USERS.getStatus())
-                .body(ApiResponse.success(UserSuccessCode.GET_USERS, response));
-    }
+//    @GetMapping()
+//    public ResponseEntity<ApiResponse<UserResponse>> getUsers(@ModelAttribute UsersGetRequest request, Pageable pageable) {
+//        UserGetQuery query = request.toQuery();
+//        Page<UserResult> result = userService.getUsers(query, pageable);
+//
+//        UserListResponse response = new UserListResponse(result);
+//
+//        return ResponseEntity
+//                .status(UserSuccessCode.GET_USERS.getStatus())
+//                .body(ApiResponse.success(UserSuccessCode.GET_USERS, response));
+//    }
 
 }

@@ -21,7 +21,7 @@ public class KafkaUserEventDlqConsumer {
                     "user.delivery.status.changed.dlq"
             },
             groupId = "user-status-dlq-handler",
-            containerFactory = "userListenerContainerFactory"
+            containerFactory = "userConsumerFactory"
     )
     public void consume(UserStatusChangedDlqEvent event, Acknowledgment ack) {
         log.error("DLQ 메시지 수신 userId={}, failedAt={}",
