@@ -1,20 +1,21 @@
 package com.firstlogistics.hubservice.hub.application;
 
+import com.firstlogistics.hubservice.hub.application.dto.query.GetHubsQuery;
 import com.firstlogistics.hubservice.hub.application.dto.query.SearchHubsQuery;
 import com.firstlogistics.hubservice.hub.application.dto.result.HubDetailsResult;
-import com.firstlogistics.hubservice.hub.application.dto.result.SearchHubResult;
+import com.firstlogistics.hubservice.hub.application.dto.result.HubSummaryResult;
 import com.firstlogistics.hubservice.hub.domain.exception.HubErrorCode;
 import com.firstlogistics.hubservice.hub.domain.exception.HubException;
 import com.firstlogistics.hubservice.hub.domain.repository.HubQueryRepository;
 import com.firstlogistics.hubservice.hub.domain.repository.dto.HubDetailsDto;
-import com.firstlogistics.hubservice.hub.domain.repository.dto.HubPageDto;
+import com.firstlogistics.hubservice.hub.domain.repository.dto.HubSummaryDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -32,9 +33,16 @@ public class HubQueryService {
         return HubDetailsResult.from(hub);
     }
 
-    public Page<SearchHubResult> searchHubs(SearchHubsQuery query, Pageable pageable){
-        Page<HubPageDto> hubs = repository.searchByCondition(query.toDto(),pageable);
-        return hubs.map(SearchHubResult::from);
+    public Page<HubSummaryResult> searchHubs(SearchHubsQuery query, Pageable pageable){
+        Page<HubSummaryDto> hubs = repository.searchByCondition(query.toDto(),pageable);
+        return hubs.map(HubSummaryResult::from);
+    }
+
+    public List<HubSummaryResult> getHubsByIds(GetHubsQuery query){
+        List<HubSummaryDto> hubs = repository.findAllByIds(query.toSpec());
+        return sortByRequestOrder(hubs,query.ids())
+                .stream()
+                .map(HubSummaryResult::from).toList();
     }
 
     public UUID getNearestHub(double latitude, double longitude){
@@ -45,5 +53,15 @@ public class HubQueryService {
     private  void validateServiceArea(double latitude, double longitude){
         if(latitude< MIN_KOREA_LATITUDE || latitude >MAX_KOREA_LATITUDE || longitude <MIN_KOREA_LONGITUDE || longitude > MAX_KOREA_LONGITUDE)
             throw new HubException(HubErrorCode.INVALID_SERVICE_AREA);
+    }
+    private List<HubSummaryDto> sortByRequestOrder(List<HubSummaryDto> hubs, List<UUID> ids ){
+        Map<UUID,Integer> orderMap = new HashMap<>();
+        for(int i =0;i<ids.size();i++){
+            orderMap.put(ids.get(i),i);
+        }
+
+        return hubs.stream()
+                .sorted(Comparator.comparing(hub -> orderMap.get(hub.hubId())))
+                .toList();
     }
 }

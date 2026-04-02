@@ -1,13 +1,13 @@
 package com.firstlogistics.hubservice.hub.presentation.dto.response;
 
-import com.firstlogistics.hubservice.hub.application.dto.result.SearchHubResult;
+import com.firstlogistics.hubservice.hub.application.dto.result.HubSummaryResult;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
 import java.util.UUID;
 
 public record HubPageResponse(
-        List<HubSummary> content,
+        List<HubSummaryResponse> content,
         int page,
         int size,
         long totalElements,
@@ -16,9 +16,9 @@ public record HubPageResponse(
         boolean last,
         boolean empty
 ) {
-    public static HubPageResponse from(Page<SearchHubResult> page){
+    public static HubPageResponse from(Page<HubSummaryResult> page){
         return new HubPageResponse(
-                page.getContent().stream().map(HubSummary::from).toList(),
+                page.getContent().stream().map(HubSummaryResponse::from).toList(),
                 page.getNumber(),
                 page.getSize(),
                 page.getTotalElements(),
@@ -27,20 +27,5 @@ public record HubPageResponse(
                 page.isLast(),
                 page.isEmpty()
         );
-    }
-
-
-    public record HubSummary(
-            UUID hubId,
-            String name,
-            String status
-    ){
-        public static HubSummary from(SearchHubResult result){
-            return new HubSummary(
-                    result.hubId(),
-                    result.name(),
-                    result.status().name()
-            );
-        }
     }
 }

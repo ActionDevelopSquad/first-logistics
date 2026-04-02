@@ -4,9 +4,10 @@ import com.firstlogistics.hubservice.hub.domain.enums.HubStatus;
 
 import java.util.UUID;
 
-public record HubPageDto(
+public record HubSummaryDto(
         UUID hubId,
         String name,
+        String roadAddress,
         HubStatus status
 ) {
 }

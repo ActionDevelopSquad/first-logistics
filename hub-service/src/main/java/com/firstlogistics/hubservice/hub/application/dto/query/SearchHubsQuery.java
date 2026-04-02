@@ -11,8 +11,8 @@ public record SearchHubsQuery(
     Double latitude,
     Double longitude
 ) {
-    public SearchHubsQuery(String name, String status, Double latitude, Double longitude){
-        this(name, parseStatus(status), latitude, longitude);
+    public SearchHubsQuery( String name, String status, Double latitude, Double longitude){
+        this( name, parseStatus(status), latitude, longitude);
         if((latitude== null) != (longitude == null))
             throw new HubException(HubErrorCode.INVALID_HUB_SEARCH_COORDINATE);
     }

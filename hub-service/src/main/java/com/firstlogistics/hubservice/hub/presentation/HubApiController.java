@@ -2,19 +2,15 @@ package com.firstlogistics.hubservice.hub.presentation;
 
 import com.firstlogistics.hubservice.hub.application.HubCommandService;
 import com.firstlogistics.hubservice.hub.application.HubQueryService;
-import com.firstlogistics.hubservice.hub.application.dto.result.SearchHubResult;
 import com.firstlogistics.hubservice.hub.presentation.dto.request.CreateHubRequest;
+import com.firstlogistics.hubservice.hub.presentation.dto.request.GetHubsByIdsRequest;
 import com.firstlogistics.hubservice.hub.presentation.dto.request.SearchHubsRequest;
-import com.firstlogistics.hubservice.hub.presentation.dto.response.HubDetailResponse;
-import com.firstlogistics.hubservice.hub.presentation.dto.response.HubPageResponse;
-import com.firstlogistics.hubservice.hub.presentation.dto.response.HubResponse;
-import com.firstlogistics.hubservice.hub.presentation.dto.response.NearestHubResponse;
+import com.firstlogistics.hubservice.hub.presentation.dto.response.*;
 import common.response.ApiResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
@@ -54,6 +50,15 @@ public class HubApiController {
             @PageableDefault Pageable pageable
             ){
         HubPageResponse response = HubPageResponse.from(hubQueryService.searchHubs(request.toQuery(),pageable));
+        return ResponseEntity.status(HubSuccessCode.HUB_LIST_RETRIEVED.getStatus())
+                .body(ApiResponse.success(HubSuccessCode.HUB_LIST_RETRIEVED, response));
+    }
+
+    @PostMapping("/Ids")
+    public ResponseEntity<ApiResponse<HubListResponse>> getHubsByIds(
+            @Valid @RequestBody GetHubsByIdsRequest request
+    ){
+        HubListResponse response = HubListResponse.from(hubQueryService.getHubsByIds(request.toQuery()));
         return ResponseEntity.status(HubSuccessCode.HUB_LIST_RETRIEVED.getStatus())
                 .body(ApiResponse.success(HubSuccessCode.HUB_LIST_RETRIEVED, response));
     }

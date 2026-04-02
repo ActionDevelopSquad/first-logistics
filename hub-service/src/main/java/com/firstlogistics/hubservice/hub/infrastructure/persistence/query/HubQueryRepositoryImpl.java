@@ -5,7 +5,8 @@ import com.firstlogistics.hubservice.hub.domain.exception.HubException;
 import com.firstlogistics.hubservice.hub.domain.repository.HubQueryRepository;
 import com.firstlogistics.hubservice.hub.domain.repository.dto.HubDetailsDto;
 import com.firstlogistics.hubservice.hub.domain.repository.dto.HubSearchDto;
-import com.firstlogistics.hubservice.hub.domain.repository.dto.HubPageDto;
+import com.firstlogistics.hubservice.hub.domain.repository.dto.HubSummaryDto;
+import com.firstlogistics.hubservice.hub.domain.specification.HubIdsSpec;
 import com.firstlogistics.hubservice.hub.infrastructure.persistence.jpa.QHubJpaEntity;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
@@ -59,7 +60,7 @@ public class HubQueryRepositoryImpl implements HubQueryRepository {
     }
 
     @Override
-    public Page<HubPageDto> searchByCondition(HubSearchDto hubSearchDto, Pageable pageable) {
+    public Page<HubSummaryDto> searchByCondition(HubSearchDto hubSearchDto, Pageable pageable) {
         BooleanBuilder builder = new BooleanBuilder();
         builder.and(notDeleted());
 
@@ -71,11 +72,12 @@ public class HubQueryRepositoryImpl implements HubQueryRepository {
                 builder.and(hub.status.eq(hubSearchDto.status()));
             }
         }
-            List<HubPageDto> content = queryFactory
+            List<HubSummaryDto> content = queryFactory
                     .select(Projections.constructor(
-                            HubPageDto.class,
+                            HubSummaryDto.class,
                             hub.id,
                             hub.name,
+                            hub.roadAddress,
                             hub.status
                     )).from(hub)
                     .where(builder)
@@ -103,6 +105,27 @@ public class HubQueryRepositoryImpl implements HubQueryRepository {
         if(hubId == null)
             throw new HubException(HubErrorCode.HUB_NOT_FOUND);
         return hubId;
+    }
+
+    @Override
+    public List<HubSummaryDto> findAllByIds(HubIdsSpec spec) {
+        if(spec == null || spec.ids() == null || spec.ids().isEmpty())
+            return null;
+
+        return queryFactory
+                .select(Projections.constructor(
+                        HubSummaryDto.class,
+                        hub.id,
+                        hub.name,
+                        hub.roadAddress,
+                        hub.status
+                ))
+                .from(hub)
+                .where(
+                        hub.id.in(spec.ids()),
+                        notDeleted()
+                )
+                .fetch();
     }
 
     private OrderSpecifier<?>[] getOrderSpecifiers(HubSearchDto dto){

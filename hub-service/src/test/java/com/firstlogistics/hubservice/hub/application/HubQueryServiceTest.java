@@ -3,13 +3,13 @@ package com.firstlogistics.hubservice.hub.application;
 
 import com.firstlogistics.hubservice.hub.application.dto.query.SearchHubsQuery;
 import com.firstlogistics.hubservice.hub.application.dto.result.HubDetailsResult;
-import com.firstlogistics.hubservice.hub.application.dto.result.SearchHubResult;
+import com.firstlogistics.hubservice.hub.application.dto.result.HubSummaryResult;
 import com.firstlogistics.hubservice.hub.domain.enums.HubStatus;
 import com.firstlogistics.hubservice.hub.domain.exception.HubErrorCode;
 import com.firstlogistics.hubservice.hub.domain.exception.HubException;
 import com.firstlogistics.hubservice.hub.domain.repository.HubQueryRepository;
 import com.firstlogistics.hubservice.hub.domain.repository.dto.HubDetailsDto;
-import com.firstlogistics.hubservice.hub.domain.repository.dto.HubPageDto;
+import com.firstlogistics.hubservice.hub.domain.repository.dto.HubSummaryDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -115,16 +115,17 @@ public class HubQueryServiceTest {
             "서울", "", null, null
         );
         Pageable pageable = PageRequest.of(0,10);
-        HubPageDto dto = new HubPageDto(
+        HubSummaryDto dto = new HubSummaryDto(
                 UUID.randomUUID(),
                 "서울특별시 센터",
+                "서울특별시 종로구",
                 HubStatus.ACTIVE
         );
-        Page<HubPageDto> page = new PageImpl<>(List.of(dto));
+        Page<HubSummaryDto> page = new PageImpl<>(List.of(dto));
         given(hubRepository.searchByCondition(query.toDto(), pageable)).willReturn(page);
 
 
-        Page<SearchHubResult> result = hubQueryService.searchHubs(query, pageable);
+        Page<HubSummaryResult> result = hubQueryService.searchHubs(query, pageable);
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().get(0).hubId()).isEqualTo(dto.hubId());
         assertThat(result.getContent().get(0).name()).isEqualTo(dto.name());
