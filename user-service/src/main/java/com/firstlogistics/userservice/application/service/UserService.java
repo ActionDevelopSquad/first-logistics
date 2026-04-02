@@ -3,6 +3,8 @@ package com.firstlogistics.userservice.application.service;
 import com.firstlogistics.userservice.application.dto.command.LoginCommand;
 import com.firstlogistics.userservice.application.dto.command.UserCreateCommand;
 import com.firstlogistics.userservice.application.dto.command.UserUpdateCommand;
+import com.firstlogistics.userservice.application.dto.query.UserGetQuery;
+import com.firstlogistics.userservice.application.dto.result.UserResult;
 import com.firstlogistics.userservice.application.dto.result.TokenInfo;
 import com.firstlogistics.userservice.application.dto.result.TokenResult;
 import com.firstlogistics.userservice.application.port.KeycloakService;
@@ -66,7 +68,7 @@ public class UserService {
     @Transactional
     public UUID signup(UserCreateCommand command) {
         // 권한별 소속 아이디가 존재하는지 확인
-        organizationValidationService.validateOrganizationExists(command.organizationId(), command.userRole());
+//        organizationValidationService.validateOrganizationExists(command.organizationId(), command.userRole());
 
         UUID userId = keycloakService.signup(command);
 
@@ -145,6 +147,7 @@ public class UserService {
         keycloakService.deleteUser(userId);
     }
 
+    @Transactional
     public TokenResult refresh(String refreshToken) {
         TokenInfo refresh = tokenService.refresh(refreshToken);
 
@@ -155,5 +158,17 @@ public class UserService {
                 refresh.refreshExpiresIn(),
                 refresh.tokenType()
         );
+    }
+
+    public UserResult getUser(UUID userId) {
+        return UserResult.from(userRepository.findByIdNotDeleted(userId));
+    }
+
+    public UserResult getMyPage(UUID userId) {
+        return UserResult.from(userRepository.findByIdNotDeleted(userId));
+    }
+
+    public UserResult getUsers(UserGetQuery query) {
+        return null;
     }
 }

@@ -3,12 +3,14 @@ package com.firstlogistics.userservice.presentation;
 import com.firstlogistics.userservice.application.dto.command.LoginCommand;
 import com.firstlogistics.userservice.application.dto.command.UserCreateCommand;
 import com.firstlogistics.userservice.application.dto.command.UserUpdateCommand;
+import com.firstlogistics.userservice.application.dto.query.UserGetQuery;
 import com.firstlogistics.userservice.application.dto.result.TokenResult;
+import com.firstlogistics.userservice.application.dto.result.UserResult;
 import com.firstlogistics.userservice.application.service.UserService;
 import com.firstlogistics.userservice.presentation.dto.request.*;
 import com.firstlogistics.userservice.presentation.dto.response.TokenResponse;
 import com.firstlogistics.userservice.presentation.dto.response.UserIdResponse;
-
+import com.firstlogistics.userservice.presentation.dto.response.UserResponse;
 import common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,13 +33,8 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<TokenResponse>> login(@Valid @RequestBody LoginRequest request) {
         TokenResult tokenResult = userService.login(new LoginCommand(request.username().trim(), request.password().trim()));
-        TokenResponse tokenResponse = new TokenResponse(
-                tokenResult.accessToken(),
-                tokenResult.expiresIn(),
-                tokenResult.refreshToken(),
-                tokenResult.refreshExpiresIn(),
-                tokenResult.tokenType()
-        );
+
+        TokenResponse tokenResponse = TokenResponse.from(tokenResult);
 
         return ResponseEntity
                 .status(UserSuccessCode.LOGIN_SUCCESS.getStatus())
@@ -63,17 +60,7 @@ public class UserController {
      */
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<UserIdResponse>> signUp(@Valid @RequestBody UserCreateRequest request) {
-        UserCreateCommand userCreateCommand = new UserCreateCommand(
-                request.username().trim(),
-                request.password().getPassword(),
-                request.firstName().trim(),
-                request.lastName().trim(),
-                request.phone().trim(),
-                request.email().trim(),
-                request.slackId().trim(),
-                request.userRole(),
-                request.organizationId()
-        );
+        UserCreateCommand userCreateCommand = request.toCommand();
 
         UUID userId = userService.signup(userCreateCommand);
 
@@ -88,11 +75,7 @@ public class UserController {
      * Role : MASTER
      */
     @PatchMapping("/{userId}/role")
-    public ResponseEntity<ApiResponse<UserIdResponse>> updateRole(
-            @PathVariable("userId") UUID userId,
-            @RequestBody UpdateRoleRequest request
-    )
-    {
+    public ResponseEntity<ApiResponse<UserIdResponse>> updateRole(@PathVariable("userId") UUID userId, @RequestBody UpdateRoleRequest request) {
         userService.updateRole(userId, request.role());
 
         return ResponseEntity
@@ -106,10 +89,7 @@ public class UserController {
      * Role : MASTER, HUB_MANAGER
      */
     @PatchMapping("/{userId}/status")
-    public ResponseEntity<ApiResponse<UserIdResponse>> updateStatus(
-            @PathVariable("userId") UUID userId,
-            @RequestBody UpdateStatusRequest request)
-    {
+    public ResponseEntity<ApiResponse<UserIdResponse>> updateStatus(@PathVariable("userId") UUID userId, @RequestBody UpdateStatusRequest request) {
         userService.updateStatus(userId, request.status());
 
         return ResponseEntity
@@ -167,26 +147,60 @@ public class UserController {
     @GetMapping("/refresh")
     public ResponseEntity<ApiResponse<TokenResponse>> refresh(@RequestHeader("X-Refresh-Token") String refreshToken) {
         TokenResult refresh = userService.refresh(refreshToken);
-        TokenResponse tokenResponse = new TokenResponse(
-                refresh.accessToken(),
-                refresh.expiresIn(),
-                refresh.refreshToken(),
-                refresh.refreshExpiresIn(),
-                refresh.tokenType()
-        );
+
+        TokenResponse tokenResponse = TokenResponse.from(refresh);
 
         return ResponseEntity
                 .status(UserSuccessCode.TOKEN_REFRESHED.getStatus())
                 .body(ApiResponse.success(UserSuccessCode.TOKEN_REFRESHED, tokenResponse));
     }
 
-//    // 로그인한 사용자 정보 조회 (gw-service가 주입한 헤더 사용)
-//    @GetMapping("/profile")
-//    public UserResponse getProfile(
-//            @RequestHeader("X-User-Id") String userId,
-//            @RequestHeader("X-Username") String username,
-//            @RequestHeader("X-User-Name") String name
-//    ) {
-//        return new UserResponse(UUID.fromString(userId), username, null, name, "");
-//    }
+    /**
+     * 회원 단일 조회
+     * GET /api/v1/users/{userId}
+     * Role : MASTER
+     */
+    @GetMapping("/{userId}")
+    public ResponseEntity<ApiResponse<UserResponse>> getUser(@PathVariable("userId") UUID userId) {
+        UserResult result = userService.getUser(userId);
+
+        UserResponse response = UserResponse.from(result);
+
+        return ResponseEntity
+                .status(UserSuccessCode.GET_USER.getStatus())
+                .body(ApiResponse.success(UserSuccessCode.GET_USER, response));
+    }
+
+    /**
+     * 회원 마이페이지 조회
+     * GET /api/v1/users/me
+     */
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<UserResponse>> getMyPage(@RequestHeader("X-User-Id") String userId) {
+        UserResult result = userService.getMyPage(UUID.fromString(userId));
+
+        UserResponse response = UserResponse.from(result);
+
+        return ResponseEntity
+                .status(UserSuccessCode.GET_USERS.getStatus())
+                .body(ApiResponse.success(UserSuccessCode.GET_USERS, response));
+    }
+
+    /**
+     * 회원 목록 조회
+     * GET /api/v1/users
+     * Role : MASTER
+     */
+    @GetMapping()
+    public ResponseEntity<ApiResponse<UserResponse>> getUsers(@ModelAttribute UsersGetRequest request) {
+        UserGetQuery query = request.toQuery();
+        UserResult result = userService.getUsers(query);
+
+        UserResponse response = UserResponse.from(result);
+
+        return ResponseEntity
+                .status(UserSuccessCode.GET_USERS.getStatus())
+                .body(ApiResponse.success(UserSuccessCode.GET_USERS, response));
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.firstlogistics.userservice.presentation.dto.request;
 
+import com.firstlogistics.userservice.application.dto.command.UserCreateCommand;
 import com.firstlogistics.userservice.domain.vo.Password;
 import common.jpa.entity.enums.UserRole;
 import jakarta.validation.constraints.*;
@@ -43,4 +44,19 @@ public record UserCreateRequest(
 
         @NotNull(message = "소속 아이디를 입력해주세요.")
         UUID organizationId
-) {}
+)
+{
+        public UserCreateCommand toCommand() {
+                return new UserCreateCommand(
+                        username.trim(),
+                        password.getPassword(),
+                        firstName.trim(),
+                        lastName.trim(),
+                        phone.trim(),
+                        email.trim(),
+                        slackId.trim(),
+                        userRole,
+                        organizationId
+                );
+        }
+}
