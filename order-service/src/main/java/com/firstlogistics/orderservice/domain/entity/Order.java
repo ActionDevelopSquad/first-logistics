@@ -208,7 +208,7 @@ public class Order {
 
     // 주문 취소 / 거절 / 취소 요청 승인 (나중에 필요하면 분리)
     public void cancel() {
-        // TODO: 권한 검증
+        // TODO: 허브 관리자, 마스터 관리자, 공급 업체 담당자 권한 검증
 
         if (this.status == OrderStatus.CANCELLED) {
             throw new OrderException(OrderErrorCode.ALREADY_CANCELLED);
