@@ -11,7 +11,6 @@ import com.firstlogistics.hubservice.hub.domain.exception.HubException;
 import com.firstlogistics.hubservice.hub.domain.repository.HubQueryRepository;
 import com.firstlogistics.hubservice.hub.domain.repository.dto.HubDetailsDto;
 import com.firstlogistics.hubservice.hub.domain.repository.dto.HubSummaryDto;
-import com.firstlogistics.hubservice.hub.presentation.dto.request.GetHubsByIdsRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
