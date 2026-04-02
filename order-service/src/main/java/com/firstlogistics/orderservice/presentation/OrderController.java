@@ -28,7 +28,7 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<OrderIdResponse>> createOrder(
-            @RequestHeader("X-User-Id") String userId,
+            @RequestHeader("X-User-Id") UUID userId,
             @RequestBody @Valid CreateOrderRequest request
     ) {
         UUID id = orderCommandService.createOrder(request.toCommand());
@@ -38,7 +38,7 @@ public class OrderController {
 
     @PatchMapping("/{orderId}/acceptance")
     public ResponseEntity<ApiResponse<OrderStatusResponse>> acceptOrder(
-            @RequestHeader("X-User-Id") String userId,
+            @RequestHeader("X-User-Id") UUID userId,
             @PathVariable UUID orderId
     ) {
         String status = orderCommandService.acceptOrder(userId, orderId);
@@ -49,7 +49,7 @@ public class OrderController {
 
     @PatchMapping("/{orderId}/rejection")
     public ResponseEntity<ApiResponse<OrderStatusResponse>> rejectOrder(
-            @RequestHeader("X-User-Id") String userId,
+            @RequestHeader("X-User-Id") UUID userId,
             @PathVariable UUID orderId
     ) {
         String status = orderCommandService.rejectOrder(userId, orderId);

@@ -52,7 +52,7 @@ public class OrderCommandService {
     }
 
     @Transactional
-    public String acceptOrder(String userId, UUID orderId) {
+    public String acceptOrder(UUID userId, UUID orderId) {
         Order order = getOrder(orderId);
         order.accept();
 
@@ -64,7 +64,7 @@ public class OrderCommandService {
     }
 
     @Transactional
-    public String rejectOrder(String userId, UUID orderId) {
+    public String rejectOrder(UUID userId, UUID orderId) {
         Order order = getOrder(orderId);
         order.cancel();
 
