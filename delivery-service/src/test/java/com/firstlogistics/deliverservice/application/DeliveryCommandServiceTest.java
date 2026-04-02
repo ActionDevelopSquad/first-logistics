@@ -17,11 +17,10 @@ import com.firstlogistics.deliverservice.domain.repository.DeliveryManagerReposi
 import com.firstlogistics.deliverservice.domain.vo.Address;
 import com.firstlogistics.deliverservice.domain.vo.DeliveryId;
 import com.firstlogistics.deliverservice.domain.vo.DeliveryManagerId;
-import com.firstlogistics.deliverservice.application.port.HubManagerPort;
+import com.firstlogistics.deliverservice.application.permission.DeliveryPermissionValidator;
 import com.firstlogistics.deliverservice.application.port.HubPort;
 import com.firstlogistics.deliverservice.application.port.UserPort;
 import com.firstlogistics.deliverservice.application.port.dto.CompanyResponse;
-import com.firstlogistics.deliverservice.application.port.dto.HubManagerResponse;
 import com.firstlogistics.deliverservice.application.port.dto.HubResponse;
 import com.firstlogistics.deliverservice.application.port.dto.HubRouteResponse;
 import com.firstlogistics.deliverservice.application.port.dto.HubRouteStepResponse;
@@ -39,6 +38,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -47,6 +47,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.times;
 
 @Slf4j
@@ -66,7 +67,7 @@ class DeliveryCommandServiceTest {
 	private HubPort hubPort;
 
 	@Mock
-	private HubManagerPort hubManagerPort;
+	private DeliveryPermissionValidator deliveryPermissionValidator;
 
 	@Mock
 	private DeliveryEventPublisher deliveryEventPublisher;
@@ -338,8 +339,8 @@ class DeliveryCommandServiceTest {
 		}
 
 		@Test
-		@DisplayName("권한 없음 (COMPANY_MANAGER)")
-		void updateDelivery_fail_companyManagerAccessDenied() {
+		@DisplayName("권한 없음 (Validator가 DELIVERY_ACCESS_DENIED 던짐)")
+		void updateDelivery_fail_accessDenied() {
 			// given
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
@@ -347,52 +348,8 @@ class DeliveryCommandServiceTest {
 			UpdateDeliveryCommand command = new UpdateDeliveryCommand(deliveryId, "COMPANY_MANAGER", userId, UUID.randomUUID(), null);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
-
-			// when
-			Throwable throwable = catchThrowable(() -> deliveryCommandService.updateDelivery(command));
-			log.info("throwable = {}", throwable.getMessage());
-
-			// then
-			assertThat(throwable)
-				.isInstanceOf(DeliveryException.class)
-				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
-		}
-
-		@Test
-		@DisplayName("HUB_MANAGER — 담당 허브가 아닌 배송 수정 시도")
-		void updateDelivery_fail_hubManagerNotResponsible() {
-			// given
-			UUID deliveryId = UUID.randomUUID();
-			UUID userId = UUID.randomUUID();
-			UUID otherHubId = UUID.randomUUID();
-			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
-			UpdateDeliveryCommand command = new UpdateDeliveryCommand(deliveryId, "HUB_MANAGER", userId, UUID.randomUUID(), null);
-
-			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
-			given(hubManagerPort.getHubManager(userId)).willReturn(new HubManagerResponse(userId, otherHubId));
-
-			// when
-			Throwable throwable = catchThrowable(() -> deliveryCommandService.updateDelivery(command));
-			log.info("throwable = {}", throwable.getMessage());
-
-			// then
-			assertThat(throwable)
-				.isInstanceOf(DeliveryException.class)
-				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
-		}
-
-		@Test
-		@DisplayName("DELIVERY_MANAGER — 본인 담당이 아닌 배송 수정 시도")
-		void updateDelivery_fail_deliveryManagerNotAssigned() {
-			// given
-			UUID deliveryId = UUID.randomUUID();
-			UUID userId = UUID.randomUUID();
-			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
-			UpdateDeliveryCommand command = new UpdateDeliveryCommand(deliveryId, "DELIVERY_MANAGER", userId, UUID.randomUUID(), null);
-
-			DeliveryManager otherManager = DeliveryManager.create(userId, "다른담당자", "010-0000-0000", UUID.randomUUID(), "slack-other", ManagerType.HUB_DELIVERY, 0);
-			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
-			given(deliveryManagerRepository.findByUserId(userId)).willReturn(Optional.of(otherManager));
+			willThrow(new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED))
+				.given(deliveryPermissionValidator).validate(any(), eq("COMPANY_MANAGER"), eq(userId), any());
 
 			// when
 			Throwable throwable = catchThrowable(() -> deliveryCommandService.updateDelivery(command));

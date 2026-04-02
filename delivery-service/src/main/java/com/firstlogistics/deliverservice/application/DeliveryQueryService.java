@@ -3,6 +3,8 @@ package com.firstlogistics.deliverservice.application;
 import com.firstlogistics.deliverservice.application.dto.query.DeliveryListQuery;
 import com.firstlogistics.deliverservice.application.dto.result.DeliveryDetailResult;
 import com.firstlogistics.deliverservice.application.dto.result.DeliveryListResult;
+import com.firstlogistics.deliverservice.application.permission.DeliveryAccessContext;
+import com.firstlogistics.deliverservice.application.permission.DeliveryPermissionValidator;
 import com.firstlogistics.deliverservice.application.port.CompanyPort;
 import com.firstlogistics.deliverservice.application.port.HubPort;
 import com.firstlogistics.deliverservice.application.port.HubManagerPort;
@@ -15,7 +17,6 @@ import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.projection.DeliveryDetailProjection;
 import com.firstlogistics.deliverservice.domain.projection.DeliverySummaryProjection;
-import com.firstlogistics.deliverservice.domain.entity.DeliveryManager;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryManagerRepository;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryQueryRepository;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryRepository;
@@ -27,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -39,6 +41,7 @@ public class DeliveryQueryService {
 	private final DeliveryRepository deliveryRepository;
 	private final DeliveryManagerRepository deliveryManagerRepository;
 	private final DeliveryQueryRepository deliveryQueryRepository;
+	private final DeliveryPermissionValidator deliveryPermissionValidator;
 	private final UserPort userPort;
 	private final HubPort hubPort;
 	private final HubManagerPort hubManagerPort;
@@ -49,7 +52,7 @@ public class DeliveryQueryService {
 	}
 
 	public DeliveryListResult getDeliveries(DeliveryListQuery query) {
-		UserRole userRole = parseUserRole(query.role());
+		UserRole userRole = deliveryPermissionValidator.parseUserRole(query.role());
 
 		UUID hubId =
 				userRole == UserRole.HUB_MANAGER
@@ -61,7 +64,9 @@ public class DeliveryQueryService {
 						: null;
 		UUID deliveryManagerId =
 				userRole == UserRole.DELIVERY_MANAGER
-						? resolveDeliveryManagerId(query.userId())
+						? deliveryManagerRepository.findByUserId(query.userId())
+								.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_MANAGER_NOT_FOUND))
+								.getId().id()
 						: null;
 		DeliveryListQuery resolvedQuery = query.withScope(DeliveryScope.from(query.role(), hubId, companyId, deliveryManagerId));
 
@@ -88,7 +93,10 @@ public class DeliveryQueryService {
 
 		List<DeliveryDetailProjection.RouteDetail> routes = deliveryQueryRepository.findRoutesByDeliveryId(deliveryId);
 
-		validateDeliveryAccess(deliveryDetail, routes, role, userId);
+		DeliveryAccessContext accessContext = DeliveryAccessContext.from(deliveryDetail, routes);
+		deliveryPermissionValidator.validate(accessContext, role, userId,
+			Set.of(UserRole.MASTER, UserRole.HUB_MANAGER, UserRole.DELIVERY_MANAGER, UserRole.COMPANY_MANAGER));
+
 		List<UUID> hubIds = routes.stream()
 			.flatMap(route -> Stream.of(route.sourceHubId(), route.destinationHubId()))
 			.distinct().toList();
@@ -104,45 +112,4 @@ public class DeliveryQueryService {
 		return DeliveryDetailResult.from(deliveryDetail, routes, hubMap, receiver, company);
 	}
 
-	private void validateDeliveryAccess(DeliveryDetailProjection deliveryDetail, List<DeliveryDetailProjection.RouteDetail> routes, String role, UUID userId) {
-		UserRole userRole = parseUserRole(role);
-		switch (userRole) {
-			case MASTER -> {}
-			case HUB_MANAGER -> {
-				UUID hubId = hubManagerPort.getHubManager(userId).hubId();
-				if (!hubId.equals(deliveryDetail.sourceHubId()) && !hubId.equals(deliveryDetail.destinationHubId())) {
-					throw new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
-				}
-			}
-			case DELIVERY_MANAGER -> {
-				UUID managerId = resolveDeliveryManagerId(userId);
-				boolean isAssigned = routes.stream()
-					.anyMatch(route -> managerId.equals(route.deliveryManagerId()));
-				if (!isAssigned) {
-					throw new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
-				}
-			}
-			case COMPANY_MANAGER -> {
-				UUID companyId = companyPort.getCompanyByManagerId(userId).companyId();
-				if (!companyId.equals(deliveryDetail.receiverCompanyId())) {
-					throw new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
-				}
-			}
-			default -> throw new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
-		}
-	}
-
-	private UUID resolveDeliveryManagerId(UUID userId) {
-		return deliveryManagerRepository.findByUserId(userId)
-			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_MANAGER_NOT_FOUND))
-			.getId().id();
-	}
-
-	private UserRole parseUserRole(String role) {
-		try {
-			return UserRole.valueOf(role);
-		} catch (IllegalArgumentException | NullPointerException e) {
-			throw new DeliveryException(DeliveryErrorCode.INVALID_ROLE_SCOPE);
-		}
-	}
 }

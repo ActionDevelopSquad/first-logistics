@@ -3,6 +3,8 @@ package com.firstlogistics.deliverservice.application;
 import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryCommand;
 import com.firstlogistics.deliverservice.application.dto.command.UpdateDeliveryCommand;
 import com.firstlogistics.deliverservice.application.dto.result.CreateDeliveryResult;
+import com.firstlogistics.deliverservice.application.permission.DeliveryAccessContext;
+import com.firstlogistics.deliverservice.application.permission.DeliveryPermissionValidator;
 import com.firstlogistics.deliverservice.application.publisher.DeliveryEventPublisher;
 import com.firstlogistics.deliverservice.domain.entity.Delivery;
 import com.firstlogistics.deliverservice.domain.entity.DeliveryRoute;
@@ -16,7 +18,6 @@ import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryRepository;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryManagerRepository;
 import com.firstlogistics.deliverservice.domain.vo.DeliveryId;
-import com.firstlogistics.deliverservice.application.port.HubManagerPort;
 import com.firstlogistics.deliverservice.application.port.HubPort;
 import com.firstlogistics.deliverservice.application.port.UserPort;
 import com.firstlogistics.deliverservice.application.port.dto.CompanyResponse;
@@ -33,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,9 +46,9 @@ public class DeliveryCommandService {
 
 	private final DeliveryRepository deliveryRepository;
 	private final DeliveryManagerRepository deliveryManagerRepository;
+	private final DeliveryPermissionValidator deliveryPermissionValidator;
 	private final UserPort userPort;
 	private final HubPort hubPort;
-	private final HubManagerPort hubManagerPort;
 	private final DeliveryEventPublisher deliveryEventPublisher;
 
 	public CreateDeliveryResult createDelivery(
@@ -169,7 +171,10 @@ public class DeliveryCommandService {
 		Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
 
-		validateUpdatePermission(delivery, command.role(), command.userId());
+		DeliveryAccessContext accessContext = DeliveryAccessContext.from(delivery);
+		deliveryPermissionValidator.validate(accessContext, command.role(), command.userId(),
+			Set.of(UserRole.MASTER, UserRole.HUB_MANAGER, UserRole.DELIVERY_MANAGER));
+
 		delivery.updateBasicInfo(command.receiverId(), command.receiverSlackId());
 		deliveryRepository.save(delivery);
 
@@ -177,38 +182,6 @@ public class DeliveryCommandService {
 			command.deliveryId(), delivery.getReceiverId(), delivery.getReceiverSlackId()
 		);
 		deliveryEventPublisher.publishDeliveryUpdated(event);
-	}
-
-	private void validateUpdatePermission(Delivery delivery, String role, UUID userId) {
-		UserRole userRole = parseUserRole(role);
-		switch (userRole) {
-			case MASTER -> {}
-			case HUB_MANAGER -> {
-				UUID hubId = hubManagerPort.getHubManager(userId).hubId();
-				if (!hubId.equals(delivery.getSourceHubId()) && !hubId.equals(delivery.getDestinationHubId())) {
-					throw new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
-				}
-			}
-			case DELIVERY_MANAGER -> {
-				UUID managerId = deliveryManagerRepository.findByUserId(userId)
-					.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_MANAGER_NOT_FOUND))
-					.getId().id();
-				boolean isAssigned = delivery.getRoutes().stream()
-					.anyMatch(route -> managerId.equals(route.getDeliveryManagerId().id()));
-				if (!isAssigned) {
-					throw new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
-				}
-			}
-			case COMPANY_MANAGER -> throw new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
-		}
-	}
-
-	private UserRole parseUserRole(String role) {
-		try {
-			return UserRole.valueOf(role);
-		} catch (IllegalArgumentException | NullPointerException e) {
-			throw new DeliveryException(DeliveryErrorCode.INVALID_ROLE_SCOPE);
-		}
 	}
 
 	private DeliveryCreatedEvent buildDeliveryCreatedEvent(
