@@ -12,8 +12,6 @@ public class CompanySpecification {
     public static BooleanBuilder from(CompanySearchSpec spec) {
         BooleanBuilder builder = new BooleanBuilder();
 
-        builder.and(companyJpaEntity.deletedAt.isNull());
-
         if (spec.keyword() != null && !spec.keyword().isBlank()) {
             builder.and(companyJpaEntity.name.containsIgnoreCase(spec.keyword()));
         }

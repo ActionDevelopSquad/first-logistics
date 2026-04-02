@@ -7,9 +7,7 @@ import java.util.UUID;
 
 public interface CompanyJpaRepository extends JpaRepository<CompanyJpaEntity, UUID> {
 
-    Optional<CompanyJpaEntity> findByIdAndDeletedAtIsNull(UUID id);
+    Optional<CompanyJpaEntity> findByManagerId(UUID managerId);
 
-    Optional<CompanyJpaEntity> findByManagerIdAndDeletedAtIsNull(UUID managerId);
-
-    boolean existsByManagerIdAndDeletedAtIsNull(UUID managerId);
+    boolean existsByManagerId(UUID managerId);
 }
