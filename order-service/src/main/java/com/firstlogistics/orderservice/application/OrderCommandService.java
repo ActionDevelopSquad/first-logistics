@@ -87,6 +87,16 @@ public class OrderCommandService {
         return order.getStatus().name();
     }
 
+    @Transactional
+    public String requestCancel(UUID userId, UUID orderId) {
+        Order order = getOrder(orderId);
+        order.requestCancel();
+
+        orderRepository.save(order);
+
+        return order.getStatus().name();
+    }
+
     private Order getOrder(UUID orderId) {
         return orderRepository.findById(OrderId.of(orderId))
                 .orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));

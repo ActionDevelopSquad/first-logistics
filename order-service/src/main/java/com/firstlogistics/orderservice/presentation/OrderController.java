@@ -69,4 +69,15 @@ public class OrderController {
                         OrderStatusResponse.of(orderId, status)));
     }
 
+    @PatchMapping("/{orderId}/cancellation-request")
+    public ResponseEntity<ApiResponse<OrderStatusResponse>> requestCancel(
+            @RequestHeader("X-User-Id") UUID userId,
+            @PathVariable UUID orderId
+    ) {
+        String status = orderCommandService.requestCancel(userId, orderId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(OrderSuccessCode.ORDER_STATUS_UPDATED,
+                        OrderStatusResponse.of(orderId, status)));
+    }
+
 }

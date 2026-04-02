@@ -220,6 +220,8 @@ public class Order {
     }
 
     public void requestCancel() {
+        // TODO: 로그인한 사용자가 주문한 사용자와 같은지 확인
+
         // 이미 취소 요청 or 취소 된 상태인 경우
         if (this.status == OrderStatus.CANCEL_REQUESTED || this.status == OrderStatus.CANCELLED) {
             throw new OrderException(OrderErrorCode.ALREADY_CANCEL_REQUESTED);
