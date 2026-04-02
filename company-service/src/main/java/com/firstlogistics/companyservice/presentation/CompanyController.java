@@ -67,6 +67,22 @@ public class CompanyController {
         return ResponseEntity.ok(ApiResponse.success(CommonSuccessCode.OK, response));
     }
 
+    @PatchMapping("/{companyId}/deactivate")
+    public ResponseEntity<ApiResponse<CompanyResponse>> deactivateCompany(
+            @PathVariable UUID companyId) {
+        CompanyResponse response = CompanyResponse.from(
+                companyCommandService.deactivate(companyId));
+        return ResponseEntity.ok(ApiResponse.success(CommonSuccessCode.OK, response));
+    }
+
+    @PatchMapping("/{companyId}/activate")
+    public ResponseEntity<ApiResponse<CompanyResponse>> activateCompany(
+            @PathVariable UUID companyId) {
+        CompanyResponse response = CompanyResponse.from(
+                companyCommandService.activate(companyId));
+        return ResponseEntity.ok(ApiResponse.success(CommonSuccessCode.OK, response));
+    }
+
     @GetMapping("/manager/{managerId}")
     public ResponseEntity<ApiResponse<CompanyResponse>> getCompanyByManager(
             @PathVariable UUID managerId) {

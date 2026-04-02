@@ -69,6 +69,26 @@ public class CompanyCommandService {
         return CompanyResult.from(companyRepository.save(company));
     }
 
+    @Transactional
+    public CompanyResult deactivate(UUID companyId) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new CompanyException(CompanyErrorCode.COMPANY_NOT_FOUND));
+
+        company.deactivate();
+
+        return CompanyResult.from(companyRepository.save(company));
+    }
+
+    @Transactional
+    public CompanyResult activate(UUID companyId) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new CompanyException(CompanyErrorCode.COMPANY_NOT_FOUND));
+
+        company.activate();
+
+        return CompanyResult.from(companyRepository.save(company));
+    }
+
     private void publishEvent(Company company) {
         eventPublisher.publish(
                 new CompanyCreatedEvent(
