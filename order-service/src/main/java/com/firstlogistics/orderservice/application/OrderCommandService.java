@@ -63,28 +63,16 @@ public class OrderCommandService {
         return order.getStatus().name();
     }
 
+    // 주문 거절로 인한 취소
     @Transactional
     public String rejectOrder(UUID userId, UUID orderId) {
-        Order order = getOrder(orderId);
-        order.cancel();
-
-        orderRepository.save(order);
-
-        Events.trigger(OrderCancelledEvent.from(order));
-
-        return order.getStatus().name();
+        return processCancellation(userId, orderId);
     }
 
+    // 관리자가 직접 주문 취소
     @Transactional
     public String cancelOrder(UUID userId, UUID orderId) {
-        Order order  = getOrder(orderId);
-        order.cancel();
-
-        orderRepository.save(order);
-
-        Events.trigger(OrderCancelledEvent.from(order));
-
-        return order.getStatus().name();
+        return processCancellation(userId, orderId);
     }
 
     @Transactional
@@ -97,8 +85,25 @@ public class OrderCommandService {
         return order.getStatus().name();
     }
 
+    // 주문 취소 요청 승인으로 인한 취소
+    @Transactional
+    public String approveCancelRequest(UUID userId, UUID orderId) {
+        return processCancellation(userId, orderId);
+    }
+
     private Order getOrder(UUID orderId) {
         return orderRepository.findById(OrderId.of(orderId))
                 .orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));
+    }
+
+    private String processCancellation(UUID userId, UUID orderId) {
+        Order order  = getOrder(orderId);
+        order.cancel();
+
+        orderRepository.save(order);
+
+        Events.trigger(OrderCancelledEvent.from(order));
+
+        return order.getStatus().name();
     }
 }
