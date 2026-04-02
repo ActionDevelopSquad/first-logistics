@@ -88,6 +88,9 @@ public class DeliveryQueryService {
 
 		Map<UUID, HubResponse> hubMap = hubPort.getHubs(hubIds).stream()
 			.collect(Collectors.toMap(HubResponse::hubId, hub -> hub));
+		if (!hubMap.keySet().containsAll(hubIds)) {
+			throw new DeliveryException(DeliveryErrorCode.HUB_NOT_FOUND);
+		}
 		UserResponse receiver = userPort.getUser(deliveryDetail.receiverId());
 		CompanyResponse company = companyPort.getCompany(deliveryDetail.receiverCompanyId());
 
@@ -100,7 +103,7 @@ public class DeliveryQueryService {
 			case MASTER -> {}
 			case HUB_MANAGER -> {
 				UUID hubId = hubStaffPort.getHubStaff(userId).hubId();
-				if (!hubId.equals(deliveryDetail.sourceHubId())) {
+				if (!hubId.equals(deliveryDetail.sourceHubId()) && !hubId.equals(deliveryDetail.destinationHubId())) {
 					throw new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
 				}
 			}
@@ -117,6 +120,7 @@ public class DeliveryQueryService {
 					throw new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
 				}
 			}
+			default -> throw new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
 		}
 	}
 }

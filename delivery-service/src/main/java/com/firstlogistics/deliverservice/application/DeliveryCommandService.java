@@ -146,6 +146,9 @@ public class DeliveryCommandService {
 			.distinct().toList();
 		Map<UUID, HubResponse> hubMap = hubPort.getHubs(hubIds).stream()
 			.collect(Collectors.toMap(HubResponse::hubId, hub -> hub));
+		if (!hubMap.keySet().containsAll(hubIds)) {
+			throw new DeliveryCreationException(DeliveryErrorCode.HUB_NOT_FOUND);
+		}
 		UserResponse companyDeliveryStaffUser = userPort.getUser(companyDeliveryStaff.getId().id());
 
 		DeliveryCreatedEvent deliveryCreatedEvent = buildDeliveryCreatedEvent(

@@ -10,6 +10,7 @@ import com.firstlogistics.deliverservice.domain.projection.DeliveryDetailProject
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 public record DeliveryDetailResult(
@@ -27,6 +28,14 @@ public record DeliveryDetailResult(
 	List<RouteDetail> routes,
 	LocalDateTime createdAt
 ) {
+
+	public DeliveryDetailResult {
+		Objects.requireNonNull(deliveryId, "deliveryId must not be null");
+		Objects.requireNonNull(orderId, "orderId must not be null");
+		Objects.requireNonNull(status, "status must not be null");
+		Objects.requireNonNull(routes, "routes must not be null");
+		Objects.requireNonNull(createdAt, "createdAt must not be null");
+	}
 
 	public static DeliveryDetailResult from(
 		DeliveryDetailProjection detail,
@@ -47,7 +56,7 @@ public record DeliveryDetailResult(
 			ReceiverInfo.from(receiver),
 			CompanyInfo.from(company),
 			DeliveryStaffInfo.from(detail.companyStaffName(), detail.companyStaffPhone()),
-			routes.stream()
+			(routes != null ? routes : List.<DeliveryDetailProjection.RouteDetail>of()).stream()
 				.map(route -> RouteDetail.from(route, hubMap))
 				.toList(),
 			detail.createdAt()
@@ -55,6 +64,11 @@ public record DeliveryDetailResult(
 	}
 
 	public record HubInfo(UUID hubId, String name, String roadAddress) {
+
+		public HubInfo {
+			Objects.requireNonNull(hubId, "hubId must not be null");
+		}
+
 		public static HubInfo from(HubResponse hub) {
 			if (hub == null) return null;
 			return new HubInfo(hub.hubId(), hub.name(), hub.roadAddress());
@@ -62,6 +76,11 @@ public record DeliveryDetailResult(
 	}
 
 	public record ReceiverInfo(UUID userId, String name, String phone) {
+
+		public ReceiverInfo {
+			Objects.requireNonNull(userId, "userId must not be null");
+		}
+
 		public static ReceiverInfo from(UserResponse user) {
 			if (user == null) return null;
 			return new ReceiverInfo(user.userId(), user.name(), user.phone());
@@ -69,6 +88,11 @@ public record DeliveryDetailResult(
 	}
 
 	public record CompanyInfo(UUID companyId, String name, String roadAddress, String detailAddress) {
+
+		public CompanyInfo {
+			Objects.requireNonNull(companyId, "companyId must not be null");
+		}
+
 		public static CompanyInfo from(CompanyResponse company) {
 			if (company == null) return null;
 			return new CompanyInfo(company.companyId(), company.name(), company.roadAddress(), company.detailAddress());
@@ -95,6 +119,12 @@ public record DeliveryDetailResult(
 		LocalDateTime expectedStartAt,
 		LocalDateTime expectedEndAt
 	) {
+
+		public RouteDetail {
+			Objects.requireNonNull(routeId, "routeId must not be null");
+			Objects.requireNonNull(status, "status must not be null");
+		}
+
 		public static RouteDetail from(DeliveryDetailProjection.RouteDetail route, Map<UUID, HubResponse> hubMap) {
 			return new RouteDetail(
 				route.routeId(),

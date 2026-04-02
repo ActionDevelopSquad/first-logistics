@@ -433,6 +433,107 @@ class DeliveryQueryServiceTest {
 			assertThat(result.receiverCompany().name()).isEqualTo("테스트업체");
 			assertThat(result.routes()).hasSize(2);
 		}
+
+		@Test
+		@DisplayName("담당 허브의 배송 상세 조회 허용 - HUB_MANAGER (sourceHub)")
+		void getDelivery_success_hubManagerSourceHub() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID managerId = UUID.randomUUID();
+			DeliveryDetailProjection projection = stubProjection(deliveryId);
+			List<DeliveryDetailProjection.RouteDetail> routes = stubRoutes(1);
+
+			given(deliveryQueryRepository.findById(deliveryId)).willReturn(Optional.of(projection));
+			given(deliveryQueryRepository.findRoutesByDeliveryId(deliveryId)).willReturn(routes);
+			given(hubStaffPort.getHubStaff(managerId)).willReturn(new HubStaffResponse(managerId, projection.sourceHubId()));
+			given(hubPort.getHubs(any())).willReturn(stubHubResponses(projection, routes));
+			given(userPort.getUser(projection.receiverId())).willReturn(new UserResponse(projection.receiverId(), "홍길동", "010-1234-5678", "slack-123", "hong@test.com"));
+			given(companyPort.getCompany(projection.receiverCompanyId())).willReturn(new CompanyResponse(projection.receiverCompanyId(), UUID.randomUUID(), "테스트업체", "서울시 강남구 테헤란로 123", "101동 202호"));
+
+			// when
+			DeliveryDetailResult result = deliveryQueryService.getDelivery(deliveryId, UserRole.HUB_MANAGER.name(), managerId);
+
+			// then
+			assertThat(result.deliveryId()).isEqualTo(deliveryId);
+		}
+
+		@Test
+		@DisplayName("담당 허브의 배송 상세 조회 허용 - HUB_MANAGER (destinationHub)")
+		void getDelivery_success_hubManagerDestinationHub() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID managerId = UUID.randomUUID();
+			DeliveryDetailProjection projection = stubProjection(deliveryId);
+			List<DeliveryDetailProjection.RouteDetail> routes = stubRoutes(1);
+
+			given(deliveryQueryRepository.findById(deliveryId)).willReturn(Optional.of(projection));
+			given(deliveryQueryRepository.findRoutesByDeliveryId(deliveryId)).willReturn(routes);
+			given(hubStaffPort.getHubStaff(managerId)).willReturn(new HubStaffResponse(managerId, projection.destinationHubId()));
+			given(hubPort.getHubs(any())).willReturn(stubHubResponses(projection, routes));
+			given(userPort.getUser(projection.receiverId())).willReturn(new UserResponse(projection.receiverId(), "홍길동", "010-1234-5678", "slack-123", "hong@test.com"));
+			given(companyPort.getCompany(projection.receiverCompanyId())).willReturn(new CompanyResponse(projection.receiverCompanyId(), UUID.randomUUID(), "테스트업체", "서울시 강남구 테헤란로 123", "101동 202호"));
+
+			// when
+			DeliveryDetailResult result = deliveryQueryService.getDelivery(deliveryId, UserRole.HUB_MANAGER.name(), managerId);
+
+			// then
+			assertThat(result.deliveryId()).isEqualTo(deliveryId);
+		}
+
+		@Test
+		@DisplayName("본인 담당 배송 상세 조회 허용 - DELIVERY_MANAGER")
+		void getDelivery_success_deliveryManagerAssigned() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID staffId = UUID.randomUUID();
+			DeliveryDetailProjection projection = stubProjection(deliveryId);
+			List<DeliveryDetailProjection.RouteDetail> routes = List.of(
+				new DeliveryDetailProjection.RouteDetail(
+					UUID.randomUUID(), 0,
+					UUID.randomUUID(), UUID.randomUUID(),
+					10000, 30, 0, 0,
+					RouteStatus.CREATED,
+					staffId,
+					"담당자", "010-0000-0000",
+					LocalDateTime.now(), LocalDateTime.now().plusHours(2)
+				)
+			);
+
+			given(deliveryQueryRepository.findById(deliveryId)).willReturn(Optional.of(projection));
+			given(deliveryQueryRepository.findRoutesByDeliveryId(deliveryId)).willReturn(routes);
+			given(hubPort.getHubs(any())).willReturn(stubHubResponses(projection, routes));
+			given(userPort.getUser(projection.receiverId())).willReturn(new UserResponse(projection.receiverId(), "홍길동", "010-1234-5678", "slack-123", "hong@test.com"));
+			given(companyPort.getCompany(projection.receiverCompanyId())).willReturn(new CompanyResponse(projection.receiverCompanyId(), UUID.randomUUID(), "테스트업체", "서울시 강남구 테헤란로 123", "101동 202호"));
+
+			// when
+			DeliveryDetailResult result = deliveryQueryService.getDelivery(deliveryId, UserRole.DELIVERY_MANAGER.name(), staffId);
+
+			// then
+			assertThat(result.deliveryId()).isEqualTo(deliveryId);
+		}
+
+		@Test
+		@DisplayName("본인 업체 관련 배송 상세 조회 허용 - COMPANY_MANAGER")
+		void getDelivery_success_companyManagerOwnsCompany() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID managerId = UUID.randomUUID();
+			DeliveryDetailProjection projection = stubProjection(deliveryId);
+			List<DeliveryDetailProjection.RouteDetail> routes = stubRoutes(1);
+
+			given(deliveryQueryRepository.findById(deliveryId)).willReturn(Optional.of(projection));
+			given(deliveryQueryRepository.findRoutesByDeliveryId(deliveryId)).willReturn(routes);
+			given(companyPort.getCompanyByManagerId(managerId)).willReturn(new CompanyResponse(projection.receiverCompanyId(), UUID.randomUUID(), "테스트업체", "서울시 강남구 테헤란로 123", "101동 202호"));
+			given(hubPort.getHubs(any())).willReturn(stubHubResponses(projection, routes));
+			given(userPort.getUser(projection.receiverId())).willReturn(new UserResponse(projection.receiverId(), "홍길동", "010-1234-5678", "slack-123", "hong@test.com"));
+			given(companyPort.getCompany(projection.receiverCompanyId())).willReturn(new CompanyResponse(projection.receiverCompanyId(), UUID.randomUUID(), "테스트업체", "서울시 강남구 테헤란로 123", "101동 202호"));
+
+			// when
+			DeliveryDetailResult result = deliveryQueryService.getDelivery(deliveryId, UserRole.COMPANY_MANAGER.name(), managerId);
+
+			// then
+			assertThat(result.deliveryId()).isEqualTo(deliveryId);
+		}
 	}
 
 	private DeliveryListQuery stubQueryForMaster(LocalDateTime startDate, LocalDateTime endDate) {

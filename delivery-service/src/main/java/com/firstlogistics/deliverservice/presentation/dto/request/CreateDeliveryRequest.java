@@ -37,7 +37,7 @@ public record CreateDeliveryRequest(
 		@NotNull UUID productId,
 		@NotBlank String productName,
 		@Positive int quantity,
-		@PositiveOrZero Long price
+		@NotNull @PositiveOrZero Long price
 	) {}
 
 	public CreateDeliveryCommand toCommand() {

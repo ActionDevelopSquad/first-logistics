@@ -5,6 +5,7 @@ import com.firstlogistics.deliverservice.domain.projection.DeliverySummaryProjec
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 public record DeliveryListResult(
@@ -13,6 +14,10 @@ public record DeliveryListResult(
 	UUID nextCursorId,
 	LocalDateTime nextCursorCreatedAt
 ) {
+
+	public DeliveryListResult {
+		Objects.requireNonNull(deliveries, "deliveries must not be null");
+	}
 
 	public static DeliveryListResult from(List<DeliverySummaryProjection> projections, boolean hasNext) {
 		List<DeliverySummary> deliveries = projections.stream()
@@ -37,6 +42,14 @@ public record DeliveryListResult(
 		UUID currentHubId,
 		LocalDateTime createdAt
 	) {
+
+		public DeliverySummary {
+			Objects.requireNonNull(deliveryId, "deliveryId must not be null");
+			Objects.requireNonNull(orderId, "orderId must not be null");
+			Objects.requireNonNull(status, "status must not be null");
+			Objects.requireNonNull(createdAt, "createdAt must not be null");
+		}
+
 		public static DeliverySummary from(DeliverySummaryProjection projection) {
 			return new DeliverySummary(
 				projection.deliveryId(),
