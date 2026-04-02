@@ -18,6 +18,7 @@ clean {
 
 dependencies {
     implementation project(':common')
+    implementation project(':common-event')
     implementation project(':common-jpa')
     annotationProcessor project(':common-jpa')
 
