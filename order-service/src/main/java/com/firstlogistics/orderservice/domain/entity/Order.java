@@ -1,5 +1,6 @@
 package com.firstlogistics.orderservice.domain.entity;
 
+import com.firstlogistics.orderservice.domain.enums.OrderCancelType;
 import com.firstlogistics.orderservice.domain.enums.OrderStatus;
 import com.firstlogistics.orderservice.domain.exception.OrderErrorCode;
 import com.firstlogistics.orderservice.domain.exception.OrderException;
@@ -33,6 +34,7 @@ public class Order {
     private String requestMemo;
     private OrderStatus status;
     private OrderStatus previousStatus;
+    private OrderCancelType cancelType;
     private LocalDateTime orderedAt;
 
     @Getter(AccessLevel.NONE)
@@ -64,6 +66,7 @@ public class Order {
                 OrderStatus.PENDING,
                 null,
                 null,
+                null,
                 new ArrayList<>(),
                 null
         );
@@ -91,6 +94,7 @@ public class Order {
             String requestMemo,
             OrderStatus status,
             OrderStatus previousStatus,
+            OrderCancelType cancelType,
             LocalDateTime orderedAt,
             List<OrderItem> orderItems,
             Long version
@@ -106,6 +110,7 @@ public class Order {
                 requestMemo,
                 status,
                 previousStatus,
+                cancelType,
                 orderedAt,
                 orderItems,
                 version
