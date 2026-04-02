@@ -1,6 +1,6 @@
 package common.jpa.config;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
@@ -10,13 +10,11 @@ import java.util.UUID;
 
 @Configuration
 @EnableJpaAuditing
-@RequiredArgsConstructor
 public class JpaAuditingConfig {
 
-    private final CurrentAuditorProvider currentAuditorProvider;
-
     @Bean
-    public AuditorAware<UUID> auditorProvider() {
+    @ConditionalOnBean(CurrentAuditorProvider.class)
+    public AuditorAware<UUID> auditorProvider(CurrentAuditorProvider currentAuditorProvider) {
         return currentAuditorProvider::getCurrentAuditor;
     }
 }
