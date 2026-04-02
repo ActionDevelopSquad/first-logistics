@@ -19,6 +19,10 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 256m
 
   delivery-service:
     build:
@@ -35,6 +39,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       REDIS_URL: redis://redis:6379
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      JAVA_TOOL_OPTIONS: "-Xmx256m -Xms128m"
     depends_on:
       postgres:
         condition: service_healthy
@@ -42,6 +47,10 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512m
 
   redis:
     image: redis:7.2-alpine
@@ -57,6 +66,10 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 128m
 
   kafka:
     image: confluentinc/cp-kafka:7.6.0
@@ -76,7 +89,7 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-      KAFKA_HEAP_OPTS: "-Xmx256m -Xms128m"
+      KAFKA_HEAP_OPTS: "-Xmx192m -Xms128m"
       CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
     volumes:
       - kafka-data:/var/lib/kafka/data
@@ -85,6 +98,10 @@ services:
       interval: 15s
       timeout: 10s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 384m
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
@@ -97,6 +114,10 @@ services:
     environment:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    deploy:
+      resources:
+        limits:
+          memory: 256m
 
 
 volumes:
