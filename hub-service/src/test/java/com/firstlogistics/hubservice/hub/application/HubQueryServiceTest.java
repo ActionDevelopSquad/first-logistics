@@ -1,6 +1,7 @@
 package com.firstlogistics.hubservice.hub.application;
 
 
+import com.firstlogistics.hubservice.hub.application.dto.query.GetHubsQuery;
 import com.firstlogistics.hubservice.hub.application.dto.query.SearchHubsQuery;
 import com.firstlogistics.hubservice.hub.application.dto.result.HubDetailsResult;
 import com.firstlogistics.hubservice.hub.application.dto.result.HubSummaryResult;
@@ -10,6 +11,7 @@ import com.firstlogistics.hubservice.hub.domain.exception.HubException;
 import com.firstlogistics.hubservice.hub.domain.repository.HubQueryRepository;
 import com.firstlogistics.hubservice.hub.domain.repository.dto.HubDetailsDto;
 import com.firstlogistics.hubservice.hub.domain.repository.dto.HubSummaryDto;
+import com.firstlogistics.hubservice.hub.presentation.dto.request.GetHubsByIdsRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -130,5 +132,38 @@ public class HubQueryServiceTest {
         assertThat(result.getContent().get(0).hubId()).isEqualTo(dto.hubId());
         assertThat(result.getContent().get(0).name()).isEqualTo(dto.name());
         assertThat(result.getContent().get(0).status()).isEqualTo(dto.status());
+    }
+
+    @Test
+    @DisplayName("성공: 허브 아이디로 목록 조회")
+    void getHubsByID_success(){
+        //given
+        UUID hub1  = UUID.randomUUID();
+        UUID hub2 = UUID.randomUUID();
+
+        List<UUID> hubs = List.of(hub1,hub2);
+        GetHubsQuery query = new GetHubsQuery(hubs);
+
+        HubSummaryDto dto = new HubSummaryDto(
+                hub1,
+                "서울특별시 센터",
+                "서울특별시 종로구",
+                HubStatus.ACTIVE
+        );
+        HubSummaryDto dto2 = new HubSummaryDto(
+                hub2,
+                "서울특별시 센터",
+                "서울특별시 종로구",
+                HubStatus.ACTIVE
+        );
+        List<HubSummaryDto> list = List.of(dto,dto2);
+        given(hubRepository.findAllByIds(query.toSpec())).willReturn(list);
+
+
+        List<HubSummaryResult> result = hubQueryService.getHubsByIds(query);
+        assertThat(result).hasSize(2);
+        assertThat(result.getFirst().hubId()).isEqualTo(dto.hubId());
+        assertThat(result.get(1).hubId()).isEqualTo(dto2.hubId());
+
     }
 }
