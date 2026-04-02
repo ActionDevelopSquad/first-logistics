@@ -81,6 +81,25 @@ class OrderCommandServiceTest {
         verify(eventPublisher, times(1)).publishEvent(any(OrderCreatedEvent.class));
     }
 
+    @Test
+    @DisplayName("실패: 주문 상품이 없는 경우 예외가 발생한다")
+    void createOrder_Fail_NoItems() {
+        // given
+        CreateOrderCommand command = new CreateOrderCommand(
+                UUID.randomUUID(), UUID.randomUUID(),
+                UUID.randomUUID(), UUID.randomUUID(),
+                "서울시 강남구", "상세주소", LocalDateTime.now().plusDays(1),
+                "메모", List.of() // 빈 리스트
+        );
+
+        // when & then
+        assertThatThrownBy(() -> orderCommandService.createOrder(command))
+                .isInstanceOf(OrderException.class)
+                .hasMessage(OrderErrorCode.ORDER_ITEM_NOT_EXIST.getMessage());
+        verify(orderRepository, never()).save(any(Order.class));
+        verify(eventPublisher, never()).publishEvent(any());
+    }
+
     // --- 주문 승인 테스트 ---
 
     @Test
@@ -120,6 +139,8 @@ class OrderCommandServiceTest {
         assertThatThrownBy(() -> orderCommandService.acceptOrder(USER_ID, orderId))
                 .isInstanceOf(OrderException.class)
                 .hasMessage(OrderErrorCode.INVALID_ORDER_STATUS.getMessage());
+        verify(orderRepository, never()).save(any(Order.class));
+        verify(eventPublisher, never()).publishEvent(any());
     }
 
     @Test
@@ -138,6 +159,8 @@ class OrderCommandServiceTest {
         assertThatThrownBy(() -> orderCommandService.acceptOrder(USER_ID, orderId))
                 .isInstanceOf(OrderException.class)
                 .hasMessage(OrderErrorCode.ALREADY_ACCEPTED.getMessage());
+        verify(orderRepository, never()).save(any(Order.class));
+        verify(eventPublisher, never()).publishEvent(any());
     }
 
     // --- 주문 승인 거절 테스트 ---
@@ -179,5 +202,7 @@ class OrderCommandServiceTest {
         assertThatThrownBy(() -> orderCommandService.rejectOrder(USER_ID, orderId))
                 .isInstanceOf(OrderException.class)
                 .hasMessage(OrderErrorCode.ALREADY_CANCELLED.getMessage());
+        verify(orderRepository, never()).save(any(Order.class));
+        verify(eventPublisher, never()).publishEvent(any());
     }
 }
