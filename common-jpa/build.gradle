@@ -2,7 +2,7 @@ plugins {
     id 'java-library'
 }
 
-def generated = 'src/main/generated'
+def generated = layout.buildDirectory.dir("generated/querydsl").get().asFile
 
 tasks.withType(JavaCompile).configureEach {
     options.getGeneratedSourceOutputDirectory().set(file(generated))
@@ -10,10 +10,6 @@ tasks.withType(JavaCompile).configureEach {
 
 sourceSets {
     main.java.srcDirs += [generated]
-}
-
-clean {
-    delete file(generated)
 }
 
 dependencies {
