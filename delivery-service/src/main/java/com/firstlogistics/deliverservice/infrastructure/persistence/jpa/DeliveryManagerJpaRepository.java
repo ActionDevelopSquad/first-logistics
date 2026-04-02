@@ -8,9 +8,12 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface DeliveryManagerJpaRepository extends JpaRepository<DeliveryManagerJpaEntity, UUID> {
+
+	Optional<DeliveryManagerJpaEntity> findByUserIdAndDeletedAtIsNull(UUID userId);
 
 	@Query("SELECT COALESCE(MAX(ds.deliverySequence), 0) FROM DeliveryManagerJpaEntity ds WHERE ds.deletedAt IS NULL")
 	int findMaxSequence();

@@ -18,6 +18,7 @@ public class DeliveryManagerMapper {
 	public DeliveryManagerJpaEntity toJpaEntity(DeliveryManager manager) {
 		DeliveryManagerJpaEntity jpaEntity = DeliveryManagerJpaEntity.create(
 			manager.getId().id(),
+			manager.getUserId(),
 			manager.getManagerDetail().managerName(),
 			manager.getManagerDetail().phoneNumber(),
 			manager.getHubId(),
@@ -52,6 +53,7 @@ public class DeliveryManagerMapper {
 
 		return DeliveryManager.reconstitute(
 			DeliveryManagerId.of(jpaEntity.getId()),
+			jpaEntity.getUserId(),
 			ManagerDetail.of(jpaEntity.getManagerName(), jpaEntity.getPhoneNumber()),
 			jpaEntity.getHubId(),
 			jpaEntity.getSlackId(),

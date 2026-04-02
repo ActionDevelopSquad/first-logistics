@@ -149,7 +149,7 @@ public class DeliveryCommandService {
 		if (!hubMap.keySet().containsAll(hubIds)) {
 			throw new DeliveryCreationException(DeliveryErrorCode.HUB_NOT_FOUND);
 		}
-		UserResponse companyDeliveryManagerUser = userPort.getUser(companyDeliveryManager.getId().id());
+		UserResponse companyDeliveryManagerUser = userPort.getUser(companyDeliveryManager.getUserId());
 
 		DeliveryCreatedEvent deliveryCreatedEvent = buildDeliveryCreatedEvent(
 				savedDelivery, command, receiver, hubSteps, hubDeliveryManagers, lastStep, companyDeliveryManager, hubMap, companyDeliveryManagerUser

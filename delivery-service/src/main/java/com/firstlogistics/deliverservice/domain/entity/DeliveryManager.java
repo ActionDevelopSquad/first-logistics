@@ -23,6 +23,7 @@ import java.util.UUID;
 public class DeliveryManager {
 
 	private DeliveryManagerId id;
+	private UUID userId;
 	private ManagerDetail managerDetail;
 	private UUID hubId;
 	private String slackId;
@@ -31,6 +32,7 @@ public class DeliveryManager {
 	private List<ManagerTimetable> timetables;
 
 	public static DeliveryManager create(
+		UUID userId,
 		String managerName,
 		String phoneNumber,
 		UUID hubId,
@@ -38,20 +40,21 @@ public class DeliveryManager {
 		ManagerType managerType,
 		int deliverySequence
 	) {
-		if (hubId == null || managerType == null) {
+		if (userId == null || hubId == null || managerType == null) {
 			throw new DeliveryException(DeliveryErrorCode.INVALID_DELIVERY_MANAGER_PARAMS);
 		}
 		if (slackId == null || slackId.isBlank()) {
 			throw new DeliveryException(DeliveryErrorCode.INVALID_DELIVERY_MANAGER_PARAMS);
 		}
 		return new DeliveryManager(
-			DeliveryManagerId.generate(), ManagerDetail.of(managerName, phoneNumber), hubId, slackId,
+			DeliveryManagerId.generate(), userId, ManagerDetail.of(managerName, phoneNumber), hubId, slackId,
 			managerType, deliverySequence, new ArrayList<>()
 		);
 	}
 
 	public static DeliveryManager reconstitute(
 		DeliveryManagerId id,
+		UUID userId,
 		ManagerDetail managerDetail,
 		UUID hubId,
 		String slackId,
@@ -59,7 +62,7 @@ public class DeliveryManager {
 		int deliverySequence,
 		List<ManagerTimetable> timetables
 	) {
-		return new DeliveryManager(id, managerDetail, hubId, slackId, managerType, deliverySequence, new ArrayList<>(timetables));
+		return new DeliveryManager(id, userId, managerDetail, hubId, slackId, managerType, deliverySequence, new ArrayList<>(timetables));
 	}
 
 	public void assignDelivery(DeliveryId deliveryId, LocalDateTime start, LocalDateTime end) {
