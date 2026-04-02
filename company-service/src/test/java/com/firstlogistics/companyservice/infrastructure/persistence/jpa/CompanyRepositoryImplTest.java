@@ -17,7 +17,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.firstlogistics.companyservice.domain.exception.CompanyErrorCode;
+import com.firstlogistics.companyservice.domain.exception.CompanyException;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
@@ -134,6 +138,43 @@ class CompanyRepositoryImplTest {
 
             // then
             assertThat(result).isEmpty();
+        }
+    }
+
+    @Nested
+    @DisplayName("업체 소프트 삭제 (delete)")
+    class Delete {
+
+        private static final UUID DELETED_BY = UUID.fromString("00000000-0000-0000-0000-000000000010");
+
+        @Test
+        @DisplayName("존재하는 업체를 삭제하면 deletedAt, deletedBy가 설정되고 저장된다")
+        void delete_success() {
+            // given
+            given(companyJpaRepository.findById(COMPANY_ID))
+                    .willReturn(Optional.of(jpaEntity));
+            given(companyJpaRepository.save(any())).willReturn(jpaEntity);
+
+            // when
+            companyRepositoryImpl.delete(COMPANY_ID, DELETED_BY);
+
+            // then
+            verify(companyJpaRepository).save(jpaEntity);
+            assertThat(jpaEntity.getDeletedAt()).isNotNull();
+            assertThat(jpaEntity.getDeletedBy()).isEqualTo(DELETED_BY);
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 ID로 삭제하면 예외가 발생한다")
+        void delete_notFound_throwsException() {
+            // given
+            given(companyJpaRepository.findById(COMPANY_ID))
+                    .willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> companyRepositoryImpl.delete(COMPANY_ID, DELETED_BY))
+                    .isInstanceOf(CompanyException.class)
+                    .hasMessageContaining(CompanyErrorCode.COMPANY_NOT_FOUND.getMessage());
         }
     }
 
