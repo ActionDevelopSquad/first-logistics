@@ -6,12 +6,12 @@ import common.security.entity.exception.AuthException;
 import common.security.security.util.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Configuration;
 
 import java.util.Optional;
 import java.util.UUID;
 
-@Component
+@Configuration
 @Slf4j
 @AutoConfigureBefore(JpaAuditingConfig.class)
 public class SecurityContextAuditingConfig implements CurrentAuditorProvider {
