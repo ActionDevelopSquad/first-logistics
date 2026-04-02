@@ -54,7 +54,7 @@ public class HubApiController {
                 .body(ApiResponse.success(HubSuccessCode.HUB_LIST_RETRIEVED, response));
     }
 
-    @PostMapping("/Ids")
+    @PostMapping("/ids")
     public ResponseEntity<ApiResponse<HubListResponse>> getHubsByIds(
             @Valid @RequestBody GetHubsByIdsRequest request
     ){
