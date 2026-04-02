@@ -110,7 +110,7 @@ public class HubQueryRepositoryImpl implements HubQueryRepository {
     @Override
     public List<HubSummaryDto> findAllByIds(HubIdsSpec spec) {
         if(spec == null || spec.ids() == null || spec.ids().isEmpty())
-            return null;
+            return List.of();
 
         return queryFactory
                 .select(Projections.constructor(
