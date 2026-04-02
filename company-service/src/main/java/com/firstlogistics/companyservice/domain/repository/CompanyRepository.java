@@ -1,6 +1,6 @@
 package com.firstlogistics.companyservice.domain.repository;
 
-import com.firstlogistics.companyservice.domain.repository.dto.CompanyQueryCondition;
+import com.firstlogistics.companyservice.domain.specification.CompanySearchSpec;
 import com.firstlogistics.companyservice.domain.entity.Company;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,7 +12,7 @@ public interface CompanyRepository {
 
     Company save(Company company);
 
-    Page<Company> findAll(CompanyQueryCondition condition, Pageable pageable);
+    Page<Company> findAll(CompanySearchSpec spec, Pageable pageable);
 
     Optional<Company> findById(UUID companyId);
 

@@ -21,7 +21,7 @@ public class CompanyQueryService {
     private final CompanyRepository companyRepository;
 
     public Page<CompanyResult> search(CompanySearchQuery query, Pageable pageable) {
-        return companyRepository.findAll(query.toCondition(), pageable)
+        return companyRepository.findAll(query.toSpec(), pageable)
                 .map(CompanyResult::from);
     }
 

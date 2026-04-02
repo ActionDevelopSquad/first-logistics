@@ -2,7 +2,7 @@ package com.firstlogistics.companyservice.infrastructure.persistence.jpa;
 
 import static com.firstlogistics.companyservice.infrastructure.persistence.jpa.QCompanyJpaEntity.companyJpaEntity;
 
-import com.firstlogistics.companyservice.domain.repository.dto.CompanyQueryCondition;
+import com.firstlogistics.companyservice.domain.specification.CompanySearchSpec;
 import com.firstlogistics.companyservice.domain.entity.Company;
 import com.firstlogistics.companyservice.domain.repository.CompanyRepository;
 import com.querydsl.core.BooleanBuilder;
@@ -34,8 +34,8 @@ public class CompanyRepositoryImpl implements CompanyRepository {
     }
 
     @Override
-    public Page<Company> findAll(CompanyQueryCondition condition, Pageable pageable) {
-        BooleanBuilder builder = buildPredicate(condition);
+    public Page<Company> findAll(CompanySearchSpec spec, Pageable pageable) {
+        BooleanBuilder builder = CompanySpecification.from(spec);
 
         List<CompanyJpaEntity> entities = queryFactory
                 .selectFrom(companyJpaEntity)
@@ -76,27 +76,6 @@ public class CompanyRepositoryImpl implements CompanyRepository {
     @Override
     public boolean existsByManagerId(UUID managerId) {
         return companyJpaRepository.existsByManagerIdAndDeletedAtIsNull(managerId);
-    }
-
-    private BooleanBuilder buildPredicate(CompanyQueryCondition condition) {
-        BooleanBuilder builder = new BooleanBuilder();
-
-        builder.and(companyJpaEntity.deletedAt.isNull());
-
-        if (condition.keyword() != null && !condition.keyword().isBlank()) {
-            builder.and(companyJpaEntity.name.containsIgnoreCase(condition.keyword()));
-        }
-        if (condition.type() != null || !condition.type().isBlank()) {
-            builder.and(companyJpaEntity.type.equalsIgnoreCase(condition.type()));
-        }
-        if (condition.hubId() != null) {
-            builder.and(companyJpaEntity.hubId.eq(condition.hubId()));
-        }
-        if (condition.status() != null) {
-            builder.and(companyJpaEntity.status.eq(condition.status()));
-        }
-
-        return builder;
     }
 
     private OrderSpecifier<?>[] resolveOrderSpecifiers(Sort sort) {

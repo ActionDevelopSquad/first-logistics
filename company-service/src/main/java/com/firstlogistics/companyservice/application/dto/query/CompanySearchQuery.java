@@ -3,7 +3,7 @@ package com.firstlogistics.companyservice.application.dto.query;
 import com.firstlogistics.companyservice.domain.enums.CompanyStatus;
 import com.firstlogistics.companyservice.domain.exception.CompanyErrorCode;
 import com.firstlogistics.companyservice.domain.exception.CompanyException;
-import com.firstlogistics.companyservice.domain.repository.dto.CompanyQueryCondition;
+import com.firstlogistics.companyservice.domain.specification.CompanySearchSpec;
 import java.util.UUID;
 
 public record CompanySearchQuery(
@@ -12,7 +12,7 @@ public record CompanySearchQuery(
         UUID hubId,
         String status
 ) {
-    public CompanyQueryCondition toCondition() {
+    public CompanySearchSpec toSpec() {
         CompanyStatus companyStatus = null;
         if (status != null) {
             try {
@@ -22,6 +22,6 @@ public record CompanySearchQuery(
             }
         }
 
-        return new CompanyQueryCondition(keyword, type, hubId, companyStatus);
+        return new CompanySearchSpec(keyword, type, hubId, companyStatus);
     }
 }
