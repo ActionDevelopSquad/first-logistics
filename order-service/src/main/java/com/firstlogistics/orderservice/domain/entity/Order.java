@@ -1,7 +1,6 @@
 package com.firstlogistics.orderservice.domain.entity;
 
 import com.firstlogistics.orderservice.domain.enums.OrderStatus;
-import com.firstlogistics.orderservice.domain.event.OrderEvents;
 import com.firstlogistics.orderservice.domain.exception.OrderErrorCode;
 import com.firstlogistics.orderservice.domain.exception.OrderException;
 import com.firstlogistics.orderservice.domain.vo.Address;
@@ -48,8 +47,7 @@ public class Order {
             String detailAddress,
             LocalDateTime dueDate,
             String requestMemo,
-            List<OrderItemInput> items,
-            OrderEvents orderEvents
+            List<OrderItemInput> items
     ) {
         validateInput(dueDate);
         Order order = new Order(
@@ -69,8 +67,6 @@ public class Order {
 
         order.createOrderItems(items);
         order.calculateTotalAmount();
-
-        orderEvents.created(order);
 
         return order;
     }
@@ -169,12 +165,10 @@ public class Order {
         this.status = resultStatus;
     }
 
-    public void accept(OrderEvents events) {
+    public void accept() {
         // TODO: 공급 업체 담당자 or 관리자 권한 검증
         this.status.validateNext(OrderStatus.ACCEPTED);
         this.status = OrderStatus.ACCEPTED;
-
-        events.accepted(this);
     }
 
     public void assignDelivery(UUID deliveryId) {

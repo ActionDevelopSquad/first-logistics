@@ -2,12 +2,14 @@ package com.firstlogistics.orderservice.application;
 
 import com.firstlogistics.orderservice.application.dto.CreateOrderCommand;
 import com.firstlogistics.orderservice.domain.entity.Order;
-import com.firstlogistics.orderservice.domain.event.OrderEvents;
+import com.firstlogistics.orderservice.domain.event.OrderAcceptedEvent;
+import com.firstlogistics.orderservice.domain.event.OrderCreatedEvent;
 import com.firstlogistics.orderservice.domain.exception.OrderErrorCode;
 import com.firstlogistics.orderservice.domain.exception.OrderException;
 import com.firstlogistics.orderservice.domain.repository.OrderRepository;
 import com.firstlogistics.orderservice.domain.vo.OrderId;
 import com.firstlogistics.orderservice.domain.vo.OrderItemInput;
+import common.event.Events;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +22,6 @@ import java.util.UUID;
 public class OrderCommandService {
 
     private final OrderRepository orderRepository;
-    private final OrderEvents orderEvents;
 
     @Transactional
     public UUID createOrder(CreateOrderCommand command) {
@@ -39,11 +40,12 @@ public class OrderCommandService {
                 command.detailAddress(),
                 command.dueDate(),
                 command.requestMemo(),
-                itemInputs,
-                orderEvents
+                itemInputs
         );
 
         orderRepository.save(order);
+
+        Events.trigger(OrderCreatedEvent.from(order));
 
         return order.getId().id();
     }
@@ -51,8 +53,11 @@ public class OrderCommandService {
     @Transactional
     public String acceptOrder(String userId, UUID orderId) {
         Order order = getOrder(orderId);
-        order.accept(orderEvents);
+        order.accept();
+
         orderRepository.save(order);
+
+        Events.trigger(OrderAcceptedEvent.from(order));
 
         return order.getStatus().name();
     }

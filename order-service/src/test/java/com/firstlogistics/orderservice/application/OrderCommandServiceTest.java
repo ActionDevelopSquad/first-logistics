@@ -2,16 +2,18 @@ package com.firstlogistics.orderservice.application;
 
 import com.firstlogistics.orderservice.application.dto.CreateOrderCommand;
 import com.firstlogistics.orderservice.domain.entity.Order;
-import com.firstlogistics.orderservice.domain.event.OrderEvents;
 import com.firstlogistics.orderservice.domain.repository.OrderRepository;
 import com.firstlogistics.orderservice.domain.exception.OrderException;
 import com.firstlogistics.orderservice.domain.exception.OrderErrorCode;
+import common.event.Events;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,11 +30,18 @@ class OrderCommandServiceTest {
     @Mock
     private OrderRepository orderRepository;
 
-    @Mock
-    private OrderEvents orderEvents;
-
     @InjectMocks
     private OrderCommandService orderCommandService;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
+    @BeforeEach
+    void setUp() {
+        // Events 클래스의 static field를 테스트용 Mock으로 초기화
+        new Events().init(eventPublisher);
+    }
+
 
     @Test
     @DisplayName("성공: 올바른 주문 생성 요청 시 주문 ID를 반환한다")
