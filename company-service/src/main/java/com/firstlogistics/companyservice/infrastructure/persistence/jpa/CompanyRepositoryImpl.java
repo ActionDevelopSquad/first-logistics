@@ -2,7 +2,7 @@ package com.firstlogistics.companyservice.infrastructure.persistence.jpa;
 
 import static com.firstlogistics.companyservice.infrastructure.persistence.jpa.QCompanyJpaEntity.companyJpaEntity;
 
-import com.firstlogistics.companyservice.application.dto.query.CompanyQueryCondition;
+import com.firstlogistics.companyservice.domain.repository.dto.CompanyQueryCondition;
 import com.firstlogistics.companyservice.domain.entity.Company;
 import com.firstlogistics.companyservice.domain.repository.CompanyRepository;
 import com.querydsl.core.BooleanBuilder;

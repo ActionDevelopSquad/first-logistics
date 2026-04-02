@@ -1,4 +1,4 @@
-package com.firstlogistics.companyservice.application.dto.query;
+package com.firstlogistics.companyservice.domain.repository.dto;
 
 import com.firstlogistics.companyservice.domain.enums.CompanyStatus;
 

@@ -3,6 +3,7 @@ package com.firstlogistics.companyservice.application.dto.query;
 import com.firstlogistics.companyservice.domain.enums.CompanyStatus;
 import com.firstlogistics.companyservice.domain.exception.CompanyErrorCode;
 import com.firstlogistics.companyservice.domain.exception.CompanyException;
+import com.firstlogistics.companyservice.domain.repository.dto.CompanyQueryCondition;
 import java.util.UUID;
 
 public record CompanySearchQuery(
