@@ -34,13 +34,14 @@ public enum OrderErrorCode implements ErrorCode {
     ALREADY_CANCELLED(HttpStatus.BAD_REQUEST, "ORD016", "이미 취소된 주문입니다."),
     ALREADY_CANCEL_REQUESTED(HttpStatus.BAD_REQUEST, "ORD017", "이미 취소 요청된 주문입니다."),
     CANNOT_REJECT_CANCEL(HttpStatus.BAD_REQUEST, "ORD018", "취소 요청 상태 주문이 아닙니다."),
+    CANCEL_TYPE_REQUIRED(HttpStatus.BAD_REQUEST, "ORD019", "주문 취소 시 취소 사유는 필수입니다."),
 
     // 배송 할당 관련
-    INVALID_DELIVERY_ID(HttpStatus.BAD_REQUEST, "ORD019", "배송 할당을 위해서는 유효한 배송 ID가 필수입니다."),
-    DELIVERY_ALREADY_ASSIGNED(HttpStatus.BAD_REQUEST, "ORD020", "이미 배송이 할당된 주문입니다."),
+    INVALID_DELIVERY_ID(HttpStatus.BAD_REQUEST, "ORD020", "배송 할당을 위해서는 유효한 배송 ID가 필수입니다."),
+    DELIVERY_ALREADY_ASSIGNED(HttpStatus.BAD_REQUEST, "ORD021", "이미 배송이 할당된 주문입니다."),
 
     // 동시성 제어
-    ALREADY_PROCESSING(HttpStatus.CONFLICT, "ORD021", "현재 다른 요청이 처리 중입니다. 잠시 후 다시 시도해주세요.");
+    ALREADY_PROCESSING(HttpStatus.CONFLICT, "ORD022", "현재 다른 요청이 처리 중입니다. 잠시 후 다시 시도해주세요.");
 
     private final HttpStatus status;
     private final String code;

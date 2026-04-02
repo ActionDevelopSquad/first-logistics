@@ -2,6 +2,7 @@ package com.firstlogistics.orderservice.application;
 
 import com.firstlogistics.orderservice.application.dto.CreateOrderCommand;
 import com.firstlogistics.orderservice.domain.entity.Order;
+import com.firstlogistics.orderservice.domain.enums.OrderCancelType;
 import com.firstlogistics.orderservice.domain.event.OrderAcceptedEvent;
 import com.firstlogistics.orderservice.domain.event.OrderCancelledEvent;
 import com.firstlogistics.orderservice.domain.event.OrderCreatedEvent;
@@ -66,13 +67,13 @@ public class OrderCommandService {
     // 주문 거절로 인한 취소
     @Transactional
     public String rejectOrder(UUID userId, UUID orderId) {
-        return processCancellation(userId, orderId);
+        return processCancellation(userId, orderId, OrderCancelType.SUPPLIER_CANCEL);
     }
 
     // 관리자가 직접 주문 취소
     @Transactional
     public String cancelOrder(UUID userId, UUID orderId) {
-        return processCancellation(userId, orderId);
+        return processCancellation(userId, orderId, OrderCancelType.ADMIN_CANCEL);
     }
 
     @Transactional
@@ -88,7 +89,7 @@ public class OrderCommandService {
     // 주문 취소 요청 승인으로 인한 취소
     @Transactional
     public String approveCancelRequest(UUID userId, UUID orderId) {
-        return processCancellation(userId, orderId);
+        return processCancellation(userId, orderId, OrderCancelType.ORDERER_REQUEST);
     }
 
     @Transactional
@@ -106,9 +107,9 @@ public class OrderCommandService {
                 .orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));
     }
 
-    private String processCancellation(UUID userId, UUID orderId) {
+    private String processCancellation(UUID userId, UUID orderId, OrderCancelType cancelType) {
         Order order  = getOrder(orderId);
-        order.cancel();
+        order.cancel(cancelType);
 
         orderRepository.save(order);
 

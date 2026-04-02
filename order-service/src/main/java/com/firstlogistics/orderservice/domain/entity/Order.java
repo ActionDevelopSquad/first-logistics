@@ -163,6 +163,7 @@ public class Order {
             if(!isSuccess) {
                 this.status = OrderStatus.CANCELLED;
                 this.previousStatus = null;
+                this.cancelType = OrderCancelType.STOCK_OUT;
                 return;
             }
 
@@ -212,8 +213,12 @@ public class Order {
     }
 
     // 주문 취소 / 거절 / 취소 요청 승인 (나중에 필요하면 분리)
-    public void cancel() {
+    public void cancel(OrderCancelType cancelType) {
         // TODO: 허브 관리자, 마스터 관리자, 공급 업체 담당자 권한 검증
+
+        if (cancelType == null) {
+            throw new OrderException(OrderErrorCode.CANCEL_TYPE_REQUIRED);
+        }
 
         if (this.status == OrderStatus.CANCELLED) {
             throw new OrderException(OrderErrorCode.ALREADY_CANCELLED);
@@ -222,6 +227,7 @@ public class Order {
         this.status.validateNext(OrderStatus.CANCELLED);
         this.status = OrderStatus.CANCELLED;
         this.previousStatus = null; // 취소 요청이었다면 이전 상태 초기화
+        this.cancelType = cancelType;
     }
 
     public void requestCancel() {
