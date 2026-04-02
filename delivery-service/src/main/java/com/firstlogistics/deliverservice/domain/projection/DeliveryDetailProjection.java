@@ -20,8 +20,8 @@ public record DeliveryDetailProjection(
 	UUID receiverId,
 	UUID receiverCompanyId,
 	UUID currentHubId,
-	String companyStaffName,
-	String companyStaffPhone,
+	String companyManagerName,
+	String companyManagerPhone,
 	LocalDateTime createdAt
 ) {
 
@@ -46,9 +46,9 @@ public record DeliveryDetailProjection(
 		int actualDistanceMeters,
 		int actualDurationMinutes,
 		RouteStatus status,
-		UUID deliveryStaffId,
-		String staffName,
-		String staffPhone,
+		UUID deliveryManagerId,
+		String managerName,
+		String managerPhone,
 		LocalDateTime expectedStartAt,
 		LocalDateTime expectedEndAt
 	) {

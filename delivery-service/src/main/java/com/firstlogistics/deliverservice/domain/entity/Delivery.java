@@ -5,7 +5,7 @@ import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.vo.Address;
 import com.firstlogistics.deliverservice.domain.vo.DeliveryId;
-import com.firstlogistics.deliverservice.domain.vo.DeliveryStaffId;
+import com.firstlogistics.deliverservice.domain.vo.DeliveryManagerId;
 import com.firstlogistics.deliverservice.domain.vo.GeoLocation;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -31,7 +31,7 @@ public class Delivery {
 	private UUID receiverId;
 	private String receiverSlackId;
 	private UUID receiverCompanyId;
-	private DeliveryStaffId receiverCompanyDeliveryStaffId;
+	private DeliveryManagerId receiverCompanyDeliveryManagerId;
 	private UUID currentHubId;
 	private List<DeliveryRoute> routes;
 
@@ -44,10 +44,10 @@ public class Delivery {
 		UUID receiverId,
 		String receiverSlackId,
 		UUID receiverCompanyId,
-		DeliveryStaffId receiverCompanyDeliveryStaffId
+		DeliveryManagerId receiverCompanyDeliveryManagerId
 	) {
 		if (orderId == null || sourceHubId == null || destinationHubId == null
-			|| receiverId == null || receiverCompanyId == null || receiverCompanyDeliveryStaffId == null) {
+			|| receiverId == null || receiverCompanyId == null || receiverCompanyDeliveryManagerId == null) {
 			throw new DeliveryException(DeliveryErrorCode.INVALID_DELIVERY_PARAMS);
 		}
 		if (receiverSlackId == null || receiverSlackId.isBlank()) {
@@ -58,7 +58,7 @@ public class Delivery {
 			sourceHubId, destinationHubId,
 			Address.of(roadAddress, detailAddress),
 			null,
-			receiverId, receiverSlackId, receiverCompanyId, receiverCompanyDeliveryStaffId,
+			receiverId, receiverSlackId, receiverCompanyId, receiverCompanyDeliveryManagerId,
 			sourceHubId,
 			new ArrayList<>()
 		);
@@ -75,7 +75,7 @@ public class Delivery {
 		UUID receiverId,
 		String receiverSlackId,
 		UUID receiverCompanyId,
-		DeliveryStaffId receiverCompanyDeliveryStaffId,
+		DeliveryManagerId receiverCompanyDeliveryManagerId,
 		UUID currentHubId,
 		List<DeliveryRoute> routes
 	) {
@@ -83,7 +83,7 @@ public class Delivery {
 			id, orderId, status,
 			sourceHubId, destinationHubId,
 			deliveryAddress, deliveryLocation,
-			receiverId, receiverSlackId, receiverCompanyId, receiverCompanyDeliveryStaffId,
+			receiverId, receiverSlackId, receiverCompanyId, receiverCompanyDeliveryManagerId,
 			currentHubId, new ArrayList<>(routes)
 		);
 	}
@@ -112,8 +112,8 @@ public class Delivery {
 		this.status = DeliveryStatus.CANCELLED;
 	}
 
-	public void assignRoute(DeliveryRoute route, DeliveryStaffId staffId) {
-		route.assignStaff(staffId);
+	public void assignRoute(DeliveryRoute route, DeliveryManagerId managerId) {
+		route.assignManager(managerId);
 		this.routes.add(route);
 	}
 }

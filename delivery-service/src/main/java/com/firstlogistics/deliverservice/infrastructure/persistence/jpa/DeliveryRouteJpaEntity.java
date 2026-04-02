@@ -54,8 +54,8 @@ public class DeliveryRouteJpaEntity extends BaseAuditEntity {
 	@Column(name = "status", nullable = false)
 	private RouteStatus status;
 
-	@Column(name = "delivery_staff_id", columnDefinition = "uuid")
-	private UUID deliveryStaffId;
+	@Column(name = "delivery_manager_id", columnDefinition = "uuid")
+	private UUID deliveryManagerId;
 
 	public static DeliveryRouteJpaEntity create(
 		UUID id,
@@ -68,14 +68,14 @@ public class DeliveryRouteJpaEntity extends BaseAuditEntity {
 		int actualDistance,
 		int actualDuration,
 		RouteStatus status,
-		UUID deliveryStaffId
+		UUID deliveryManagerId
 	) {
 		return new DeliveryRouteJpaEntity(
 			id, deliveryId, deliveryRouteSequence,
 			sourceHubId, destinationHubId,
 			estimatedDistance, estimatedDuration,
 			actualDistance, actualDuration,
-			status, deliveryStaffId
+			status, deliveryManagerId
 		);
 	}
 }

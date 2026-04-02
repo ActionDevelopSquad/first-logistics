@@ -23,9 +23,9 @@ public class DeliveryQueryRepositoryImpl implements DeliveryQueryRepository {
 
 	private static final QDeliveryJpaEntity delivery = QDeliveryJpaEntity.deliveryJpaEntity;
 	private static final QDeliveryRouteJpaEntity route = QDeliveryRouteJpaEntity.deliveryRouteJpaEntity;
-	private static final QDeliveryStaffJpaEntity hubDeliveryStaff = new QDeliveryStaffJpaEntity("hubDeliveryStaff");
-	private static final QDeliveryStaffJpaEntity companyDeliveryStaff = new QDeliveryStaffJpaEntity("companyDeliveryStaff");
-	private static final QStaffTimetableJpaEntity staffTimetable = QStaffTimetableJpaEntity.staffTimetableJpaEntity;
+	private static final QDeliveryManagerJpaEntity hubDeliveryManager = new QDeliveryManagerJpaEntity("hubDeliveryManager");
+	private static final QDeliveryManagerJpaEntity companyDeliveryManager = new QDeliveryManagerJpaEntity("companyDeliveryManager");
+	private static final QManagerTimetableJpaEntity managerTimetable = QManagerTimetableJpaEntity.managerTimetableJpaEntity;
 
 	@Override
 	public Optional<DeliveryDetailProjection> findById(UUID deliveryId) {
@@ -41,12 +41,12 @@ public class DeliveryQueryRepositoryImpl implements DeliveryQueryRepository {
 				delivery.receiverId,
 				delivery.receiverCompanyId,
 				delivery.currentHubId,
-				companyDeliveryStaff.staffName,
-				companyDeliveryStaff.phoneNumber,
+				companyDeliveryManager.managerName,
+				companyDeliveryManager.phoneNumber,
 				delivery.createdAt
 			))
 			.from(delivery)
-			.leftJoin(companyDeliveryStaff).on(companyDeliveryStaff.id.eq(delivery.receiverCompanyDeliveryStaffId))
+			.leftJoin(companyDeliveryManager).on(companyDeliveryManager.id.eq(delivery.receiverCompanyDeliveryManagerId))
 			.where(delivery.id.eq(deliveryId), notDeleted())
 			.fetchOne();
 
@@ -66,17 +66,17 @@ public class DeliveryQueryRepositoryImpl implements DeliveryQueryRepository {
 				route.actualDistance,
 				route.actualDuration,
 				route.status,
-				route.deliveryStaffId,
-				hubDeliveryStaff.staffName,
-				hubDeliveryStaff.phoneNumber,
-				staffTimetable.expectedStartAt,
-				staffTimetable.expectedEndAt
+				route.deliveryManagerId,
+				hubDeliveryManager.managerName,
+				hubDeliveryManager.phoneNumber,
+				managerTimetable.expectedStartAt,
+				managerTimetable.expectedEndAt
 			))
 			.from(route)
-			.leftJoin(hubDeliveryStaff).on(hubDeliveryStaff.id.eq(route.deliveryStaffId))
-			.leftJoin(staffTimetable).on(
-				staffTimetable.deliveryStaff.id.eq(route.deliveryStaffId)
-					.and(staffTimetable.deliveryId.eq(route.deliveryId))
+			.leftJoin(hubDeliveryManager).on(hubDeliveryManager.id.eq(route.deliveryManagerId))
+			.leftJoin(managerTimetable).on(
+				managerTimetable.deliveryManager.id.eq(route.deliveryManagerId)
+					.and(managerTimetable.deliveryId.eq(route.deliveryId))
 			)
 			.where(route.deliveryId.eq(deliveryId))
 			.orderBy(route.deliveryRouteSequence.asc())
@@ -100,8 +100,8 @@ public class DeliveryQueryRepositoryImpl implements DeliveryQueryRepository {
 			))
 			.from(delivery)
 			.leftJoin(delivery.routes, route)
-			.leftJoin(hubDeliveryStaff).on(hubDeliveryStaff.id.eq(route.deliveryStaffId))
-			.leftJoin(companyDeliveryStaff).on(companyDeliveryStaff.id.eq(delivery.receiverCompanyDeliveryStaffId))
+			.leftJoin(hubDeliveryManager).on(hubDeliveryManager.id.eq(route.deliveryManagerId))
+			.leftJoin(companyDeliveryManager).on(companyDeliveryManager.id.eq(delivery.receiverCompanyDeliveryManagerId))
 			.where(
 				notDeleted(),
 				scopeCondition(spec),
@@ -112,8 +112,8 @@ public class DeliveryQueryRepositoryImpl implements DeliveryQueryRepository {
 				receiverCompanyIdEq(spec),
 				receiverIdEq(spec),
 				resolvedReceiverIdIn(spec),
-				staffNameContains(spec, hubDeliveryStaff, companyDeliveryStaff),
-				staffPhoneContains(spec, hubDeliveryStaff, companyDeliveryStaff),
+				managerNameContains(spec, hubDeliveryManager, companyDeliveryManager),
+				managerPhoneContains(spec, hubDeliveryManager, companyDeliveryManager),
 				dateRange(spec),
 				cursorCondition(spec)
 			)

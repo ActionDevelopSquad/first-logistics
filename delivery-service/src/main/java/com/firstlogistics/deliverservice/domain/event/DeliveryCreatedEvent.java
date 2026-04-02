@@ -44,20 +44,20 @@ public record DeliveryCreatedEvent(
 		String receiverRoadAddress,
 		String receiverDetailAddress,
 		List<DeliveryRouteInfo> deliveryRoutes,
-		String companyDeliveryStaffSlackId,
-		String companyDeliveryStaffName,
-		String companyDeliveryStaffPhone,
-		String companyDeliveryStaffEmail
+		String companyDeliveryManagerSlackId,
+		String companyDeliveryManagerName,
+		String companyDeliveryManagerPhone,
+		String companyDeliveryManagerEmail
 	) {
 		public static DeliveryInfo of(UUID deliveryId, String receiverName, String receiverSlackId,
 				String receiverRoadAddress, String receiverDetailAddress,
 				List<DeliveryRouteInfo> deliveryRoutes,
-				String companyDeliveryStaffSlackId, String companyDeliveryStaffName,
-				String companyDeliveryStaffPhone, String companyDeliveryStaffEmail) {
+				String companyDeliveryManagerSlackId, String companyDeliveryManagerName,
+				String companyDeliveryManagerPhone, String companyDeliveryManagerEmail) {
 			return new DeliveryInfo(deliveryId, receiverName, receiverSlackId,
 				receiverRoadAddress, receiverDetailAddress, deliveryRoutes,
-				companyDeliveryStaffSlackId, companyDeliveryStaffName,
-				companyDeliveryStaffPhone, companyDeliveryStaffEmail);
+				companyDeliveryManagerSlackId, companyDeliveryManagerName,
+				companyDeliveryManagerPhone, companyDeliveryManagerEmail);
 		}
 	}
 
@@ -71,16 +71,16 @@ public record DeliveryCreatedEvent(
 		String destinationHubRoadAddress,
 		int estimatedDistanceMeters,
 		int estimatedDurationMinutes,
-		String hubDeliveryStaffSlackId
+		String hubDeliveryManagerSlackId
 	) {
 		public static DeliveryRouteInfo of(int sequence,
 				UUID sourceHubId, String sourceHubName, String sourceHubRoadAddress,
 				UUID destinationHubId, String destinationHubName, String destinationHubRoadAddress,
-				int estimatedDistanceMeters, int estimatedDurationMinutes, String hubDeliveryStaffSlackId) {
+				int estimatedDistanceMeters, int estimatedDurationMinutes, String hubDeliveryManagerSlackId) {
 			return new DeliveryRouteInfo(sequence,
 				sourceHubId, sourceHubName, sourceHubRoadAddress,
 				destinationHubId, destinationHubName, destinationHubRoadAddress,
-				estimatedDistanceMeters, estimatedDurationMinutes, hubDeliveryStaffSlackId);
+				estimatedDistanceMeters, estimatedDurationMinutes, hubDeliveryManagerSlackId);
 		}
 	}
 }

@@ -34,10 +34,10 @@ public class DeliveryQueryCondition {
 		return delivery.receiverCompanyId.eq(scopeCompanyId);
 	}
 
-	public static BooleanExpression scopeForDeliveryManager(UUID scopeStaffId) {
-		if (scopeStaffId == null) return null;
-		return route.deliveryStaffId.eq(scopeStaffId)
-			.or(delivery.receiverCompanyDeliveryStaffId.eq(scopeStaffId));
+	public static BooleanExpression scopeForDeliveryManager(UUID scopeManagerId) {
+		if (scopeManagerId == null) return null;
+		return route.deliveryManagerId.eq(scopeManagerId)
+			.or(delivery.receiverCompanyDeliveryManagerId.eq(scopeManagerId));
 	}
 
 	public static BooleanExpression orderIdEq(DeliverySearchSpec spec) {
@@ -69,24 +69,24 @@ public class DeliveryQueryCondition {
 		return delivery.receiverId.in(spec.resolvedReceiverIds());
 	}
 
-	public static BooleanExpression staffNameContains(
+	public static BooleanExpression managerNameContains(
 		DeliverySearchSpec spec,
-		QDeliveryStaffJpaEntity hubDeliveryStaff,
-		QDeliveryStaffJpaEntity companyDeliveryStaff
+		QDeliveryManagerJpaEntity hubDeliveryManager,
+		QDeliveryManagerJpaEntity companyDeliveryManager
 	) {
-		if (spec.staffName() == null) return null;
-		return hubDeliveryStaff.staffName.containsIgnoreCase(spec.staffName())
-			.or(companyDeliveryStaff.staffName.containsIgnoreCase(spec.staffName()));
+		if (spec.managerName() == null) return null;
+		return hubDeliveryManager.managerName.containsIgnoreCase(spec.managerName())
+			.or(companyDeliveryManager.managerName.containsIgnoreCase(spec.managerName()));
 	}
 
-	public static BooleanExpression staffPhoneContains(
+	public static BooleanExpression managerPhoneContains(
 		DeliverySearchSpec spec,
-		QDeliveryStaffJpaEntity hubDeliveryStaff,
-		QDeliveryStaffJpaEntity companyDeliveryStaff
+		QDeliveryManagerJpaEntity hubDeliveryManager,
+		QDeliveryManagerJpaEntity companyDeliveryManager
 	) {
-		if (spec.staffPhone() == null) return null;
-		return hubDeliveryStaff.phoneNumber.containsIgnoreCase(spec.staffPhone())
-			.or(companyDeliveryStaff.phoneNumber.containsIgnoreCase(spec.staffPhone()));
+		if (spec.managerPhone() == null) return null;
+		return hubDeliveryManager.phoneNumber.containsIgnoreCase(spec.managerPhone())
+			.or(companyDeliveryManager.phoneNumber.containsIgnoreCase(spec.managerPhone()));
 	}
 
 	public static BooleanExpression dateRange(DeliverySearchSpec spec) {

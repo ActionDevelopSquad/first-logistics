@@ -5,7 +5,7 @@ import com.firstlogistics.deliverservice.application.dto.result.DeliveryDetailRe
 import com.firstlogistics.deliverservice.application.dto.result.DeliveryListResult;
 import com.firstlogistics.deliverservice.application.port.CompanyPort;
 import com.firstlogistics.deliverservice.application.port.HubPort;
-import com.firstlogistics.deliverservice.application.port.HubStaffPort;
+import com.firstlogistics.deliverservice.application.port.HubManagerPort;
 import com.firstlogistics.deliverservice.application.port.UserPort;
 import com.firstlogistics.deliverservice.application.port.dto.CompanyResponse;
 import com.firstlogistics.deliverservice.application.port.dto.HubResponse;
@@ -38,7 +38,7 @@ public class DeliveryQueryService {
 	private final DeliveryQueryRepository deliveryQueryRepository;
 	private final UserPort userPort;
 	private final HubPort hubPort;
-	private final HubStaffPort hubStaffPort;
+	private final HubManagerPort hubManagerPort;
 	private final CompanyPort companyPort;
 
 	public boolean existsByOrderId(UUID orderId) {
@@ -50,7 +50,7 @@ public class DeliveryQueryService {
 
 		UUID hubId =
 				userRole == UserRole.HUB_MANAGER
-						? hubStaffPort.getHubStaff(query.userId()).hubId()
+						? hubManagerPort.getHubManager(query.userId()).hubId()
 						: null;
 		UUID companyId =
 				userRole == UserRole.COMPANY_MANAGER
@@ -102,14 +102,14 @@ public class DeliveryQueryService {
 		switch (userRole) {
 			case MASTER -> {}
 			case HUB_MANAGER -> {
-				UUID hubId = hubStaffPort.getHubStaff(userId).hubId();
+				UUID hubId = hubManagerPort.getHubManager(userId).hubId();
 				if (!hubId.equals(deliveryDetail.sourceHubId()) && !hubId.equals(deliveryDetail.destinationHubId())) {
 					throw new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
 				}
 			}
 			case DELIVERY_MANAGER -> {
 				boolean isAssigned = routes.stream()
-					.anyMatch(route -> userId.equals(route.deliveryStaffId()));
+					.anyMatch(route -> userId.equals(route.deliveryManagerId()));
 				if (!isAssigned) {
 					throw new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
 				}

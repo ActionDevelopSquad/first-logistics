@@ -19,7 +19,7 @@ public record DeliveryDetailResponse(
 	String detailAddress,
 	ReceiverInfo receiver,
 	CompanyInfo receiverCompany,
-	DeliveryStaffInfo companyDeliveryStaff,
+	DeliveryManagerInfo companyDeliveryManager,
 	List<RouteDetail> routes,
 	LocalDateTime createdAt
 ) {
@@ -36,7 +36,7 @@ public record DeliveryDetailResponse(
 			result.detailAddress(),
 			ReceiverInfo.from(result.receiver()),
 			CompanyInfo.from(result.receiverCompany()),
-			DeliveryStaffInfo.from(result.companyDeliveryStaff()),
+			DeliveryManagerInfo.from(result.companyDeliveryManager()),
 			result.routes().stream()
 				.map(RouteDetail::from)
 				.toList(),
@@ -65,10 +65,10 @@ public record DeliveryDetailResponse(
 		}
 	}
 
-	public record DeliveryStaffInfo(String name, String phone) {
-		public static DeliveryStaffInfo from(DeliveryDetailResult.DeliveryStaffInfo staff) {
-			if (staff == null) return null;
-			return new DeliveryStaffInfo(staff.name(), staff.phone());
+	public record DeliveryManagerInfo(String name, String phone) {
+		public static DeliveryManagerInfo from(DeliveryDetailResult.DeliveryManagerInfo manager) {
+			if (manager == null) return null;
+			return new DeliveryManagerInfo(manager.name(), manager.phone());
 		}
 	}
 
@@ -82,7 +82,7 @@ public record DeliveryDetailResponse(
 		int actualDistanceMeters,
 		int actualDurationMinutes,
 		RouteStatus status,
-		DeliveryStaffInfo hubDeliveryStaff,
+		DeliveryManagerInfo hubDeliveryManager,
 		LocalDateTime expectedStartAt,
 		LocalDateTime expectedEndAt
 	) {
@@ -97,7 +97,7 @@ public record DeliveryDetailResponse(
 				route.actualDistanceMeters(),
 				route.actualDurationMinutes(),
 				route.status(),
-				DeliveryStaffInfo.from(route.hubDeliveryStaff()),
+				DeliveryManagerInfo.from(route.hubDeliveryManager()),
 				route.expectedStartAt(),
 				route.expectedEndAt()
 			);

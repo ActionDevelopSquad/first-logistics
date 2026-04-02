@@ -48,7 +48,7 @@ public class DeliveryCommandFacade {
                 .map(HubRouteStepResponse::sourceHubId)
                 .distinct()
                 .sorted()
-                .map(DeliveryLockKeyGenerator::hubStaffAssignKey)
+                .map(DeliveryLockKeyGenerator::hubManagerAssignKey)
                 .toList();
     }
 }

@@ -88,7 +88,7 @@ class DeliveryEventKafkaProducerTest {
             "slack-company",
             "업체담당자",
             "010-3333-3333",
-            "company-staff@test.com"
+            "company-manager@test.com"
         );
         DeliveryCreatedEvent deliveryCreatedEvent = DeliveryCreatedEvent.create(orderInfo, deliveryInfo);
 

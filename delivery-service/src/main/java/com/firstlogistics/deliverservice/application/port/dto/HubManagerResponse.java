@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.UUID;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record HubStaffResponse(
-	UUID staffId,
+public record HubManagerResponse(
+	UUID managerId,
 	UUID hubId
 ) {
 }

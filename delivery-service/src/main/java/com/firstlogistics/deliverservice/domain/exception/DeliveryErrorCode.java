@@ -14,7 +14,7 @@ public enum DeliveryErrorCode implements ErrorCode {
 	INVALID_GEO_LOCATION(HttpStatus.BAD_REQUEST, "DR_E002", "위치 정보가 유효하지 않습니다."),
 	INVALID_DISTANCE(HttpStatus.BAD_REQUEST, "DR_E003", "거리 정보는 0 이상이어야 합니다."),
 	INVALID_TIME(HttpStatus.BAD_REQUEST, "DR_E004", "시간 정보는 0 이상이어야 합니다."),
-	INVALID_STAFF_DETAIL(HttpStatus.BAD_REQUEST, "DR_E005", "담당자 정보가 유효하지 않습니다."),
+	INVALID_MANAGER_DETAIL(HttpStatus.BAD_REQUEST, "DR_E005", "담당자 정보가 유효하지 않습니다."),
 
 	// Command / Query 유효성
 	INVALID_COMMAND_PARAMS(HttpStatus.BAD_REQUEST, "DR_E010", "커맨드 파라미터가 유효하지 않습니다."),
@@ -23,7 +23,7 @@ public enum DeliveryErrorCode implements ErrorCode {
 	// 엔티티 유효성
 	INVALID_DELIVERY_PARAMS(HttpStatus.BAD_REQUEST, "DR_E006", "배송 생성 파라미터가 유효하지 않습니다."),
 	INVALID_DELIVERY_ROUTE_PARAMS(HttpStatus.BAD_REQUEST, "DR_E007", "배송 경로 생성 파라미터가 유효하지 않습니다."),
-	INVALID_DELIVERY_STAFF_PARAMS(HttpStatus.BAD_REQUEST, "DR_E008", "배송 담당자 생성 파라미터가 유효하지 않습니다."),
+	INVALID_DELIVERY_MANAGER_PARAMS(HttpStatus.BAD_REQUEST, "DR_E008", "배송 담당자 생성 파라미터가 유효하지 않습니다."),
 	INVALID_TIMETABLE_PARAMS(HttpStatus.BAD_REQUEST, "DR_E009", "타임테이블 생성 파라미터가 유효하지 않습니다."),
 
 	// 배송
@@ -34,8 +34,8 @@ public enum DeliveryErrorCode implements ErrorCode {
 	DELIVERY_ACCESS_DENIED(HttpStatus.FORBIDDEN, "DR_E105", "해당 배송에 대한 접근 권한이 없습니다."),
 
 	// 배송 담당자
-	HUB_DELIVERY_STAFF_NOT_AVAILABLE(HttpStatus.NOT_FOUND, "DR_E201", "배정 가능한 허브 배송담당자가 없습니다."),
-	COMPANY_DELIVERY_STAFF_NOT_AVAILABLE(HttpStatus.NOT_FOUND, "DR_E202", "배정 가능한 업체 배송담당자가 없습니다."),
+	HUB_DELIVERY_MANAGER_NOT_AVAILABLE(HttpStatus.NOT_FOUND, "DR_E201", "배정 가능한 허브 배송담당자가 없습니다."),
+	COMPANY_DELIVERY_MANAGER_NOT_AVAILABLE(HttpStatus.NOT_FOUND, "DR_E202", "배정 가능한 업체 배송담당자가 없습니다."),
 
 	// 외부 서비스
 	HUB_NOT_FOUND(HttpStatus.NOT_FOUND, "DR_E401", "허브를 찾을 수 없습니다."),
@@ -45,7 +45,7 @@ public enum DeliveryErrorCode implements ErrorCode {
 	HUB_ROUTE_INVALID(HttpStatus.UNPROCESSABLE_ENTITY, "DR_E405", "허브 경로 정보가 유효하지 않습니다."),
 
 	// 락
-	DELIVERY_STAFF_ASSIGN_LOCK_ACQUISITION_FAILED(HttpStatus.CONFLICT, "DR_E301", "배송 담당자 배정 락 획득에 실패했습니다.")
+	DELIVERY_MANAGER_ASSIGN_LOCK_ACQUISITION_FAILED(HttpStatus.CONFLICT, "DR_E301", "배송 담당자 배정 락 획득에 실패했습니다.")
 
 	;
 

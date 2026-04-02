@@ -21,18 +21,18 @@ import java.util.UUID;
 
 @Getter
 @Entity
-@Table(name = "p_staff_timetable")
+@Table(name = "p_manager_timetable")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class StaffTimetableJpaEntity extends BaseAuditEntity {
+public class ManagerTimetableJpaEntity extends BaseAuditEntity {
 
 	@Id
 	@Column(name = "id", columnDefinition = "uuid")
 	private UUID id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "delivery_staff_id", nullable = false)
-	private DeliveryStaffJpaEntity deliveryStaff;
+	@JoinColumn(name = "delivery_manager_id", nullable = false)
+	private DeliveryManagerJpaEntity deliveryManager;
 
 	@Column(name = "delivery_id", nullable = false, columnDefinition = "uuid")
 	private UUID deliveryId;
@@ -47,16 +47,16 @@ public class StaffTimetableJpaEntity extends BaseAuditEntity {
 	@Column(name = "status", nullable = false)
 	private TimetableStatus status;
 
-	public static StaffTimetableJpaEntity create(
+	public static ManagerTimetableJpaEntity create(
 		UUID id,
-		DeliveryStaffJpaEntity deliveryStaff,
+		DeliveryManagerJpaEntity deliveryManager,
 		UUID deliveryId,
 		LocalDateTime expectedStartAt,
 		LocalDateTime expectedEndAt,
 		TimetableStatus status
 	) {
-		return new StaffTimetableJpaEntity(
-			id, deliveryStaff, deliveryId,
+		return new ManagerTimetableJpaEntity(
+			id, deliveryManager, deliveryId,
 			expectedStartAt, expectedEndAt, status
 		);
 	}

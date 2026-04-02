@@ -26,8 +26,8 @@ public record DeliveryListQuery(
 	List<UUID> resolvedReceiverIds,
 	String receiverName,
 	String receiverPhone,
-	String staffName,
-	String staffPhone,
+	String managerName,
+	String managerPhone,
 
 	LocalDateTime startDate,
 	LocalDateTime endDate,
@@ -60,7 +60,7 @@ public record DeliveryListQuery(
 			this.orderId, this.status,
 			this.sourceHubId, this.destinationHubId,
 			this.receiverCompanyId, this.receiverId, this.resolvedReceiverIds, this.receiverName, this.receiverPhone,
-			this.staffName, this.staffPhone,
+			this.managerName, this.managerPhone,
 			this.startDate, this.endDate,
 			this.cursorId, this.cursorCreatedAt, this.size
 		);
@@ -74,7 +74,7 @@ public record DeliveryListQuery(
 			this.receiverCompanyId, this.receiverId,
 			resolvedReceiverIds != null ? List.copyOf(resolvedReceiverIds) : null,
 			this.receiverName, this.receiverPhone,
-			this.staffName, this.staffPhone,
+			this.managerName, this.managerPhone,
 			this.startDate, this.endDate,
 			this.cursorId, this.cursorCreatedAt, this.size
 		);
@@ -86,7 +86,7 @@ public record DeliveryListQuery(
 			this.orderId, this.status,
 			this.sourceHubId, this.destinationHubId,
 			this.receiverCompanyId, this.receiverId, this.resolvedReceiverIds,
-			this.staffName, this.staffPhone,
+			this.managerName, this.managerPhone,
 			this.startDate, this.endDate,
 			this.cursorId, this.cursorCreatedAt, this.size
 		);

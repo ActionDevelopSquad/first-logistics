@@ -1,6 +1,6 @@
 package com.firstlogistics.deliverservice.infrastructure.persistence.jpa;
 
-import com.firstlogistics.deliverservice.domain.enums.StaffType;
+import com.firstlogistics.deliverservice.domain.enums.ManagerType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -10,9 +10,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-public interface DeliveryStaffJpaRepository extends JpaRepository<DeliveryStaffJpaEntity, UUID> {
+public interface DeliveryManagerJpaRepository extends JpaRepository<DeliveryManagerJpaEntity, UUID> {
 
-	@Query("SELECT COALESCE(MAX(ds.deliverySequence), 0) FROM DeliveryStaffJpaEntity ds WHERE ds.deletedAt IS NULL")
+	@Query("SELECT COALESCE(MAX(ds.deliverySequence), 0) FROM DeliveryManagerJpaEntity ds WHERE ds.deletedAt IS NULL")
 	int findMaxSequence();
 
 	/**
@@ -21,14 +21,14 @@ public interface DeliveryStaffJpaRepository extends JpaRepository<DeliveryStaffJ
 	 * 정렬: 마지막 배정 종료시간 오름차순(타임테이블 없는 담당자 우선) → deliverySequence 오름차순
 	 */
 	@Query("""
-		SELECT ds FROM DeliveryStaffJpaEntity ds
-		LEFT JOIN StaffTimetableJpaEntity st1 ON st1.deliveryStaff = ds
+		SELECT ds FROM DeliveryManagerJpaEntity ds
+		LEFT JOIN ManagerTimetableJpaEntity st1 ON st1.deliveryManager = ds
 		WHERE ds.hubId = :hubId
-		  AND ds.staffType = :staffType
+		  AND ds.managerType = :managerType
 		  AND ds.deletedAt IS NULL
 		  AND NOT EXISTS (
-		      SELECT 1 FROM StaffTimetableJpaEntity st2
-		      WHERE st2.deliveryStaff = ds
+		      SELECT 1 FROM ManagerTimetableJpaEntity st2
+		      WHERE st2.deliveryManager = ds
 		        AND st2.status IN ('CREATED', 'HUB_MOVING')
 		        AND st2.expectedStartAt < :assignmentEnd
 		        AND st2.expectedEndAt > :assignmentStart
@@ -36,9 +36,9 @@ public interface DeliveryStaffJpaRepository extends JpaRepository<DeliveryStaffJ
 		GROUP BY ds
 		ORDER BY MAX(st1.expectedEndAt) ASC NULLS FIRST, ds.deliverySequence ASC
 		""")
-	List<DeliveryStaffJpaEntity> findNextAvailableStaff(
+	List<DeliveryManagerJpaEntity> findNextAvailableManager(
 		@Param("hubId") UUID hubId,
-		@Param("staffType") StaffType staffType,
+		@Param("managerType") ManagerType managerType,
 		@Param("assignmentStart") LocalDateTime assignmentStart,
 		@Param("assignmentEnd") LocalDateTime assignmentEnd,
 		Pageable pageable

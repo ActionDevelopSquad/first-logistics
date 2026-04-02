@@ -31,14 +31,14 @@ public class DeliveryDistributedLockService implements DistributedLockPort {
             for (RLock lock : locks) {
                 boolean locked = lock.tryLock(WAIT_TIME_SECONDS, LEASE_TIME_SECONDS, TimeUnit.SECONDS);
                 if (!locked) {
-                    throw new DistributedLockException(DeliveryErrorCode.DELIVERY_STAFF_ASSIGN_LOCK_ACQUISITION_FAILED);
+                    throw new DistributedLockException(DeliveryErrorCode.DELIVERY_MANAGER_ASSIGN_LOCK_ACQUISITION_FAILED);
                 }
             }
 
             return action.get();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new DistributedLockException(DeliveryErrorCode.DELIVERY_STAFF_ASSIGN_LOCK_ACQUISITION_FAILED);
+            throw new DistributedLockException(DeliveryErrorCode.DELIVERY_MANAGER_ASSIGN_LOCK_ACQUISITION_FAILED);
         } finally {
             unlockAll(locks);
         }

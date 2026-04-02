@@ -66,8 +66,8 @@ public class DeliveryJpaEntity extends BaseAuditEntity {
 	@Column(name = "receiver_company_id", nullable = false, columnDefinition = "uuid")
 	private UUID receiverCompanyId;
 
-	@Column(name = "receiver_company_delivery_staff_id", columnDefinition = "uuid")
-	private UUID receiverCompanyDeliveryStaffId;
+	@Column(name = "receiver_company_delivery_manager_id", columnDefinition = "uuid")
+	private UUID receiverCompanyDeliveryManagerId;
 
 	@Column(name = "current_hub_id", columnDefinition = "uuid")
 	private UUID currentHubId;
@@ -89,7 +89,7 @@ public class DeliveryJpaEntity extends BaseAuditEntity {
 		UUID receiverId,
 		String receiverSlackId,
 		UUID receiverCompanyId,
-		UUID receiverCompanyDeliveryStaffId,
+		UUID receiverCompanyDeliveryManagerId,
 		UUID currentHubId
 	) {
 		return new DeliveryJpaEntity(
@@ -97,7 +97,7 @@ public class DeliveryJpaEntity extends BaseAuditEntity {
 			sourceHubId, destinationHubId,
 			roadAddress, detailAddress, latitude, longitude,
 			receiverId, receiverSlackId,
-			receiverCompanyId, receiverCompanyDeliveryStaffId,
+			receiverCompanyId, receiverCompanyDeliveryManagerId,
 			currentHubId,
 			new ArrayList<>()
 		);

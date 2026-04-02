@@ -1,0 +1,47 @@
+package com.firstlogistics.deliverservice.infrastructure.persistence.jpa;
+
+import com.firstlogistics.deliverservice.domain.entity.DeliveryManager;
+import com.firstlogistics.deliverservice.domain.enums.ManagerType;
+import com.firstlogistics.deliverservice.domain.repository.DeliveryManagerRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+@Repository
+@RequiredArgsConstructor
+public class DeliveryManagerRepositoryImpl implements DeliveryManagerRepository {
+
+	private final DeliveryManagerJpaRepository deliveryManagerJpaRepository;
+	private final DeliveryManagerMapper deliveryManagerMapper;
+
+	@Override
+	public Optional<DeliveryManager> findNextHubDeliveryManager(UUID hubId, LocalDateTime assignmentStart, LocalDateTime assignmentEnd) {
+		List<DeliveryManagerJpaEntity> results = deliveryManagerJpaRepository
+			.findNextAvailableManager(hubId, ManagerType.HUB_DELIVERY, assignmentStart, assignmentEnd, PageRequest.of(0, 1));
+		return results.isEmpty() ? Optional.empty() : Optional.of(deliveryManagerMapper.toDomain(results.get(0)));
+	}
+
+	@Override
+	public Optional<DeliveryManager> findNextCompanyDeliveryManager(UUID hubId, LocalDateTime assignmentStart, LocalDateTime assignmentEnd) {
+		List<DeliveryManagerJpaEntity> results = deliveryManagerJpaRepository
+			.findNextAvailableManager(hubId, ManagerType.COMPANY_DELIVERY, assignmentStart, assignmentEnd, PageRequest.of(0, 1));
+		return results.isEmpty() ? Optional.empty() : Optional.of(deliveryManagerMapper.toDomain(results.get(0)));
+	}
+
+	@Override
+	public int findNextSequence() {
+		return deliveryManagerJpaRepository.findMaxSequence() + 1;
+	}
+
+	@Override
+	public DeliveryManager save(DeliveryManager deliveryManager) {
+		DeliveryManagerJpaEntity jpaEntity = deliveryManagerMapper.toJpaEntity(deliveryManager);
+		DeliveryManagerJpaEntity savedEntity = deliveryManagerJpaRepository.save(jpaEntity);
+		return deliveryManagerMapper.toDomain(savedEntity);
+	}
+}

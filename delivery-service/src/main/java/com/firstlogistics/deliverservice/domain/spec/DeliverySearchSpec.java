@@ -16,8 +16,8 @@ public record DeliverySearchSpec(
 	UUID receiverCompanyId,
 	UUID receiverId,
 	List<UUID> resolvedReceiverIds,
-	String staffName,
-	String staffPhone,
+	String managerName,
+	String managerPhone,
 
 	LocalDateTime startDate,
 	LocalDateTime endDate,
@@ -31,7 +31,7 @@ public record DeliverySearchSpec(
 		UUID orderId, DeliveryStatus status,
 		UUID sourceHubId, UUID destinationHubId,
 		UUID receiverCompanyId, UUID receiverId, List<UUID> resolvedReceiverIds,
-		String staffName, String staffPhone,
+		String managerName, String managerPhone,
 		LocalDateTime startDate, LocalDateTime endDate,
 		UUID cursorId, LocalDateTime cursorCreatedAt, int size
 	) {
@@ -40,7 +40,7 @@ public record DeliverySearchSpec(
 			orderId, status,
 			sourceHubId, destinationHubId,
 			receiverCompanyId, receiverId, resolvedReceiverIds,
-			staffName, staffPhone,
+			managerName, managerPhone,
 			startDate, endDate,
 			cursorId, cursorCreatedAt, size
 		);

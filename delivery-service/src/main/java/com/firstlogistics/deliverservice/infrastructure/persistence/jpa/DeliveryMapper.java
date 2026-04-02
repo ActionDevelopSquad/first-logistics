@@ -5,7 +5,7 @@ import com.firstlogistics.deliverservice.domain.entity.DeliveryRoute;
 import com.firstlogistics.deliverservice.domain.vo.Address;
 import com.firstlogistics.deliverservice.domain.vo.DeliveryId;
 import com.firstlogistics.deliverservice.domain.vo.DeliveryRouteId;
-import com.firstlogistics.deliverservice.domain.vo.DeliveryStaffId;
+import com.firstlogistics.deliverservice.domain.vo.DeliveryManagerId;
 import com.firstlogistics.deliverservice.domain.vo.Distance;
 import com.firstlogistics.deliverservice.domain.vo.GeoLocation;
 import com.firstlogistics.deliverservice.domain.vo.Time;
@@ -32,7 +32,7 @@ public class DeliveryMapper {
 			delivery.getReceiverId(),
 			delivery.getReceiverSlackId(),
 			delivery.getReceiverCompanyId(),
-			delivery.getReceiverCompanyDeliveryStaffId() != null ? delivery.getReceiverCompanyDeliveryStaffId().id() : null,
+			delivery.getReceiverCompanyDeliveryManagerId() != null ? delivery.getReceiverCompanyDeliveryManagerId().id() : null,
 			delivery.getCurrentHubId()
 		);
 
@@ -56,7 +56,7 @@ public class DeliveryMapper {
 			route.getActualDistance() != null ? route.getActualDistance().meters() : 0,
 			route.getActualDuration() != null ? route.getActualDuration().minutes() : 0,
 			route.getStatus(),
-			route.getDeliveryStaffId() != null ? route.getDeliveryStaffId().id() : null
+			route.getDeliveryManagerId() != null ? route.getDeliveryManagerId().id() : null
 		);
 	}
 
@@ -78,7 +78,7 @@ public class DeliveryMapper {
 			jpaEntity.getReceiverId(),
 			jpaEntity.getReceiverSlackId(),
 			jpaEntity.getReceiverCompanyId(),
-			jpaEntity.getReceiverCompanyDeliveryStaffId() != null ? DeliveryStaffId.of(jpaEntity.getReceiverCompanyDeliveryStaffId()) : null,
+			jpaEntity.getReceiverCompanyDeliveryManagerId() != null ? DeliveryManagerId.of(jpaEntity.getReceiverCompanyDeliveryManagerId()) : null,
 			jpaEntity.getCurrentHubId(),
 			routes
 		);
@@ -98,7 +98,7 @@ public class DeliveryMapper {
 			null,
 			null,
 			jpaEntity.getStatus(),
-			jpaEntity.getDeliveryStaffId() != null ? DeliveryStaffId.of(jpaEntity.getDeliveryStaffId()) : null
+			jpaEntity.getDeliveryManagerId() != null ? DeliveryManagerId.of(jpaEntity.getDeliveryManagerId()) : null
 		);
 	}
 }

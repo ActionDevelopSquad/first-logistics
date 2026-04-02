@@ -28,7 +28,7 @@ public class DeliveryRoute {
 	private Address actualDestinationAddress;
 	private GeoLocation actualDestinationLocation;
 	private RouteStatus status;
-	private DeliveryStaffId deliveryStaffId;
+	private DeliveryManagerId deliveryManagerId;
 
 	public static DeliveryRoute create(
 		DeliveryId deliveryId,
@@ -64,7 +64,7 @@ public class DeliveryRoute {
 		Address actualDestinationAddress,
 		GeoLocation actualDestinationLocation,
 		RouteStatus status,
-		DeliveryStaffId deliveryStaffId
+		DeliveryManagerId deliveryManagerId
 	) {
 		return new DeliveryRoute(
 			id, deliveryId, deliveryRouteSequence,
@@ -72,7 +72,7 @@ public class DeliveryRoute {
 			estimatedDistance, estimatedDuration,
 			actualDistance, actualDuration,
 			actualDestinationAddress, actualDestinationLocation,
-			status, deliveryStaffId
+			status, deliveryManagerId
 		);
 	}
 
@@ -84,7 +84,7 @@ public class DeliveryRoute {
 		this.status = RouteStatus.HUB_WAITING;
 	}
 
-	public void assignStaff(DeliveryStaffId staffId) {
-		this.deliveryStaffId = staffId;
+	public void assignManager(DeliveryManagerId managerId) {
+		this.deliveryManagerId = managerId;
 	}
 }
