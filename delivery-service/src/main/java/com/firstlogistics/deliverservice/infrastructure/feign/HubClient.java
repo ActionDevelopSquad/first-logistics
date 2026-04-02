@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 import java.util.UUID;
 
-@FeignClient(name = "hub-service", configuration = FeignErrorDecoder.class)
+@FeignClient(name = "hub-service", url = "${hub-service.url:}", configuration = FeignErrorDecoder.class)
 public interface HubClient {
 
 	@GetMapping("/api/v1/hub-connections/routes")

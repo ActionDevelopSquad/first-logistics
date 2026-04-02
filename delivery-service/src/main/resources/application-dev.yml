@@ -25,3 +25,10 @@ feign:
       default:
         connectTimeout: 3000
         readTimeout: 3000
+
+user-service:
+  url: ${USER_SERVICE_URL:http://localhost:8080}
+hub-service:
+  url: ${HUB_SERVICE_URL:http://localhost:8083}
+company-service:
+  url: ${COMPANY_SERVICE_URL:http://localhost:8084}
