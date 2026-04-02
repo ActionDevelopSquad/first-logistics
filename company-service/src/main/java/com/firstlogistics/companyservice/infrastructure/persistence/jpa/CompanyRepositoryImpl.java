@@ -42,7 +42,7 @@ public class CompanyRepositoryImpl implements CompanyRepository {
                 .where(builder)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .orderBy(resolveOrderSpecifier(pageable.getSort()))
+                .orderBy(resolveOrderSpecifiers(pageable.getSort()))
                 .fetch();
 
         List<Company> content = new ArrayList<>(entities.size());
@@ -94,8 +94,8 @@ public class CompanyRepositoryImpl implements CompanyRepository {
         return builder;
     }
 
-    private OrderSpecifier<?> resolveOrderSpecifier(Sort sort) {
-        return sort.stream()
+    private OrderSpecifier<?>[] resolveOrderSpecifiers(Sort sort) {
+        List<OrderSpecifier<?>> specifiers = sort.stream()
                 .map(order -> {
                     boolean isAsc = order.isAscending();
                     return switch (order.getProperty()) {
@@ -104,7 +104,13 @@ public class CompanyRepositoryImpl implements CompanyRepository {
                         default -> isAsc ? companyJpaEntity.createdAt.asc() : companyJpaEntity.createdAt.desc();
                     };
                 })
-                .findFirst()
-                .orElse(companyJpaEntity.createdAt.desc());
+                .collect(java.util.stream.Collectors.toCollection(ArrayList::new));
+
+        if (specifiers.isEmpty()) {
+            specifiers.add(companyJpaEntity.createdAt.desc());
+        }
+        specifiers.add(companyJpaEntity.id.asc());
+
+        return specifiers.toArray(new OrderSpecifier[0]);
     }
 }
