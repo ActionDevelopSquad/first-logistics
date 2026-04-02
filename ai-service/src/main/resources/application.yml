@@ -3,19 +3,17 @@ spring:
     name: ai-service
 
   kafka:
-    bootstrap-servers: localhost:9097 # 로컬 카프카 주소 (환경에 맞게 수정)
+    bootstrap-servers: localhost:9092
     consumer:
       auto-offset-reset: earliest
       enable-auto-commit: false
 
-  # 데이터베이스 설정
   datasource:
-    url: jdbc:postgresql://localhost:5433/postgres
-    username: postgres
-    password: root1234
+    url: ${POSTGRES_DB_URL}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
-  # JPA / Hibernate 설정
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
@@ -23,9 +21,8 @@ spring:
     show-sql: true
     properties:
       hibernate:
-        format_sql: true # SQL을 보기 좋게 출력하려면 추가하세요
+        format_sql: true
 
-  # AI / OpenAI 설정
   ai:
     openai:
       api-key: ${OPENAI_API_KEY}
@@ -36,7 +33,6 @@ spring:
         options:
           model: text-embedding-3-small
 
-    # 벡터 데이터베이스(PGVector) 설정
     vectorstore:
       pgvector:
         initialize-schema: true
