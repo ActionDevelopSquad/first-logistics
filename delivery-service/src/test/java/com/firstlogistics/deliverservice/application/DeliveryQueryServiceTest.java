@@ -1,13 +1,15 @@
 package com.firstlogistics.deliverservice.application;
 
 import com.firstlogistics.deliverservice.application.dto.query.DeliveryListQuery;
-import com.firstlogistics.deliverservice.application.dto.query.DeliveryScope;
-import com.firstlogistics.deliverservice.application.dto.result.DeliveryDetail;
+import com.firstlogistics.deliverservice.domain.spec.DeliveryScope;
+import com.firstlogistics.deliverservice.domain.spec.DeliverySearchSpec;
+import com.firstlogistics.deliverservice.domain.projection.DeliveryDetailProjection;
+import com.firstlogistics.deliverservice.domain.projection.DeliverySummaryProjection;
 import com.firstlogistics.deliverservice.application.dto.result.DeliveryDetailResult;
 import com.firstlogistics.deliverservice.application.dto.result.DeliveryListResult;
-import com.firstlogistics.deliverservice.application.enums.UserRole;
+import com.firstlogistics.deliverservice.domain.enums.UserRole;
 import com.firstlogistics.deliverservice.application.port.CompanyPort;
-import com.firstlogistics.deliverservice.application.port.DeliveryQueryRepositoryPort;
+import com.firstlogistics.deliverservice.domain.repository.DeliveryQueryRepository;
 import com.firstlogistics.deliverservice.application.port.HubPort;
 import com.firstlogistics.deliverservice.application.port.HubStaffPort;
 import com.firstlogistics.deliverservice.application.port.UserPort;
@@ -49,7 +51,7 @@ class DeliveryQueryServiceTest {
 	private DeliveryRepository deliveryRepository;
 
 	@Mock
-	private DeliveryQueryRepositoryPort deliveryQueryRepositoryPort;
+	private DeliveryQueryRepository deliveryQueryRepository;
 
 	@Mock
 	private UserPort userPort;
@@ -69,6 +71,40 @@ class DeliveryQueryServiceTest {
 	@Nested
 	@DisplayName("배송 목록 조회 실패")
 	class GetDeliveriesFail {
+
+		@Test
+		@DisplayName("유효하지 않은 역할")
+		void getDeliveries_fail_invalidRole() {
+			// given & when
+			Throwable throwable = catchThrowable(() -> new DeliveryListQuery(
+				"INVALID_ROLE", null, null,
+				null, null, null, null, null, null, null, null, null, null, null,
+				null, null, null, null, 10
+			));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.INVALID_QUERY_PARAMS);
+		}
+
+		@Test
+		@DisplayName("null 역할")
+		void getDeliveries_fail_nullRole() {
+			// given & when
+			Throwable throwable = catchThrowable(() -> new DeliveryListQuery(
+				null, null, null,
+				null, null, null, null, null, null, null, null, null, null, null,
+				null, null, null, null, 10
+			));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.INVALID_QUERY_PARAMS);
+		}
 
 		@Test
 		@DisplayName("잘못된 날짜 범위 (endDate < startDate)")
@@ -106,10 +142,9 @@ class DeliveryQueryServiceTest {
 		void getDeliveries_receiverNotFound_queriesWithoutReceiverFilter() {
 			// given
 			DeliveryListQuery query = stubQueryWithReceiver(null, null, "없는사람", null);
-			DeliveryListResult expected = DeliveryListResult.from(List.of(), false);
 
 			given(userPort.findByNameOrPhone("없는사람", null)).willReturn(List.of());
-			given(deliveryQueryRepositoryPort.findDeliveries(any(DeliveryListQuery.class))).willReturn(expected.deliveries());
+			given(deliveryQueryRepository.findDeliveries(any(DeliverySearchSpec.class))).willReturn(List.of());
 
 			// when
 			DeliveryListResult result = deliveryQueryService.getDeliveries(query);
@@ -128,9 +163,8 @@ class DeliveryQueryServiceTest {
 		void getDeliveries_success_masterReturnsDeliveries() {
 			// given
 			DeliveryListQuery query = stubQueryForMaster(null, null);
-			DeliveryListResult expected = DeliveryListResult.from(List.of(stubSummary()), false);
 
-			given(deliveryQueryRepositoryPort.findDeliveries(any(DeliveryListQuery.class))).willReturn(expected.deliveries());
+			given(deliveryQueryRepository.findDeliveries(any(DeliverySearchSpec.class))).willReturn(List.of(stubSummary()));
 
 			// when
 			DeliveryListResult result = deliveryQueryService.getDeliveries(query);
@@ -146,10 +180,9 @@ class DeliveryQueryServiceTest {
 			UUID managerId = UUID.randomUUID();
 			UUID hubId = UUID.randomUUID();
 			DeliveryListQuery query = stubQueryForRole(UserRole.HUB_MANAGER, managerId);
-			DeliveryListResult expected = DeliveryListResult.from(List.of(stubSummary()), false);
 
 			given(hubStaffPort.getHubStaff(managerId)).willReturn(new HubStaffResponse(managerId, hubId));
-			given(deliveryQueryRepositoryPort.findDeliveries(any(DeliveryListQuery.class))).willReturn(expected.deliveries());
+			given(deliveryQueryRepository.findDeliveries(any(DeliverySearchSpec.class))).willReturn(List.of(stubSummary()));
 
 			// when
 			DeliveryListResult result = deliveryQueryService.getDeliveries(query);
@@ -163,9 +196,8 @@ class DeliveryQueryServiceTest {
 		void getDeliveries_success_deliveryManagerReturnsOwnDeliveries() {
 			// given
 			DeliveryListQuery query = stubQueryForRole(UserRole.DELIVERY_MANAGER, UUID.randomUUID());
-			DeliveryListResult expected = DeliveryListResult.from(List.of(stubSummary()), false);
 
-			given(deliveryQueryRepositoryPort.findDeliveries(any(DeliveryListQuery.class))).willReturn(expected.deliveries());
+			given(deliveryQueryRepository.findDeliveries(any(DeliverySearchSpec.class))).willReturn(List.of(stubSummary()));
 
 			// when
 			DeliveryListResult result = deliveryQueryService.getDeliveries(query);
@@ -181,10 +213,9 @@ class DeliveryQueryServiceTest {
 			UUID managerId = UUID.randomUUID();
 			UUID companyId = UUID.randomUUID();
 			DeliveryListQuery query = stubQueryForRole(UserRole.COMPANY_MANAGER, managerId);
-			DeliveryListResult expected = DeliveryListResult.from(List.of(stubSummary()), false);
 
 			given(companyPort.getCompanyByManagerId(managerId)).willReturn(new CompanyResponse(companyId, UUID.randomUUID(), "테스트업체", "서울시 강남구 테헤란로 123", "101동 202호"));
-			given(deliveryQueryRepositoryPort.findDeliveries(any(DeliveryListQuery.class))).willReturn(expected.deliveries());
+			given(deliveryQueryRepository.findDeliveries(any(DeliverySearchSpec.class))).willReturn(List.of(stubSummary()));
 
 			// when
 			DeliveryListResult result = deliveryQueryService.getDeliveries(query);
@@ -199,11 +230,10 @@ class DeliveryQueryServiceTest {
 			// given
 			UUID receiverId = UUID.randomUUID();
 			DeliveryListQuery query = stubQueryWithReceiver(null, null, "홍길동", null);
-			DeliveryListResult expected = DeliveryListResult.from(List.of(stubSummary()), false);
 
 			given(userPort.findByNameOrPhone("홍길동", null))
 				.willReturn(List.of(new UserResponse(receiverId, "홍길동", "010-1234-5678", "slack-123", "hong@test.com")));
-			given(deliveryQueryRepositoryPort.findDeliveries(any(DeliveryListQuery.class))).willReturn(expected.deliveries());
+			given(deliveryQueryRepository.findDeliveries(any(DeliverySearchSpec.class))).willReturn(List.of(stubSummary()));
 
 			// when
 			DeliveryListResult result = deliveryQueryService.getDeliveries(query);
@@ -226,9 +256,7 @@ class DeliveryQueryServiceTest {
 				null, null, null, null, null, null, null,
 				startDate, endDate, null, null, 10
 			);
-			DeliveryListResult expected = DeliveryListResult.from(List.of(stubSummary(), stubSummary()), false);
-
-			given(deliveryQueryRepositoryPort.findDeliveries(any(DeliveryListQuery.class))).willReturn(expected.deliveries());
+			given(deliveryQueryRepository.findDeliveries(any(DeliverySearchSpec.class))).willReturn(List.of(stubSummary(), stubSummary()));
 
 			// when
 			DeliveryListResult result = deliveryQueryService.getDeliveries(query);
@@ -248,10 +276,10 @@ class DeliveryQueryServiceTest {
 				null, null, null, null, null, null, null, null, null, null, null,
 				null, null, cursorId, cursorCreatedAt, 10
 			);
-			List<DeliveryListResult.DeliverySummary> elevenResults = java.util.stream.IntStream.range(0, 11)
+			List<DeliverySummaryProjection> elevenResults = java.util.stream.IntStream.range(0, 11)
 				.mapToObj(i -> stubSummary())
 				.toList();
-			given(deliveryQueryRepositoryPort.findDeliveries(any(DeliveryListQuery.class)))
+			given(deliveryQueryRepository.findDeliveries(any(DeliverySearchSpec.class)))
 				.willReturn(elevenResults);
 
 			// when
@@ -272,7 +300,7 @@ class DeliveryQueryServiceTest {
 				null, null, null, null, null, null, null, null, null, null, null,
 				null, null, cursorId, cursorCreatedAt, 10
 			);
-			given(deliveryQueryRepositoryPort.findDeliveries(any(DeliveryListQuery.class)))
+			given(deliveryQueryRepository.findDeliveries(any(DeliverySearchSpec.class)))
 				.willReturn(List.of(stubSummary()));
 
 			// when
@@ -292,7 +320,7 @@ class DeliveryQueryServiceTest {
 		void getDelivery_fail_deliveryNotFound() {
 			// given
 			UUID deliveryId = UUID.randomUUID();
-			given(deliveryQueryRepositoryPort.findById(deliveryId)).willReturn(Optional.empty());
+			given(deliveryQueryRepository.findById(deliveryId)).willReturn(Optional.empty());
 
 			// when
 			Throwable throwable = catchThrowable(() ->
@@ -312,9 +340,9 @@ class DeliveryQueryServiceTest {
 			UUID deliveryId = UUID.randomUUID();
 			UUID managerId = UUID.randomUUID();
 			UUID otherHubId = UUID.randomUUID();
-			DeliveryDetail projection = stubProjection(deliveryId);
-			given(deliveryQueryRepositoryPort.findById(deliveryId)).willReturn(Optional.of(projection));
-			given(deliveryQueryRepositoryPort.findRoutesByDeliveryId(deliveryId)).willReturn(List.of());
+			DeliveryDetailProjection projection = stubProjection(deliveryId);
+			given(deliveryQueryRepository.findById(deliveryId)).willReturn(Optional.of(projection));
+			given(deliveryQueryRepository.findRoutesByDeliveryId(deliveryId)).willReturn(List.of());
 			given(hubStaffPort.getHubStaff(managerId)).willReturn(new HubStaffResponse(managerId, otherHubId));
 
 			// when
@@ -334,10 +362,10 @@ class DeliveryQueryServiceTest {
 			// given
 			UUID deliveryId = UUID.randomUUID();
 			UUID otherStaffId = UUID.randomUUID();
-			List<DeliveryDetail.RouteDetail> routes = stubRoutes(2);
-			DeliveryDetail projection = stubProjection(deliveryId);
-			given(deliveryQueryRepositoryPort.findById(deliveryId)).willReturn(Optional.of(projection));
-			given(deliveryQueryRepositoryPort.findRoutesByDeliveryId(deliveryId)).willReturn(routes);
+			List<DeliveryDetailProjection.RouteDetail> routes = stubRoutes(2);
+			DeliveryDetailProjection projection = stubProjection(deliveryId);
+			given(deliveryQueryRepository.findById(deliveryId)).willReturn(Optional.of(projection));
+			given(deliveryQueryRepository.findRoutesByDeliveryId(deliveryId)).willReturn(routes);
 
 			// when
 			Throwable throwable = catchThrowable(() ->
@@ -357,9 +385,9 @@ class DeliveryQueryServiceTest {
 			UUID deliveryId = UUID.randomUUID();
 			UUID managerId = UUID.randomUUID();
 			UUID otherCompanyId = UUID.randomUUID();
-			DeliveryDetail projection = stubProjection(deliveryId);
-			given(deliveryQueryRepositoryPort.findById(deliveryId)).willReturn(Optional.of(projection));
-			given(deliveryQueryRepositoryPort.findRoutesByDeliveryId(deliveryId)).willReturn(List.of());
+			DeliveryDetailProjection projection = stubProjection(deliveryId);
+			given(deliveryQueryRepository.findById(deliveryId)).willReturn(Optional.of(projection));
+			given(deliveryQueryRepository.findRoutesByDeliveryId(deliveryId)).willReturn(List.of());
 			given(companyPort.getCompanyByManagerId(managerId))
 				.willReturn(new CompanyResponse(otherCompanyId, UUID.randomUUID(), "다른업체", "다른주소", "다른상세주소"));
 
@@ -381,16 +409,16 @@ class DeliveryQueryServiceTest {
 
 		@Test
 		@DisplayName("배송 상세 정보 반환 - MASTER")
-		void getDelivery_success_returnsDeliveryDetail() {
+		void getDelivery_success_returnsDeliveryDetailProjection() {
 			// given
 			UUID deliveryId = UUID.randomUUID();
-			DeliveryDetail projection = stubProjection(deliveryId);
-			List<DeliveryDetail.RouteDetail> routes = stubRoutes(2);
+			DeliveryDetailProjection projection = stubProjection(deliveryId);
+			List<DeliveryDetailProjection.RouteDetail> routes = stubRoutes(2);
 			UUID receiverId = projection.receiverId();
 			UUID receiverCompanyId = projection.receiverCompanyId();
 
-			given(deliveryQueryRepositoryPort.findById(deliveryId)).willReturn(Optional.of(projection));
-			given(deliveryQueryRepositoryPort.findRoutesByDeliveryId(deliveryId)).willReturn(routes);
+			given(deliveryQueryRepository.findById(deliveryId)).willReturn(Optional.of(projection));
+			given(deliveryQueryRepository.findRoutesByDeliveryId(deliveryId)).willReturn(routes);
 			given(hubPort.getHubs(any())).willReturn(stubHubResponses(projection, routes));
 			given(userPort.getUser(receiverId)).willReturn(new UserResponse(receiverId, "홍길동", "010-1234-5678", "slack-123", "hong@test.com"));
 			given(companyPort.getCompany(receiverCompanyId)).willReturn(new CompanyResponse(receiverCompanyId, UUID.randomUUID(), "테스트업체", "서울시 강남구 테헤란로 123", "101동 202호"));
@@ -431,8 +459,8 @@ class DeliveryQueryServiceTest {
 		);
 	}
 
-	private DeliveryListResult.DeliverySummary stubSummary() {
-		return new DeliveryListResult.DeliverySummary(
+	private DeliverySummaryProjection stubSummary() {
+		return new DeliverySummaryProjection(
 			UUID.randomUUID(),
 			UUID.randomUUID(),
 			DeliveryStatus.CREATED,
@@ -446,8 +474,8 @@ class DeliveryQueryServiceTest {
 		);
 	}
 
-	private DeliveryDetail stubProjection(UUID deliveryId) {
-		return new DeliveryDetail(
+	private DeliveryDetailProjection stubProjection(UUID deliveryId) {
+		return new DeliveryDetailProjection(
 			deliveryId, UUID.randomUUID(), DeliveryStatus.CREATED,
 			UUID.randomUUID(), UUID.randomUUID(),
 			"서울시 강남구 테헤란로 123", "101동 202호",
@@ -457,11 +485,11 @@ class DeliveryQueryServiceTest {
 		);
 	}
 
-	private List<DeliveryDetail.RouteDetail> stubRoutes(int routeCount) {
-		List<DeliveryDetail.RouteDetail> routes = new ArrayList<>();
+	private List<DeliveryDetailProjection.RouteDetail> stubRoutes(int routeCount) {
+		List<DeliveryDetailProjection.RouteDetail> routes = new ArrayList<>();
 		for (int i = 0; i < routeCount; i++) {
 			LocalDateTime startAt = LocalDateTime.now().plusHours(i);
-			routes.add(new DeliveryDetail.RouteDetail(
+			routes.add(new DeliveryDetailProjection.RouteDetail(
 				UUID.randomUUID(), i,
 				UUID.randomUUID(), UUID.randomUUID(),
 				10000, 30, 0, 0,
@@ -474,7 +502,7 @@ class DeliveryQueryServiceTest {
 		return routes;
 	}
 
-	private List<HubResponse> stubHubResponses(DeliveryDetail projection, List<DeliveryDetail.RouteDetail> routes) {
+	private List<HubResponse> stubHubResponses(DeliveryDetailProjection projection, List<DeliveryDetailProjection.RouteDetail> routes) {
 		List<UUID> hubIds = new ArrayList<>();
 		hubIds.add(projection.sourceHubId());
 		hubIds.add(projection.destinationHubId());

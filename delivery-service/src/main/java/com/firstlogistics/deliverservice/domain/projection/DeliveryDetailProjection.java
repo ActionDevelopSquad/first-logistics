@@ -1,4 +1,4 @@
-package com.firstlogistics.deliverservice.application.dto.result;
+package com.firstlogistics.deliverservice.domain.projection;
 
 import com.firstlogistics.deliverservice.domain.enums.DeliveryStatus;
 import com.firstlogistics.deliverservice.domain.enums.RouteStatus;
@@ -6,7 +6,7 @@ import com.firstlogistics.deliverservice.domain.enums.RouteStatus;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public record DeliveryDetail(
+public record DeliveryDetailProjection(
 	UUID deliveryId,
 	UUID orderId,
 	DeliveryStatus status,

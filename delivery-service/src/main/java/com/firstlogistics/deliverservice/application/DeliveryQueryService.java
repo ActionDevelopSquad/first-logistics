@@ -1,22 +1,24 @@
 package com.firstlogistics.deliverservice.application;
 
 import com.firstlogistics.deliverservice.application.dto.query.DeliveryListQuery;
-import com.firstlogistics.deliverservice.application.dto.query.DeliveryScope;
-import com.firstlogistics.deliverservice.application.dto.result.DeliveryDetail;
 import com.firstlogistics.deliverservice.application.dto.result.DeliveryDetailResult;
 import com.firstlogistics.deliverservice.application.dto.result.DeliveryListResult;
-import com.firstlogistics.deliverservice.application.enums.UserRole;
 import com.firstlogistics.deliverservice.application.port.CompanyPort;
-import com.firstlogistics.deliverservice.application.port.DeliveryQueryRepositoryPort;
 import com.firstlogistics.deliverservice.application.port.HubPort;
 import com.firstlogistics.deliverservice.application.port.HubStaffPort;
 import com.firstlogistics.deliverservice.application.port.UserPort;
 import com.firstlogistics.deliverservice.application.port.dto.CompanyResponse;
 import com.firstlogistics.deliverservice.application.port.dto.HubResponse;
 import com.firstlogistics.deliverservice.application.port.dto.UserResponse;
+import com.firstlogistics.deliverservice.domain.enums.UserRole;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
+import com.firstlogistics.deliverservice.domain.projection.DeliveryDetailProjection;
+import com.firstlogistics.deliverservice.domain.projection.DeliverySummaryProjection;
+import com.firstlogistics.deliverservice.domain.repository.DeliveryQueryRepository;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryRepository;
+import com.firstlogistics.deliverservice.domain.spec.DeliveryScope;
+import com.firstlogistics.deliverservice.domain.spec.DeliverySearchSpec;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +35,7 @@ import java.util.stream.Stream;
 public class DeliveryQueryService {
 
 	private final DeliveryRepository deliveryRepository;
-	private final DeliveryQueryRepositoryPort deliveryQueryRepositoryPort;
+	private final DeliveryQueryRepository deliveryQueryRepository;
 	private final UserPort userPort;
 	private final HubPort hubPort;
 	private final HubStaffPort hubStaffPort;
@@ -45,33 +47,39 @@ public class DeliveryQueryService {
 
 	public DeliveryListResult getDeliveries(DeliveryListQuery query) {
 		UserRole userRole = UserRole.valueOf(query.role());
-		UUID hubId = userRole == UserRole.HUB_MANAGER
-			? hubStaffPort.getHubStaff(query.userId()).hubId()
-			: null;
-		UUID companyId = userRole == UserRole.COMPANY_MANAGER
-			? companyPort.getCompanyByManagerId(query.userId()).companyId()
-			: null;
+
+		UUID hubId =
+				userRole == UserRole.HUB_MANAGER
+						? hubStaffPort.getHubStaff(query.userId()).hubId()
+						: null;
+		UUID companyId =
+				userRole == UserRole.COMPANY_MANAGER
+						? companyPort.getCompanyByManagerId(query.userId()).companyId()
+						: null;
 		DeliveryListQuery resolvedQuery = query.withScope(DeliveryScope.from(query.role(), query.userId(), hubId, companyId));
 
-		if (query.hasReceiverSearchCondition()) {
-			List<UUID> receiverIds = userPort.findByNameOrPhone(query.receiverName(), query.receiverPhone())
-				.stream().map(UserResponse::userId).toList();
+		if (query.hasReceiverNameOrPhoneFilter()) {
+			List<UUID> receiverIds = userPort
+					.findByNameOrPhone(query.receiverName(), query.receiverPhone())
+					.stream().map(UserResponse::userId).toList();
 			resolvedQuery = resolvedQuery.withResolvedReceiverIds(receiverIds);
 		}
 
-		List<DeliveryListResult.DeliverySummary> results = deliveryQueryRepositoryPort.findDeliveries(resolvedQuery);
-		boolean hasNext = results.size() > resolvedQuery.size();
+		DeliverySearchSpec spec = resolvedQuery.toSpec();
+		List<DeliverySummaryProjection> results = deliveryQueryRepository.findDeliveries(spec);
+
+		boolean hasNext = results.size() > spec.size();
 		if (hasNext) {
-			results = results.subList(0, resolvedQuery.size());
+			results = results.subList(0, spec.size());
 		}
 		return DeliveryListResult.from(results, hasNext);
 	}
 
 	public DeliveryDetailResult getDelivery(UUID deliveryId, String role, UUID userId) {
-		DeliveryDetail deliveryDetail = deliveryQueryRepositoryPort.findById(deliveryId)
+		DeliveryDetailProjection deliveryDetail = deliveryQueryRepository.findById(deliveryId)
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
 
-		List<DeliveryDetail.RouteDetail> routes = deliveryQueryRepositoryPort.findRoutesByDeliveryId(deliveryId);
+		List<DeliveryDetailProjection.RouteDetail> routes = deliveryQueryRepository.findRoutesByDeliveryId(deliveryId);
 
 		validateDeliveryAccess(deliveryDetail, routes, role, userId);
 		List<UUID> hubIds = routes.stream()
@@ -79,14 +87,14 @@ public class DeliveryQueryService {
 			.distinct().toList();
 
 		Map<UUID, HubResponse> hubMap = hubPort.getHubs(hubIds).stream()
-			.collect(Collectors.toMap(HubResponse::hubId, h -> h));
+			.collect(Collectors.toMap(HubResponse::hubId, hub -> hub));
 		UserResponse receiver = userPort.getUser(deliveryDetail.receiverId());
 		CompanyResponse company = companyPort.getCompany(deliveryDetail.receiverCompanyId());
 
 		return DeliveryDetailResult.from(deliveryDetail, routes, hubMap, receiver, company);
 	}
 
-	private void validateDeliveryAccess(DeliveryDetail deliveryDetail, List<DeliveryDetail.RouteDetail> routes, String role, UUID userId) {
+	private void validateDeliveryAccess(DeliveryDetailProjection deliveryDetail, List<DeliveryDetailProjection.RouteDetail> routes, String role, UUID userId) {
 		UserRole userRole = UserRole.valueOf(role);
 		switch (userRole) {
 			case MASTER -> {}

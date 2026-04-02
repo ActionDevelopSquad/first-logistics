@@ -5,6 +5,7 @@ import com.firstlogistics.deliverservice.application.port.dto.HubResponse;
 import com.firstlogistics.deliverservice.application.port.dto.UserResponse;
 import com.firstlogistics.deliverservice.domain.enums.DeliveryStatus;
 import com.firstlogistics.deliverservice.domain.enums.RouteStatus;
+import com.firstlogistics.deliverservice.domain.projection.DeliveryDetailProjection;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,8 +29,8 @@ public record DeliveryDetailResult(
 ) {
 
 	public static DeliveryDetailResult from(
-		DeliveryDetail detail,
-		List<DeliveryDetail.RouteDetail> routes,
+		DeliveryDetailProjection detail,
+		List<DeliveryDetailProjection.RouteDetail> routes,
 		Map<UUID, HubResponse> hubMap,
 		UserResponse receiver,
 		CompanyResponse company
@@ -94,7 +95,7 @@ public record DeliveryDetailResult(
 		LocalDateTime expectedStartAt,
 		LocalDateTime expectedEndAt
 	) {
-		public static RouteDetail from(DeliveryDetail.RouteDetail route, Map<UUID, HubResponse> hubMap) {
+		public static RouteDetail from(DeliveryDetailProjection.RouteDetail route, Map<UUID, HubResponse> hubMap) {
 			return new RouteDetail(
 				route.routeId(),
 				route.sequence(),

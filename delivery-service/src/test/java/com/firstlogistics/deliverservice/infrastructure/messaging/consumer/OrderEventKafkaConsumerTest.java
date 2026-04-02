@@ -55,7 +55,7 @@ class OrderEventKafkaConsumerTest {
 	private KafkaConsumerConfig kafkaConsumerConfig;
 
 	@MockitoBean
-	private DeliveryCommandFacade deliveryCreateFacade;
+	private DeliveryCommandFacade deliveryCommandFacade;
 	@MockitoBean
 	private DeliveryQueryService deliveryQueryService;
 	@MockitoBean
@@ -84,7 +84,7 @@ class OrderEventKafkaConsumerTest {
 
 			// then
 			await().atMost(5, TimeUnit.SECONDS).untilAsserted(() ->
-					then(deliveryCreateFacade).should().createDelivery(any(CreateDeliveryCommand.class))
+					then(deliveryCommandFacade).should().createDelivery(any(CreateDeliveryCommand.class))
 			);
 		}
 
@@ -105,7 +105,7 @@ class OrderEventKafkaConsumerTest {
 			// createDelivery 호출 여부를 확정하기 전에 단언이 통과하는 레이스 컨디션이 발생한다.
 			await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
 				then(deliveryQueryService).should().existsByOrderId(event.orderId());
-				then(deliveryCreateFacade).should(never()).createDelivery(any());
+				then(deliveryCommandFacade).should(never()).createDelivery(any());
 			});
 		}
 
@@ -115,7 +115,7 @@ class OrderEventKafkaConsumerTest {
 			// given
 			OrderAcceptedEvent event = createEvent();
 			given(deliveryQueryService.existsByOrderId(event.orderId())).willReturn(false);
-			given(deliveryCreateFacade.createDelivery(any()))
+			given(deliveryCommandFacade.createDelivery(any()))
 					.willThrow(new DeliveryCreationException(DeliveryErrorCode.HUB_NOT_FOUND));
 
 			// subscribe 대신 assign + seekToBeginning: 그룹 조인 없이 바로 파티션 읽기 (타이밍 문제 방지)

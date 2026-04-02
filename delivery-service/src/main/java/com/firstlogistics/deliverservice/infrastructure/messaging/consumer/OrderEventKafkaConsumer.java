@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 public class OrderEventKafkaConsumer {
 
 	private final DeliveryQueryService deliveryQueryService;
-	private final DeliveryCommandFacade deliveryCreateFacade;
+	private final DeliveryCommandFacade deliveryCommandFacade;
 
 	@KafkaListener(
 		topics = "order.accepted",
@@ -32,7 +32,7 @@ public class OrderEventKafkaConsumer {
 			return;
 		}
 
-		deliveryCreateFacade.createDelivery(CreateDeliveryCommand.from(event));
+		deliveryCommandFacade.createDelivery(CreateDeliveryCommand.from(event));
 
 		ack.acknowledge();
 	}

@@ -1,7 +1,7 @@
 package com.firstlogistics.deliverservice.application.dto.result;
 
-import com.firstlogistics.deliverservice.domain.entity.Delivery;
 import com.firstlogistics.deliverservice.domain.enums.DeliveryStatus;
+import com.firstlogistics.deliverservice.domain.projection.DeliverySummaryProjection;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,7 +14,10 @@ public record DeliveryListResult(
 	LocalDateTime nextCursorCreatedAt
 ) {
 
-	public static DeliveryListResult from(List<DeliverySummary> deliveries, boolean hasNext) {
+	public static DeliveryListResult from(List<DeliverySummaryProjection> projections, boolean hasNext) {
+		List<DeliverySummary> deliveries = projections.stream()
+			.map(DeliverySummary::from)
+			.toList();
 		if (!hasNext || deliveries.isEmpty()) {
 			return new DeliveryListResult(deliveries, hasNext, null, null);
 		}
@@ -34,18 +37,18 @@ public record DeliveryListResult(
 		UUID currentHubId,
 		LocalDateTime createdAt
 	) {
-		public static DeliverySummary from(Delivery delivery, LocalDateTime createdAt) {
+		public static DeliverySummary from(DeliverySummaryProjection projection) {
 			return new DeliverySummary(
-				delivery.getId().id(),
-				delivery.getOrderId(),
-				delivery.getStatus(),
-				delivery.getSourceHubId(),
-				delivery.getDestinationHubId(),
-				delivery.getDeliveryAddress().roadAddress(),
-				delivery.getDeliveryAddress().detailAddress(),
-				delivery.getReceiverCompanyId(),
-				delivery.getCurrentHubId(),
-				createdAt
+				projection.deliveryId(),
+				projection.orderId(),
+				projection.status(),
+				projection.sourceHubId(),
+				projection.destinationHubId(),
+				projection.receiverRoadAddress(),
+				projection.receiverDetailAddress(),
+				projection.receiverCompanyId(),
+				projection.currentHubId(),
+				projection.createdAt()
 			);
 		}
 	}

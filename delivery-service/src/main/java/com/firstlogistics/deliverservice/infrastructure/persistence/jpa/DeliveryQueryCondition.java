@@ -1,6 +1,6 @@
 package com.firstlogistics.deliverservice.infrastructure.persistence.jpa;
 
-import com.firstlogistics.deliverservice.application.dto.query.DeliveryListQuery;
+import com.firstlogistics.deliverservice.domain.spec.DeliverySearchSpec;
 import com.querydsl.core.types.dsl.BooleanExpression;
 
 import java.time.LocalDateTime;
@@ -11,11 +11,11 @@ public class DeliveryQueryCondition {
 	private static final QDeliveryJpaEntity delivery = QDeliveryJpaEntity.deliveryJpaEntity;
 	private static final QDeliveryRouteJpaEntity route = QDeliveryRouteJpaEntity.deliveryRouteJpaEntity;
 
-	public static BooleanExpression scopeCondition(DeliveryListQuery query) {
-		return switch (query.scope().role()) {
-			case HUB_MANAGER -> scopeForHubManager(query.scope().scopeId());
-			case DELIVERY_MANAGER -> scopeForDeliveryManager(query.scope().scopeId());
-			case COMPANY_MANAGER -> scopeForCompanyManager(query.scope().scopeId());
+	public static BooleanExpression scopeCondition(DeliverySearchSpec spec) {
+		return switch (spec.scope().role()) {
+			case HUB_MANAGER -> scopeForHubManager(spec.scope().scopeId());
+			case DELIVERY_MANAGER -> scopeForDeliveryManager(spec.scope().scopeId());
+			case COMPANY_MANAGER -> scopeForCompanyManager(spec.scope().scopeId());
 			default -> null;
 		};
 	}
@@ -40,68 +40,68 @@ public class DeliveryQueryCondition {
 			.or(delivery.receiverCompanyDeliveryStaffId.eq(scopeStaffId));
 	}
 
-	public static BooleanExpression orderIdEq(DeliveryListQuery query) {
-		return query.orderId() != null ? delivery.orderId.eq(query.orderId()) : null;
+	public static BooleanExpression orderIdEq(DeliverySearchSpec spec) {
+		return spec.orderId() != null ? delivery.orderId.eq(spec.orderId()) : null;
 	}
 
-	public static BooleanExpression statusEq(DeliveryListQuery query) {
-		return query.status() != null ? delivery.status.eq(query.status()) : null;
+	public static BooleanExpression statusEq(DeliverySearchSpec spec) {
+		return spec.status() != null ? delivery.status.eq(spec.status()) : null;
 	}
 
-	public static BooleanExpression sourceHubEq(DeliveryListQuery query) {
-		return query.sourceHubId() != null ? delivery.sourceHubId.eq(query.sourceHubId()) : null;
+	public static BooleanExpression sourceHubEq(DeliverySearchSpec spec) {
+		return spec.sourceHubId() != null ? delivery.sourceHubId.eq(spec.sourceHubId()) : null;
 	}
 
-	public static BooleanExpression destinationHubEq(DeliveryListQuery query) {
-		return query.destinationHubId() != null ? delivery.destinationHubId.eq(query.destinationHubId()) : null;
+	public static BooleanExpression destinationHubEq(DeliverySearchSpec spec) {
+		return spec.destinationHubId() != null ? delivery.destinationHubId.eq(spec.destinationHubId()) : null;
 	}
 
-	public static BooleanExpression receiverCompanyIdEq(DeliveryListQuery query) {
-		return query.receiverCompanyId() != null ? delivery.receiverCompanyId.eq(query.receiverCompanyId()) : null;
+	public static BooleanExpression receiverCompanyIdEq(DeliverySearchSpec spec) {
+		return spec.receiverCompanyId() != null ? delivery.receiverCompanyId.eq(spec.receiverCompanyId()) : null;
 	}
 
-	public static BooleanExpression receiverIdEq(DeliveryListQuery query) {
-		return query.receiverId() != null ? delivery.receiverId.eq(query.receiverId()) : null;
+	public static BooleanExpression receiverIdEq(DeliverySearchSpec spec) {
+		return spec.receiverId() != null ? delivery.receiverId.eq(spec.receiverId()) : null;
 	}
 
-	public static BooleanExpression resolvedReceiverIdIn(DeliveryListQuery query) {
-		if (query.resolvedReceiverIds() == null || query.resolvedReceiverIds().isEmpty()) return null;
-		return delivery.receiverId.in(query.resolvedReceiverIds());
+	public static BooleanExpression resolvedReceiverIdIn(DeliverySearchSpec spec) {
+		if (spec.resolvedReceiverIds() == null || spec.resolvedReceiverIds().isEmpty()) return null;
+		return delivery.receiverId.in(spec.resolvedReceiverIds());
 	}
 
 	public static BooleanExpression staffNameContains(
-		DeliveryListQuery query,
+		DeliverySearchSpec spec,
 		QDeliveryStaffJpaEntity hubDeliveryStaff,
 		QDeliveryStaffJpaEntity companyDeliveryStaff
 	) {
-		if (query.staffName() == null) return null;
-		return hubDeliveryStaff.staffName.containsIgnoreCase(query.staffName())
-			.or(companyDeliveryStaff.staffName.containsIgnoreCase(query.staffName()));
+		if (spec.staffName() == null) return null;
+		return hubDeliveryStaff.staffName.containsIgnoreCase(spec.staffName())
+			.or(companyDeliveryStaff.staffName.containsIgnoreCase(spec.staffName()));
 	}
 
 	public static BooleanExpression staffPhoneContains(
-		DeliveryListQuery query,
+		DeliverySearchSpec spec,
 		QDeliveryStaffJpaEntity hubDeliveryStaff,
 		QDeliveryStaffJpaEntity companyDeliveryStaff
 	) {
-		if (query.staffPhone() == null) return null;
-		return hubDeliveryStaff.phoneNumber.containsIgnoreCase(query.staffPhone())
-			.or(companyDeliveryStaff.phoneNumber.containsIgnoreCase(query.staffPhone()));
+		if (spec.staffPhone() == null) return null;
+		return hubDeliveryStaff.phoneNumber.containsIgnoreCase(spec.staffPhone())
+			.or(companyDeliveryStaff.phoneNumber.containsIgnoreCase(spec.staffPhone()));
 	}
 
-	public static BooleanExpression dateRange(DeliveryListQuery query) {
-		LocalDateTime start = query.startDate();
-		LocalDateTime end = query.endDate();
+	public static BooleanExpression dateRange(DeliverySearchSpec spec) {
+		LocalDateTime start = spec.startDate();
+		LocalDateTime end = spec.endDate();
 		if (start == null && end == null) return null;
 		if (start == null) return delivery.createdAt.loe(end);
 		if (end == null) return delivery.createdAt.goe(start);
 		return delivery.createdAt.goe(start).and(delivery.createdAt.loe(end));
 	}
 
-	public static BooleanExpression cursorCondition(DeliveryListQuery query) {
-		if (query.cursorCreatedAt() == null || query.cursorId() == null) return null;
-		return delivery.createdAt.lt(query.cursorCreatedAt())
-			.or(delivery.createdAt.eq(query.cursorCreatedAt())
-				.and(delivery.id.lt(query.cursorId())));
+	public static BooleanExpression cursorCondition(DeliverySearchSpec spec) {
+		if (spec.cursorCreatedAt() == null || spec.cursorId() == null) return null;
+		return delivery.createdAt.lt(spec.cursorCreatedAt())
+			.or(delivery.createdAt.eq(spec.cursorCreatedAt())
+				.and(delivery.id.lt(spec.cursorId())));
 	}
 }

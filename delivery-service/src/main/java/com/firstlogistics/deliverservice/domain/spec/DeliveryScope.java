@@ -1,6 +1,6 @@
-package com.firstlogistics.deliverservice.application.dto.query;
+package com.firstlogistics.deliverservice.domain.spec;
 
-import com.firstlogistics.deliverservice.application.enums.UserRole;
+import com.firstlogistics.deliverservice.domain.enums.UserRole;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 

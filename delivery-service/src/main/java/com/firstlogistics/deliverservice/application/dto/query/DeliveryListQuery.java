@@ -2,8 +2,11 @@ package com.firstlogistics.deliverservice.application.dto.query;
 
 import com.firstlogistics.deliverservice.application.policy.PaginationPolicy;
 import com.firstlogistics.deliverservice.domain.enums.DeliveryStatus;
+import com.firstlogistics.deliverservice.domain.enums.UserRole;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
+import com.firstlogistics.deliverservice.domain.spec.DeliveryScope;
+import com.firstlogistics.deliverservice.domain.spec.DeliverySearchSpec;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,7 +37,7 @@ public record DeliveryListQuery(
 	int size
 ) {
 	public DeliveryListQuery {
-		if (role == null) {
+		if (!UserRole.isValid(role)) {
 			throw new DeliveryException(DeliveryErrorCode.INVALID_QUERY_PARAMS);
 		}
 		if (startDate != null && endDate != null && endDate.isBefore(startDate)) {
@@ -43,7 +46,7 @@ public record DeliveryListQuery(
 		size = PaginationPolicy.resolveSize(size);
 	}
 
-	public boolean hasReceiverSearchCondition() {
+	public boolean hasReceiverNameOrPhoneFilter() {
 		return hasText(receiverName) || hasText(receiverPhone);
 	}
 
@@ -71,6 +74,18 @@ public record DeliveryListQuery(
 			this.receiverCompanyId, this.receiverId,
 			resolvedReceiverIds != null ? List.copyOf(resolvedReceiverIds) : null,
 			this.receiverName, this.receiverPhone,
+			this.staffName, this.staffPhone,
+			this.startDate, this.endDate,
+			this.cursorId, this.cursorCreatedAt, this.size
+		);
+	}
+
+	public DeliverySearchSpec toSpec() {
+		return DeliverySearchSpec.of(
+			this.scope,
+			this.orderId, this.status,
+			this.sourceHubId, this.destinationHubId,
+			this.receiverCompanyId, this.receiverId, this.resolvedReceiverIds,
 			this.staffName, this.staffPhone,
 			this.startDate, this.endDate,
 			this.cursorId, this.cursorCreatedAt, this.size

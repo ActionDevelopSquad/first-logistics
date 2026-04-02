@@ -1,9 +1,9 @@
 package com.firstlogistics.deliverservice.infrastructure.persistence.jpa;
 
-import com.firstlogistics.deliverservice.application.dto.query.DeliveryListQuery;
-import com.firstlogistics.deliverservice.application.dto.result.DeliveryDetail;
-import com.firstlogistics.deliverservice.application.dto.result.DeliveryListResult;
-import com.firstlogistics.deliverservice.application.port.DeliveryQueryRepositoryPort;
+import com.firstlogistics.deliverservice.domain.projection.DeliveryDetailProjection;
+import com.firstlogistics.deliverservice.domain.projection.DeliverySummaryProjection;
+import com.firstlogistics.deliverservice.domain.repository.DeliveryQueryRepository;
+import com.firstlogistics.deliverservice.domain.spec.DeliverySearchSpec;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -17,11 +17,9 @@ import static com.firstlogistics.deliverservice.infrastructure.persistence.jpa.D
 
 @Repository
 @RequiredArgsConstructor
-public class DeliveryQueryRepositoryImpl implements DeliveryQueryRepositoryPort {
+public class DeliveryQueryRepositoryImpl implements DeliveryQueryRepository {
 
 	private final JPAQueryFactory queryFactory;
-	private final DeliveryJpaRepository deliveryJpaRepository;
-	private final DeliveryMapper deliveryMapper;
 
 	private static final QDeliveryJpaEntity delivery = QDeliveryJpaEntity.deliveryJpaEntity;
 	private static final QDeliveryRouteJpaEntity route = QDeliveryRouteJpaEntity.deliveryRouteJpaEntity;
@@ -30,9 +28,9 @@ public class DeliveryQueryRepositoryImpl implements DeliveryQueryRepositoryPort 
 	private static final QStaffTimetableJpaEntity staffTimetable = QStaffTimetableJpaEntity.staffTimetableJpaEntity;
 
 	@Override
-	public Optional<DeliveryDetail> findById(UUID deliveryId) {
-		DeliveryDetail base = queryFactory
-			.select(Projections.constructor(DeliveryDetail.class,
+	public Optional<DeliveryDetailProjection> findById(UUID deliveryId) {
+		DeliveryDetailProjection base = queryFactory
+			.select(Projections.constructor(DeliveryDetailProjection.class,
 				delivery.id,
 				delivery.orderId,
 				delivery.status,
@@ -56,9 +54,9 @@ public class DeliveryQueryRepositoryImpl implements DeliveryQueryRepositoryPort 
 	}
 
 	@Override
-	public List<DeliveryDetail.RouteDetail> findRoutesByDeliveryId(UUID deliveryId) {
+	public List<DeliveryDetailProjection.RouteDetail> findRoutesByDeliveryId(UUID deliveryId) {
 		return queryFactory
-			.select(Projections.constructor(DeliveryDetail.RouteDetail.class,
+			.select(Projections.constructor(DeliveryDetailProjection.RouteDetail.class,
 				route.id,
 				route.deliveryRouteSequence,
 				route.sourceHubId,
@@ -86,9 +84,9 @@ public class DeliveryQueryRepositoryImpl implements DeliveryQueryRepositoryPort 
 	}
 
 	@Override
-	public List<DeliveryListResult.DeliverySummary> findDeliveries(DeliveryListQuery query) {
+	public List<DeliverySummaryProjection> findDeliveries(DeliverySearchSpec spec) {
 		return queryFactory
-			.selectDistinct(Projections.constructor(DeliveryListResult.DeliverySummary.class,
+			.selectDistinct(Projections.constructor(DeliverySummaryProjection.class,
 				delivery.id,
 				delivery.orderId,
 				delivery.status,
@@ -106,21 +104,21 @@ public class DeliveryQueryRepositoryImpl implements DeliveryQueryRepositoryPort 
 			.leftJoin(companyDeliveryStaff).on(companyDeliveryStaff.id.eq(delivery.receiverCompanyDeliveryStaffId))
 			.where(
 				notDeleted(),
-				scopeCondition(query),
-				orderIdEq(query),
-				statusEq(query),
-				sourceHubEq(query),
-				destinationHubEq(query),
-				receiverCompanyIdEq(query),
-				receiverIdEq(query),
-				resolvedReceiverIdIn(query),
-				staffNameContains(query, hubDeliveryStaff, companyDeliveryStaff),
-				staffPhoneContains(query, hubDeliveryStaff, companyDeliveryStaff),
-				dateRange(query),
-				cursorCondition(query)
+				scopeCondition(spec),
+				orderIdEq(spec),
+				statusEq(spec),
+				sourceHubEq(spec),
+				destinationHubEq(spec),
+				receiverCompanyIdEq(spec),
+				receiverIdEq(spec),
+				resolvedReceiverIdIn(spec),
+				staffNameContains(spec, hubDeliveryStaff, companyDeliveryStaff),
+				staffPhoneContains(spec, hubDeliveryStaff, companyDeliveryStaff),
+				dateRange(spec),
+				cursorCondition(spec)
 			)
 			.orderBy(delivery.createdAt.desc(), delivery.id.desc())
-			.limit(query.size() + 1L)
+			.limit(spec.size() + 1L)
 			.fetch();
 	}
 }
