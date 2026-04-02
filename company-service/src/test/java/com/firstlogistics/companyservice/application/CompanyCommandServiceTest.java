@@ -262,4 +262,134 @@ class CompanyCommandServiceTest {
                     .hasMessageContaining(CompanyErrorCode.INVALID_COMPANY_TYPE.getMessage());
         }
     }
+
+    @Nested
+    @DisplayName("업체 비활성화 (deactivate)")
+    class Deactivate {
+
+        private Company activeCompany;
+
+        @BeforeEach
+        void setUp() {
+            activeCompany = Company.reconstitute(
+                    FIXED_COMPANY_ID, FIXED_HUB_ID, FIXED_MANAGER_ID, "테스트업체",
+                    new Supplier(), CompanyStatus.ACTIVE,
+                    CompanyAddress.of("서울특별시 송파구 송파대로 55", "3층"),
+                    GeoLocation.of(37.514, 127.106)
+            );
+        }
+
+        @Test
+        @DisplayName("활성화된 업체를 비활성화하면 INACTIVE 상태로 반환한다")
+        void deactivate_success() {
+            // given
+            given(companyRepository.findById(FIXED_COMPANY_ID))
+                    .willReturn(Optional.of(activeCompany));
+            given(companyRepository.save(any()))
+                    .willAnswer(invocation -> invocation.getArgument(0));
+
+            // when
+            CompanyResult result = companyCommandService.deactivate(FIXED_COMPANY_ID);
+
+            // then
+            assertThat(result.status()).isEqualTo(CompanyStatus.INACTIVE.name());
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 companyId로 비활성화하면 예외가 발생한다")
+        void deactivate_companyNotFound_throwsException() {
+            // given
+            given(companyRepository.findById(FIXED_COMPANY_ID))
+                    .willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> companyCommandService.deactivate(FIXED_COMPANY_ID))
+                    .isInstanceOf(CompanyException.class)
+                    .hasMessageContaining(CompanyErrorCode.COMPANY_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        @DisplayName("이미 비활성화된 업체를 비활성화하면 예외가 발생한다")
+        void deactivate_alreadyInactive_throwsException() {
+            // given
+            Company inactiveCompany = Company.reconstitute(
+                    FIXED_COMPANY_ID, FIXED_HUB_ID, FIXED_MANAGER_ID, "테스트업체",
+                    new Supplier(), CompanyStatus.INACTIVE,
+                    CompanyAddress.of("서울특별시 송파구 송파대로 55", "3층"),
+                    GeoLocation.of(37.514, 127.106)
+            );
+            given(companyRepository.findById(FIXED_COMPANY_ID))
+                    .willReturn(Optional.of(inactiveCompany));
+
+            // when & then
+            assertThatThrownBy(() -> companyCommandService.deactivate(FIXED_COMPANY_ID))
+                    .isInstanceOf(CompanyException.class)
+                    .hasMessageContaining(CompanyErrorCode.COMPANY_ALREADY_INACTIVE.getMessage());
+        }
+    }
+
+    @Nested
+    @DisplayName("업체 활성화 (activate)")
+    class Activate {
+
+        private Company inactiveCompany;
+
+        @BeforeEach
+        void setUp() {
+            inactiveCompany = Company.reconstitute(
+                    FIXED_COMPANY_ID, FIXED_HUB_ID, FIXED_MANAGER_ID, "테스트업체",
+                    new Supplier(), CompanyStatus.INACTIVE,
+                    CompanyAddress.of("서울특별시 송파구 송파대로 55", "3층"),
+                    GeoLocation.of(37.514, 127.106)
+            );
+        }
+
+        @Test
+        @DisplayName("비활성화된 업체를 활성화하면 ACTIVE 상태로 반환한다")
+        void activate_success() {
+            // given
+            given(companyRepository.findById(FIXED_COMPANY_ID))
+                    .willReturn(Optional.of(inactiveCompany));
+            given(companyRepository.save(any()))
+                    .willAnswer(invocation -> invocation.getArgument(0));
+
+            // when
+            CompanyResult result = companyCommandService.activate(FIXED_COMPANY_ID);
+
+            // then
+            assertThat(result.status()).isEqualTo(CompanyStatus.ACTIVE.name());
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 companyId로 활성화하면 예외가 발생한다")
+        void activate_companyNotFound_throwsException() {
+            // given
+            given(companyRepository.findById(FIXED_COMPANY_ID))
+                    .willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> companyCommandService.activate(FIXED_COMPANY_ID))
+                    .isInstanceOf(CompanyException.class)
+                    .hasMessageContaining(CompanyErrorCode.COMPANY_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        @DisplayName("이미 활성화된 업체를 활성화하면 예외가 발생한다")
+        void activate_alreadyActive_throwsException() {
+            // given
+            Company activeCompany = Company.reconstitute(
+                    FIXED_COMPANY_ID, FIXED_HUB_ID, FIXED_MANAGER_ID, "테스트업체",
+                    new Supplier(), CompanyStatus.ACTIVE,
+                    CompanyAddress.of("서울특별시 송파구 송파대로 55", "3층"),
+                    GeoLocation.of(37.514, 127.106)
+            );
+            given(companyRepository.findById(FIXED_COMPANY_ID))
+                    .willReturn(Optional.of(activeCompany));
+
+            // when & then
+            assertThatThrownBy(() -> companyCommandService.activate(FIXED_COMPANY_ID))
+                    .isInstanceOf(CompanyException.class)
+                    .hasMessageContaining(CompanyErrorCode.COMPANY_ALREADY_ACTIVE.getMessage());
+        }
+    }
 }
