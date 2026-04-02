@@ -27,24 +27,26 @@ public class DeliveryCreateFacade {
     private final DeliveryDistributedLockService deliveryDistributedLockService;
 
     public DeliveryResult createDelivery(CreateDeliveryCommand command) {
-        CompanyResponse company = companyPort.getCompany(command.receiverCompanyId());
-        UUID destinationHubId = company.hubId();
+        CompanyResponse supplierCompany = companyPort.getCompany(command.supplierCompanyId());
+        CompanyResponse receiverCompany = companyPort.getCompany(command.receiverCompanyId());
 
-        HubRouteResponse hubRoute = hubPort.getHubRoute(command.sourceHubId(), destinationHubId);
+        UUID sourceHubId = supplierCompany.hubId();
+        UUID destinationHubId = receiverCompany.hubId();
 
-        List<String> lockKeys = generateLockKeys(hubRoute, destinationHubId);
+        HubRouteResponse hubRoute = hubPort.getHubRoute(sourceHubId, destinationHubId);
 
-        return deliveryDistributedLockService.executeWithMultiLock(
-                lockKeys,
-                () -> deliveryCommandService.createDelivery(command, company, hubRoute)
-        );
+        List<String> lockKeys = generateLockKeys(hubRoute);
+
+        return
+                deliveryDistributedLockService.executeWithMultiLock(
+                        lockKeys,
+                        () -> deliveryCommandService.createDelivery(command, supplierCompany, receiverCompany, hubRoute)
+                );
     }
 
-    private List<String> generateLockKeys(HubRouteResponse hubRoute, UUID destinationHubId) {
-        return Stream.concat(
-                    hubRoute.routes().stream().map(HubRouteStepResponse::sourceHubId),
-                    Stream.of(destinationHubId)
-                )
+    private List<String> generateLockKeys(HubRouteResponse hubRoute) {
+        return hubRoute.routes().stream()
+                .map(HubRouteStepResponse::sourceHubId)
                 .distinct()
                 .sorted()
                 .map(DeliveryLockKeyGenerator::hubStaffAssignKey)

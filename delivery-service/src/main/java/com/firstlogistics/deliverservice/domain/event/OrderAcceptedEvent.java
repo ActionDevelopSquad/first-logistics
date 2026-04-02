@@ -2,6 +2,8 @@ package com.firstlogistics.deliverservice.domain.event;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -10,13 +12,33 @@ import java.util.UUID;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record OrderAcceptedEvent(
 	UUID orderId,
-	UUID sourceHubId,
-	UUID receiverCompanyId,
-	UUID receiverId,
-	String roadAddress,
-	String detailAddress,
-	double latitude,
-	double longitude
+	LocalDateTime orderedAt,
+	LocalDateTime orderDueDate,
+	String orderRequestNote,
+	SupplierInfo supplier,
+	ReceiverInfo receiver,
+	List<OrderItemInfo> orderItems
 ) {
 
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	public record SupplierInfo(
+		UUID companyId,
+		UUID managerId
+	) {}
+
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	public record ReceiverInfo(
+		UUID companyId,
+		UUID managerId,
+		String roadAddress,
+		String detailAddress
+	) {}
+
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	public record OrderItemInfo(
+		UUID productId,
+		String productName,
+		int quantity,
+		int price
+	) {}
 }

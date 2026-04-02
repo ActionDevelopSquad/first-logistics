@@ -16,6 +16,10 @@ public enum DeliveryErrorCode implements ErrorCode {
 	INVALID_TIME(HttpStatus.BAD_REQUEST, "DR004", "시간 정보는 0 이상이어야 합니다."),
 	INVALID_STAFF_DETAIL(HttpStatus.BAD_REQUEST, "DR005", "담당자 정보가 유효하지 않습니다."),
 
+	// Command / Query 유효성
+	INVALID_COMMAND_PARAMS(HttpStatus.BAD_REQUEST, "DR010", "커맨드 파라미터가 유효하지 않습니다."),
+	INVALID_QUERY_PARAMS(HttpStatus.BAD_REQUEST, "DR011", "쿼리 파라미터가 유효하지 않습니다."),
+
 	// 엔티티 유효성
 	INVALID_DELIVERY_PARAMS(HttpStatus.BAD_REQUEST, "DR006", "배송 생성 파라미터가 유효하지 않습니다."),
 	INVALID_DELIVERY_ROUTE_PARAMS(HttpStatus.BAD_REQUEST, "DR007", "배송 경로 생성 파라미터가 유효하지 않습니다."),
@@ -25,6 +29,8 @@ public enum DeliveryErrorCode implements ErrorCode {
 	// 배송
 	DELIVERY_ALREADY_EXISTS(HttpStatus.CONFLICT, "DR101", "이미 배송이 존재합니다."),
 	DELIVERY_NOT_FOUND(HttpStatus.NOT_FOUND, "DR102", "배송을 찾을 수 없습니다."),
+	INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "DR103", "종료일이 시작일보다 앞설 수 없습니다."),
+	INVALID_ROLE_SCOPE(HttpStatus.BAD_REQUEST, "DR104", "역할에 필요한 스코프 정보가 없습니다."),
 
 	// 배송 담당자
 	HUB_DELIVERY_STAFF_NOT_AVAILABLE(HttpStatus.NOT_FOUND, "DR201", "배정 가능한 허브 배송담당자가 없습니다."),

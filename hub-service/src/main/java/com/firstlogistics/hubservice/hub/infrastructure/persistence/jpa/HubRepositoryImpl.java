@@ -4,6 +4,7 @@ import com.firstlogistics.hubservice.hub.domain.entity.Hub;
 import com.firstlogistics.hubservice.hub.domain.exception.HubErrorCode;
 import com.firstlogistics.hubservice.hub.domain.exception.HubException;
 import com.firstlogistics.hubservice.hub.domain.repository.HubRepository;
+import com.firstlogistics.hubservice.hub.domain.vo.HubId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
@@ -29,6 +30,11 @@ public class HubRepositoryImpl implements HubRepository {
                 throw new HubException(HubErrorCode.DUPLICATE_HUB_NAME);
             throw e;
         }
+    }
+
+    @Override
+    public boolean existsByHubId(HubId hubId) {
+        return jpaRepository.existsById(hubId.id());
     }
 
     private boolean hasConstraintName(Throwable throwable, String expectedConstraintName ){
