@@ -91,6 +91,16 @@ public class OrderCommandService {
         return processCancellation(userId, orderId);
     }
 
+    @Transactional
+    public String rejectCancelRequest(UUID userId, UUID orderId) {
+        Order order = getOrder(orderId);
+        order.rejectCancelRequest();
+
+        orderRepository.save(order);
+
+        return order.getStatus().name();
+    }
+
     private Order getOrder(UUID orderId) {
         return orderRepository.findById(OrderId.of(orderId))
                 .orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));

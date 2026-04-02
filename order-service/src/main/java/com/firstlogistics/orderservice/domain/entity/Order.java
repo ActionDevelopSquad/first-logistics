@@ -232,6 +232,8 @@ public class Order {
     }
 
     public void rejectCancelRequest() {
+        // TODO: 관리자 권한 확인
+
         // 취소 요청 상태에서만 가능
         if (this.status != OrderStatus.CANCEL_REQUESTED || this.previousStatus == null) {
             throw new OrderException(OrderErrorCode.CANNOT_REJECT_CANCEL);
