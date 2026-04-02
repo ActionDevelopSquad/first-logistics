@@ -42,7 +42,8 @@ public class HubRepositoryImpl implements HubRepository {
         while(cause!=null){
             if(cause instanceof  org.hibernate.exception.ConstraintViolationException cve){
                 String constraintName = cve.getConstraintName();
-                return expectedConstraintName.equalsIgnoreCase(constraintName);
+                if(expectedConstraintName.equalsIgnoreCase(constraintName))
+                    return true;
             }
             cause = cause.getCause();
         }
