@@ -2,6 +2,7 @@ package com.firstlogistics.orderservice.infrastructure.messaging.producer;
 
 import com.firstlogistics.orderservice.application.port.OrderEventProducer;
 import com.firstlogistics.orderservice.domain.event.OrderAcceptedEvent;
+import com.firstlogistics.orderservice.domain.event.OrderCancelledEvent;
 import com.firstlogistics.orderservice.domain.event.OrderCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +33,7 @@ public class OrderEventKafkaProducer implements OrderEventProducer {
     public void handleOrderCreatedEvent(OrderCreatedEvent event) {
         // 재고 예약
         // supplierCompanyId(공급 업체 ID)를 키로 사용
-        sendWithLogging(TOPIC_CREATED, event.supplierCompanyId().toString(), event, event.orderId());
+        sendWithLogging(TOPIC_CREATED, event.orderId().toString(), event, event.orderId());
     }
 
     @Override
@@ -42,6 +43,14 @@ public class OrderEventKafkaProducer implements OrderEventProducer {
         // orderId를 키로 사용
         sendWithLogging(TOPIC_ACCEPTED, event.orderId().toString(), event, event.orderId());
     }
+
+    @Override
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleOrderCancelledEvent(OrderCancelledEvent event) {
+        // 재고 예약 취소
+        sendWithLogging(TOPIC_CANCELLED, event.supplierCompanyId().toString(), event, event.orderId());
+    }
+
 
     // 공통 전송 & 로깅 메서드
     private void sendWithLogging(String topic, String key, Object event, UUID orderId) {
