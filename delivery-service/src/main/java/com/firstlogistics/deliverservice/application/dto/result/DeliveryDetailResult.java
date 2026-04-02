@@ -100,6 +100,13 @@ public record DeliveryDetailResult(
 	}
 
 	public record DeliveryManagerInfo(String name, String phone) {
+
+		public DeliveryManagerInfo {
+			if ((name == null) != (phone == null)) {
+				throw new IllegalArgumentException("name and phone must both be null or both be non-null");
+			}
+		}
+
 		public static DeliveryManagerInfo from(String name, String phone) {
 			return new DeliveryManagerInfo(name, phone);
 		}

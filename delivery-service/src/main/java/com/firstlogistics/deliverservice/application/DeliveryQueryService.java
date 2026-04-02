@@ -46,7 +46,7 @@ public class DeliveryQueryService {
 	}
 
 	public DeliveryListResult getDeliveries(DeliveryListQuery query) {
-		UserRole userRole = UserRole.valueOf(query.role());
+		UserRole userRole = parseUserRole(query.role());
 
 		UUID hubId =
 				userRole == UserRole.HUB_MANAGER
@@ -98,7 +98,7 @@ public class DeliveryQueryService {
 	}
 
 	private void validateDeliveryAccess(DeliveryDetailProjection deliveryDetail, List<DeliveryDetailProjection.RouteDetail> routes, String role, UUID userId) {
-		UserRole userRole = UserRole.valueOf(role);
+		UserRole userRole = parseUserRole(role);
 		switch (userRole) {
 			case MASTER -> {}
 			case HUB_MANAGER -> {
@@ -121,6 +121,14 @@ public class DeliveryQueryService {
 				}
 			}
 			default -> throw new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
+		}
+	}
+
+	private UserRole parseUserRole(String role) {
+		try {
+			return UserRole.valueOf(role);
+		} catch (IllegalArgumentException | NullPointerException e) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_ROLE_SCOPE);
 		}
 	}
 }

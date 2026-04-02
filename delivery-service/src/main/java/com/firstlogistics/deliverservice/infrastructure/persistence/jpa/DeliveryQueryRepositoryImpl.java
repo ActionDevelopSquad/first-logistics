@@ -75,10 +75,10 @@ public class DeliveryQueryRepositoryImpl implements DeliveryQueryRepository {
 			.from(route)
 			.leftJoin(hubDeliveryManager).on(hubDeliveryManager.id.eq(route.deliveryManagerId))
 			.leftJoin(managerTimetable).on(
-				managerTimetable.deliveryManager.id.eq(route.deliveryManagerId)
+				managerTimetable.deliveryManagerId.eq(route.deliveryManagerId)
 					.and(managerTimetable.deliveryId.eq(route.deliveryId))
 			)
-			.where(route.deliveryId.eq(deliveryId))
+			.where(route.deliveryId.eq(deliveryId), routeNotDeleted())
 			.orderBy(route.deliveryRouteSequence.asc())
 			.fetch();
 	}

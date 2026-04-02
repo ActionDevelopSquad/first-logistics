@@ -6,10 +6,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -30,9 +27,8 @@ public class ManagerTimetableJpaEntity extends BaseAuditEntity {
 	@Column(name = "id", columnDefinition = "uuid")
 	private UUID id;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "delivery_manager_id", nullable = false)
-	private DeliveryManagerJpaEntity deliveryManager;
+	@Column(name = "delivery_manager_id", nullable = false, columnDefinition = "uuid", insertable = false, updatable = false)
+	private UUID deliveryManagerId;
 
 	@Column(name = "delivery_id", nullable = false, columnDefinition = "uuid")
 	private UUID deliveryId;
@@ -49,14 +45,14 @@ public class ManagerTimetableJpaEntity extends BaseAuditEntity {
 
 	public static ManagerTimetableJpaEntity create(
 		UUID id,
-		DeliveryManagerJpaEntity deliveryManager,
+		UUID deliveryManagerId,
 		UUID deliveryId,
 		LocalDateTime expectedStartAt,
 		LocalDateTime expectedEndAt,
 		TimetableStatus status
 	) {
 		return new ManagerTimetableJpaEntity(
-			id, deliveryManager, deliveryId,
+			id, deliveryManagerId, deliveryId,
 			expectedStartAt, expectedEndAt, status
 		);
 	}

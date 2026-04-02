@@ -27,17 +27,17 @@ public class DeliveryManagerMapper {
 		);
 
 		for (ManagerTimetable timetable : manager.getTimetables()) {
-			ManagerTimetableJpaEntity timetableJpaEntity = toTimetableJpaEntity(timetable, jpaEntity);
+			ManagerTimetableJpaEntity timetableJpaEntity = toTimetableJpaEntity(timetable);
 			jpaEntity.addTimetable(timetableJpaEntity);
 		}
 
 		return jpaEntity;
 	}
 
-	public ManagerTimetableJpaEntity toTimetableJpaEntity(ManagerTimetable timetable, DeliveryManagerJpaEntity managerJpaEntity) {
+	public ManagerTimetableJpaEntity toTimetableJpaEntity(ManagerTimetable timetable) {
 		return ManagerTimetableJpaEntity.create(
 			timetable.getId().id(),
-			managerJpaEntity,
+			timetable.getManagerId().id(),
 			timetable.getDeliveryId().id(),
 			timetable.getExpectedStartAt(),
 			timetable.getExpectedEndAt(),
@@ -64,7 +64,7 @@ public class DeliveryManagerMapper {
 	public ManagerTimetable toTimetableDomain(ManagerTimetableJpaEntity jpaEntity) {
 		return ManagerTimetable.reconstitute(
 			ManagerTimetableId.of(jpaEntity.getId()),
-			DeliveryManagerId.of(jpaEntity.getDeliveryManager().getId()),
+			DeliveryManagerId.of(jpaEntity.getDeliveryManagerId()),
 			DeliveryId.of(jpaEntity.getDeliveryId()),
 			jpaEntity.getExpectedStartAt(),
 			jpaEntity.getExpectedEndAt(),

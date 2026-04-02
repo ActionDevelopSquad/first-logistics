@@ -34,6 +34,9 @@ public class ManagerTimetable {
 		if (managerId == null || deliveryId == null || expectedStartAt == null || expectedEndAt == null) {
 			throw new DeliveryException(DeliveryErrorCode.INVALID_TIMETABLE_PARAMS);
 		}
+		if (!expectedEndAt.isAfter(expectedStartAt)) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_TIMETABLE_PARAMS);
+		}
 		TimetableStatus createdStatus = TimetableStatus.CREATED;
 		return new ManagerTimetable(
 			ManagerTimetableId.generate(), managerId, deliveryId,

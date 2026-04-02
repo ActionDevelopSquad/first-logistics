@@ -1,12 +1,16 @@
 package com.firstlogistics.deliverservice.domain.vo;
 
-import java.util.Objects;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
+
 import java.util.UUID;
 
 public record DeliveryManagerId(UUID id) {
 
 	public DeliveryManagerId {
-		Objects.requireNonNull(id, "DeliveryManagerId id must not be null");
+		if (id == null) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_ID);
+		}
 	}
 
 	public static DeliveryManagerId of(UUID id) {

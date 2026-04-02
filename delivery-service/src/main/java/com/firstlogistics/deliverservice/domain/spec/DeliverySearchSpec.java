@@ -1,6 +1,8 @@
 package com.firstlogistics.deliverservice.domain.spec;
 
 import com.firstlogistics.deliverservice.domain.enums.DeliveryStatus;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,6 +28,19 @@ public record DeliverySearchSpec(
 	LocalDateTime cursorCreatedAt,
 	int size
 ) {
+
+	public DeliverySearchSpec {
+		if (scope == null) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_SEARCH_SPEC);
+		}
+		if (size <= 0) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_SEARCH_SPEC);
+		}
+		if (startDate != null && endDate != null && endDate.isBefore(startDate)) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_SEARCH_SPEC);
+		}
+	}
+
 	public static DeliverySearchSpec of(
 		DeliveryScope scope,
 		UUID orderId, DeliveryStatus status,

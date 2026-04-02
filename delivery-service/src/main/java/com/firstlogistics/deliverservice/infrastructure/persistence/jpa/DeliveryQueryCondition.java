@@ -24,6 +24,10 @@ public class DeliveryQueryCondition {
 		return delivery.deletedAt.isNull();
 	}
 
+	public static BooleanExpression routeNotDeleted() {
+		return route.deletedAt.isNull();
+	}
+
 	public static BooleanExpression scopeForHubManager(UUID scopeHubId) {
 		if (scopeHubId == null) return null;
 		return delivery.sourceHubId.eq(scopeHubId).or(delivery.destinationHubId.eq(scopeHubId));

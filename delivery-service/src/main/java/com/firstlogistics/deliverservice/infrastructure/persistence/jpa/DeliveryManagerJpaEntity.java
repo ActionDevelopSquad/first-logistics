@@ -9,6 +9,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -50,7 +51,8 @@ public class DeliveryManagerJpaEntity extends BaseAuditEntity {
 	@Column(name = "delivery_sequence", nullable = false)
 	private int deliverySequence;
 
-	@OneToMany(mappedBy = "deliveryManager", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+	@JoinColumn(name = "delivery_manager_id", nullable = false)
 	private List<ManagerTimetableJpaEntity> timetables = new ArrayList<>();
 
 	public static DeliveryManagerJpaEntity create(
