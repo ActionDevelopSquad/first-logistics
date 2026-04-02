@@ -86,7 +86,7 @@ public class CompanyRepositoryImpl implements CompanyRepository {
         if (condition.keyword() != null && !condition.keyword().isBlank()) {
             builder.and(companyJpaEntity.name.containsIgnoreCase(condition.keyword()));
         }
-        if (condition.type() != null) {
+        if (condition.type() != null || !condition.type().isBlank()) {
             builder.and(companyJpaEntity.type.equalsIgnoreCase(condition.type()));
         }
         if (condition.hubId() != null) {
