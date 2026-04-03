@@ -1,6 +1,7 @@
 package com.firstlogistics.companyservice.application;
 
 import com.firstlogistics.companyservice.application.dto.command.CreateCompanyCommand;
+import com.firstlogistics.companyservice.application.dto.command.UpdateCompanyCommand;
 import com.firstlogistics.companyservice.application.dto.result.CompanyResult;
 import com.firstlogistics.companyservice.application.port.CompanyEventPublisher;
 import com.firstlogistics.companyservice.application.port.HubPort;
@@ -51,6 +52,41 @@ public class CompanyCommandService {
         publishEvent(saved);
 
         return CompanyResult.from(saved);
+    }
+
+    @Transactional
+    public CompanyResult update(UpdateCompanyCommand command) {
+        Company company = companyRepository.findById(command.companyId())
+                .orElseThrow(() -> new CompanyException(CompanyErrorCode.COMPANY_NOT_FOUND));
+
+        UUID hubId = hubPort.getHubId(GeoLocation.of(command.latitude(), command.longitude()));
+        CompanyType type = resolveCompanyType(command.type());
+
+        company.update(command.name(), type, hubId,
+                command.roadAddress(), command.detailAddress(),
+                command.latitude(), command.longitude());
+
+        return CompanyResult.from(companyRepository.save(company));
+    }
+
+    @Transactional
+    public CompanyResult deactivate(UUID companyId) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new CompanyException(CompanyErrorCode.COMPANY_NOT_FOUND));
+
+        company.deactivate();
+
+        return CompanyResult.from(companyRepository.save(company));
+    }
+
+    @Transactional
+    public CompanyResult activate(UUID companyId) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new CompanyException(CompanyErrorCode.COMPANY_NOT_FOUND));
+
+        company.activate();
+
+        return CompanyResult.from(companyRepository.save(company));
     }
 
     private void publishEvent(Company company) {

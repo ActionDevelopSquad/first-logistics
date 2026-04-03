@@ -136,4 +136,37 @@ class CompanyRepositoryImplTest {
             assertThat(result).isEmpty();
         }
     }
+
+    @Nested
+    @DisplayName("담당자 ID 존재 여부 확인 (existsByManagerId)")
+    class ExistsByManagerId {
+
+        @Test
+        @DisplayName("해당 managerId를 가진 활성 업체가 존재하면 true를 반환한다")
+        void existsByManagerId_exists_returnsTrue() {
+            // given
+            given(companyJpaRepository.existsByManagerIdAndDeletedAtIsNull(MANAGER_ID))
+                    .willReturn(true);
+
+            // when
+            boolean result = companyRepositoryImpl.existsByManagerId(MANAGER_ID);
+
+            // then
+            assertThat(result).isTrue();
+        }
+
+        @Test
+        @DisplayName("해당 managerId를 가진 활성 업체가 없으면 false를 반환한다")
+        void existsByManagerId_notExists_returnsFalse() {
+            // given
+            given(companyJpaRepository.existsByManagerIdAndDeletedAtIsNull(MANAGER_ID))
+                    .willReturn(false);
+
+            // when
+            boolean result = companyRepositoryImpl.existsByManagerId(MANAGER_ID);
+
+            // then
+            assertThat(result).isFalse();
+        }
+    }
 }
