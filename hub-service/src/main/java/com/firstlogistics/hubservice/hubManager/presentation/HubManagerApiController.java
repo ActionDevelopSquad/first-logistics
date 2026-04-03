@@ -5,6 +5,7 @@ import com.firstlogistics.hubservice.hubManager.presentation.dto.request.SearchH
 import com.firstlogistics.hubservice.hubManager.presentation.dto.response.HubManagerPageResponse;
 import com.firstlogistics.hubservice.hubManager.presentation.dto.response.HubManagerResponse;
 import common.response.ApiResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -28,7 +29,7 @@ public class HubManagerApiController {
     }
 
     @PostMapping("/search")
-    public ResponseEntity<ApiResponse<HubManagerPageResponse>> searchHubManagers(@RequestBody SearchHubManagersRequest request, @PageableDefault Pageable pageable){
+    public ResponseEntity<ApiResponse<HubManagerPageResponse>> searchHubManagers(@Valid @RequestBody SearchHubManagersRequest request, @PageableDefault Pageable pageable){
         HubManagerPageResponse response = HubManagerPageResponse.from(queryService.searchHubManagers(request.toQuery(), pageable));
         return ResponseEntity.status(HubManagerSuccessCode.HUB_MANAGER_LIST_RETRIEVED.getStatus())
                 .body(ApiResponse.success(HubManagerSuccessCode.HUB_MANAGER_LIST_RETRIEVED,response));
