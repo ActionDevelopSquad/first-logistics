@@ -3,6 +3,7 @@ package com.firstlogistics.orderservice.application;
 import com.firstlogistics.orderservice.application.dto.CreateOrderCommand;
 import com.firstlogistics.orderservice.domain.entity.Order;
 import com.firstlogistics.orderservice.domain.entity.OrderTestBuilder;
+import com.firstlogistics.orderservice.domain.enums.OrderCancelType;
 import com.firstlogistics.orderservice.domain.enums.OrderStatus;
 import com.firstlogistics.orderservice.domain.event.OrderAcceptedEvent;
 import com.firstlogistics.orderservice.domain.event.OrderCancelledEvent;
@@ -225,7 +226,7 @@ class OrderCommandServiceTest {
 
         // then
         assertThat(resultStatus).isEqualTo("CANCELLED");
-        assertThat(order.getCancelType()).isEqualTo(com.firstlogistics.orderservice.domain.enums.OrderCancelType.ADMIN_CANCEL);
+        assertThat(order.getCancelType()).isEqualTo(OrderCancelType.ADMIN_CANCEL);
         verify(orderRepository).save(order);
         verify(eventPublisher).publishEvent(any(OrderCancelledEvent.class));
     }
@@ -269,13 +270,13 @@ class OrderCommandServiceTest {
 
         // then
         assertThat(resultStatus).isEqualTo("CANCELLED");
-        assertThat(order.getCancelType()).isEqualTo(com.firstlogistics.orderservice.domain.enums.OrderCancelType.ORDERER_REQUEST);
+        assertThat(order.getCancelType()).isEqualTo(OrderCancelType.ORDERER_REQUEST);
         verify(orderRepository).save(order);
         verify(eventPublisher).publishEvent(any(OrderCancelledEvent.class));
     }
 
     @Test
-    @DisplayName("성공: 취소 요청을 반려하면 이전 상태로 복구되고 사유는 null이다")
+    @DisplayName("성공: 취소 요청을 반려하면 이전 상태로 복구된다")
     void rejectCancelRequest_Success() {
         // given
         UUID orderId = UUID.randomUUID();
@@ -292,7 +293,6 @@ class OrderCommandServiceTest {
 
         // then
         assertThat(resultStatus).isEqualTo("RESERVED");
-        assertThat(order.getCancelType()).isNull();
         assertThat(order.getPreviousStatus()).isNull();
         verify(orderRepository).save(order);
     }

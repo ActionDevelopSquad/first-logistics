@@ -58,7 +58,7 @@ public class OrderController {
                         OrderStatusResponse.of(orderId, status)));
     }
 
-    @PatchMapping("/{orderId}/calcellation")
+    @PatchMapping("/{orderId}/cancellation")
     public ResponseEntity<ApiResponse<OrderStatusResponse>> cancelOrder(
             @RequestHeader("X-User-Id") UUID userId,
             @PathVariable UUID orderId
