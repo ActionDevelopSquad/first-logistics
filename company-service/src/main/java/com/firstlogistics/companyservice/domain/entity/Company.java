@@ -22,21 +22,21 @@ public class Company {
     @ToString.Include
     private UUID id;
     private UUID hubId;
-    private UUID userId;
+    private UUID managerId;
     private String name;
     private CompanyType type;
     private CompanyStatus status;
     private CompanyAddress address;
     private GeoLocation geoLocation;
 
-    public static Company create(UUID hubId, UUID userId, String name, CompanyType type, String roadAddress,
+    public static Company create(UUID hubId, UUID managerId, String name, CompanyType type, String roadAddress,
                                  String detailAddress, double latitude, double longitude) {
-        validate(hubId, userId, name, type);
+        validate(hubId, managerId, name, type);
 
         return new Company(
                 UUID.randomUUID(),
                 hubId,
-                userId,
+                managerId,
                 name,
                 type,
                 CompanyStatus.ACTIVE,
@@ -45,12 +45,12 @@ public class Company {
         );
     }
 
-    private static void validate(UUID hubId, UUID userId, String name, CompanyType type) {
+    private static void validate(UUID hubId, UUID managerId, String name, CompanyType type) {
         if (hubId == null) {
             throw new CompanyException(CompanyErrorCode.INVALID_HUB_ID);
         }
-        if (userId == null) {
-            throw new CompanyException(CompanyErrorCode.INVALID_USER_ID);
+        if (managerId == null) {
+            throw new CompanyException(CompanyErrorCode.INVALID_MANAGER_ID);
         }
         if (name == null || name.isBlank()) {
             throw new CompanyException(CompanyErrorCode.INVALID_COMPANY_NAME);
@@ -60,12 +60,12 @@ public class Company {
         }
     }
 
-    public static Company reconstitute(UUID id, UUID hubId, UUID userId, String name, CompanyType companyType,
+    public static Company reconstitute(UUID id, UUID hubId, UUID managerId, String name, CompanyType companyType,
                                        CompanyStatus status, CompanyAddress address, GeoLocation geoLocation) {
         return new Company(
                 id,
                 hubId,
-                userId,
+                managerId,
                 name,
                 companyType,
                 status,

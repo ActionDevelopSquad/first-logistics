@@ -27,13 +27,17 @@ public class CompanyCommandService {
 
     @Transactional
     public CompanyResult register(CreateCompanyCommand command) {
+        if (companyRepository.existsByManagerId(command.managerId())) {
+            throw new CompanyException(CompanyErrorCode.DUPLICATE_MANAGER_ID);
+        }
+
         UUID hubId = hubPort.getHubId(GeoLocation.of(command.latitude(), command.longitude()));
 
         CompanyType type = resolveCompanyType(command.type());
 
         Company company = Company.create(
                 hubId,
-                command.userId(),
+                command.managerId(),
                 command.name(),
                 type,
                 command.roadAddress(),
