@@ -87,7 +87,7 @@ public class UserService {
     @Transactional
     public UUID signup(UserCreateCommand command) {
         // 권한별 소속 아이디가 존재하는지 확인
-//        organizationValidationService.validateOrganizationExists(command.organizationId(), command.userRole());
+        organizationValidationService.validateOrganizationExists(command.organizationId(), command.userRole());
 
         UUID userId = keycloakService.signup(command);
 
