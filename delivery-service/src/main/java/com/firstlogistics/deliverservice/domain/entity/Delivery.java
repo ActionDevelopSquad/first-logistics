@@ -94,7 +94,7 @@ public class Delivery {
 	public void startHubDelivery() {
 		validateStatusTransition(Set.of(DeliveryStatus.CREATED, DeliveryStatus.HUB_WAITING));
 		if (this.currentHubId.equals(this.destinationHubId)) {
-			throw new DeliveryException(DeliveryErrorCode.INVALID_STATUS_TRANSITION);
+			throw new DeliveryException(DeliveryErrorCode.NOT_HUB_DELIVERY_PHASE);
 		}
 		DeliveryRoute nextRoute = findNextCreatedRoute();
 		nextRoute.startRoute();
@@ -104,7 +104,7 @@ public class Delivery {
 	public void startCompanyDelivery() {
 		validateStatusTransition(Set.of(DeliveryStatus.HUB_WAITING));
 		if (!this.currentHubId.equals(this.destinationHubId)) {
-			throw new DeliveryException(DeliveryErrorCode.INVALID_STATUS_TRANSITION);
+			throw new DeliveryException(DeliveryErrorCode.NOT_COMPANY_DELIVERY_PHASE);
 		}
 		DeliveryRoute companyRoute = findNextCreatedRoute();
 		companyRoute.startRoute();
@@ -115,7 +115,7 @@ public class Delivery {
 		return this.routes.stream()
 			.filter(route -> route.getStatus() == RouteStatus.CREATED)
 			.min(Comparator.comparingInt(DeliveryRoute::getDeliveryRouteSequence))
-			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.ROUTE_NOT_FOUND));
+			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.NEXT_ROUTE_NOT_FOUND));
 	}
 
 	public void arriveAtHub() {
@@ -123,7 +123,7 @@ public class Delivery {
 		DeliveryRoute currentRoute = this.routes.stream()
 			.filter(route -> route.getStatus() == RouteStatus.MOVING)
 			.findFirst()
-			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.ROUTE_NOT_FOUND));
+			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.MOVING_ROUTE_NOT_FOUND));
 		currentRoute.arriveAtDestination();
 		this.currentHubId = currentRoute.getDestinationHubId();
 		this.status = DeliveryStatus.HUB_ARRIVED;

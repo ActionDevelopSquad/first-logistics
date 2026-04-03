@@ -36,9 +36,12 @@ public enum DeliveryErrorCode implements ErrorCode {
 	DELIVERY_ACCESS_DENIED(HttpStatus.FORBIDDEN, "DR_E105", "해당 배송에 대한 접근 권한이 없습니다."),
 	DELIVERY_NOT_MODIFIABLE(HttpStatus.BAD_REQUEST, "DR_E106", "배송이 시작된 후에는 수정할 수 없습니다."),
 	INVALID_STATUS_TRANSITION(HttpStatus.BAD_REQUEST, "DR_E107", "현재 상태에서 해당 상태로 전환할 수 없습니다."),
-	ROUTE_NOT_FOUND(HttpStatus.NOT_FOUND, "DR_E108", "진행 중인 배송 경로를 찾을 수 없습니다."),
+	NEXT_ROUTE_NOT_FOUND(HttpStatus.NOT_FOUND, "DR_E108", "다음 배송 경로를 찾을 수 없습니다."),
 	ROUTE_ALREADY_STARTED(HttpStatus.BAD_REQUEST, "DR_E109", "이미 출발한 경로입니다."),
 	ROUTE_NOT_IN_TRANSIT(HttpStatus.BAD_REQUEST, "DR_E110", "이동 중인 경로가 아닙니다."),
+	NOT_HUB_DELIVERY_PHASE(HttpStatus.BAD_REQUEST, "DR_E111", "마지막 허브에서는 허브 배송을 시작할 수 없습니다."),
+	NOT_COMPANY_DELIVERY_PHASE(HttpStatus.BAD_REQUEST, "DR_E112", "마지막 허브에 도착해야 업체 배송을 시작할 수 있습니다."),
+	MOVING_ROUTE_NOT_FOUND(HttpStatus.NOT_FOUND, "DR_E113", "이동 중인 배송 경로를 찾을 수 없습니다."),
 
 	// 배송 담당자
 	HUB_DELIVERY_MANAGER_NOT_AVAILABLE(HttpStatus.NOT_FOUND, "DR_E201", "배정 가능한 허브 배송담당자가 없습니다."),

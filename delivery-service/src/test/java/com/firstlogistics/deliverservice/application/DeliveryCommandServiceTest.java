@@ -893,6 +893,96 @@ class DeliveryCommandServiceTest {
 	}
 
 	@Nested
+	@DisplayName("업체 배송 시작 실패")
+	class StartCompanyDeliveryFail {
+
+		@Test
+		@DisplayName("존재하지 않는 배송")
+		void startCompanyDelivery_fail_deliveryNotFound() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.empty());
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.startCompanyDelivery(command));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.DELIVERY_NOT_FOUND);
+		}
+
+		@Test
+		@DisplayName("권한 없음 (COMPANY_MANAGER)")
+		void startCompanyDelivery_fail_accessDenied() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryAtFinalHub(deliveryId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "COMPANY_MANAGER", userId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+			willThrow(new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED))
+				.given(deliveryPermissionValidator).validate(any(), eq("COMPANY_MANAGER"), eq(userId), any());
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.startCompanyDelivery(command));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
+		}
+
+		@Test
+		@DisplayName("잘못된 상태 (CREATED)")
+		void startCompanyDelivery_fail_invalidStatus() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.startCompanyDelivery(command));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.INVALID_STATUS_TRANSITION);
+		}
+
+		@Test
+		@DisplayName("마지막 허브가 아닌데 업체 배송 시작 시도")
+		void startCompanyDelivery_fail_notAtFinalHub() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithMultipleRoutes(deliveryId, DeliveryStatus.HUB_WAITING);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.startCompanyDelivery(command));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.NOT_COMPANY_DELIVERY_PHASE);
+		}
+	}
+
+	@Nested
 	@DisplayName("업체 배송 시작 성공")
 	class StartCompanyDeliverySuccess {
 
