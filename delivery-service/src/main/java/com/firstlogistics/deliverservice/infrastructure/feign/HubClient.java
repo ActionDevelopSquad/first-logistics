@@ -25,8 +25,8 @@ public interface HubClient {
 		@RequestParam("receiverCompanyId") UUID receiverCompanyId
 	);
 
-	@GetMapping("/api/v1/hub-managers")
-	FeignApiResponse<List<HubManagerResponse>> getHubManagersByUserId(@RequestParam("userId") UUID userId);
+	@GetMapping("/api/v1/hub-managers/users/{userId}")
+	FeignApiResponse<HubManagerResponse> getHubManagerByUserId(@PathVariable("userId") UUID userId);
 
 	@PostMapping("/api/v1/hubs/ids")
 	FeignApiResponse<List<HubResponse>> getHubs(@RequestBody List<UUID> hubIds);
