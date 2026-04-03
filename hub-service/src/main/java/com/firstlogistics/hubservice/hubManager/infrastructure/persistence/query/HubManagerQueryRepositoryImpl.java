@@ -28,20 +28,22 @@ import java.util.UUID;
 public class HubManagerQueryRepositoryImpl implements HubManagerQueryRepository {
     private static final QHubManagerJpaEntity hubManager = hubManagerJpaEntity;
     private final JPAQueryFactory queryFactory;
-    private final HubManagerMapper mapper;
 
     @Override
     public HubManager findById(HubManagerId hubManagerId) {
         HubManagerJpaEntity result = queryFactory
                 .select(hubManager)
                 .from(hubManager)
-                .where(hubManager.id.eq(hubManagerId.id()))
+                .where(
+                        hubManager.id.eq(hubManagerId.id()),
+                        notDeleted()
+                )
                 .fetchOne();
 
         if (result == null)
             throw new HubManagerException(HubManagerErrorCode.HUB_MANAGER_NOT_FOUND);
 
-        return mapper.toDomain(result);
+        return HubManagerMapper.toDomain(result);
     }
 
     @Override
@@ -50,7 +52,8 @@ public class HubManagerQueryRepositoryImpl implements HubManagerQueryRepository 
                 .selectFrom(hubManager)
                 .where(
                         userIdsIn(spec.userIds()),
-                        hubIdsIn(spec.hubIds())
+                        hubIdsIn(spec.hubIds()),
+                        notDeleted()
                 )
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -63,7 +66,8 @@ public class HubManagerQueryRepositoryImpl implements HubManagerQueryRepository 
                 .from(hubManager)
                 .where(
                         userIdsIn(spec.userIds()),
-                        hubIdsIn(spec.hubIds())
+                        hubIdsIn(spec.hubIds()),
+                        notDeleted()
                 )
                 .fetchOne();
 
@@ -75,7 +79,10 @@ public class HubManagerQueryRepositoryImpl implements HubManagerQueryRepository 
         UUID result =  queryFactory
                 .select(hubManager.hubId)
                 .from(hubManager)
-                .where(hubManager.userId.eq(userId.id()))
+                .where(
+                        hubManager.userId.eq(userId.id()),
+                        notDeleted()
+                )
                 .fetchOne();
         if(result == null)
             throw new HubManagerException(HubManagerErrorCode.HUB_MANAGER_NOT_FOUND);

@@ -6,7 +6,6 @@ import com.firstlogistics.hubservice.hubManager.domain.vo.HubManagerId;
 import com.firstlogistics.hubservice.hubManager.domain.vo.UserId;
 import org.springframework.stereotype.Component;
 
-@Component
 public class HubManagerMapper {
     public static HubManagerJpaEntity toJpaEntity(HubManager hubManager){
         return new HubManagerJpaEntity(
