@@ -14,5 +14,5 @@ public interface HubManagerQueryRepository {
 
     Page<HubManager> searchByCondition(HubManagerSearchSpec spec, Pageable pageable);
 
-    HubId findHubIdByUserId(UserId userId);
+    HubManager findByUserId(UserId userId);
 }

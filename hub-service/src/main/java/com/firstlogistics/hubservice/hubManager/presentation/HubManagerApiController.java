@@ -1,6 +1,7 @@
 package com.firstlogistics.hubservice.hubManager.presentation;
 
 import com.firstlogistics.hubservice.hubManager.application.HubManagerQueryService;
+import com.firstlogistics.hubservice.hubManager.domain.entity.HubManager;
 import com.firstlogistics.hubservice.hubManager.presentation.dto.request.SearchHubManagersRequest;
 import com.firstlogistics.hubservice.hubManager.presentation.dto.response.HubManagerPageResponse;
 import com.firstlogistics.hubservice.hubManager.presentation.dto.response.HubManagerResponse;
@@ -16,7 +17,7 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/hubs/hub-managers")
+@RequestMapping("/api/v1/hub-managers")
 public class HubManagerApiController {
     private final HubManagerQueryService queryService;
 
@@ -35,9 +36,9 @@ public class HubManagerApiController {
                 .body(ApiResponse.success(HubManagerSuccessCode.HUB_MANAGER_LIST_RETRIEVED,response));
     }
 
-    @GetMapping("/users/{id}/hub")
-    public ResponseEntity<ApiResponse<UUID>> getHubIdByUserId(@PathVariable UUID id){
-        UUID hubId = queryService.getHubIdByUserId(id);
+    @GetMapping("/users/{id}")
+    public ResponseEntity<ApiResponse<HubManagerResponse>> getHubIdByUserId(@PathVariable UUID id){
+        HubManagerResponse hubId = HubManagerResponse.from(queryService.getHubManagerByUserId(id));
         return ResponseEntity.status(HubManagerSuccessCode.HUB_MANAGER_HUB_ID_RETRIEVED.getStatus())
                 .body(ApiResponse.success(HubManagerSuccessCode.HUB_MANAGER_HUB_ID_RETRIEVED,hubId));
     }

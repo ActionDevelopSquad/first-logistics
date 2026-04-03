@@ -93,15 +93,16 @@ class HubManagerQueryServiceTest {
     @Test
     @DisplayName("유저 ID로 소속 허브 ID를 조회한다")
     void getHubIdByUserId() {
+        UUID hubManagerId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
         UUID hubId = UUID.randomUUID();
+        HubManager hubManager = createHubManager(hubManagerId, userId, hubId);
+        when(repository.findByUserId(UserId.of(userId))).thenReturn(hubManager);
 
-        when(repository.findHubIdByUserId(UserId.of(userId))).thenReturn(HubId.of(hubId));
+        HubManagerResult result = service.getHubManagerByUserId(userId);
 
-        UUID result = service.getHubIdByUserId(userId);
-
-        assertThat(result).isEqualTo(hubId);
-        verify(repository).findHubIdByUserId(UserId.of(userId));
+        assertThat(result.userId()).isEqualTo(userId);
+        verify(repository).findByUserId(UserId.of(userId));
     }
 
     private HubManager createHubManager(UUID hubManagerId, UUID userId, UUID hubId) {

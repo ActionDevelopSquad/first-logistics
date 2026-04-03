@@ -79,9 +79,9 @@ public class HubManagerQueryRepositoryImpl implements HubManagerQueryRepository 
     }
 
     @Override
-    public HubId findHubIdByUserId(UserId userId) {
-        UUID result = queryFactory
-                .select(hubManager.hubId)
+    public HubManager findByUserId(UserId userId) {
+        HubManagerJpaEntity result = queryFactory
+                .select(hubManager)
                 .from(hubManager)
                 .where(
                         hubManager.userId.eq(userId.id()),
@@ -91,7 +91,7 @@ public class HubManagerQueryRepositoryImpl implements HubManagerQueryRepository 
         if (result == null)
             throw new HubManagerException(HubManagerErrorCode.HUB_MANAGER_NOT_FOUND);
 
-        return HubId.of(result);
+        return HubManagerMapper.toDomain(result);
     }
 
     private BooleanExpression notDeleted() {
