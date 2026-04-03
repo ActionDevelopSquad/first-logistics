@@ -39,8 +39,8 @@ public class HubManagerApiController {
     @GetMapping("/users/{id}")
     public ResponseEntity<ApiResponse<HubManagerResponse>> getHubIdByUserId(@PathVariable UUID id){
         HubManagerResponse hubId = HubManagerResponse.from(queryService.getHubManagerByUserId(id));
-        return ResponseEntity.status(HubManagerSuccessCode.HUB_MANAGER_HUB_ID_RETRIEVED.getStatus())
-                .body(ApiResponse.success(HubManagerSuccessCode.HUB_MANAGER_HUB_ID_RETRIEVED,hubId));
+        return ResponseEntity.status(HubManagerSuccessCode.HUB_MANAGER_RETRIEVED.getStatus())
+                .body(ApiResponse.success(HubManagerSuccessCode.HUB_MANAGER_RETRIEVED,hubId));
     }
 
 }
