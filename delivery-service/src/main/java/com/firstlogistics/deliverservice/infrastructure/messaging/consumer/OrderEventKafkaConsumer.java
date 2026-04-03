@@ -1,9 +1,11 @@
 package com.firstlogistics.deliverservice.infrastructure.messaging.consumer;
 
+import com.firstlogistics.deliverservice.application.DeliveryCommandService;
 import com.firstlogistics.deliverservice.application.DeliveryQueryService;
 import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryCommand;
 import com.firstlogistics.deliverservice.application.facade.DeliveryCommandFacade;
 import com.firstlogistics.deliverservice.domain.event.OrderAcceptedEvent;
+import com.firstlogistics.deliverservice.domain.event.OrderCancelledEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class OrderEventKafkaConsumer {
 
+	private final DeliveryCommandService deliveryCommandService;
 	private final DeliveryQueryService deliveryQueryService;
 	private final DeliveryCommandFacade deliveryCommandFacade;
 
@@ -33,6 +36,19 @@ public class OrderEventKafkaConsumer {
 		}
 
 		deliveryCommandFacade.createDelivery(CreateDeliveryCommand.from(event));
+
+		ack.acknowledge();
+	}
+
+	@KafkaListener(
+		topics = "order.cancelled",
+		groupId = "delivery-service",
+		containerFactory = "orderCancelledListenerContainerFactory"
+	)
+	public void handleOrderCancelled(OrderCancelledEvent event, Acknowledgment ack) {
+		log.info("order.cancelled 이벤트 수신 - orderId: {}", event.orderId());
+
+		deliveryCommandService.cancelByOrder(event.orderId());
 
 		ack.acknowledge();
 	}

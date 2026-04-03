@@ -12,6 +12,7 @@ import com.firstlogistics.deliverservice.application.publisher.DeliveryEventPubl
 import com.firstlogistics.deliverservice.domain.entity.Delivery;
 import com.firstlogistics.deliverservice.domain.entity.DeliveryRoute;
 import com.firstlogistics.deliverservice.domain.entity.DeliveryManager;
+import com.firstlogistics.deliverservice.domain.enums.DeliveryStatus;
 import com.firstlogistics.deliverservice.domain.enums.UserRole;
 import com.firstlogistics.deliverservice.domain.event.DeliveryCreatedEvent;
 import com.firstlogistics.deliverservice.domain.event.DeliveryStatusChangedEvent;
@@ -273,6 +274,38 @@ public class DeliveryCommandService {
 			DeliveryStatusChangedEvent.create(savedDelivery));
 
 		return ChangeDeliveryStatusResult.from(savedDelivery);
+	}
+
+	public ChangeDeliveryStatusResult cancelDelivery(ChangeDeliveryStatusCommand command) {
+		Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
+			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
+
+		DeliveryAccessContext accessContext = DeliveryAccessContext.from(delivery);
+		deliveryPermissionValidator.validate(accessContext, command.role(), command.userId(),
+			Set.of(UserRole.MASTER, UserRole.HUB_MANAGER));
+
+		delivery.cancelDelivery();
+		Delivery savedDelivery = deliveryRepository.save(delivery);
+
+		deliveryEventPublisher.publishDeliveryStatusChanged(
+			DeliveryStatusChangedEvent.create(savedDelivery));
+
+		return ChangeDeliveryStatusResult.from(savedDelivery);
+	}
+
+	public void cancelByOrder(UUID orderId) {
+		Delivery delivery = deliveryRepository.findByOrderId(orderId)
+			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
+
+		if (delivery.getStatus() == DeliveryStatus.CANCELLED) {
+			return;
+		}
+
+		delivery.cancelByOrder();
+		Delivery savedDelivery = deliveryRepository.save(delivery);
+
+		deliveryEventPublisher.publishDeliveryStatusChanged(
+			DeliveryStatusChangedEvent.create(savedDelivery));
 	}
 
 	private DeliveryCreatedEvent buildDeliveryCreatedEvent(

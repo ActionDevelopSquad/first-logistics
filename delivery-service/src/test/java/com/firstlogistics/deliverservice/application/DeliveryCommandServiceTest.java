@@ -1108,6 +1108,215 @@ class DeliveryCommandServiceTest {
 		}
 	}
 
+	// ===== 배송 취소 테스트 (API) =====
+
+	@Nested
+	@DisplayName("배송 취소 실패 (API)")
+	class CancelDeliveryFail {
+
+		@Test
+		@DisplayName("존재하지 않는 배송")
+		void cancelDelivery_fail_deliveryNotFound() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.empty());
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.cancelDelivery(command));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.DELIVERY_NOT_FOUND);
+		}
+
+		@Test
+		@DisplayName("권한 없음 (COMPANY_MANAGER)")
+		void cancelDelivery_fail_accessDenied() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "COMPANY_MANAGER", userId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+			willThrow(new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED))
+				.given(deliveryPermissionValidator).validate(any(), eq("COMPANY_MANAGER"), eq(userId), any());
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.cancelDelivery(command));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
+		}
+
+		@Test
+		@DisplayName("CREATED 아닌 상태 (FOR_HUB_MOVING)")
+		void cancelDelivery_fail_invalidStatus() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.FOR_HUB_MOVING);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.cancelDelivery(command));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.INVALID_STATUS_TRANSITION);
+		}
+	}
+
+	@Nested
+	@DisplayName("배송 취소 성공 (API)")
+	class CancelDeliverySuccess {
+
+		@Test
+		@DisplayName("CREATED → CANCELLED")
+		void cancelDelivery_success() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
+
+			// when
+			ChangeDeliveryStatusResult result = deliveryCommandService.cancelDelivery(command);
+
+			// then
+			assertThat(result.deliveryId()).isEqualTo(deliveryId);
+			ArgumentCaptor<Delivery> captor = ArgumentCaptor.forClass(Delivery.class);
+			then(deliveryRepository).should().save(captor.capture());
+			assertThat(captor.getValue().getStatus()).isEqualTo(DeliveryStatus.CANCELLED);
+		}
+
+		@Test
+		@DisplayName("취소 시 이벤트 발행")
+		void cancelDelivery_success_eventPublished() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
+
+			// when
+			deliveryCommandService.cancelDelivery(command);
+
+			// then
+			ArgumentCaptor<DeliveryStatusChangedEvent> eventCaptor = ArgumentCaptor.forClass(DeliveryStatusChangedEvent.class);
+			then(deliveryEventPublisher).should().publishDeliveryStatusChanged(eventCaptor.capture());
+			DeliveryStatusChangedEvent captured = eventCaptor.getValue();
+			assertThat(captured.status()).isEqualTo("CANCELLED");
+			assertThat(captured.deliveryId()).isEqualTo(deliveryId);
+		}
+	}
+
+	// ===== 배송 취소 테스트 (Kafka - cancelByOrder) =====
+
+	@Nested
+	@DisplayName("주문 취소에 의한 배송 취소 실패")
+	class CancelByOrderFail {
+
+		@Test
+		@DisplayName("존재하지 않는 orderId")
+		void cancelByOrder_fail_deliveryNotFound() {
+			// given
+			UUID orderId = UUID.randomUUID();
+
+			given(deliveryRepository.findByOrderId(orderId)).willReturn(Optional.empty());
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.cancelByOrder(orderId));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.DELIVERY_NOT_FOUND);
+		}
+	}
+
+	@Nested
+	@DisplayName("주문 취소에 의한 배송 취소 성공")
+	class CancelByOrderSuccess {
+
+		@Test
+		@DisplayName("무조건 취소 (어떤 상태든)")
+		void cancelByOrder_success() {
+			// given
+			UUID orderId = UUID.randomUUID();
+			UUID deliveryId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.FOR_HUB_MOVING);
+
+			given(deliveryRepository.findByOrderId(orderId)).willReturn(Optional.of(delivery));
+			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
+
+			// when
+			deliveryCommandService.cancelByOrder(orderId);
+
+			// then
+			ArgumentCaptor<Delivery> captor = ArgumentCaptor.forClass(Delivery.class);
+			then(deliveryRepository).should().save(captor.capture());
+			assertThat(captor.getValue().getStatus()).isEqualTo(DeliveryStatus.CANCELLED);
+		}
+
+		@Test
+		@DisplayName("이미 CANCELLED면 멱등 처리 (중복 취소 무시)")
+		void cancelByOrder_success_alreadyCancelled() {
+			// given
+			UUID orderId = UUID.randomUUID();
+			UUID deliveryId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CANCELLED);
+
+			given(deliveryRepository.findByOrderId(orderId)).willReturn(Optional.of(delivery));
+
+			// when
+			deliveryCommandService.cancelByOrder(orderId);
+
+			// then
+			then(deliveryRepository).should(times(0)).save(any(Delivery.class));
+			then(deliveryEventPublisher).should(times(0)).publishDeliveryStatusChanged(any());
+		}
+
+		@Test
+		@DisplayName("취소 시 이벤트 발행")
+		void cancelByOrder_success_eventPublished() {
+			// given
+			UUID orderId = UUID.randomUUID();
+			UUID deliveryId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.HUB_WAITING);
+
+			given(deliveryRepository.findByOrderId(orderId)).willReturn(Optional.of(delivery));
+			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
+
+			// when
+			deliveryCommandService.cancelByOrder(orderId);
+
+			// then
+			ArgumentCaptor<DeliveryStatusChangedEvent> eventCaptor = ArgumentCaptor.forClass(DeliveryStatusChangedEvent.class);
+			then(deliveryEventPublisher).should().publishDeliveryStatusChanged(eventCaptor.capture());
+			assertThat(eventCaptor.getValue().status()).isEqualTo("CANCELLED");
+		}
+	}
+
 	// --- 배송 수정 테스트 픽스처 ---
 
 	private static final UUID STUB_SOURCE_HUB_ID = UUID.randomUUID();

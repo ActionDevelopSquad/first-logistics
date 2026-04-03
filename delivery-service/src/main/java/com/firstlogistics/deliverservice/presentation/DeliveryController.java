@@ -119,6 +119,17 @@ public class DeliveryController {
 		));
 	}
 
+	@PostMapping("/{deliveryId}/cancel")
+	public ResponseEntity<ApiResponse<ChangeDeliveryStatusResponse>> cancelDelivery(
+		@PathVariable UUID deliveryId,
+		@RequestHeader("X-User-Id") UUID userId,
+		@RequestHeader("X-User-Role") String role
+	) {
+		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_CANCELLED,
+				ChangeDeliveryStatusResponse.from(deliveryCommandService.cancelDelivery(ChangeDeliveryStatusCommand.of(deliveryId, role, userId)))
+		));
+	}
+
 	@GetMapping("/{deliveryId}")
 	public ResponseEntity<ApiResponse<DeliveryDetailResponse>> getDelivery(
 		@PathVariable UUID deliveryId,

@@ -147,6 +147,11 @@ public class Delivery {
 		this.status = DeliveryStatus.CANCELLED;
 	}
 
+	public void cancelDelivery() {
+		validateStatusTransition(Set.of(DeliveryStatus.CREATED));
+		this.status = DeliveryStatus.CANCELLED;
+	}
+
 	public void reassignReceiver(UUID receiverId, String receiverSlackId) {
 		validateBeforeDelivery();
 		if (receiverId != null) {
