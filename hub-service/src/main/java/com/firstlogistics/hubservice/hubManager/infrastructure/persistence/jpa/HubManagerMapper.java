@@ -19,7 +19,7 @@ public class HubManagerMapper {
 
     public static HubManager toDomain(HubManagerJpaEntity jpaEntity){
         return HubManager.reconstitute(
-                HubManagerId.of(jpaEntity.getHubId()),
+                HubManagerId.of(jpaEntity.getId()),
                 UserId.of(jpaEntity.getUserId()),
                 HubId.of(jpaEntity.getHubId())
         );
