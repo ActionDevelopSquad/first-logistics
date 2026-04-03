@@ -30,6 +30,13 @@ public class DeliveryPermissionValidator {
 		}
 	}
 
+	public void validateRole(String role, Set<UserRole> allowedRoles) {
+		UserRole userRole = parseUserRole(role);
+		if (!allowedRoles.contains(userRole)) {
+			throw new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
+		}
+	}
+
 	public void validate(DeliveryAccessContext context, String role, UUID userId, Set<UserRole> allowedRoles) {
 		UserRole userRole = parseUserRole(role);
 		if (!allowedRoles.contains(userRole)) {

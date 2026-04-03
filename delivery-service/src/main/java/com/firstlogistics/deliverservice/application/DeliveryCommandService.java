@@ -343,6 +343,7 @@ public class DeliveryCommandService {
 
 		DeliveryCreatedEvent.DeliveryInfo deliveryInfo = DeliveryCreatedEvent.DeliveryInfo.of(
 			delivery.getId().id(),
+			delivery.getCurrentHubId(),
 			receiver.name(),
 			delivery.getReceiverSlackId(),
 			command.receiverRoadAddress(),

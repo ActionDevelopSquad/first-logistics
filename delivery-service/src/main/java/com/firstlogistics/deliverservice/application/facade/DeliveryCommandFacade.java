@@ -39,7 +39,16 @@ public class DeliveryCommandFacade {
     private final HubPort hubPort;
     private final DistributedLockPort distributedLockPort;
 
-    public CreateDeliveryResult createDelivery(CreateDeliveryCommand command) {
+    public CreateDeliveryResult createDelivery(CreateDeliveryCommand command, String role, UUID userId) {
+        deliveryPermissionValidator.validateRole(role, Set.of(UserRole.MASTER));
+        return executeCreateDelivery(command);
+    }
+
+    public CreateDeliveryResult createDeliveryBySystem(CreateDeliveryCommand command) {
+        return executeCreateDelivery(command);
+    }
+
+    private CreateDeliveryResult executeCreateDelivery(CreateDeliveryCommand command) {
         CompanyResponse supplierCompany = companyPort.getCompany(command.supplierCompanyId());
         CompanyResponse receiverCompany = companyPort.getCompany(command.receiverCompanyId());
 

@@ -2,8 +2,10 @@ package com.firstlogistics.deliverservice.application.facade;
 
 import com.firstlogistics.deliverservice.application.DeliveryCommandService;
 import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryCommand;
+import com.firstlogistics.deliverservice.application.permission.DeliveryPermissionValidator;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
+import com.firstlogistics.deliverservice.domain.repository.DeliveryRepository;
 import com.firstlogistics.deliverservice.application.port.CompanyPort;
 import com.firstlogistics.deliverservice.application.port.HubPort;
 import com.firstlogistics.deliverservice.application.port.dto.CompanyResponse;
@@ -39,10 +41,16 @@ class DeliveryCommandFacadeTest {
 	private HubPort hubPort;
 
 	@Mock
+	private DeliveryRepository deliveryRepository;
+
+	@Mock
+	private DeliveryPermissionValidator deliveryPermissionValidator;
+
+	@Mock
 	private DistributedLockPort distributedLockPort;
 
 	@InjectMocks
-	private DeliveryCommandFacade deliveryCreateFacade;
+	private DeliveryCommandFacade deliveryCommandFacade;
 
 	@Nested
 	@DisplayName("배송 생성 실패")
@@ -66,7 +74,7 @@ class DeliveryCommandFacadeTest {
 				.willThrow(new DeliveryException(DeliveryErrorCode.COMPANY_NOT_FOUND));
 
 			// when
-			Throwable throwable = catchThrowable(() -> deliveryCreateFacade.createDelivery(command));
+			Throwable throwable = catchThrowable(() -> deliveryCommandFacade.createDeliveryBySystem(command));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -96,7 +104,7 @@ class DeliveryCommandFacadeTest {
 				.willThrow(new DeliveryException(DeliveryErrorCode.HUB_NOT_FOUND));
 
 			// when
-			Throwable throwable = catchThrowable(() -> deliveryCreateFacade.createDelivery(command));
+			Throwable throwable = catchThrowable(() -> deliveryCommandFacade.createDeliveryBySystem(command));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then

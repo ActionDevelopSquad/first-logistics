@@ -80,6 +80,7 @@ class DeliveryEventKafkaProducerTest {
         );
         DeliveryCreatedEvent.DeliveryInfo deliveryInfo = DeliveryCreatedEvent.DeliveryInfo.of(
             deliveryId,
+            UUID.randomUUID(),
             "수령인",
             receiverSlackId,
             "서울시 강남구 테헤란로 123",

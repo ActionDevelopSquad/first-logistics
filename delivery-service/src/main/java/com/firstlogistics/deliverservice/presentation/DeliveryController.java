@@ -37,7 +37,7 @@ public class DeliveryController {
 	) {
 		return ResponseEntity.status(DeliverySuccessCode.DELIVERY_CREATED.getStatus())
 			.body(ApiResponse.success(DeliverySuccessCode.DELIVERY_CREATED,
-					CreateDeliveryResponse.from(deliveryCommandFacade.createDelivery(request.toCommand()))
+					CreateDeliveryResponse.from(deliveryCommandFacade.createDelivery(request.toCommand(), role, userId))
 			));
 	}
 

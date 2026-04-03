@@ -33,7 +33,7 @@ public class OrderEventKafkaConsumer {
 			return;
 		}
 
-		deliveryCommandFacade.createDelivery(CreateDeliveryCommand.from(event));
+		deliveryCommandFacade.createDeliveryBySystem(CreateDeliveryCommand.from(event));
 
 		ack.acknowledge();
 	}

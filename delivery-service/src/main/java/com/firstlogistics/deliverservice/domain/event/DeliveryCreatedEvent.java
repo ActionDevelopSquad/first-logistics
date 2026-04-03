@@ -39,6 +39,7 @@ public record DeliveryCreatedEvent(
 
 	public record DeliveryInfo(
 		UUID deliveryId,
+		UUID currentHubId,
 		String receiverName,
 		String receiverSlackId,
 		String receiverRoadAddress,
@@ -49,12 +50,12 @@ public record DeliveryCreatedEvent(
 		String companyDeliveryManagerPhone,
 		String companyDeliveryManagerEmail
 	) {
-		public static DeliveryInfo of(UUID deliveryId, String receiverName, String receiverSlackId,
+		public static DeliveryInfo of(UUID deliveryId, UUID currentHubId, String receiverName, String receiverSlackId,
 				String receiverRoadAddress, String receiverDetailAddress,
 				List<DeliveryRouteInfo> deliveryRoutes,
 				String companyDeliveryManagerSlackId, String companyDeliveryManagerName,
 				String companyDeliveryManagerPhone, String companyDeliveryManagerEmail) {
-			return new DeliveryInfo(deliveryId, receiverName, receiverSlackId,
+			return new DeliveryInfo(deliveryId, currentHubId, receiverName, receiverSlackId,
 				receiverRoadAddress, receiverDetailAddress, deliveryRoutes,
 				companyDeliveryManagerSlackId, companyDeliveryManagerName,
 				companyDeliveryManagerPhone, companyDeliveryManagerEmail);
