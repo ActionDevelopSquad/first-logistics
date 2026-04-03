@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/hub-managers")
+@RequestMapping("/api/v1/hubs/hub-managers")
 public class HubManagerApiController {
     private final HubManagerQueryService queryService;
 
@@ -27,14 +27,14 @@ public class HubManagerApiController {
                 .body(ApiResponse.success(HubManagerSuccessCode.HUB_MANAGER_RETRIEVED,response));
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<ApiResponse<HubManagerPageResponse>> searchHubManagers(@ModelAttribute SearchHubManagersRequest request, @PageableDefault Pageable pageable){
+    @PostMapping("/search")
+    public ResponseEntity<ApiResponse<HubManagerPageResponse>> searchHubManagers(@RequestBody SearchHubManagersRequest request, @PageableDefault Pageable pageable){
         HubManagerPageResponse response = HubManagerPageResponse.from(queryService.searchHubManagers(request.toQuery(), pageable));
         return ResponseEntity.status(HubManagerSuccessCode.HUB_MANAGER_LIST_RETRIEVED.getStatus())
                 .body(ApiResponse.success(HubManagerSuccessCode.HUB_MANAGER_LIST_RETRIEVED,response));
     }
 
-    @GetMapping("/users/{id}")
+    @GetMapping("/users/{id}/hub")
     public ResponseEntity<ApiResponse<UUID>> getHubIdByUserId(@PathVariable UUID id){
         UUID hubId = queryService.getHubIdByUserId(id);
         return ResponseEntity.status(HubManagerSuccessCode.HUB_MANAGER_HUB_ID_RETRIEVED.getStatus())
