@@ -1,11 +1,12 @@
 package common.security.config;
 
 import common.security.domain.CustomUserDetails;
+import common.security.entity.exception.AuthException;
 import common.security.util.SecurityUtils;
+import feign.RequestInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import feign.RequestInterceptor;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -34,8 +35,11 @@ public class FeignAuthPropagationConfig {
                     String encodedName = URLEncoder.encode(user.getName(), StandardCharsets.UTF_8);
                     template.header(SecurityHeader.USER_NAME, encodedName);
                 }
-            } catch (Exception e) {
-                log.warn("Failed to propagate user headers", e);
+            } catch (AuthException e) {
+                log.debug("인증 컨텍스트가 없어 사용자 헤더 전파를 건너뜁니다.");
+            } catch (RuntimeException e) {
+                log.error("사용자 헤더 전파 중 예기치 않은 오류", e);
+                throw e;
             }
         };
     }
