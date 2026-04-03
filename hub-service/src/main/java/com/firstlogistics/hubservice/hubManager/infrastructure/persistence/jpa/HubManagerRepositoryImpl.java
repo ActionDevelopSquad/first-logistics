@@ -8,5 +8,4 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class HubManagerRepositoryImpl implements HubManagerRepository {
     private final HubManagerJpaRepository jpaRepository;
-    private final HubManagerMapper mapper;
 }
