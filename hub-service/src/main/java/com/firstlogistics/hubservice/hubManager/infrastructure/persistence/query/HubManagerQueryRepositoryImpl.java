@@ -1,6 +1,5 @@
 package com.firstlogistics.hubservice.hubManager.infrastructure.persistence.query;
 
-import com.firstlogistics.hubservice.hub.domain.vo.HubId;
 import com.firstlogistics.hubservice.hubManager.domain.entity.HubManager;
 import com.firstlogistics.hubservice.hubManager.domain.exception.HubManagerErrorCode;
 import com.firstlogistics.hubservice.hubManager.domain.exception.HubManagerException;
