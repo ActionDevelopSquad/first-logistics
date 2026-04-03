@@ -1,7 +1,7 @@
 package com.firstlogistics.userservice.infrastructure.messaging.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.firstlogistics.userservice.domain.event.UserStatusChangedEvent;
+import com.firstlogistics.userservice.domain.event.DeliveryManagerAssignFailedEvent;
 import common.kafka.config.KafkaConsumerConfig;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -20,14 +20,14 @@ import java.util.Map;
 
 @Configuration
 @RequiredArgsConstructor
-public class UserConsumerConfig {
+public class UserDeliveryManagerConsumerConfig {
 
     private final KafkaConsumerConfig kafkaConsumerConfig;
     private final ObjectMapper objectMapper; // ObjectMapper 주입
 
     @Bean
-    public ConsumerFactory<String, UserStatusChangedEvent> userConsumerFactory() {
-        JsonDeserializer<UserStatusChangedEvent> deserializer = new JsonDeserializer<>(UserStatusChangedEvent.class, objectMapper);
+    public ConsumerFactory<String, DeliveryManagerAssignFailedEvent> deliveryManagerConsumerFactory() {
+        JsonDeserializer<DeliveryManagerAssignFailedEvent> deserializer = new JsonDeserializer<>(DeliveryManagerAssignFailedEvent.class, objectMapper);
         deserializer.addTrustedPackages("*");
         deserializer.setUseTypeHeaders(false);
 
@@ -38,17 +38,17 @@ public class UserConsumerConfig {
     }
 
     @Bean
-    public DefaultErrorHandler userErrorHandler() {
+    public DefaultErrorHandler deliveryManagerErrorHandler() {
         return new DefaultErrorHandler(new FixedBackOff(1000L, 3L));
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, UserStatusChangedEvent> userListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, UserStatusChangedEvent> factory = new ConcurrentKafkaListenerContainerFactory<>();
+    public ConcurrentKafkaListenerContainerFactory<String, DeliveryManagerAssignFailedEvent> deliveryManagerListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, DeliveryManagerAssignFailedEvent> factory = new ConcurrentKafkaListenerContainerFactory<>();
 
-        factory.setConsumerFactory(userConsumerFactory());
+        factory.setConsumerFactory(deliveryManagerConsumerFactory());
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
-        factory.setCommonErrorHandler(userErrorHandler());
+        factory.setCommonErrorHandler(deliveryManagerErrorHandler());
 
         return factory;
     }

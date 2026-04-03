@@ -21,15 +21,18 @@ public class KafkaUserEventDlqConsumer {
                     "user.delivery.status.changed.dlq"
             },
             groupId = "user-status-dlq-handler",
-            containerFactory = "userConsumerFactory"
+            containerFactory = "userStatusListenerContainerFactory"
     )
     public void consume(UserStatusChangedDlqEvent event, Acknowledgment ack) {
-        log.error("DLQ 메시지 수신 userId={}, failedAt={}",
-                event.userId(),
-                event.failedAt()
-        );
+        try {
+            log.error("DLQ 메시지 수신 userId={}, failedAt={}", event.userId(), event.failedAt());
+            dlqAlert.alertStatus(event);
 
-        dlqAlert.alertStatus(event);
-        ack.acknowledge();
+        } catch (Exception ex) {
+            log.error("DLQ 알림 처리 실패 userId={}, cause={}", event.userId(), ex.toString());
+
+        } finally {
+            ack.acknowledge();
+        }
     }
 }

@@ -1,11 +1,11 @@
-package com.firstlogistics.userservice.infrastructure.fegin.service;
+package com.firstlogistics.userservice.infrastructure.feign.service;
 
 import com.firstlogistics.userservice.application.port.OrganizationValidationService;
 import com.firstlogistics.userservice.domain.exception.UserErrorCode;
 import com.firstlogistics.userservice.domain.exception.UserException;
-import com.firstlogistics.userservice.infrastructure.fegin.client.CompanyClient;
-import com.firstlogistics.userservice.infrastructure.fegin.client.DeliveryClient;
-import com.firstlogistics.userservice.infrastructure.fegin.client.HubClient;
+import com.firstlogistics.userservice.infrastructure.feign.client.CompanyClient;
+import com.firstlogistics.userservice.infrastructure.feign.client.DeliveryClient;
+import com.firstlogistics.userservice.infrastructure.feign.client.HubClient;
 import common.jpa.entity.enums.UserRole;
 import common.response.ApiResponse;
 import feign.FeignException;
