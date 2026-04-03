@@ -21,6 +21,8 @@ dependencies {
     implementation project(':common-event')
     implementation project(':common-jpa')
     annotationProcessor project(':common-jpa')
+    implementation project(':common-security')
+
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
