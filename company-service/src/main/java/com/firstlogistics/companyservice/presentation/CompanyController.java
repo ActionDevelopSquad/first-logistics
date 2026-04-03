@@ -2,6 +2,7 @@ package com.firstlogistics.companyservice.presentation;
 
 import com.firstlogistics.companyservice.application.CompanyCommandService;
 import com.firstlogistics.companyservice.application.CompanyQueryService;
+import com.firstlogistics.companyservice.presentation.dto.request.ChangeManagerIdRequest;
 import com.firstlogistics.companyservice.presentation.dto.request.CreateCompanyRequest;
 import com.firstlogistics.companyservice.presentation.dto.request.GetCompaniesRequest;
 import com.firstlogistics.companyservice.presentation.dto.request.UpdateCompanyRequest;
@@ -64,6 +65,15 @@ public class CompanyController {
             @Valid @RequestBody UpdateCompanyRequest request) {
         CompanyResponse response = CompanyResponse.from(
                 companyCommandService.update(request.toCommand(companyId)));
+        return ResponseEntity.ok(ApiResponse.success(CommonSuccessCode.OK, response));
+    }
+
+    @PatchMapping("/{companyId}/manager")
+    public ResponseEntity<ApiResponse<CompanyResponse>> changeManagerId(
+            @PathVariable UUID companyId,
+            @Valid @RequestBody ChangeManagerIdRequest request) {
+        CompanyResponse response = CompanyResponse.from(
+                companyCommandService.changeManagerId(request.toCommand(companyId)));
         return ResponseEntity.ok(ApiResponse.success(CommonSuccessCode.OK, response));
     }
 
