@@ -1,6 +1,6 @@
 package common.security.filter;
 
-import common.entity.enums.UserRole;
+import common.security.entity.enums.UserRole;
 import common.security.domain.CustomUserDetails;
 import common.security.config.SecurityHeader;
 import jakarta.servlet.FilterChain;

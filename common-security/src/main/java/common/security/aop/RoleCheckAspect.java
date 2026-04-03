@@ -1,8 +1,8 @@
 package common.security.aop;
 
-import common.entity.enums.UserRole;
-import common.entity.exception.AuthErrorCode;
-import common.entity.exception.AuthException;
+import common.security.entity.enums.UserRole;
+import common.security.entity.exception.AuthErrorCode;
+import common.security.entity.exception.AuthException;
 import common.security.filter.InternalServiceForwardFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;

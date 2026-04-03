@@ -1,4 +1,4 @@
-package common.entity.exception;
+package common.security.entity.exception;
 
 import common.response.ErrorCode;
 import lombok.Getter;
