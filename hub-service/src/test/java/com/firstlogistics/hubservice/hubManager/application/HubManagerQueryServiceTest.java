@@ -79,9 +79,9 @@ class HubManagerQueryServiceTest {
 
         assertThat(result.getTotalElements()).isEqualTo(2);
         assertThat(result.getContent()).hasSize(2);
-        assertThat(result.getContent().get(0).hubManagerId()).isEqualTo(hubManager1.getId().id());
-        assertThat(result.getContent().get(0).userId()).isEqualTo(hubManager1.getUserId().id());
-        assertThat(result.getContent().get(0).hubId()).isEqualTo(hubManager1.getHubId().id());
+        assertThat(result.getContent().getFirst().hubManagerId()).isEqualTo(hubManager1.getId().id());
+        assertThat(result.getContent().getFirst().userId()).isEqualTo(hubManager1.getUserId().id());
+        assertThat(result.getContent().getFirst().hubId()).isEqualTo(hubManager1.getHubId().id());
         assertThat(result.getContent().get(1).hubManagerId()).isEqualTo(hubManager2.getId().id());
         assertThat(result.getContent().get(1).userId()).isEqualTo(hubManager2.getUserId().id());
         assertThat(result.getContent().get(1).hubId()).isEqualTo(hubManager2.getHubId().id());
