@@ -1,5 +1,6 @@
 package com.firstlogistics.userservice.application.dto.query;
 
+import com.firstlogistics.userservice.domain.enums.Status;
 import common.jpa.entity.enums.UserRole;
 
 import java.time.LocalDateTime;
@@ -10,10 +11,22 @@ public record UserGetQuery(
         String name,
         String phone,
         UserRole userRole,
+        Status status,
         String slackId,
         UUID organizationId,
-        LocalDateTime lastLoginAt,
-        int page,
-        int size
+        LocalDateTime lastLoginAt
 )
-{}
+{
+    public UserGetQuery toSpec() {
+        return new UserGetQuery(
+                username,
+                name,
+                phone,
+                userRole,
+                status,
+                slackId,
+                organizationId,
+                lastLoginAt
+        );
+    }
+}
