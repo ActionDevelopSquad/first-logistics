@@ -75,12 +75,12 @@ public class HubManagerQueryRepositoryImpl implements HubManagerQueryRepository 
                 )
                 .fetchOne();
 
-        return new PageImpl<>(content,pageable,total == null ? 0 : total);
+        return new PageImpl<>(content, pageable, total == null ? 0 : total);
     }
 
     @Override
     public HubId findHubIdByUserId(UserId userId) {
-        UUID result =  queryFactory
+        UUID result = queryFactory
                 .select(hubManager.hubId)
                 .from(hubManager)
                 .where(
@@ -88,22 +88,22 @@ public class HubManagerQueryRepositoryImpl implements HubManagerQueryRepository 
                         notDeleted()
                 )
                 .fetchOne();
-        if(result == null)
+        if (result == null)
             throw new HubManagerException(HubManagerErrorCode.HUB_MANAGER_NOT_FOUND);
 
         return HubId.of(result);
     }
 
-    private BooleanExpression notDeleted(){
+    private BooleanExpression notDeleted() {
         return hubManager.deletedAt.isNull();
     }
 
-    private BooleanExpression userIdsIn(List<UUID> userIds){
-        return userIds== null || userIds.isEmpty() ? null : hubManager.userId.in(userIds);
+    private BooleanExpression userIdsIn(List<UUID> userIds) {
+        return userIds == null || userIds.isEmpty() ? null : hubManager.userId.in(userIds);
     }
 
-    private BooleanExpression hubIdsIn(List<UUID> hubIds){
-        return hubIds== null || hubIds.isEmpty() ? null : hubManager.hubId.in(hubIds);
+    private BooleanExpression hubIdsIn(List<UUID> hubIds) {
+        return hubIds == null || hubIds.isEmpty() ? null : hubManager.hubId.in(hubIds);
     }
 
     private OrderSpecifier<?>[] getOrderSpecifiers(Sort sort) {
@@ -125,6 +125,4 @@ public class HubManagerQueryRepositoryImpl implements HubManagerQueryRepository 
                 })
                 .toArray(OrderSpecifier[]::new);
     }
-
-
 }

@@ -18,5 +18,4 @@ public record HubManagerResult (
                 hubManager.getHubId().id()
         );
     }
-
 }

@@ -30,5 +30,3 @@ public class HubManagerJpaEntity extends BaseAuditEntity  {
 
     private UUID hubId;
 }
-
-
