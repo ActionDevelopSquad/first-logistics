@@ -29,6 +29,6 @@ public class HubManagerQueryService {
         return hubManagers.map(HubManagerResult::from);
     }
     public UUID getHubIdByUserId(UUID userId){
-        return repository.findHubIdByUserId(UserId.of(userId));
+        return repository.findHubIdByUserId(UserId.of(userId)).id();
     }
 }
