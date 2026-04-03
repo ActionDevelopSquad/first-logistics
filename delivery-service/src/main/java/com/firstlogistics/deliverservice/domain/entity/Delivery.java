@@ -136,9 +136,10 @@ public class Delivery {
 
 	public void completeDelivery() {
 		validateStatusTransition(Set.of(DeliveryStatus.FOR_COMPANY_MOVING));
-		this.routes.stream()
+		DeliveryRoute lastRoute = this.routes.stream()
 			.max(Comparator.comparingInt(DeliveryRoute::getDeliveryRouteSequence))
-			.ifPresent(DeliveryRoute::completeRoute);
+			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.NEXT_ROUTE_NOT_FOUND));
+		lastRoute.completeRoute();
 		this.status = DeliveryStatus.COMPLETED;
 	}
 
