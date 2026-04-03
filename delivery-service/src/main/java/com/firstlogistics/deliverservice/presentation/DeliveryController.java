@@ -52,6 +52,17 @@ public class DeliveryController {
 		);
 	}
 
+	@GetMapping("/{deliveryId}")
+	public ResponseEntity<ApiResponse<DeliveryDetailResponse>> getDelivery(
+		@PathVariable UUID deliveryId,
+		@RequestHeader("X-User-Role") String role,
+		@RequestHeader("X-User-Id") UUID userId
+	) {
+		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_DETAIL_FOUND,
+				DeliveryDetailResponse.from(deliveryQueryService.getDelivery(deliveryId, role, userId)))
+		);
+	}
+
 	@PatchMapping("/{deliveryId}")
 	public ResponseEntity<ApiResponse<UpdateDeliveryResponse>> updateDelivery(
 		@PathVariable UUID deliveryId,
@@ -128,16 +139,5 @@ public class DeliveryController {
 		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_CANCELLED,
 				ChangeDeliveryStatusResponse.from(deliveryCommandService.cancelDelivery(ChangeDeliveryStatusCommand.of(deliveryId, role, userId)))
 		));
-	}
-
-	@GetMapping("/{deliveryId}")
-	public ResponseEntity<ApiResponse<DeliveryDetailResponse>> getDelivery(
-		@PathVariable UUID deliveryId,
-		@RequestHeader("X-User-Role") String role,
-		@RequestHeader("X-User-Id") UUID userId
-	) {
-		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_DETAIL_FOUND,
-				DeliveryDetailResponse.from(deliveryQueryService.getDelivery(deliveryId, role, userId)))
-		);
 	}
 }
