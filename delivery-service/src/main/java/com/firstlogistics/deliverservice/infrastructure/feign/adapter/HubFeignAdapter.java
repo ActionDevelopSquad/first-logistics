@@ -17,8 +17,8 @@ public class HubFeignAdapter implements HubPort {
 	private final HubClient hubClient;
 
 	@Override
-	public HubRouteResponse getHubRoute(UUID sourceHubId, UUID destinationHubId) {
-		return hubClient.getHubRoute(sourceHubId, destinationHubId).data();
+	public HubRouteResponse getHubRoute(UUID sourceHubId, UUID destinationHubId, UUID receiverCompanyId) {
+		return hubClient.getHubRoute(sourceHubId, destinationHubId, receiverCompanyId).data();
 	}
 
 	@Override
