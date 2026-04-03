@@ -7,7 +7,8 @@ public record CreateAILogCommand(
         UUID orderId,
         String customerName,
         String customerEmail,
-        LocalDateTime orderTime,
+        LocalDateTime orderedAt,
+        LocalDateTime orderDueDate,
         String productInfo,
         String requirement,
         String departure,
@@ -30,9 +31,10 @@ public record CreateAILogCommand(
                 경유지 : %s
                 도착지 : %s
                 배송담당자 : %s / %s
+                발송 시한 : %s
                 """,
-                orderId, customerName, customerEmail, orderTime,
+                orderId, customerName, customerEmail, orderedAt,
                 productInfo, requirement, departure, hubs,
-                destination, deliveryStaffName, deliveryStaffEmail);
+                destination, deliveryStaffName, deliveryStaffEmail, orderDueDate);
     }
 }
