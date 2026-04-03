@@ -10,6 +10,8 @@ import com.firstlogistics.companyservice.presentation.dto.response.CompanyRespon
 import com.firstlogistics.companyservice.presentation.dto.response.CreateCompanyResponse;
 import common.response.ApiResponse;
 import common.response.CommonSuccessCode;
+import common.security.entity.enums.UserRole;
+import common.security.security.aop.RequireRole;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -36,6 +38,7 @@ public class CompanyController {
     private final CompanyCommandService companyCommandService;
     private final CompanyQueryService companyQueryService;
 
+    @RequireRole({UserRole.MASTER, UserRole.HUB_MANAGER})
     @PostMapping
     public ResponseEntity<ApiResponse<CreateCompanyResponse>> register(
             @Valid @RequestBody CreateCompanyRequest request) {
@@ -60,6 +63,7 @@ public class CompanyController {
         return ResponseEntity.ok(ApiResponse.success(CommonSuccessCode.OK, response));
     }
 
+    @RequireRole({UserRole.MASTER, UserRole.HUB_MANAGER, UserRole.COMPANY_MANAGER})
     @PatchMapping("/{companyId}")
     public ResponseEntity<ApiResponse<CompanyResponse>> updateCompany(
             @PathVariable UUID companyId,
@@ -69,6 +73,7 @@ public class CompanyController {
         return ResponseEntity.ok(ApiResponse.success(CommonSuccessCode.OK, response));
     }
 
+    @RequireRole({UserRole.MASTER, UserRole.HUB_MANAGER})
     @PatchMapping("/{companyId}/deactivate")
     public ResponseEntity<ApiResponse<CompanyResponse>> deactivateCompany(
             @PathVariable UUID companyId) {
@@ -77,6 +82,7 @@ public class CompanyController {
         return ResponseEntity.ok(ApiResponse.success(CommonSuccessCode.OK, response));
     }
 
+    @RequireRole({UserRole.MASTER, UserRole.HUB_MANAGER})
     @PatchMapping("/{companyId}/activate")
     public ResponseEntity<ApiResponse<CompanyResponse>> activateCompany(
             @PathVariable UUID companyId) {
@@ -85,6 +91,7 @@ public class CompanyController {
         return ResponseEntity.ok(ApiResponse.success(CommonSuccessCode.OK, response));
     }
 
+    @RequireRole({UserRole.MASTER, UserRole.HUB_MANAGER})
     @DeleteMapping("/{companyId}")
     public ResponseEntity<ApiResponse<Void>> deleteCompany(
             @PathVariable UUID companyId,
