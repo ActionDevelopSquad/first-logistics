@@ -76,12 +76,22 @@ public class DeliveryRoute {
 		);
 	}
 
-	public void departRoute() {
-		this.status = RouteStatus.HUB_MOVING;
+	public void startRoute() {
+		if (this.status != RouteStatus.CREATED) {
+			throw new DeliveryException(DeliveryErrorCode.ROUTE_ALREADY_STARTED);
+		}
+		this.status = RouteStatus.MOVING;
 	}
 
-	public void waitAtHub() {
-		this.status = RouteStatus.HUB_WAITING;
+	public void arriveAtDestination() {
+		if (this.status != RouteStatus.MOVING) {
+			throw new DeliveryException(DeliveryErrorCode.ROUTE_NOT_IN_TRANSIT);
+		}
+		this.status = RouteStatus.ARRIVED;
+	}
+
+	public void completeRoute() {
+		this.status = RouteStatus.COMPLETED;
 	}
 
 	public void assignManager(DeliveryManagerId managerId) {

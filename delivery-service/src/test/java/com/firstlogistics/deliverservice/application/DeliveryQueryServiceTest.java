@@ -273,7 +273,7 @@ class DeliveryQueryServiceTest {
 			LocalDateTime endDate = LocalDateTime.now();
 			DeliveryListQuery query = new DeliveryListQuery(
 				UserRole.MASTER.name(), null, null,
-				null, DeliveryStatus.HUB_MOVING, sourceHubId, destinationHubId,
+				null, DeliveryStatus.FOR_HUB_MOVING, sourceHubId, destinationHubId,
 				null, null, null, null, null, null, null,
 				startDate, endDate, null, null, 10
 			);

@@ -1,7 +1,9 @@
 package com.firstlogistics.deliverservice.application;
 
+import com.firstlogistics.deliverservice.application.dto.command.ChangeDeliveryStatusCommand;
 import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryCommand;
 import com.firstlogistics.deliverservice.application.dto.command.UpdateDeliveryCommand;
+import com.firstlogistics.deliverservice.application.dto.result.ChangeDeliveryStatusResult;
 import com.firstlogistics.deliverservice.application.dto.result.CreateDeliveryResult;
 import com.firstlogistics.deliverservice.application.dto.result.UpdateDeliveryResult;
 import com.firstlogistics.deliverservice.application.permission.DeliveryAccessContext;
@@ -12,6 +14,7 @@ import com.firstlogistics.deliverservice.domain.entity.DeliveryRoute;
 import com.firstlogistics.deliverservice.domain.entity.DeliveryManager;
 import com.firstlogistics.deliverservice.domain.enums.UserRole;
 import com.firstlogistics.deliverservice.domain.event.DeliveryCreatedEvent;
+import com.firstlogistics.deliverservice.domain.event.DeliveryStatusChangedEvent;
 import com.firstlogistics.deliverservice.domain.event.DeliveryUpdatedEvent;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryCreationException;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
@@ -185,6 +188,74 @@ public class DeliveryCommandService {
 		deliveryEventPublisher.publishDeliveryUpdated(deliveryUpdatedEvent);
 
 		return UpdateDeliveryResult.from(savedDelivery);
+	}
+
+	public ChangeDeliveryStatusResult startDelivery(ChangeDeliveryStatusCommand command) {
+		Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
+			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
+
+		DeliveryAccessContext accessContext = DeliveryAccessContext.from(delivery);
+		deliveryPermissionValidator.validate(accessContext, command.role(), command.userId(),
+			Set.of(UserRole.MASTER, UserRole.HUB_MANAGER, UserRole.DELIVERY_MANAGER));
+
+		delivery.startNextPhase();
+		Delivery savedDelivery = deliveryRepository.save(delivery);
+
+		deliveryEventPublisher.publishDeliveryStatusChanged(
+			DeliveryStatusChangedEvent.create(savedDelivery));
+
+		return ChangeDeliveryStatusResult.from(savedDelivery);
+	}
+
+	public ChangeDeliveryStatusResult arriveHub(ChangeDeliveryStatusCommand command) {
+		Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
+			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
+
+		DeliveryAccessContext accessContext = DeliveryAccessContext.from(delivery);
+		deliveryPermissionValidator.validate(accessContext, command.role(), command.userId(),
+			Set.of(UserRole.MASTER, UserRole.DELIVERY_MANAGER));
+
+		delivery.arriveAtHub();
+		Delivery savedDelivery = deliveryRepository.save(delivery);
+
+		deliveryEventPublisher.publishDeliveryStatusChanged(
+			DeliveryStatusChangedEvent.create(savedDelivery));
+
+		return ChangeDeliveryStatusResult.from(savedDelivery);
+	}
+
+	public ChangeDeliveryStatusResult receiveAtHub(ChangeDeliveryStatusCommand command) {
+		Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
+			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
+
+		DeliveryAccessContext accessContext = DeliveryAccessContext.from(delivery);
+		deliveryPermissionValidator.validate(accessContext, command.role(), command.userId(),
+			Set.of(UserRole.MASTER, UserRole.HUB_MANAGER));
+
+		delivery.receiveAtHub();
+		Delivery savedDelivery = deliveryRepository.save(delivery);
+
+		deliveryEventPublisher.publishDeliveryStatusChanged(
+			DeliveryStatusChangedEvent.create(savedDelivery));
+
+		return ChangeDeliveryStatusResult.from(savedDelivery);
+	}
+
+	public ChangeDeliveryStatusResult completeDelivery(ChangeDeliveryStatusCommand command) {
+		Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
+			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
+
+		DeliveryAccessContext accessContext = DeliveryAccessContext.from(delivery);
+		deliveryPermissionValidator.validate(accessContext, command.role(), command.userId(),
+			Set.of(UserRole.MASTER, UserRole.DELIVERY_MANAGER));
+
+		delivery.completeDelivery();
+		Delivery savedDelivery = deliveryRepository.save(delivery);
+
+		deliveryEventPublisher.publishDeliveryStatusChanged(
+			DeliveryStatusChangedEvent.create(savedDelivery));
+
+		return ChangeDeliveryStatusResult.from(savedDelivery);
 	}
 
 	private DeliveryCreatedEvent buildDeliveryCreatedEvent(

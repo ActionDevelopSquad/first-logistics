@@ -1,6 +1,7 @@
 package com.firstlogistics.deliverservice.domain.entity;
 
 import com.firstlogistics.deliverservice.domain.enums.DeliveryStatus;
+import com.firstlogistics.deliverservice.domain.enums.RouteStatus;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.vo.Address;
@@ -13,7 +14,9 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Getter
@@ -88,23 +91,54 @@ public class Delivery {
 		);
 	}
 
-	public void moveToNextHub() {
-		this.status = DeliveryStatus.HUB_MOVING;
+	public void startNextPhase() {
+		validateStatusTransition(Set.of(DeliveryStatus.CREATED, DeliveryStatus.HUB_WAITING));
+		if (this.currentHubId.equals(this.destinationHubId)) {
+			startLastMile();
+		} else {
+			moveToNextHub();
+		}
 	}
 
-	public void arriveAtHub() {
-		this.status = DeliveryStatus.HUB_WAITING;
+	private void moveToNextHub() {
+		DeliveryRoute nextRoute = this.routes.stream()
+			.filter(route -> route.getStatus() == RouteStatus.CREATED)
+			.min(Comparator.comparingInt(DeliveryRoute::getDeliveryRouteSequence))
+			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.ROUTE_NOT_FOUND));
+		nextRoute.startRoute();
+		this.status = DeliveryStatus.FOR_HUB_MOVING;
 	}
 
-	public void arriveAtDestination() {
-		this.status = DeliveryStatus.DESTINATION_ARRIVED;
-	}
-
-	public void startLastMile() {
+	private void startLastMile() {
+		DeliveryRoute companyRoute = this.routes.stream()
+			.filter(route -> route.getStatus() == RouteStatus.CREATED)
+			.min(Comparator.comparingInt(DeliveryRoute::getDeliveryRouteSequence))
+			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.ROUTE_NOT_FOUND));
+		companyRoute.startRoute();
 		this.status = DeliveryStatus.FOR_COMPANY_MOVING;
 	}
 
+	public void arriveAtHub() {
+		validateStatusTransition(Set.of(DeliveryStatus.FOR_HUB_MOVING));
+		DeliveryRoute currentRoute = this.routes.stream()
+			.filter(route -> route.getStatus() == RouteStatus.MOVING)
+			.findFirst()
+			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.ROUTE_NOT_FOUND));
+		currentRoute.arriveAtDestination();
+		this.currentHubId = currentRoute.getDestinationHubId();
+		this.status = DeliveryStatus.HUB_ARRIVED;
+	}
+
+	public void receiveAtHub() {
+		validateStatusTransition(Set.of(DeliveryStatus.HUB_ARRIVED));
+		this.status = DeliveryStatus.HUB_WAITING;
+	}
+
 	public void completeDelivery() {
+		validateStatusTransition(Set.of(DeliveryStatus.FOR_COMPANY_MOVING));
+		this.routes.stream()
+			.max(Comparator.comparingInt(DeliveryRoute::getDeliveryRouteSequence))
+			.ifPresent(DeliveryRoute::completeRoute);
 		this.status = DeliveryStatus.COMPLETED;
 	}
 
@@ -130,6 +164,12 @@ public class Delivery {
 	private void validateBeforeDelivery() {
 		if (this.status != DeliveryStatus.CREATED) {
 			throw new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_MODIFIABLE);
+		}
+	}
+
+	private void validateStatusTransition(Set<DeliveryStatus> allowedStatuses) {
+		if (!allowedStatuses.contains(this.status)) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_STATUS_TRANSITION);
 		}
 	}
 }
