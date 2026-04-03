@@ -2,6 +2,7 @@ package com.firstlogistics.deliverservice.infrastructure.messaging.producer;
 
 import com.firstlogistics.deliverservice.domain.event.DeliveryCreatedEvent;
 import com.firstlogistics.deliverservice.domain.event.DeliveryCreationFailedEvent;
+import com.firstlogistics.deliverservice.domain.event.DeliveryUpdatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -15,6 +16,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class DeliveryEventKafkaProducer {
 
 	private static final String TOPIC_CREATED = "delivery.created";
+	private static final String TOPIC_UPDATED = "delivery.updated";
 	private static final String TOPIC_CREATION_FAILED = "delivery.creation.failed";
 	private static final String TOPIC_ORDER_ACCEPTED_DLT = "order.accepted.DLT";
 
@@ -24,6 +26,12 @@ public class DeliveryEventKafkaProducer {
 	public void handleDeliveryCreated(DeliveryCreatedEvent event) {
 		deliveryKafkaTemplate.send(TOPIC_CREATED, event.delivery().deliveryId().toString(), event);
 		log.info("이벤트 발행 - topic: {}, deliveryId: {}", TOPIC_CREATED, event.delivery().deliveryId());
+	}
+
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	public void handleDeliveryUpdated(DeliveryUpdatedEvent event) {
+		deliveryKafkaTemplate.send(TOPIC_UPDATED, event.deliveryId().toString(), event);
+		log.info("이벤트 발행 - topic: {}, deliveryId: {}", TOPIC_UPDATED, event.deliveryId());
 	}
 
 	public void handleDeliveryCreationFailed(DeliveryCreationFailedEvent event) {

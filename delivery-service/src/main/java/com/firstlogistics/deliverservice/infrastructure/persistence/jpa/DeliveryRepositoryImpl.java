@@ -2,9 +2,11 @@ package com.firstlogistics.deliverservice.infrastructure.persistence.jpa;
 
 import com.firstlogistics.deliverservice.domain.entity.Delivery;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryRepository;
+import com.firstlogistics.deliverservice.domain.vo.DeliveryId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -17,6 +19,12 @@ public class DeliveryRepositoryImpl implements DeliveryRepository {
 	@Override
 	public boolean existsByOrderId(UUID orderId) {
 		return deliveryJpaRepository.existsByOrderId(orderId);
+	}
+
+	@Override
+	public Optional<Delivery> findById(DeliveryId deliveryId) {
+		return deliveryJpaRepository.findById(deliveryId.id())
+			.map(deliveryMapper::toDomain);
 	}
 
 	@Override
