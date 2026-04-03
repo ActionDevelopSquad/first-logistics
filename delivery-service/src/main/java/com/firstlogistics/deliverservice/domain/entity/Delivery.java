@@ -91,31 +91,31 @@ public class Delivery {
 		);
 	}
 
-	public void startNextPhase() {
+	public void startHubDelivery() {
 		validateStatusTransition(Set.of(DeliveryStatus.CREATED, DeliveryStatus.HUB_WAITING));
 		if (this.currentHubId.equals(this.destinationHubId)) {
-			startLastMile();
-		} else {
-			moveToNextHub();
+			throw new DeliveryException(DeliveryErrorCode.INVALID_STATUS_TRANSITION);
 		}
-	}
-
-	private void moveToNextHub() {
-		DeliveryRoute nextRoute = this.routes.stream()
-			.filter(route -> route.getStatus() == RouteStatus.CREATED)
-			.min(Comparator.comparingInt(DeliveryRoute::getDeliveryRouteSequence))
-			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.ROUTE_NOT_FOUND));
+		DeliveryRoute nextRoute = findNextCreatedRoute();
 		nextRoute.startRoute();
 		this.status = DeliveryStatus.FOR_HUB_MOVING;
 	}
 
-	private void startLastMile() {
-		DeliveryRoute companyRoute = this.routes.stream()
+	public void startCompanyDelivery() {
+		validateStatusTransition(Set.of(DeliveryStatus.HUB_WAITING));
+		if (!this.currentHubId.equals(this.destinationHubId)) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_STATUS_TRANSITION);
+		}
+		DeliveryRoute companyRoute = findNextCreatedRoute();
+		companyRoute.startRoute();
+		this.status = DeliveryStatus.FOR_COMPANY_MOVING;
+	}
+
+	private DeliveryRoute findNextCreatedRoute() {
+		return this.routes.stream()
 			.filter(route -> route.getStatus() == RouteStatus.CREATED)
 			.min(Comparator.comparingInt(DeliveryRoute::getDeliveryRouteSequence))
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.ROUTE_NOT_FOUND));
-		companyRoute.startRoute();
-		this.status = DeliveryStatus.FOR_COMPANY_MOVING;
 	}
 
 	public void arriveAtHub() {

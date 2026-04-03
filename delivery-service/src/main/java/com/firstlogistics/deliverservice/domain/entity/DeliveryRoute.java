@@ -91,6 +91,9 @@ public class DeliveryRoute {
 	}
 
 	public void completeRoute() {
+		if (this.status != RouteStatus.MOVING) {
+			throw new DeliveryException(DeliveryErrorCode.ROUTE_NOT_IN_TRANSIT);
+		}
 		this.status = RouteStatus.COMPLETED;
 	}
 

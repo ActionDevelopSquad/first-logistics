@@ -190,7 +190,7 @@ public class DeliveryCommandService {
 		return UpdateDeliveryResult.from(savedDelivery);
 	}
 
-	public ChangeDeliveryStatusResult startDelivery(ChangeDeliveryStatusCommand command) {
+	public ChangeDeliveryStatusResult startHubDelivery(ChangeDeliveryStatusCommand command) {
 		Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
 
@@ -198,7 +198,24 @@ public class DeliveryCommandService {
 		deliveryPermissionValidator.validate(accessContext, command.role(), command.userId(),
 			Set.of(UserRole.MASTER, UserRole.HUB_MANAGER, UserRole.DELIVERY_MANAGER));
 
-		delivery.startNextPhase();
+		delivery.startHubDelivery();
+		Delivery savedDelivery = deliveryRepository.save(delivery);
+
+		deliveryEventPublisher.publishDeliveryStatusChanged(
+			DeliveryStatusChangedEvent.create(savedDelivery));
+
+		return ChangeDeliveryStatusResult.from(savedDelivery);
+	}
+
+	public ChangeDeliveryStatusResult startCompanyDelivery(ChangeDeliveryStatusCommand command) {
+		Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
+			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
+
+		DeliveryAccessContext accessContext = DeliveryAccessContext.from(delivery);
+		deliveryPermissionValidator.validate(accessContext, command.role(), command.userId(),
+			Set.of(UserRole.MASTER, UserRole.HUB_MANAGER, UserRole.DELIVERY_MANAGER));
+
+		delivery.startCompanyDelivery();
 		Delivery savedDelivery = deliveryRepository.save(delivery);
 
 		deliveryEventPublisher.publishDeliveryStatusChanged(

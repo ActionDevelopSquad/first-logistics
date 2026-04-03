@@ -548,12 +548,12 @@ class DeliveryCommandServiceTest {
 	// ===== 배송 상태 변경 테스트 =====
 
 	@Nested
-	@DisplayName("배송 시작 실패")
-	class StartDeliveryFail {
+	@DisplayName("허브 배송 시작 실패")
+	class StartHubDeliveryFail {
 
 		@Test
 		@DisplayName("존재하지 않는 배송")
-		void startDelivery_fail_deliveryNotFound() {
+		void startHubDelivery_fail_deliveryNotFound() {
 			// given
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
@@ -562,7 +562,7 @@ class DeliveryCommandServiceTest {
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.empty());
 
 			// when
-			Throwable throwable = catchThrowable(() -> deliveryCommandService.startDelivery(command));
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.startHubDelivery(command));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -573,7 +573,7 @@ class DeliveryCommandServiceTest {
 
 		@Test
 		@DisplayName("권한 없음 (COMPANY_MANAGER)")
-		void startDelivery_fail_accessDenied() {
+		void startHubDelivery_fail_accessDenied() {
 			// given
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
@@ -585,7 +585,7 @@ class DeliveryCommandServiceTest {
 				.given(deliveryPermissionValidator).validate(any(), eq("COMPANY_MANAGER"), eq(userId), any());
 
 			// when
-			Throwable throwable = catchThrowable(() -> deliveryCommandService.startDelivery(command));
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.startHubDelivery(command));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -595,8 +595,8 @@ class DeliveryCommandServiceTest {
 		}
 
 		@Test
-		@DisplayName("잘못된 상태 (HUB_MOVING)")
-		void startDelivery_fail_invalidStatus() {
+		@DisplayName("잘못된 상태 (FOR_HUB_MOVING)")
+		void startHubDelivery_fail_invalidStatus() {
 			// given
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
@@ -606,7 +606,7 @@ class DeliveryCommandServiceTest {
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
 
 			// when
-			Throwable throwable = catchThrowable(() -> deliveryCommandService.startDelivery(command));
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.startHubDelivery(command));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -617,12 +617,12 @@ class DeliveryCommandServiceTest {
 	}
 
 	@Nested
-	@DisplayName("배송 시작 성공")
-	class StartDeliverySuccess {
+	@DisplayName("허브 배송 시작 성공")
+	class StartHubDeliverySuccess {
 
 		@Test
 		@DisplayName("CREATED 상태에서 시작")
-		void startDelivery_success_fromCreated() {
+		void startHubDelivery_success_fromCreated() {
 			// given
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
@@ -633,7 +633,7 @@ class DeliveryCommandServiceTest {
 			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
 
 			// when
-			ChangeDeliveryStatusResult result = deliveryCommandService.startDelivery(command);
+			ChangeDeliveryStatusResult result = deliveryCommandService.startHubDelivery(command);
 
 			// then
 			assertThat(result.deliveryId()).isEqualTo(deliveryId);
@@ -644,7 +644,7 @@ class DeliveryCommandServiceTest {
 
 		@Test
 		@DisplayName("HUB_WAITING 상태에서 시작 (경유지 출발)")
-		void startDelivery_success_fromHubWaiting() {
+		void startHubDelivery_success_fromHubWaiting() {
 			// given
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
@@ -655,7 +655,7 @@ class DeliveryCommandServiceTest {
 			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
 
 			// when
-			ChangeDeliveryStatusResult result = deliveryCommandService.startDelivery(command);
+			ChangeDeliveryStatusResult result = deliveryCommandService.startHubDelivery(command);
 
 			// then
 			assertThat(result.deliveryId()).isEqualTo(deliveryId);
@@ -666,7 +666,7 @@ class DeliveryCommandServiceTest {
 
 		@Test
 		@DisplayName("시작 시 경로 상태 변경 및 이벤트 발행")
-		void startDelivery_success_routeStatusAndEvent() {
+		void startHubDelivery_success_routeStatusAndEvent() {
 			// given
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
@@ -677,7 +677,7 @@ class DeliveryCommandServiceTest {
 			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
 
 			// when
-			deliveryCommandService.startDelivery(command);
+			deliveryCommandService.startHubDelivery(command);
 
 			// then
 			assertThat(delivery.getRoutes().get(0).getStatus()).isEqualTo(RouteStatus.MOVING);
@@ -893,12 +893,12 @@ class DeliveryCommandServiceTest {
 	}
 
 	@Nested
-	@DisplayName("마지막 허브에서 배송 시작 (업체 배송)")
-	class StartDeliveryAtFinalHub {
+	@DisplayName("업체 배송 시작 성공")
+	class StartCompanyDeliverySuccess {
 
 		@Test
 		@DisplayName("HUB_WAITING + 마지막 허브 → FOR_COMPANY_MOVING")
-		void startDelivery_success_lastHub_forCompanyMoving() {
+		void startCompanyDelivery_success() {
 			// given
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
@@ -909,7 +909,7 @@ class DeliveryCommandServiceTest {
 			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
 
 			// when
-			ChangeDeliveryStatusResult result = deliveryCommandService.startDelivery(command);
+			ChangeDeliveryStatusResult result = deliveryCommandService.startCompanyDelivery(command);
 
 			// then
 			assertThat(result.deliveryId()).isEqualTo(deliveryId);
@@ -920,7 +920,7 @@ class DeliveryCommandServiceTest {
 
 		@Test
 		@DisplayName("업체 배송 시작 시 이벤트 발행")
-		void startDelivery_success_lastHub_eventPublished() {
+		void startCompanyDelivery_success_eventPublished() {
 			// given
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
@@ -931,7 +931,7 @@ class DeliveryCommandServiceTest {
 			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
 
 			// when
-			deliveryCommandService.startDelivery(command);
+			deliveryCommandService.startCompanyDelivery(command);
 
 			// then
 			ArgumentCaptor<DeliveryStatusChangedEvent> eventCaptor = ArgumentCaptor.forClass(DeliveryStatusChangedEvent.class);
@@ -978,7 +978,7 @@ class DeliveryCommandServiceTest {
 			// given
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
-			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.FOR_COMPANY_MOVING);
+			Delivery delivery = stubCompanyMovingDelivery(deliveryId);
 			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
@@ -1000,7 +1000,7 @@ class DeliveryCommandServiceTest {
 			// given
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
-			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.FOR_COMPANY_MOVING);
+			Delivery delivery = stubCompanyMovingDelivery(deliveryId);
 			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
@@ -1104,6 +1104,25 @@ class DeliveryCommandServiceTest {
 			UUID.randomUUID(), "slack-receiver", UUID.randomUUID(),
 			DeliveryManagerId.generate(), STUB_MIDDLE_HUB_ID,
 			List.of(route1, route2)
+		);
+	}
+
+	private Delivery stubCompanyMovingDelivery(UUID deliveryId) {
+		DeliveryId id = DeliveryId.of(deliveryId);
+		DeliveryRoute route = DeliveryRoute.reconstitute(
+			DeliveryRouteId.generate(), id, 0,
+			STUB_SOURCE_HUB_ID, STUB_DESTINATION_HUB_ID,
+			Distance.of(10000), Time.of(30), null, null, null, null,
+			RouteStatus.MOVING, STUB_ROUTE_MANAGER_ID
+		);
+		return Delivery.reconstitute(
+			id, UUID.randomUUID(), DeliveryStatus.FOR_COMPANY_MOVING,
+			STUB_SOURCE_HUB_ID, STUB_DESTINATION_HUB_ID,
+			Address.of("서울시 강남구 테헤란로 123", "101호"),
+			null,
+			UUID.randomUUID(), "slack-receiver", UUID.randomUUID(),
+			DeliveryManagerId.generate(), STUB_DESTINATION_HUB_ID,
+			List.of(route)
 		);
 	}
 
