@@ -56,6 +56,7 @@ class OrderMapperTest {
                 "배송 메시지",
                 OrderStatus.PENDING,
                 null,
+                null,
                 new ArrayList<>(),
                 null
         );

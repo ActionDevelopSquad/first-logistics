@@ -58,4 +58,48 @@ public class OrderController {
                         OrderStatusResponse.of(orderId, status)));
     }
 
+    @PatchMapping("/{orderId}/cancellation")
+    public ResponseEntity<ApiResponse<OrderStatusResponse>> cancelOrder(
+            @RequestHeader("X-User-Id") UUID userId,
+            @PathVariable UUID orderId
+    ) {
+        String status = orderCommandService.cancelOrder(userId, orderId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(OrderSuccessCode.ORDER_STATUS_UPDATED,
+                        OrderStatusResponse.of(orderId, status)));
+    }
+
+    @PatchMapping("/{orderId}/cancellation-request")
+    public ResponseEntity<ApiResponse<OrderStatusResponse>> requestCancel(
+            @RequestHeader("X-User-Id") UUID userId,
+            @PathVariable UUID orderId
+    ) {
+        String status = orderCommandService.requestCancel(userId, orderId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(OrderSuccessCode.ORDER_STATUS_UPDATED,
+                        OrderStatusResponse.of(orderId, status)));
+    }
+
+    @PatchMapping("/{orderId}/cancellation-request/approval")
+    public ResponseEntity<ApiResponse<OrderStatusResponse>> approveCancelRequest(
+            @RequestHeader("X-User-Id") UUID userId,
+            @PathVariable UUID orderId
+    ) {
+        String status = orderCommandService.approveCancelRequest(userId, orderId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(OrderSuccessCode.ORDER_STATUS_UPDATED,
+                        OrderStatusResponse.of(orderId, status)));
+    }
+
+    @PatchMapping("/{orderId}/cancellation-request/rejection")
+    public ResponseEntity<ApiResponse<OrderStatusResponse>> rejectCancelRequest(
+            @RequestHeader("X-User-Id") UUID userId,
+            @PathVariable UUID orderId
+    ) {
+        String status = orderCommandService.rejectCancelRequest(userId, orderId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(OrderSuccessCode.ORDER_STATUS_UPDATED,
+                        OrderStatusResponse.of(orderId, status)));
+    }
+
 }

@@ -30,6 +30,7 @@ public class OrderMapper {
                 order.getRequestMemo(),
                 order.getStatus(),
                 order.getPreviousStatus(),
+                order.getCancelType(),
                 order.getOrderItems().stream()
                         .map(this::toItemEntity)
                         .toList(),
@@ -62,6 +63,7 @@ public class OrderMapper {
                 entity.getRequestMemo(),
                 entity.getStatus(),
                 entity.getPreviousStatus(),
+                entity.getCancelType(),
                 entity.getCreatedAt(),
                 items,
                 entity.getVersion()

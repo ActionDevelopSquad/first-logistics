@@ -1,5 +1,6 @@
 package com.firstlogistics.orderservice.infrastructure.persistence.jpa;
 
+import com.firstlogistics.orderservice.domain.enums.OrderCancelType;
 import com.firstlogistics.orderservice.domain.enums.OrderStatus;
 import common.jpa.entity.BaseAuditEntity;
 import jakarta.persistence.CascadeType;
@@ -71,6 +72,10 @@ public class OrderJpaEntity extends BaseAuditEntity {
     @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = true)
     private OrderStatus previousStatus;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20, nullable = true)
+    private OrderCancelType cancelType;
 
     @OneToMany(
             fetch = FetchType.LAZY,

@@ -1,5 +1,6 @@
 package com.firstlogistics.orderservice.domain.entity;
 
+import com.firstlogistics.orderservice.domain.enums.OrderCancelType;
 import com.firstlogistics.orderservice.domain.enums.OrderStatus;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ public class OrderTestBuilder {
     private String requestMemo = "빠른 배송 바랍니다.";
     private OrderStatus status = OrderStatus.PENDING;
     private OrderStatus previousStatus = null;
+    private OrderCancelType cancelType = null;
     private LocalDateTime orderedAt = LocalDateTime.now();
     private List<OrderItem> orderItems = new ArrayList<>();
     private Long version = 0L;
@@ -52,7 +54,7 @@ public class OrderTestBuilder {
         return Order.reconstitute(
                 id, supplierCompanyId, supplierManagerId, receiverCompanyId, receiverManagerId,
                 deliveryId, roadAddress, detailAddress, totalAmount, dueDate,
-                requestMemo, status, previousStatus, orderedAt, orderItems, version
+                requestMemo, status, previousStatus, cancelType, orderedAt, orderItems, version
         );
     }
 }
