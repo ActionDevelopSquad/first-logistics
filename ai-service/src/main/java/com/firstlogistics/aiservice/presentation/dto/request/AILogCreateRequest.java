@@ -1,13 +1,16 @@
 package com.firstlogistics.aiservice.presentation.dto.request;
 
 import com.firstlogistics.aiservice.application.dto.command.CreateAILogCommand;
+
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record AILogCreateRequest(
         UUID orderId,
         String customerName,
         String customerEmail,
-        String orderTime,
+        LocalDateTime orderedAt,
+        LocalDateTime orderDueDate,
         String productInfo,
         String requirement,
         String departure,
@@ -22,7 +25,8 @@ public record AILogCreateRequest(
                 this.orderId,
                 this.customerName,
                 this.customerEmail,
-                this.orderTime,
+                this.orderedAt,
+                this.orderDueDate,
                 this.productInfo,
                 this.requirement,
                 this.departure,

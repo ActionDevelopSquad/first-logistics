@@ -1,12 +1,14 @@
 package com.firstlogistics.aiservice.application.dto.command;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record CreateAILogCommand(
         UUID orderId,
         String customerName,
         String customerEmail,
-        String orderTime,
+        LocalDateTime orderedAt,
+        LocalDateTime orderDueDate,
         String productInfo,
         String requirement,
         String departure,
@@ -16,7 +18,6 @@ public record CreateAILogCommand(
         String deliveryStaffEmail,
         String hubManagerSlackId
 ) {
-
 
     // Generator에서 사용하기 편하게 텍스트로 변환하는 헬퍼 메서드
     public String toRawText() {
@@ -30,9 +31,10 @@ public record CreateAILogCommand(
                 경유지 : %s
                 도착지 : %s
                 배송담당자 : %s / %s
+                발송 시한 : %s
                 """,
-                orderId, customerName, customerEmail, orderTime,
+                orderId, customerName, customerEmail, orderedAt,
                 productInfo, requirement, departure, hubs,
-                destination, deliveryStaffName, deliveryStaffEmail);
+                destination, deliveryStaffName, deliveryStaffEmail, orderDueDate);
     }
 }
