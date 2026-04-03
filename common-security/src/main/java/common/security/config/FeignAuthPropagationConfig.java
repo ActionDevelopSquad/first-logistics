@@ -19,7 +19,7 @@ public class FeignAuthPropagationConfig {
     @Bean
     public RequestInterceptor userHeaderPropagationInterceptor(@Value("${spring.application.name}") String serviceName) {
         return template -> {
-            log.info("Feign interceptor invoked");
+            log.debug("Feign interceptor invoked");
             try {
                 CustomUserDetails user = SecurityUtils.currentUser();
 
