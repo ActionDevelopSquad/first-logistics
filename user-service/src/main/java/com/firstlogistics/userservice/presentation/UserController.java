@@ -2,17 +2,19 @@ package com.firstlogistics.userservice.presentation;
 
 import com.firstlogistics.userservice.application.dto.command.LoginCommand;
 import com.firstlogistics.userservice.application.dto.command.UserCreateCommand;
-import com.firstlogistics.userservice.application.dto.command.UserUpdateCommand;
 import com.firstlogistics.userservice.application.dto.result.TokenResult;
 import com.firstlogistics.userservice.application.dto.result.UserResult;
 import com.firstlogistics.userservice.application.service.UserService;
 import com.firstlogistics.userservice.presentation.dto.request.*;
 import com.firstlogistics.userservice.presentation.dto.response.TokenResponse;
 import com.firstlogistics.userservice.presentation.dto.response.UserIdResponse;
+import com.firstlogistics.userservice.presentation.dto.response.UserListResponse;
 import com.firstlogistics.userservice.presentation.dto.response.UserResponse;
 import common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -54,6 +56,21 @@ public class UserController {
     }
 
     /**
+     * 엑세스 토큰 재발급
+     * POST /api/v1/users/refresh
+     */
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<TokenResponse>> refresh(@RequestHeader("X-Refresh-Token") String refreshToken) {
+        TokenResult refresh = userService.refresh(refreshToken);
+
+        TokenResponse tokenResponse = TokenResponse.from(refresh);
+
+        return ResponseEntity
+                .status(UserSuccessCode.TOKEN_REFRESHED.getStatus())
+                .body(ApiResponse.success(UserSuccessCode.TOKEN_REFRESHED, tokenResponse));
+    }
+
+    /**
      * 회원가입
      * POST /api/v1/users/signup
      */
@@ -66,6 +83,49 @@ public class UserController {
         return ResponseEntity
                 .status(UserSuccessCode.SIGNUP_SUCCESS.getStatus())
                 .body(ApiResponse.success(UserSuccessCode.SIGNUP_SUCCESS, new UserIdResponse(userId)));
+    }
+
+    /**
+     * 회원 단일 조회
+     * GET /api/v1/users/{userId}
+     * Role : MASTER
+     */
+    @GetMapping("/{userId}")
+    public ResponseEntity<ApiResponse<UserResponse>> getUser(@PathVariable("userId") UUID userId) {
+        UserResponse response = UserResponse.from(userService.getUser(userId));
+
+        return ResponseEntity
+                .status(UserSuccessCode.GET_USER.getStatus())
+                .body(ApiResponse.success(UserSuccessCode.GET_USER, response));
+    }
+
+    /**
+     * 회원 마이페이지 조회
+     * GET /api/v1/users/me
+     */
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<UserResponse>> getMyPage(@RequestHeader("X-User-Id") UUID userId) {
+        UserResponse response = UserResponse.from(userService.getMyPage(userId));
+
+        return ResponseEntity
+                .status(UserSuccessCode.GET_USER.getStatus())
+                .body(ApiResponse.success(UserSuccessCode.GET_USER, response));
+    }
+
+    /**
+     * 회원 목록 조회
+     * GET /api/v1/users
+     * Role : MASTER
+     */
+    @GetMapping
+    public ResponseEntity<ApiResponse<UserListResponse>> getUsers(@ModelAttribute UsersGetRequest request, Pageable pageable) {
+        Page<UserResult> result = userService.getUsers(request.toQuery(), pageable);
+
+        UserListResponse response = UserListResponse.from(result);
+
+        return ResponseEntity
+                .status(UserSuccessCode.GET_USERS.getStatus())
+                .body(ApiResponse.success(UserSuccessCode.GET_USERS, response));
     }
 
     /**
@@ -111,16 +171,7 @@ public class UserController {
             @PathVariable("userId") UUID userId,
             @Valid @RequestBody UserUpdateRequest request
     ) {
-        UserUpdateCommand command = new UserUpdateCommand(
-                userId,
-                request.firstName(),
-                request.lastName(),
-                request.email(),
-                request.phone(),
-                request.slackId()
-        );
-
-        userService.update(command);
+        userService.update(request.toCommand(userId));
 
         return ResponseEntity
                 .status(UserSuccessCode.USER_UPDATED.getStatus())
@@ -143,68 +194,5 @@ public class UserController {
                 .status(UserSuccessCode.USER_DELETED.getStatus())
                 .body(ApiResponse.success(UserSuccessCode.USER_DELETED, null));
     }
-
-    /**
-     * 엑세스 토큰 재발급
-     * POST /api/v1/users/refresh
-     */
-    @PostMapping("/refresh")
-    public ResponseEntity<ApiResponse<TokenResponse>> refresh(@RequestHeader("X-Refresh-Token") String refreshToken) {
-        TokenResult refresh = userService.refresh(refreshToken);
-
-        TokenResponse tokenResponse = TokenResponse.from(refresh);
-
-        return ResponseEntity
-                .status(UserSuccessCode.TOKEN_REFRESHED.getStatus())
-                .body(ApiResponse.success(UserSuccessCode.TOKEN_REFRESHED, tokenResponse));
-    }
-
-    /**
-     * 회원 단일 조회
-     * GET /api/v1/users/{userId}
-     * Role : MASTER
-     */
-    @GetMapping("/{userId}")
-    public ResponseEntity<ApiResponse<UserResponse>> getUser(@PathVariable("userId") UUID userId) {
-        UserResult result = userService.getUser(userId);
-
-        UserResponse response = UserResponse.from(result);
-
-        return ResponseEntity
-                .status(UserSuccessCode.GET_USER.getStatus())
-                .body(ApiResponse.success(UserSuccessCode.GET_USER, response));
-    }
-
-    /**
-     * 회원 마이페이지 조회
-     * GET /api/v1/users/me
-     */
-    @GetMapping("/me")
-    public ResponseEntity<ApiResponse<UserResponse>> getMyPage(@RequestHeader("X-User-Id") UUID userId) {
-        UserResult result = userService.getMyPage(userId);
-
-        UserResponse response = UserResponse.from(result);
-
-        return ResponseEntity
-                .status(UserSuccessCode.GET_USER.getStatus())
-                .body(ApiResponse.success(UserSuccessCode.GET_USER, response));
-    }
-
-    /**
-     * 회원 목록 조회
-     * GET /api/v1/users
-     * Role : MASTER
-     */
-//    @GetMapping()
-//    public ResponseEntity<ApiResponse<UserResponse>> getUsers(@ModelAttribute UsersGetRequest request, Pageable pageable) {
-//        UserGetQuery query = request.toQuery();
-//        Page<UserResult> result = userService.getUsers(query, pageable);
-//
-//        UserListResponse response = new UserListResponse(result);
-//
-//        return ResponseEntity
-//                .status(UserSuccessCode.GET_USERS.getStatus())
-//                .body(ApiResponse.success(UserSuccessCode.GET_USERS, response));
-//    }
 
 }

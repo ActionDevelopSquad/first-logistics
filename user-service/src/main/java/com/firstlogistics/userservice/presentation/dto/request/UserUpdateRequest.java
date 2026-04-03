@@ -1,8 +1,11 @@
 package com.firstlogistics.userservice.presentation.dto.request;
 
+import com.firstlogistics.userservice.application.dto.command.UserUpdateCommand;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+
+import java.util.UUID;
 
 public record UserUpdateRequest(
         @Size(max = 20)
@@ -21,4 +24,16 @@ public record UserUpdateRequest(
         String phone,
 
         String slackId
-) {}
+)
+{
+        public UserUpdateCommand toCommand(UUID userId) {
+                return new UserUpdateCommand(
+                        userId,
+                        firstName,
+                        lastName,
+                        email,
+                        phone,
+                        slackId
+                );
+        }
+}

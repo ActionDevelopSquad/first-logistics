@@ -10,6 +10,7 @@ import com.firstlogistics.userservice.application.dto.result.UserResult;
 import com.firstlogistics.userservice.application.port.KeycloakService;
 import com.firstlogistics.userservice.application.port.KeycloakTokenService;
 import com.firstlogistics.userservice.application.port.OrganizationValidationService;
+import com.firstlogistics.userservice.domain.dto.UsersSpec;
 import com.firstlogistics.userservice.domain.entity.User;
 import com.firstlogistics.userservice.domain.enums.Status;
 import com.firstlogistics.userservice.domain.event.DomainEvent;
@@ -71,6 +72,19 @@ public class UserService {
     }
 
     @Transactional
+    public TokenResult refresh(String refreshToken) {
+        TokenInfo refresh = tokenService.refresh(refreshToken);
+
+        return new TokenResult(
+                refresh.accessToken(),
+                refresh.expiresIn(),
+                refresh.refreshToken(),
+                refresh.refreshExpiresIn(),
+                refresh.tokenType()
+        );
+    }
+
+    @Transactional
     public UUID signup(UserCreateCommand command) {
         // 권한별 소속 아이디가 존재하는지 확인
 //        organizationValidationService.validateOrganizationExists(command.organizationId(), command.userRole());
@@ -110,6 +124,20 @@ public class UserService {
             }
             throw e;
         }
+    }
+
+    public UserResult getUser(UUID userId) {
+        return UserResult.fromDomain(userRepository.findByIdNotDeleted(userId));
+    }
+
+    public UserResult getMyPage(UUID userId) {
+        return UserResult.fromDomain(userRepository.findByIdNotDeleted(userId));
+    }
+
+    public Page<UserResult> getUsers(UserGetQuery query, Pageable pageable) {
+        Page<UsersSpec> specPage = userQueryRepository.getUsers(query.toSpec(), pageable);
+
+        return specPage.map(UserResult::fromSpec);
     }
 
     @Transactional
@@ -156,32 +184,5 @@ public class UserService {
         userRepository.delete(userId, deletedUserId);
 
         keycloakService.deleteUser(userId);
-    }
-
-    @Transactional
-    public TokenResult refresh(String refreshToken) {
-        TokenInfo refresh = tokenService.refresh(refreshToken);
-
-        return new TokenResult(
-                refresh.accessToken(),
-                refresh.expiresIn(),
-                refresh.refreshToken(),
-                refresh.refreshExpiresIn(),
-                refresh.tokenType()
-        );
-    }
-
-    public UserResult getUser(UUID userId) {
-        return UserResult.from(userRepository.findByIdNotDeleted(userId));
-    }
-
-    public UserResult getMyPage(UUID userId) {
-        return UserResult.from(userRepository.findByIdNotDeleted(userId));
-    }
-
-    public Page<UserResult> getUsers(UserGetQuery query, Pageable pageable) {
-        UserGetQuery spec = query.toSpec();
-
-        return userQueryRepository.getUsers(spec, pageable);
     }
 }

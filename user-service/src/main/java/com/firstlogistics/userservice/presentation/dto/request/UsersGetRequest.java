@@ -1,6 +1,7 @@
 package com.firstlogistics.userservice.presentation.dto.request;
 
 import com.firstlogistics.userservice.application.dto.query.UserGetQuery;
+import com.firstlogistics.userservice.domain.enums.Status;
 import common.jpa.entity.enums.UserRole;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -12,14 +13,12 @@ public record UsersGetRequest(
         String name,
         String phone,
         UserRole userRole,
+        Status status,
         String slackId,
         UUID organizationId,
 
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-        LocalDateTime lastLoginAt,
-
-        Integer page,
-        Integer size
+        LocalDateTime lastLoginAt
 )
 {
     public UserGetQuery toQuery() {
@@ -28,11 +27,10 @@ public record UsersGetRequest(
                 trimToNull(name),
                 trimToNull(phone),
                 userRole,
+                status,
                 trimToNull(slackId),
                 organizationId,
-                lastLoginAt,
-                normalizePage(page),
-                normalizeSize(size)
+                lastLoginAt
         );
     }
 
@@ -42,22 +40,5 @@ public record UsersGetRequest(
         }
         String trimmed = value.trim();
         return trimmed.isEmpty() ? null : trimmed;
-    }
-
-    private static int normalizePage(Integer page) {
-        if (page == null || page < 0) {
-            return 0;
-        }
-        return page;
-    }
-
-    private static int normalizeSize(Integer size) {
-        if (size == null) {
-            return 10;
-        }
-        return switch (size) {
-            case 10, 30, 50 -> size;
-            default -> 10;
-        };
     }
 }

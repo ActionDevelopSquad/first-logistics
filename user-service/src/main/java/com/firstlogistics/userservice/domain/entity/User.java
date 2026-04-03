@@ -84,7 +84,11 @@ public class User {
         }
 
         if (this.userRole == UserRole.HUB_MANAGER) {
-            return this.organizationId != null && this.organizationId.equals(targetUser.getOrganizationId());
+            if (!this.organizationId.equals(targetUser.getOrganizationId())) {
+                return false;
+            }
+
+            return targetUser.getUserRole() == UserRole.COMPANY_MANAGER || targetUser.getUserRole() == UserRole.DELIVERY_MANAGER;
         }
 
         return false;
@@ -92,6 +96,10 @@ public class User {
 
     public void rollbackStatus() {
         this.status = Status.PENDING;
+    }
+
+    public void deliveryManagerOver() {
+        this.status = Status.REJECTED;
     }
 
     public void updateRole(UserRole role) {
