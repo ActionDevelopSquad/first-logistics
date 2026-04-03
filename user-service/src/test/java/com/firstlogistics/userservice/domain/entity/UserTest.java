@@ -3,10 +3,12 @@ package com.firstlogistics.userservice.domain.entity;
 import com.firstlogistics.userservice.domain.enums.Status;
 import com.firstlogistics.userservice.domain.exception.UserErrorCode;
 import com.firstlogistics.userservice.domain.exception.UserException;
-import common.jpa.domain.enums.UserRole;
+import common.jpa.entity.enums.UserRole;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.UUID;
 
@@ -15,6 +17,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@ExtendWith(MockitoExtension.class)
 @DisplayName("User 도메인 단위 테스트")
 class UserTest {
 
@@ -26,7 +29,7 @@ class UserTest {
         @Test
         void canLogin_success_whenApproved() {
             // given
-            User user = reconstituteUser(Status.APPROVE);
+            User user = reconstituteUser(Status.APPROVED);
 
             // when & then
             assertDoesNotThrow(user::canLogin);
@@ -53,7 +56,7 @@ class UserTest {
         @Test
         void recordLogin_success() {
             // given
-            User user = reconstituteUser(Status.APPROVE);
+            User user = reconstituteUser(Status.APPROVED);
 
             // when
             user.recordLogin();
@@ -77,14 +80,14 @@ class UserTest {
             user.approve();
 
             // then
-            assertEquals(Status.APPROVE, user.getStatus());
+            assertEquals(Status.APPROVED, user.getStatus());
         }
 
         @DisplayName("이미 APPROVE 상태인 회원은 다시 승인 불가")
         @Test
         void user_approve_fail() {
             // given
-            User user = reconstituteUser(Status.APPROVE);
+            User user = reconstituteUser(Status.APPROVED);
 
             // when & then
             assertThatThrownBy(user::approve)
@@ -133,6 +136,7 @@ class UserTest {
                 "slackId",
                 status,
                 UserRole.COMPANY_MANAGER,
+                UUID.randomUUID(),
                 null
         );
     }

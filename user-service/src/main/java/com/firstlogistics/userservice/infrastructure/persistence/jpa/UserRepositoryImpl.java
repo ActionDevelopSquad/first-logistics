@@ -17,11 +17,6 @@ public class UserRepositoryImpl implements UserRepository {
     private final UserMapper userMapper;
 
     @Override
-    public User save(User user) {
-        return userMapper.toDomain(jpaUserRepository.save(userMapper.toEntity(user)));
-    }
-
-    @Override
     public User findById(UUID userId) {
         return userMapper.toDomain(jpaUserRepository.findById(userId)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND)));
@@ -40,9 +35,23 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public User save(User user) {
+        return userMapper.toDomain(jpaUserRepository.save(userMapper.toEntity(user)));
+    }
+
+    @Override
+    public User update(User user) {
+        UserJpaEntity existing = jpaUserRepository.findByIdAndDeletedAtIsNull(user.getId())
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+
+        existing.update(user);
+
+        return userMapper.toDomain(jpaUserRepository.save(existing));
+    }
+
+    @Override
     public void delete(UUID userId, UUID deletedUserId) {
-        UserJpaEntity entity = getUserEntityForDelete(userId);
-        entity.softDelete(deletedUserId);
+        getUserEntityForDelete(userId).softDelete(deletedUserId);
     }
 
     private UserJpaEntity getUserEntityForDelete(UUID userId) {

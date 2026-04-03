@@ -1,9 +1,11 @@
 package com.firstlogistics.userservice.application.port;
 
-import com.firstlogistics.userservice.application.dto.TokenInfo;
+import com.firstlogistics.userservice.application.dto.result.TokenInfo;
 
-public interface KeycloackTokenService {
+public interface KeycloakTokenService {
     TokenInfo generate(String username, String password);
 
     void logout(String refreshToken);
+
+    TokenInfo refresh(String refreshToken);
 }

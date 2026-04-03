@@ -1,4 +1,4 @@
-package common.jpa.domain.enums;
+package common.jpa.entity.enums;
 
 public enum UserRole {
     MASTER,
