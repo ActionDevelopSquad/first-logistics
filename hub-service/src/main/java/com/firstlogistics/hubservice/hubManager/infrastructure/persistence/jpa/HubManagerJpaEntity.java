@@ -1,7 +1,5 @@
 package com.firstlogistics.hubservice.hubManager.infrastructure.persistence.jpa;
 
-import com.firstlogistics.hubservice.hub.domain.enums.HubStatus;
-import com.firstlogistics.hubservice.hub.infrastructure.persistence.jpa.HubConstraints;
 import common.jpa.entity.BaseAuditEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
