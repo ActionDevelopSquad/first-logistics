@@ -9,6 +9,11 @@ public record SearchHubManagersQuery(
         List<UUID> userIds,
         List<UUID> hubIds
  ) {
+    public SearchHubManagersQuery {
+                userIds = userIds == null ? List.of() : List.copyOf(userIds);
+                hubIds = hubIds == null ? List.of() : List.copyOf(hubIds);
+            }
+
     public HubManagerSearchSpec toSpec(){
         return new HubManagerSearchSpec(
                 userIds,
