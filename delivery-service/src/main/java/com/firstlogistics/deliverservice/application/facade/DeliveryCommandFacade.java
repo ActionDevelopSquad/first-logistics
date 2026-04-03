@@ -32,7 +32,7 @@ public class DeliveryCommandFacade {
         UUID sourceHubId = supplierCompany.hubId();
         UUID destinationHubId = receiverCompany.hubId();
 
-        HubRouteResponse hubRoute = hubPort.getHubRoute(sourceHubId, destinationHubId);
+        HubRouteResponse hubRoute = hubPort.getHubRoute(sourceHubId, destinationHubId, command.receiverCompanyId());
 
         List<String> lockKeys = generateLockKeys(hubRoute);
 

@@ -8,6 +8,8 @@ import com.firstlogistics.deliverservice.presentation.dto.request.DeliveryListRe
 import com.firstlogistics.deliverservice.presentation.dto.request.UpdateDeliveryRequest;
 import com.firstlogistics.deliverservice.presentation.dto.response.DeliveryDetailResponse;
 import com.firstlogistics.deliverservice.presentation.dto.response.DeliveryListResponse;
+import com.firstlogistics.deliverservice.application.dto.command.ChangeDeliveryStatusCommand;
+import com.firstlogistics.deliverservice.presentation.dto.response.ChangeDeliveryStatusResponse;
 import com.firstlogistics.deliverservice.presentation.dto.response.CreateDeliveryResponse;
 import com.firstlogistics.deliverservice.presentation.dto.response.UpdateDeliveryResponse;
 import common.response.ApiResponse;
@@ -59,6 +61,61 @@ public class DeliveryController {
 	) {
 		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_UPDATED,
 				UpdateDeliveryResponse.from(deliveryCommandService.updateDelivery(request.toCommand(deliveryId, role, userId)))
+		));
+	}
+
+	@PostMapping("/{deliveryId}/start")
+	public ResponseEntity<ApiResponse<ChangeDeliveryStatusResponse>> startDelivery(
+		@PathVariable UUID deliveryId,
+		@RequestHeader("X-User-Id") UUID userId,
+		@RequestHeader("X-User-Role") String role
+	) {
+		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_STARTED,
+				ChangeDeliveryStatusResponse.from(deliveryCommandService.startHubDelivery(ChangeDeliveryStatusCommand.of(deliveryId, role, userId)))
+		));
+	}
+
+	@PostMapping("/{deliveryId}/arrive-hub")
+	public ResponseEntity<ApiResponse<ChangeDeliveryStatusResponse>> arriveHub(
+		@PathVariable UUID deliveryId,
+		@RequestHeader("X-User-Id") UUID userId,
+		@RequestHeader("X-User-Role") String role
+	) {
+		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_HUB_ARRIVED,
+				ChangeDeliveryStatusResponse.from(deliveryCommandService.arriveHub(ChangeDeliveryStatusCommand.of(deliveryId, role, userId)))
+		));
+	}
+
+	@PostMapping("/{deliveryId}/receive-hub")
+	public ResponseEntity<ApiResponse<ChangeDeliveryStatusResponse>> receiveAtHub(
+		@PathVariable UUID deliveryId,
+		@RequestHeader("X-User-Id") UUID userId,
+		@RequestHeader("X-User-Role") String role
+	) {
+		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_RECEIVED,
+				ChangeDeliveryStatusResponse.from(deliveryCommandService.receiveAtHub(ChangeDeliveryStatusCommand.of(deliveryId, role, userId)))
+		));
+	}
+
+	@PostMapping("/{deliveryId}/start-company")
+	public ResponseEntity<ApiResponse<ChangeDeliveryStatusResponse>> startCompanyDelivery(
+		@PathVariable UUID deliveryId,
+		@RequestHeader("X-User-Id") UUID userId,
+		@RequestHeader("X-User-Role") String role
+	) {
+		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_COMPANY_STARTED,
+				ChangeDeliveryStatusResponse.from(deliveryCommandService.startCompanyDelivery(ChangeDeliveryStatusCommand.of(deliveryId, role, userId)))
+		));
+	}
+
+	@PostMapping("/{deliveryId}/complete")
+	public ResponseEntity<ApiResponse<ChangeDeliveryStatusResponse>> completeDelivery(
+		@PathVariable UUID deliveryId,
+		@RequestHeader("X-User-Id") UUID userId,
+		@RequestHeader("X-User-Role") String role
+	) {
+		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_COMPLETED,
+				ChangeDeliveryStatusResponse.from(deliveryCommandService.completeDelivery(ChangeDeliveryStatusCommand.of(deliveryId, role, userId)))
 		));
 	}
 

@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public interface HubPort {
 
-	HubRouteResponse getHubRoute(UUID sourceHubId, UUID destinationHubId);
+	HubRouteResponse getHubRoute(UUID sourceHubId, UUID destinationHubId, UUID receiverCompanyId);
 
 	List<HubResponse> getHubs(List<UUID> hubIds);
 }

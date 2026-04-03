@@ -2,6 +2,7 @@ package com.firstlogistics.deliverservice.infrastructure.persistence.jpa;
 
 import com.firstlogistics.deliverservice.domain.entity.DeliveryManager;
 import com.firstlogistics.deliverservice.domain.enums.ManagerType;
+import com.firstlogistics.deliverservice.domain.enums.TimetableStatus;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryManagerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -21,15 +22,17 @@ public class DeliveryManagerRepositoryImpl implements DeliveryManagerRepository 
 
 	@Override
 	public Optional<DeliveryManager> findNextHubDeliveryManager(UUID hubId, LocalDateTime assignmentStart, LocalDateTime assignmentEnd) {
+		List<TimetableStatus> activeStatuses = List.of(TimetableStatus.CREATED, TimetableStatus.HUB_MOVING);
 		List<DeliveryManagerJpaEntity> results = deliveryManagerJpaRepository
-			.findNextAvailableManager(hubId, ManagerType.HUB_DELIVERY, assignmentStart, assignmentEnd, PageRequest.of(0, 1));
+			.findNextAvailableManager(hubId, ManagerType.HUB_DELIVERY, activeStatuses, assignmentStart, assignmentEnd, PageRequest.of(0, 1));
 		return results.isEmpty() ? Optional.empty() : Optional.of(deliveryManagerMapper.toDomain(results.get(0)));
 	}
 
 	@Override
 	public Optional<DeliveryManager> findNextCompanyDeliveryManager(UUID hubId, LocalDateTime assignmentStart, LocalDateTime assignmentEnd) {
+		List<TimetableStatus> activeStatuses = List.of(TimetableStatus.CREATED, TimetableStatus.HUB_MOVING);
 		List<DeliveryManagerJpaEntity> results = deliveryManagerJpaRepository
-			.findNextAvailableManager(hubId, ManagerType.COMPANY_DELIVERY, assignmentStart, assignmentEnd, PageRequest.of(0, 1));
+			.findNextAvailableManager(hubId, ManagerType.COMPANY_DELIVERY, activeStatuses, assignmentStart, assignmentEnd, PageRequest.of(0, 1));
 		return results.isEmpty() ? Optional.empty() : Optional.of(deliveryManagerMapper.toDomain(results.get(0)));
 	}
 

@@ -15,7 +15,7 @@ public class HubManagerFeignAdapter implements HubManagerPort {
 	private final HubClient hubClient;
 
 	@Override
-	public HubManagerResponse getHubManager(UUID managerId) {
-		return hubClient.getHubManager(managerId).data();
+	public HubManagerResponse getHubManager(UUID userId) {
+		return hubClient.getHubManagerByUserId(userId).data();
 	}
 }

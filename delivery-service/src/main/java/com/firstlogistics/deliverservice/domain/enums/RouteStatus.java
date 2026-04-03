@@ -1,10 +1,10 @@
 package com.firstlogistics.deliverservice.domain.enums;
 
 public enum RouteStatus {
-	CREATED("배송 생성됨"),
-	HUB_WAITING("허브 대기중"),
-	HUB_MOVING("허브 이동중"),
-	DESTINATION_ARRIVED("허브 목적지 도착");
+	CREATED("생성됨"),
+	MOVING("이동중"),
+	ARRIVED("도착"),
+	COMPLETED("완료");
 
 	private final String description;
 

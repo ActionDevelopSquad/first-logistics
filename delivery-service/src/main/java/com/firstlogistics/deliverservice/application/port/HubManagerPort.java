@@ -6,5 +6,5 @@ import java.util.UUID;
 
 public interface HubManagerPort {
 
-	HubManagerResponse getHubManager(UUID managerId);
+	HubManagerResponse getHubManager(UUID userId);
 }
