@@ -48,6 +48,9 @@ public enum DeliveryErrorCode implements ErrorCode {
 	COMPANY_DELIVERY_MANAGER_NOT_AVAILABLE(HttpStatus.NOT_FOUND, "DR_E202", "배정 가능한 업체 배송담당자가 없습니다."),
 	DELIVERY_MANAGER_NOT_FOUND(HttpStatus.NOT_FOUND, "DR_E203", "배송 담당자를 찾을 수 없습니다."),
 
+	HUB_MANAGER_NOT_FOUND(HttpStatus.NOT_FOUND, "DR_E204", "허브 관리자를 찾을 수 없습니다."),
+	COMPANY_MANAGER_NOT_FOUND(HttpStatus.NOT_FOUND, "DR_E205", "업체 담당자를 찾을 수 없습니다."),
+
 	// 외부 서비스
 	HUB_NOT_FOUND(HttpStatus.NOT_FOUND, "DR_E401", "허브를 찾을 수 없습니다."),
 	COMPANY_NOT_FOUND(HttpStatus.NOT_FOUND, "DR_E402", "업체를 찾을 수 없습니다."),
