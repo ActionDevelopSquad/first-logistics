@@ -14,7 +14,7 @@ import java.util.UUID;
 @Table(
         name = "p_hub_manager",
         uniqueConstraints = {
-                @UniqueConstraint(name = HubManagerConstraints.UK_HUB_MANAGER_USER_HUB ,columnNames = {"userId","hubId"})
+                @UniqueConstraint(name = HubManagerConstraints.UK_HUB_MANAGER_USER_HUB ,columnNames = {"user_id","hub_id"})
         }
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -24,7 +24,9 @@ public class HubManagerJpaEntity extends BaseAuditEntity  {
     @Id
     private UUID id;
 
+    @Column(name = "user_id", nullable = false)
     private UUID userId;
 
+    @Column(name = "hub_id", nullable = false)
     private UUID hubId;
 }
