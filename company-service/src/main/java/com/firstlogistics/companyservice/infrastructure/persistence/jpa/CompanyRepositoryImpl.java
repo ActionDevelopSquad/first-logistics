@@ -2,11 +2,9 @@ package com.firstlogistics.companyservice.infrastructure.persistence.jpa;
 
 import static com.firstlogistics.companyservice.infrastructure.persistence.jpa.QCompanyJpaEntity.companyJpaEntity;
 
-import com.firstlogistics.companyservice.domain.exception.CompanyErrorCode;
-import com.firstlogistics.companyservice.domain.exception.CompanyException;
-import com.firstlogistics.companyservice.domain.specification.CompanySearchSpec;
 import com.firstlogistics.companyservice.domain.entity.Company;
 import com.firstlogistics.companyservice.domain.repository.CompanyRepository;
+import com.firstlogistics.companyservice.domain.specification.CompanySearchSpec;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -82,10 +80,11 @@ public class CompanyRepositoryImpl implements CompanyRepository {
 
     @Override
     public void delete(UUID companyId, UUID deletedBy) {
-        CompanyJpaEntity entity = companyJpaRepository.findById(companyId)
-                .orElseThrow(() -> new CompanyException(CompanyErrorCode.COMPANY_NOT_FOUND));
-        entity.softDelete(deletedBy);
-        companyJpaRepository.save(entity);
+        companyJpaRepository.findById(companyId)
+                .ifPresent(entity -> {
+                    entity.softDelete(deletedBy);
+                    companyJpaRepository.save(entity);
+                });
     }
 
     private OrderSpecifier<?>[] resolveOrderSpecifiers(Sort sort) {
