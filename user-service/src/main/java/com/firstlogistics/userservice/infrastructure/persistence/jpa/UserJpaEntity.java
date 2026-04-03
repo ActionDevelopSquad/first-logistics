@@ -1,8 +1,9 @@
 package com.firstlogistics.userservice.infrastructure.persistence.jpa;
 
+import com.firstlogistics.userservice.domain.entity.User;
 import com.firstlogistics.userservice.domain.enums.Status;
-import common.jpa.domain.enums.UserRole;
 import common.jpa.entity.BaseAuditEntity;
+import common.jpa.entity.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -35,18 +36,30 @@ public class UserJpaEntity extends BaseAuditEntity {
     @Column(name = "email", nullable = false, length = 100)
     private String email;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "user_role", nullable = false, length = 30)
-    private UserRole userRole;
+    @Column(name = "slack_id", length = 100)
+    private String slackId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 30)
     private Status status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_role", nullable = false, length = 30)
+    private UserRole userRole;
+
+    @Column(name = "organization_id")
+    private UUID organizationId;
+
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;
 
-    @Column(name = "slack_id", length = 100)
-    private String slackId;
-
+    public void update(User domain) {
+        this.name = domain.getName();
+        this.phone = domain.getPhone();
+        this.email = domain.getEmail();
+        this.slackId = domain.getSlackId();
+        this.status = domain.getStatus();
+        this.userRole = domain.getUserRole();
+        this.lastLoginAt = domain.getLastLoginAt();
+    }
 }

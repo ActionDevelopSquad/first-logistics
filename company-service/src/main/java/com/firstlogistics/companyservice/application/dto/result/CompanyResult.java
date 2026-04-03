@@ -6,7 +6,7 @@ import java.util.UUID;
 public record CompanyResult(
         UUID id,
         UUID hubId,
-        UUID userId,
+        UUID managerId,
         String name,
         String type,
         String status,
@@ -19,9 +19,9 @@ public record CompanyResult(
         return new CompanyResult(
                 company.getId(),
                 company.getHubId(),
-                company.getUserId(),
+                company.getManagerId(),
                 company.getName(),
-                company.getType().getClass().getSimpleName().toUpperCase(),
+                company.getType().getTypeName(),
                 company.getStatus().name(),
                 company.getAddress().roadAddress(),
                 company.getAddress().detailAddress(),

@@ -112,8 +112,24 @@ public class Delivery {
 		this.status = DeliveryStatus.CANCELLED;
 	}
 
+	public void reassignReceiver(UUID receiverId, String receiverSlackId) {
+		validateBeforeDelivery();
+		if (receiverId != null) {
+			this.receiverId = receiverId;
+		}
+		if (receiverSlackId != null && !receiverSlackId.isBlank()) {
+			this.receiverSlackId = receiverSlackId;
+		}
+	}
+
 	public void assignRoute(DeliveryRoute route, DeliveryManagerId managerId) {
 		route.assignManager(managerId);
 		this.routes.add(route);
+	}
+
+	private void validateBeforeDelivery() {
+		if (this.status != DeliveryStatus.CREATED) {
+			throw new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_MODIFIABLE);
+		}
 	}
 }

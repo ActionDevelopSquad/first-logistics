@@ -1,17 +1,24 @@
 package com.firstlogistics.deliverservice.application;
 
 import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryCommand;
+import com.firstlogistics.deliverservice.application.dto.command.UpdateDeliveryCommand;
 import com.firstlogistics.deliverservice.application.dto.result.CreateDeliveryResult;
+import com.firstlogistics.deliverservice.application.dto.result.UpdateDeliveryResult;
+import com.firstlogistics.deliverservice.application.permission.DeliveryAccessContext;
+import com.firstlogistics.deliverservice.application.permission.DeliveryPermissionValidator;
 import com.firstlogistics.deliverservice.application.publisher.DeliveryEventPublisher;
 import com.firstlogistics.deliverservice.domain.entity.Delivery;
 import com.firstlogistics.deliverservice.domain.entity.DeliveryRoute;
 import com.firstlogistics.deliverservice.domain.entity.DeliveryManager;
+import com.firstlogistics.deliverservice.domain.enums.UserRole;
 import com.firstlogistics.deliverservice.domain.event.DeliveryCreatedEvent;
+import com.firstlogistics.deliverservice.domain.event.DeliveryUpdatedEvent;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryCreationException;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryRepository;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryManagerRepository;
+import com.firstlogistics.deliverservice.domain.vo.DeliveryId;
 import com.firstlogistics.deliverservice.application.port.HubPort;
 import com.firstlogistics.deliverservice.application.port.UserPort;
 import com.firstlogistics.deliverservice.application.port.dto.CompanyResponse;
@@ -28,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -39,6 +47,7 @@ public class DeliveryCommandService {
 
 	private final DeliveryRepository deliveryRepository;
 	private final DeliveryManagerRepository deliveryManagerRepository;
+	private final DeliveryPermissionValidator deliveryPermissionValidator;
 	private final UserPort userPort;
 	private final HubPort hubPort;
 	private final DeliveryEventPublisher deliveryEventPublisher;
@@ -157,6 +166,25 @@ public class DeliveryCommandService {
 		deliveryEventPublisher.publishedDeliveryCreated(deliveryCreatedEvent);
 
 		return CreateDeliveryResult.from(savedDelivery);
+	}
+
+	public UpdateDeliveryResult updateDelivery(UpdateDeliveryCommand command) {
+		Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
+			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
+
+		DeliveryAccessContext accessContext = DeliveryAccessContext.from(delivery);
+		deliveryPermissionValidator.validate(accessContext, command.role(), command.userId(),
+			Set.of(UserRole.MASTER, UserRole.HUB_MANAGER, UserRole.DELIVERY_MANAGER));
+
+		delivery.reassignReceiver(command.receiverId(), command.receiverSlackId());
+		Delivery savedDelivery = deliveryRepository.save(delivery);
+
+		DeliveryUpdatedEvent deliveryUpdatedEvent = DeliveryUpdatedEvent.create(
+			command.deliveryId(), savedDelivery.getReceiverId(), savedDelivery.getReceiverSlackId()
+		);
+		deliveryEventPublisher.publishDeliveryUpdated(deliveryUpdatedEvent);
+
+		return UpdateDeliveryResult.from(savedDelivery);
 	}
 
 	private DeliveryCreatedEvent buildDeliveryCreatedEvent(

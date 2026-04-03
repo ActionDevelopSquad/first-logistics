@@ -1,5 +1,6 @@
 package com.firstlogistics.orderservice.domain.entity;
 
+import com.firstlogistics.orderservice.domain.enums.OrderCancelType;
 import com.firstlogistics.orderservice.domain.enums.OrderStatus;
 import com.firstlogistics.orderservice.domain.exception.OrderErrorCode;
 import com.firstlogistics.orderservice.domain.exception.OrderException;
@@ -33,6 +34,7 @@ public class Order {
     private String requestMemo;
     private OrderStatus status;
     private OrderStatus previousStatus;
+    private OrderCancelType cancelType;
     private LocalDateTime orderedAt;
 
     @Getter(AccessLevel.NONE)
@@ -64,6 +66,7 @@ public class Order {
                 OrderStatus.PENDING,
                 null,
                 null,
+                null,
                 new ArrayList<>(),
                 null
         );
@@ -91,6 +94,7 @@ public class Order {
             String requestMemo,
             OrderStatus status,
             OrderStatus previousStatus,
+            OrderCancelType cancelType,
             LocalDateTime orderedAt,
             List<OrderItem> orderItems,
             Long version
@@ -106,6 +110,7 @@ public class Order {
                 requestMemo,
                 status,
                 previousStatus,
+                cancelType,
                 orderedAt,
                 orderItems,
                 version
@@ -158,6 +163,7 @@ public class Order {
             if(!isSuccess) {
                 this.status = OrderStatus.CANCELLED;
                 this.previousStatus = null;
+                this.cancelType = OrderCancelType.STOCK_OUT;
                 return;
             }
 
@@ -207,8 +213,12 @@ public class Order {
     }
 
     // 주문 취소 / 거절 / 취소 요청 승인 (나중에 필요하면 분리)
-    public void cancel() {
-        // TODO: 권한 검증
+    public void cancel(OrderCancelType cancelType) {
+        // TODO: 허브 관리자, 마스터 관리자, 공급 업체 담당자 권한 검증
+
+        if (cancelType == null) {
+            throw new OrderException(OrderErrorCode.CANCEL_TYPE_REQUIRED);
+        }
 
         if (this.status == OrderStatus.CANCELLED) {
             throw new OrderException(OrderErrorCode.ALREADY_CANCELLED);
@@ -217,9 +227,12 @@ public class Order {
         this.status.validateNext(OrderStatus.CANCELLED);
         this.status = OrderStatus.CANCELLED;
         this.previousStatus = null; // 취소 요청이었다면 이전 상태 초기화
+        this.cancelType = cancelType;
     }
 
     public void requestCancel() {
+        // TODO: 로그인한 사용자가 주문한 사용자와 같은지 확인
+
         // 이미 취소 요청 or 취소 된 상태인 경우
         if (this.status == OrderStatus.CANCEL_REQUESTED || this.status == OrderStatus.CANCELLED) {
             throw new OrderException(OrderErrorCode.ALREADY_CANCEL_REQUESTED);
@@ -230,6 +243,8 @@ public class Order {
     }
 
     public void rejectCancelRequest() {
+        // TODO: 관리자 권한 확인
+
         // 취소 요청 상태에서만 가능
         if (this.status != OrderStatus.CANCEL_REQUESTED || this.previousStatus == null) {
             throw new OrderException(OrderErrorCode.CANNOT_REJECT_CANCEL);

@@ -1,16 +1,24 @@
 package com.firstlogistics.deliverservice.application;
 
 import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryCommand;
+import com.firstlogistics.deliverservice.application.dto.command.UpdateDeliveryCommand;
+import com.firstlogistics.deliverservice.application.dto.result.UpdateDeliveryResult;
 import com.firstlogistics.deliverservice.application.publisher.DeliveryEventPublisher;
 import com.firstlogistics.deliverservice.domain.entity.Delivery;
 import com.firstlogistics.deliverservice.domain.entity.DeliveryManager;
+import com.firstlogistics.deliverservice.domain.entity.DeliveryRoute;
 import com.firstlogistics.deliverservice.domain.enums.DeliveryStatus;
 import com.firstlogistics.deliverservice.domain.enums.ManagerType;
 import com.firstlogistics.deliverservice.domain.enums.TimetableStatus;
+import com.firstlogistics.deliverservice.domain.event.DeliveryUpdatedEvent;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryRepository;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryManagerRepository;
+import com.firstlogistics.deliverservice.domain.vo.Address;
+import com.firstlogistics.deliverservice.domain.vo.DeliveryId;
+import com.firstlogistics.deliverservice.domain.vo.DeliveryManagerId;
+import com.firstlogistics.deliverservice.application.permission.DeliveryPermissionValidator;
 import com.firstlogistics.deliverservice.application.port.HubPort;
 import com.firstlogistics.deliverservice.application.port.UserPort;
 import com.firstlogistics.deliverservice.application.port.dto.CompanyResponse;
@@ -31,6 +39,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,6 +48,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.times;
 
 @Slf4j
@@ -56,6 +66,9 @@ class DeliveryCommandServiceTest {
 
 	@Mock
 	private HubPort hubPort;
+
+	@Mock
+	private DeliveryPermissionValidator deliveryPermissionValidator;
 
 	@Mock
 	private DeliveryEventPublisher deliveryEventPublisher;
@@ -300,6 +313,250 @@ class DeliveryCommandServiceTest {
 			assertThat(savedCompanyManager.getTimetables()).hasSize(1);
 			assertThat(savedCompanyManager.getTimetables().get(0).getStatus()).isEqualTo(TimetableStatus.CREATED);
 		}
+	}
+
+	@Nested
+	@DisplayName("배송 수정 실패")
+	class UpdateDeliveryFail {
+
+		@Test
+		@DisplayName("수정할 필드가 없는 경우 (receiverId, receiverSlackId 모두 null)")
+		void updateDelivery_fail_noFieldToUpdate() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+
+			// when
+			Throwable throwable = catchThrowable(() -> new UpdateDeliveryCommand(deliveryId, "MASTER", userId, null, null));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.INVALID_COMMAND_PARAMS);
+		}
+
+		@Test
+		@DisplayName("수정할 필드가 없는 경우 (receiverSlackId 빈 문자열)")
+		void updateDelivery_fail_noFieldToUpdate_blankSlackId() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+
+			// when
+			Throwable throwable = catchThrowable(() -> new UpdateDeliveryCommand(deliveryId, "MASTER", userId, null, "   "));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.INVALID_COMMAND_PARAMS);
+		}
+
+		@Test
+		@DisplayName("존재하지 않는 배송")
+		void updateDelivery_fail_deliveryNotFound() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			UpdateDeliveryCommand command = new UpdateDeliveryCommand(deliveryId, "MASTER", userId, UUID.randomUUID(), null);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.empty());
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.updateDelivery(command));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.DELIVERY_NOT_FOUND);
+		}
+
+		@Test
+		@DisplayName("권한 없음 (Validator가 DELIVERY_ACCESS_DENIED 던짐)")
+		void updateDelivery_fail_accessDenied() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
+			UpdateDeliveryCommand command = new UpdateDeliveryCommand(deliveryId, "COMPANY_MANAGER", userId, UUID.randomUUID(), null);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+			willThrow(new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED))
+				.given(deliveryPermissionValidator).validate(any(), eq("COMPANY_MANAGER"), eq(userId), any());
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.updateDelivery(command));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
+		}
+
+		@Test
+		@DisplayName("배송 중인 배송 수정 시도 (HUB_MOVING)")
+		void updateDelivery_fail_deliveryInProgress() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.HUB_MOVING);
+			UpdateDeliveryCommand command = new UpdateDeliveryCommand(deliveryId, "MASTER", userId, UUID.randomUUID(), null);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.updateDelivery(command));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.DELIVERY_NOT_MODIFIABLE);
+		}
+
+		@Test
+		@DisplayName("이미 완료된 배송 수정 시도 (COMPLETED)")
+		void updateDelivery_fail_deliveryCompleted() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.COMPLETED);
+			UpdateDeliveryCommand command = new UpdateDeliveryCommand(deliveryId, "MASTER", userId, UUID.randomUUID(), null);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.updateDelivery(command));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.DELIVERY_NOT_MODIFIABLE);
+		}
+
+		@Test
+		@DisplayName("이미 취소된 배송 수정 시도 (CANCELLED)")
+		void updateDelivery_fail_deliveryCancelled() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CANCELLED);
+			UpdateDeliveryCommand command = new UpdateDeliveryCommand(deliveryId, "MASTER", userId, UUID.randomUUID(), null);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.updateDelivery(command));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.DELIVERY_NOT_MODIFIABLE);
+		}
+	}
+
+	@Nested
+	@DisplayName("배송 수정 성공")
+	class UpdateDeliverySuccess {
+
+		@Test
+		@DisplayName("수령인 ID 변경")
+		void updateDelivery_success_receiverIdChanged() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			UUID newReceiverId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
+			UpdateDeliveryCommand command = new UpdateDeliveryCommand(deliveryId, "MASTER", userId, newReceiverId, null);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
+
+			// when
+			UpdateDeliveryResult result = deliveryCommandService.updateDelivery(command);
+
+			// then
+			assertThat(result.deliveryId()).isEqualTo(deliveryId);
+			ArgumentCaptor<Delivery> captor = ArgumentCaptor.forClass(Delivery.class);
+			then(deliveryRepository).should().save(captor.capture());
+			assertThat(captor.getValue().getReceiverId()).isEqualTo(newReceiverId);
+		}
+
+		@Test
+		@DisplayName("슬랙 ID 변경")
+		void updateDelivery_success_slackIdChanged() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			String newSlackId = "new-slack-id";
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
+			UpdateDeliveryCommand command = new UpdateDeliveryCommand(deliveryId, "MASTER", userId, null, newSlackId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
+
+			// when
+			UpdateDeliveryResult result = deliveryCommandService.updateDelivery(command);
+
+			// then
+			assertThat(result.deliveryId()).isEqualTo(deliveryId);
+			ArgumentCaptor<Delivery> captor = ArgumentCaptor.forClass(Delivery.class);
+			then(deliveryRepository).should().save(captor.capture());
+			assertThat(captor.getValue().getReceiverSlackId()).isEqualTo(newSlackId);
+		}
+
+		@Test
+		@DisplayName("수정 시 DeliveryUpdatedEvent 발행")
+		void updateDelivery_success_deliveryUpdatedEventPublished() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			UUID newReceiverId = UUID.randomUUID();
+			String newSlackId = "new-slack-id";
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
+			UpdateDeliveryCommand command = new UpdateDeliveryCommand(deliveryId, "MASTER", userId, newReceiverId, newSlackId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
+
+			// when
+			UpdateDeliveryResult result = deliveryCommandService.updateDelivery(command);
+			assertThat(result.deliveryId()).isEqualTo(deliveryId);
+
+			// then
+			ArgumentCaptor<DeliveryUpdatedEvent> eventCaptor = ArgumentCaptor.forClass(DeliveryUpdatedEvent.class);
+			then(deliveryEventPublisher).should().publishDeliveryUpdated(eventCaptor.capture());
+			DeliveryUpdatedEvent publishedEvent = eventCaptor.getValue();
+			assertThat(publishedEvent.deliveryId()).isEqualTo(deliveryId);
+			assertThat(publishedEvent.receiverId()).isEqualTo(newReceiverId);
+			assertThat(publishedEvent.receiverSlackId()).isEqualTo(newSlackId);
+		}
+	}
+
+	// --- 배송 수정 테스트 픽스처 ---
+
+	private static final UUID STUB_SOURCE_HUB_ID = UUID.randomUUID();
+	private static final UUID STUB_DESTINATION_HUB_ID = UUID.randomUUID();
+	private static final DeliveryManagerId STUB_ROUTE_MANAGER_ID = DeliveryManagerId.generate();
+
+	private Delivery stubDeliveryWithRoutes(UUID deliveryId, DeliveryStatus status) {
+		DeliveryId id = DeliveryId.of(deliveryId);
+		DeliveryRoute route = DeliveryRoute.create(id, 0, STUB_SOURCE_HUB_ID, STUB_DESTINATION_HUB_ID, 10000, 30);
+		route.assignManager(STUB_ROUTE_MANAGER_ID);
+		return Delivery.reconstitute(
+			id, UUID.randomUUID(), status,
+			STUB_SOURCE_HUB_ID, STUB_DESTINATION_HUB_ID,
+			Address.of("서울시 강남구 테헤란로 123", "101호"),
+			null,
+			UUID.randomUUID(), "slack-receiver", UUID.randomUUID(),
+			DeliveryManagerId.generate(), STUB_SOURCE_HUB_ID,
+			List.of(route)
+		);
 	}
 
 	// --- 성공 테스트 공통 픽스처 ---

@@ -20,14 +20,14 @@ class CompanyMapperTest {
 
     private static final UUID ID = UUID.randomUUID();
     private static final UUID HUB_ID = UUID.randomUUID();
-    private static final UUID USER_ID = UUID.randomUUID();
+    private static final UUID MANAGER_ID = UUID.randomUUID();
 
     @Test
     @DisplayName("SUPPLIER 도메인 엔티티를 JPA 엔티티로 변환한다")
     void toJpaEntity_supplier() {
         // given
         Company company = Company.reconstitute(
-                ID, HUB_ID, USER_ID, "테스트업체",
+                ID, HUB_ID, MANAGER_ID, "테스트업체",
                 new Supplier(), CompanyStatus.ACTIVE,
                 CompanyAddress.of("서울 송파구 송파대로 55", "3층"),
                 GeoLocation.of(37.514, 127.106)
@@ -39,7 +39,7 @@ class CompanyMapperTest {
         // then
         assertThat(jpaEntity.getId()).isEqualTo(ID);
         assertThat(jpaEntity.getHubId()).isEqualTo(HUB_ID);
-        assertThat(jpaEntity.getUserId()).isEqualTo(USER_ID);
+        assertThat(jpaEntity.getManagerId()).isEqualTo(MANAGER_ID);
         assertThat(jpaEntity.getName()).isEqualTo("테스트업체");
         assertThat(jpaEntity.getType()).isEqualTo("SUPPLIER");
         assertThat(jpaEntity.getStatus()).isEqualTo(CompanyStatus.ACTIVE);
@@ -54,7 +54,7 @@ class CompanyMapperTest {
     void toJpaEntity_receiver() {
         // given
         Company company = Company.reconstitute(
-                ID, HUB_ID, USER_ID, "수령업체",
+                ID, HUB_ID, MANAGER_ID, "수령업체",
                 new Receiver(), CompanyStatus.ACTIVE,
                 CompanyAddress.of("부산 동구 중앙대로 206", "1층"),
                 GeoLocation.of(35.106, 129.032)
@@ -72,7 +72,7 @@ class CompanyMapperTest {
     void toDomain_supplier() {
         // given
         CompanyJpaEntity jpaEntity = new CompanyJpaEntity(
-                ID, HUB_ID, USER_ID, "테스트업체",
+                ID, HUB_ID, MANAGER_ID, "테스트업체",
                 CompanyStatus.ACTIVE, "SUPPLIER",
                 "서울 송파구 송파대로 55", "3층", 37.514, 127.106
         );
@@ -92,7 +92,7 @@ class CompanyMapperTest {
     void toDomain_receiver() {
         // given
         CompanyJpaEntity jpaEntity = new CompanyJpaEntity(
-                ID, HUB_ID, USER_ID, "수령업체",
+                ID, HUB_ID, MANAGER_ID, "수령업체",
                 CompanyStatus.ACTIVE, "RECEIVER",
                 "부산 동구 중앙대로 206", "1층", 35.106, 129.032
         );
@@ -111,7 +111,7 @@ class CompanyMapperTest {
     void toDomain_unknownType_throwsException() {
         // given
         CompanyJpaEntity jpaEntity = new CompanyJpaEntity(
-                ID, HUB_ID, USER_ID, "업체",
+                ID, HUB_ID, MANAGER_ID, "업체",
                 CompanyStatus.ACTIVE, "UNKNOWN",
                 "서울 송파구 송파대로 55", "3층", 37.514, 127.106
         );

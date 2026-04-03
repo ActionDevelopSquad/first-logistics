@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 public record CreateCompanyRequest(
-        @NotNull UUID userId,
+        @NotNull UUID managerId,
         @NotBlank String name,
         @NotBlank String type,
         @NotBlank String roadAddress,
@@ -15,6 +15,6 @@ public record CreateCompanyRequest(
         @NotNull Double longitude
 ) {
     public CreateCompanyCommand toCommand() {
-        return new CreateCompanyCommand(userId, name, type, roadAddress, detailAddress, latitude, longitude);
+        return new CreateCompanyCommand(managerId, name, type, roadAddress, detailAddress, latitude, longitude);
     }
 }

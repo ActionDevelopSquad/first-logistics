@@ -23,6 +23,7 @@ public class UserMapper {
                 entity.getSlackId(),
                 entity.getStatus(),
                 entity.getUserRole(),
+                entity.getOrganizationId(),
                 entity.getLastLoginAt()
         );
     }
@@ -41,10 +42,11 @@ public class UserMapper {
                 domain.getName(),
                 domain.getPhone(),
                 domain.getEmail(),
-                domain.getUserRole(),
+                domain.getSlackId(),
                 domain.getStatus(),
-                domain.getLastLoginAt(),
-                domain.getSlackId()
+                domain.getUserRole(),
+                domain.getOrganizationId(),
+                domain.getLastLoginAt()
         );
     }
 }
