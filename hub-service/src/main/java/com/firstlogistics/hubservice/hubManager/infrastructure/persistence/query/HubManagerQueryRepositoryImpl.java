@@ -120,7 +120,7 @@ public class HubManagerQueryRepositoryImpl implements HubManagerQueryRepository 
                         case "updatedAt" -> asc ? hubManager.updatedAt.asc() : hubManager.updatedAt.desc();
                         case "userId" -> asc ? hubManager.userId.asc() : hubManager.userId.desc();
                         case "hubId" -> asc ? hubManager.hubId.asc() : hubManager.hubId.desc();
-                        default -> throw new IllegalArgumentException("지원하지 않는 정렬 필드입니다: " + order.getProperty());
+                        default -> throw new HubManagerException(HubManagerErrorCode.INVALID_HUB_MANAGER_SORT);
                     };
                 })
                 .toArray(OrderSpecifier[]::new);
