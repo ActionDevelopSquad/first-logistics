@@ -96,7 +96,7 @@ class HubManagerQueryServiceTest {
         UUID userId = UUID.randomUUID();
         UUID hubId = UUID.randomUUID();
 
-        when(repository.findHubIdByUserId(UserId.of(userId))).thenReturn(hubId);
+        when(repository.findHubIdByUserId(UserId.of(userId))).thenReturn(HubId.of(hubId));
 
         UUID result = service.getHubIdByUserId(userId);
 
