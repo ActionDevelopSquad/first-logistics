@@ -37,8 +37,8 @@ public class AIMessageFacade {
                 event.delivery().deliveryRoutes().getFirst().sourceHubName(), // 첫 출발지
                 hubs,
                 event.delivery().receiverRoadAddress() + " " + event.delivery().receiverDetailAddress(),
-                event.delivery().companyDeliveryStaffName(),
-                event.delivery().companyDeliveryStaffEmail(),
+                event.delivery().companyDeliveryManagerName(),
+                event.delivery().companyDeliveryManagerEmail(),
                 event.delivery().receiverSlackId()
         );
 

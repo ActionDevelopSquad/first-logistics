@@ -34,7 +34,7 @@ public class OpenAIPromptGenerator implements AIPromptGenerator {
             발송지 : {첫 번째 route의 sourceHubName}
             경유지 : {중간 route들의 destinationHubName들을 쉼표로 연결}
             도착지 : {최종 목적지 주소}
-            배송담당자 : {companyDeliveryStaffName} / {companyDeliveryStaffEmail}
+            배송담당자 : {companyDeliveryManagerName} / {companyDeliveryManagerEmail}
 
             위 내용을 기반으로 도출된 최종 발송 시한은 O월 O일 오전/오후 O시 입니다.
             """;

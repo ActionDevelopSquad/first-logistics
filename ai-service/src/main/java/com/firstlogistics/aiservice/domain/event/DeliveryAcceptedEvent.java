@@ -39,10 +39,10 @@ public record DeliveryAcceptedEvent(
             String receiverRoadAddress,
             String receiverDetailAddress,
             List<DeliveryRouteInfo> deliveryRoutes,
-            String companyDeliveryStaffSlackId,
-            String companyDeliveryStaffName,
-            String companyDeliveryStaffPhone,
-            String companyDeliveryStaffEmail
+            String companyDeliveryManagerSlackId,
+            String companyDeliveryManagerName,
+            String companyDeliveryManagerPhone,
+            String companyDeliveryManagerEmail
     ) {
 
     }
@@ -58,7 +58,7 @@ public record DeliveryAcceptedEvent(
         String destinationHubRoadAddress,
         int estimatedDistanceMeters,
         int estimatedDurationMinutes,
-        String hubDeliveryStaffSlackId
+        String hubDeliveryManagerSlackId
     ) {
 
     }

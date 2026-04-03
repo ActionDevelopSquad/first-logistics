@@ -36,7 +36,7 @@ public class AILog {
         Objects.requireNonNull(messengerType, "Messenger type is required");
         return new AILog(
                 AILogId.of(),
-                null,  // 슬랙 메시지 생성 후 저장
+                MessengerMessageId.of(),
                 requestContent,
                 responseContent,
                 systemPrompt,
@@ -55,20 +55,6 @@ public class AILog {
             MessengerType messengerType
     ) {
         return new AILog(id, messageId, requestContent, responseContent, systemPrompt, status, messengerType);
-    }
-
-    public void updateSlackMessageId(MessengerMessageId slackMessageId) {
-        // null 체크
-        if (slackMessageId == null) {
-            throw new AILogException(AILogErrorCode.MESSAGE_NOT_EXIST);
-        }
-
-        // 이미 값이 있는데 또 바꾸려고 할 때
-        if (this.messageId != null) {
-            throw new AILogException(AILogErrorCode.MESSAGE_ALREADY_EXIST);
-        }
-
-        this.messageId = slackMessageId;
     }
 
     public void updateStatus(AILogStatus status) {
