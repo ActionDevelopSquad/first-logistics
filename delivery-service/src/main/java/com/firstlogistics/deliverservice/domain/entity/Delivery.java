@@ -143,7 +143,7 @@ public class Delivery {
 		this.status = DeliveryStatus.COMPLETED;
 	}
 
-	public void cancelByOrder() {
+	public void cancelBySystem() {
 		this.status = DeliveryStatus.CANCELLED;
 	}
 

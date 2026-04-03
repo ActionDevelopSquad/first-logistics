@@ -1,6 +1,5 @@
 package com.firstlogistics.deliverservice.infrastructure.messaging.consumer;
 
-import com.firstlogistics.deliverservice.application.DeliveryCommandService;
 import com.firstlogistics.deliverservice.application.DeliveryQueryService;
 import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryCommand;
 import com.firstlogistics.deliverservice.application.facade.DeliveryCommandFacade;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class OrderEventKafkaConsumer {
 
-	private final DeliveryCommandService deliveryCommandService;
 	private final DeliveryQueryService deliveryQueryService;
 	private final DeliveryCommandFacade deliveryCommandFacade;
 
@@ -48,7 +46,7 @@ public class OrderEventKafkaConsumer {
 	public void handleOrderCancelled(OrderCancelledEvent event, Acknowledgment ack) {
 		log.info("order.cancelled 이벤트 수신 - orderId: {}", event.orderId());
 
-		deliveryCommandService.cancelByOrder(event.orderId());
+		deliveryCommandFacade.cancelDeliveryBySystem(event.orderId());
 
 		ack.acknowledge();
 	}

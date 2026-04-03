@@ -137,7 +137,7 @@ public class DeliveryController {
 		@RequestHeader("X-User-Role") String role
 	) {
 		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_CANCELLED,
-				ChangeDeliveryStatusResponse.from(deliveryCommandService.cancelDelivery(ChangeDeliveryStatusCommand.of(deliveryId, role, userId)))
+				ChangeDeliveryStatusResponse.from(deliveryCommandFacade.cancelDelivery(ChangeDeliveryStatusCommand.of(deliveryId, role, userId)))
 		));
 	}
 }

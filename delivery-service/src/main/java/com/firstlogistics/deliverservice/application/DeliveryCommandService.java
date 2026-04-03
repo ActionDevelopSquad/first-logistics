@@ -276,14 +276,7 @@ public class DeliveryCommandService {
 		return ChangeDeliveryStatusResult.from(savedDelivery);
 	}
 
-	public ChangeDeliveryStatusResult cancelDelivery(ChangeDeliveryStatusCommand command) {
-		Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
-			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
-
-		DeliveryAccessContext accessContext = DeliveryAccessContext.from(delivery);
-		deliveryPermissionValidator.validate(accessContext, command.role(), command.userId(),
-			Set.of(UserRole.MASTER, UserRole.HUB_MANAGER));
-
+	public ChangeDeliveryStatusResult cancelDelivery(Delivery delivery) {
 		delivery.cancelDelivery();
 		Delivery savedDelivery = deliveryRepository.save(delivery);
 
@@ -293,15 +286,8 @@ public class DeliveryCommandService {
 		return ChangeDeliveryStatusResult.from(savedDelivery);
 	}
 
-	public void cancelByOrder(UUID orderId) {
-		Delivery delivery = deliveryRepository.findByOrderId(orderId)
-			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
-
-		if (delivery.getStatus() == DeliveryStatus.CANCELLED) {
-			return;
-		}
-
-		delivery.cancelByOrder();
+	public void cancelDeliveryBySystem(Delivery delivery) {
+		delivery.cancelBySystem();
 		Delivery savedDelivery = deliveryRepository.save(delivery);
 
 		deliveryEventPublisher.publishDeliveryStatusChanged(
