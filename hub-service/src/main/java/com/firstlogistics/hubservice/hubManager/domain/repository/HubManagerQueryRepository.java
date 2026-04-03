@@ -1,7 +1,6 @@
 package com.firstlogistics.hubservice.hubManager.domain.repository;
 
 
-import com.firstlogistics.hubservice.hub.domain.vo.HubId;
 import com.firstlogistics.hubservice.hubManager.domain.entity.HubManager;
 import com.firstlogistics.hubservice.hubManager.domain.specification.HubManagerSearchSpec;
 import com.firstlogistics.hubservice.hubManager.domain.vo.HubManagerId;
@@ -14,5 +13,5 @@ public interface HubManagerQueryRepository {
 
     Page<HubManager> searchByCondition(HubManagerSearchSpec spec, Pageable pageable);
 
-    HubId findHubIdByUserId(UserId userId);
+    HubManager findByUserId(UserId userId);
 }

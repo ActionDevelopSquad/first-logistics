@@ -1,6 +1,5 @@
 package com.firstlogistics.hubservice.hubManager.infrastructure.persistence.query;
 
-import com.firstlogistics.hubservice.hub.domain.vo.HubId;
 import com.firstlogistics.hubservice.hubManager.domain.entity.HubManager;
 import com.firstlogistics.hubservice.hubManager.domain.exception.HubManagerErrorCode;
 import com.firstlogistics.hubservice.hubManager.domain.exception.HubManagerException;
@@ -79,9 +78,9 @@ public class HubManagerQueryRepositoryImpl implements HubManagerQueryRepository 
     }
 
     @Override
-    public HubId findHubIdByUserId(UserId userId) {
-        UUID result = queryFactory
-                .select(hubManager.hubId)
+    public HubManager findByUserId(UserId userId) {
+        HubManagerJpaEntity result = queryFactory
+                .select(hubManager)
                 .from(hubManager)
                 .where(
                         hubManager.userId.eq(userId.id()),
@@ -91,7 +90,7 @@ public class HubManagerQueryRepositoryImpl implements HubManagerQueryRepository 
         if (result == null)
             throw new HubManagerException(HubManagerErrorCode.HUB_MANAGER_NOT_FOUND);
 
-        return HubId.of(result);
+        return HubManagerMapper.toDomain(result);
     }
 
     private BooleanExpression notDeleted() {

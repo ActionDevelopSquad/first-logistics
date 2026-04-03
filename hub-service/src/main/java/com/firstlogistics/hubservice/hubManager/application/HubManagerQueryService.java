@@ -28,7 +28,8 @@ public class HubManagerQueryService {
         Page<HubManager> hubManagers = repository.searchByCondition(query.toSpec(), pageable);
         return hubManagers.map(HubManagerResult::from);
     }
-    public UUID getHubIdByUserId(UUID userId){
-        return repository.findHubIdByUserId(UserId.of(userId)).id();
+    public HubManagerResult getHubManagerByUserId(UUID userId){
+        HubManager hubManager =  repository.findByUserId(UserId.of(userId));
+        return HubManagerResult.from(hubManager);
     }
 }
