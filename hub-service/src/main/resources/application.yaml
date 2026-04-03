@@ -2,5 +2,22 @@ spring:
   application:
     name: hub-service
 
+  datasource:
+    url: ${POSTGRES_DB_URL}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        default_schema: hub
+  data:
+    redis:
+      url: ${REDIS_URL}
+
 server:
   port: 8083

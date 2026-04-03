@@ -1,4 +1,4 @@
-package com.firstlogistics.hubservice.hub.infrastructure.persistence.config;
+package com.firstlogistics.hubservice.global.config.persistence;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
