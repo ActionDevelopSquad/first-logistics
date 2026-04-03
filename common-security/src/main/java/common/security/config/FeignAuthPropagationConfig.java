@@ -5,6 +5,7 @@ import common.security.entity.exception.AuthException;
 import common.security.util.SecurityUtils;
 import feign.RequestInterceptor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 
@@ -16,7 +17,7 @@ import java.nio.charset.StandardCharsets;
 public class FeignAuthPropagationConfig {
 
     @Bean
-    public RequestInterceptor userHeaderPropagationInterceptor() {
+    public RequestInterceptor userHeaderPropagationInterceptor(@Value("${spring.application.name}") String serviceName) {
         return template -> {
             log.info("Feign interceptor invoked");
             try {
@@ -35,6 +36,7 @@ public class FeignAuthPropagationConfig {
                     String encodedName = URLEncoder.encode(user.getName(), StandardCharsets.UTF_8);
                     template.header(SecurityHeader.USER_NAME, encodedName);
                 }
+                template.header(SecurityHeader.FORWARD_SERVICE, serviceName);
             } catch (AuthException e) {
                 log.debug("인증 컨텍스트가 없어 사용자 헤더 전파를 건너뜁니다.");
             } catch (RuntimeException e) {
