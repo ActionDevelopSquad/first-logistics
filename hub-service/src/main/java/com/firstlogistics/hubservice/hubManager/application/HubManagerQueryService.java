@@ -4,6 +4,8 @@ import com.firstlogistics.hubservice.hubManager.application.dto.query.SearchHubM
 import com.firstlogistics.hubservice.hubManager.application.dto.result.HubManagerResult;
 import com.firstlogistics.hubservice.hubManager.domain.entity.HubManager;
 import com.firstlogistics.hubservice.hubManager.domain.repository.HubManagerQueryRepository;
+import com.firstlogistics.hubservice.hubManager.domain.vo.HubManagerId;
+import com.firstlogistics.hubservice.hubManager.domain.vo.UserId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,7 +20,7 @@ public class HubManagerQueryService {
     private final HubManagerQueryRepository repository;
 
     public HubManagerResult getHubManager(UUID hubManagerId){
-        HubManager hubManager = repository.findById(hubManagerId);
+        HubManager hubManager = repository.findById(HubManagerId.of(hubManagerId));
         return HubManagerResult.from(hubManager);
     }
 
@@ -27,6 +29,6 @@ public class HubManagerQueryService {
         return hubManagers.map(HubManagerResult::from);
     }
     public UUID getHubIdByUserId(UUID userId){
-        return repository.findHubIdByUserId(userId);
+        return repository.findHubIdByUserId(UserId.of(userId));
     }
 }

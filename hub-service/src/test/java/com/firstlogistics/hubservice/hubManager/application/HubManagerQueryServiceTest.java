@@ -41,7 +41,7 @@ class HubManagerQueryServiceTest {
         UUID hubId = UUID.randomUUID();
 
         HubManager hubManager = createHubManager(hubManagerId, userId, hubId);
-        when(repository.findById(hubManagerId)).thenReturn(hubManager);
+        when(repository.findById(HubManagerId.of(hubManagerId))).thenReturn(hubManager);
 
         HubManagerResult result = service.getHubManager(hubManagerId);
 
@@ -49,7 +49,7 @@ class HubManagerQueryServiceTest {
         assertThat(result.userId()).isEqualTo(userId);
         assertThat(result.hubId()).isEqualTo(hubId);
 
-        verify(repository).findById(hubManagerId);
+        verify(repository).findById(HubManagerId.of(hubManagerId));
     }
 
     @Test
@@ -96,12 +96,12 @@ class HubManagerQueryServiceTest {
         UUID userId = UUID.randomUUID();
         UUID hubId = UUID.randomUUID();
 
-        when(repository.findHubIdByUserId(userId)).thenReturn(hubId);
+        when(repository.findHubIdByUserId(UserId.of(userId))).thenReturn(hubId);
 
         UUID result = service.getHubIdByUserId(userId);
 
         assertThat(result).isEqualTo(hubId);
-        verify(repository).findHubIdByUserId(userId);
+        verify(repository).findHubIdByUserId(UserId.of(userId));
     }
 
     private HubManager createHubManager(UUID hubManagerId, UUID userId, UUID hubId) {

@@ -5,6 +5,8 @@ import com.firstlogistics.hubservice.hubManager.domain.exception.HubManagerError
 import com.firstlogistics.hubservice.hubManager.domain.exception.HubManagerException;
 import com.firstlogistics.hubservice.hubManager.domain.repository.HubManagerQueryRepository;
 import com.firstlogistics.hubservice.hubManager.domain.specification.HubManagerSearchSpec;
+import com.firstlogistics.hubservice.hubManager.domain.vo.HubManagerId;
+import com.firstlogistics.hubservice.hubManager.domain.vo.UserId;
 import com.firstlogistics.hubservice.hubManager.infrastructure.persistence.jpa.HubManagerJpaEntity;
 import com.firstlogistics.hubservice.hubManager.infrastructure.persistence.jpa.HubManagerMapper;
 import com.firstlogistics.hubservice.hubManager.infrastructure.persistence.jpa.QHubManagerJpaEntity;
@@ -29,11 +31,11 @@ public class HubManagerQueryRepositoryImpl implements HubManagerQueryRepository 
     private final HubManagerMapper mapper;
 
     @Override
-    public HubManager findById(UUID hubManagerId) {
+    public HubManager findById(HubManagerId hubManagerId) {
         HubManagerJpaEntity result = queryFactory
                 .select(hubManager)
                 .from(hubManager)
-                .where(hubManager.id.eq(hubManagerId))
+                .where(hubManager.id.eq(hubManagerId.id()))
                 .fetchOne();
 
         if (result == null)
@@ -69,11 +71,11 @@ public class HubManagerQueryRepositoryImpl implements HubManagerQueryRepository 
     }
 
     @Override
-    public UUID findHubIdByUserId(UUID userId) {
+    public UUID findHubIdByUserId(UserId userId) {
         UUID result =  queryFactory
                 .select(hubManager.hubId)
                 .from(hubManager)
-                .where(hubManager.userId.eq(userId))
+                .where(hubManager.userId.eq(userId.id()))
                 .fetchOne();
         if(result == null)
             throw new HubManagerException(HubManagerErrorCode.HUB_MANAGER_NOT_FOUND);
