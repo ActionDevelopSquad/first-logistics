@@ -70,11 +70,15 @@ public class HubManagerQueryRepositoryImpl implements HubManagerQueryRepository 
 
     @Override
     public UUID findHubIdByUserId(UUID userId) {
-        return queryFactory
+        UUID result =  queryFactory
                 .select(hubManager.hubId)
                 .from(hubManager)
                 .where(hubManager.userId.eq(userId))
                 .fetchOne();
+        if(result == null)
+            throw new HubManagerException(HubManagerErrorCode.HUB_MANAGER_NOT_FOUND);
+
+        return result;
     }
 
     private BooleanExpression notDeleted(){
