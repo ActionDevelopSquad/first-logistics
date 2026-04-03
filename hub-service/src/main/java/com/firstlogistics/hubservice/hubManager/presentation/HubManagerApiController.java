@@ -1,7 +1,6 @@
 package com.firstlogistics.hubservice.hubManager.presentation;
 
 import com.firstlogistics.hubservice.hubManager.application.HubManagerQueryService;
-import com.firstlogistics.hubservice.hubManager.domain.entity.HubManager;
 import com.firstlogistics.hubservice.hubManager.presentation.dto.request.SearchHubManagersRequest;
 import com.firstlogistics.hubservice.hubManager.presentation.dto.response.HubManagerPageResponse;
 import com.firstlogistics.hubservice.hubManager.presentation.dto.response.HubManagerResponse;
@@ -37,10 +36,10 @@ public class HubManagerApiController {
     }
 
     @GetMapping("/users/{id}")
-    public ResponseEntity<ApiResponse<HubManagerResponse>> getHubIdByUserId(@PathVariable UUID id){
-        HubManagerResponse hubId = HubManagerResponse.from(queryService.getHubManagerByUserId(id));
+    public ResponseEntity<ApiResponse<HubManagerResponse>> getHubManagerByUserId(@PathVariable UUID id){
+        HubManagerResponse response = HubManagerResponse.from(queryService.getHubManagerByUserId(id));
         return ResponseEntity.status(HubManagerSuccessCode.HUB_MANAGER_RETRIEVED.getStatus())
-                .body(ApiResponse.success(HubManagerSuccessCode.HUB_MANAGER_RETRIEVED,hubId));
+                .body(ApiResponse.success(HubManagerSuccessCode.HUB_MANAGER_RETRIEVED,response));
     }
 
 }
