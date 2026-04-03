@@ -10,12 +10,14 @@ import com.firstlogistics.hubservice.hubManager.domain.vo.UserId;
 import com.firstlogistics.hubservice.hubManager.infrastructure.persistence.jpa.HubManagerJpaEntity;
 import com.firstlogistics.hubservice.hubManager.infrastructure.persistence.jpa.HubManagerMapper;
 import com.firstlogistics.hubservice.hubManager.infrastructure.persistence.jpa.QHubManagerJpaEntity;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 import static com.firstlogistics.hubservice.hubManager.infrastructure.persistence.jpa.QHubManagerJpaEntity.hubManagerJpaEntity;
 
@@ -57,6 +59,7 @@ public class HubManagerQueryRepositoryImpl implements HubManagerQueryRepository 
                 )
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
+                .orderBy(getOrderSpecifiers(pageable.getSort()))
                 .fetch()
                 .stream()
                 .map(HubManagerMapper::toDomain)
@@ -101,5 +104,26 @@ public class HubManagerQueryRepositoryImpl implements HubManagerQueryRepository 
     private BooleanExpression hubIdsIn(List<UUID> hubIds){
         return hubIds== null || hubIds.isEmpty() ? null : hubManager.hubId.in(hubIds);
     }
+
+    private OrderSpecifier<?>[] getOrderSpecifiers(Sort sort) {
+        if (sort == null || sort.isUnsorted()) {
+            return new OrderSpecifier[]{hubManager.createdAt.desc()};
+        }
+
+        return sort.stream()
+                .map(order -> {
+                    boolean asc = order.isAscending();
+
+                    return switch (order.getProperty()) {
+                        case "createdAt" -> asc ? hubManager.createdAt.asc() : hubManager.createdAt.desc();
+                        case "updatedAt" -> asc ? hubManager.updatedAt.asc() : hubManager.updatedAt.desc();
+                        case "userId" -> asc ? hubManager.userId.asc() : hubManager.userId.desc();
+                        case "hubId" -> asc ? hubManager.hubId.asc() : hubManager.hubId.desc();
+                        default -> throw new IllegalArgumentException("지원하지 않는 정렬 필드입니다: " + order.getProperty());
+                    };
+                })
+                .toArray(OrderSpecifier[]::new);
+    }
+
 
 }
