@@ -1,6 +1,6 @@
-package common.security.security.aop;
+package common.security.aop;
 
-import common.security.entity.enums.UserRole;
+import common.entity.enums.UserRole;
 
 import java.lang.annotation.*;
 

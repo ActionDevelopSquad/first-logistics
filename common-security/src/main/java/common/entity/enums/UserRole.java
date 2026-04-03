@@ -1,4 +1,4 @@
-package common.security.entity.enums;
+package common.entity.enums;
 
 public enum UserRole {
     MASTER,
