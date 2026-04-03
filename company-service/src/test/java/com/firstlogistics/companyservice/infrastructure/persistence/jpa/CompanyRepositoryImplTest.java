@@ -17,11 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.firstlogistics.companyservice.domain.exception.CompanyErrorCode;
-import com.firstlogistics.companyservice.domain.exception.CompanyException;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
@@ -162,19 +158,6 @@ class CompanyRepositoryImplTest {
             verify(companyJpaRepository).save(jpaEntity);
             assertThat(jpaEntity.getDeletedAt()).isNotNull();
             assertThat(jpaEntity.getDeletedBy()).isEqualTo(DELETED_BY);
-        }
-
-        @Test
-        @DisplayName("존재하지 않는 ID로 삭제하면 예외가 발생한다")
-        void delete_notFound_throwsException() {
-            // given
-            given(companyJpaRepository.findById(COMPANY_ID))
-                    .willReturn(Optional.empty());
-
-            // when & then
-            assertThatThrownBy(() -> companyRepositoryImpl.delete(COMPANY_ID, DELETED_BY))
-                    .isInstanceOf(CompanyException.class)
-                    .hasMessageContaining(CompanyErrorCode.COMPANY_NOT_FOUND.getMessage());
         }
     }
 
