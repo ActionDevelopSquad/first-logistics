@@ -1,6 +1,6 @@
-package common.security.security.config;
+package common.security.config;
 
-import common.security.security.aop.RoleCheckAspect;
+import common.security.aop.RoleCheckAspect;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 

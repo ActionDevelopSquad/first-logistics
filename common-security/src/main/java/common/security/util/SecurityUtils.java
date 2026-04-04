@@ -1,8 +1,8 @@
-package common.security.security.util;
+package common.security.util;
 
 import common.security.entity.exception.AuthErrorCode;
 import common.security.entity.exception.AuthException;
-import common.security.security.domain.CustomUserDetails;
+import common.security.domain.CustomUserDetails;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
