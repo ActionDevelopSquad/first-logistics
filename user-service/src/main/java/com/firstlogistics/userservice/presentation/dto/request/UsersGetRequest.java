@@ -2,7 +2,7 @@ package com.firstlogistics.userservice.presentation.dto.request;
 
 import com.firstlogistics.userservice.application.dto.query.UserGetQuery;
 import com.firstlogistics.userservice.domain.enums.Status;
-import common.jpa.entity.enums.UserRole;
+import common.security.entity.enums.UserRole;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
