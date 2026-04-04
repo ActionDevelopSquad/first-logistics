@@ -1,15 +1,12 @@
 package com.firstlogistics.aiservice.application.facade;
 
 import com.firstlogistics.aiservice.application.dto.command.CreateAILogCommand;
-import com.firstlogistics.aiservice.application.dto.result.AILogResult;
 import com.firstlogistics.aiservice.application.service.AILogCommandService;
 import com.firstlogistics.aiservice.domain.event.DeliveryAcceptedEvent;
-import com.firstlogistics.aiservice.domain.event.NotificationCreatedEvent;
-import com.firstlogistics.aiservice.domain.vo.MessengerMessageId;
+import com.firstlogistics.aiservice.domain.exception.AILogErrorCode;
+import com.firstlogistics.aiservice.domain.exception.AILogException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.stream.Collectors;
 
@@ -17,14 +14,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AIMessageFacade {
     private final AILogCommandService aiLogCommandService;
-    private final ApplicationEventPublisher eventPublisher;
 
     public void processAiNotification(DeliveryAcceptedEvent event) {
         // 현재 허브 담당자 슬랙 id 추출
         DeliveryAcceptedEvent.DeliveryRouteInfo currentRoute = event.delivery().deliveryRoutes().stream()
                 .filter(route -> route.sourceHubId().equals(event.currentHubId()))
                 .findFirst()
-                .orElse(event.delivery().deliveryRoutes().getFirst());
+                .orElseThrow(() -> new AILogException(AILogErrorCode.INTERNAL_SERVER_ERROR));
 
         String currentHubManagerSlackId = currentRoute.hubDeliveryManagerSlackId();
         String currentHubName = currentRoute.sourceHubName();
