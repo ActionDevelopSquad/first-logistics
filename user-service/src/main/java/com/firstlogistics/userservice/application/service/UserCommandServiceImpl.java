@@ -8,6 +8,7 @@ import com.firstlogistics.userservice.application.dto.result.TokenResult;
 import com.firstlogistics.userservice.application.port.KeycloakService;
 import com.firstlogistics.userservice.application.port.KeycloakTokenService;
 import com.firstlogistics.userservice.application.port.OrganizationValidationService;
+import com.firstlogistics.userservice.application.port.UserCommandService;
 import com.firstlogistics.userservice.domain.entity.User;
 import com.firstlogistics.userservice.domain.enums.Status;
 import com.firstlogistics.userservice.domain.event.DomainEvent;
@@ -27,7 +28,7 @@ import java.util.UUID;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class UserCommandService {
+public class UserCommandServiceImpl implements UserCommandService {
 
     private final KeycloakTokenService tokenService;
     private final KeycloakService keycloakService;

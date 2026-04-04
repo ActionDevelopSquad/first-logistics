@@ -4,7 +4,7 @@ import com.firstlogistics.userservice.application.dto.command.LoginCommand;
 import com.firstlogistics.userservice.application.dto.command.UserCreateCommand;
 import com.firstlogistics.userservice.application.dto.result.TokenResult;
 import com.firstlogistics.userservice.application.dto.result.UserResult;
-import com.firstlogistics.userservice.application.service.UserCommandService;
+import com.firstlogistics.userservice.application.port.UserCommandService;
 import com.firstlogistics.userservice.application.service.UserQueryService;
 import com.firstlogistics.userservice.presentation.dto.request.*;
 import com.firstlogistics.userservice.presentation.dto.response.TokenResponse;
