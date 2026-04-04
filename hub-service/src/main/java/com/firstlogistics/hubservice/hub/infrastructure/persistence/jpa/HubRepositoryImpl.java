@@ -1,7 +1,6 @@
 package com.firstlogistics.hubservice.hub.infrastructure.persistence.jpa;
 
 import com.firstlogistics.hubservice.hub.domain.entity.Hub;
-import com.firstlogistics.hubservice.hub.domain.enums.HubStatus;
 import com.firstlogistics.hubservice.hub.domain.exception.HubErrorCode;
 import com.firstlogistics.hubservice.hub.domain.exception.HubException;
 import com.firstlogistics.hubservice.hub.domain.repository.HubRepository;

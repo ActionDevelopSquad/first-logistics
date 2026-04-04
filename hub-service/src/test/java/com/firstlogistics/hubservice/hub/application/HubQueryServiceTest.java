@@ -130,9 +130,9 @@ public class HubQueryServiceTest {
 
         Page<HubSummaryResult> result = hubQueryService.searchHubs(query, pageable);
         assertThat(result.getContent()).hasSize(1);
-        assertThat(result.getContent().get(0).hubId()).isEqualTo(dto.hubId());
-        assertThat(result.getContent().get(0).name()).isEqualTo(dto.name());
-        assertThat(result.getContent().get(0).status()).isEqualTo(dto.status());
+        assertThat(result.getContent().getFirst().hubId()).isEqualTo(dto.hubId());
+        assertThat(result.getContent().getFirst().name()).isEqualTo(dto.name());
+        assertThat(result.getContent().getFirst().status()).isEqualTo(dto.status());
     }
 
     @Test

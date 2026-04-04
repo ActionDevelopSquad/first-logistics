@@ -4,7 +4,6 @@ import com.firstlogistics.hubservice.hub.application.dto.command.CreateHubComman
 import com.firstlogistics.hubservice.hub.application.dto.result.HubResult;
 import com.firstlogistics.hubservice.hub.domain.entity.Hub;
 import com.firstlogistics.hubservice.hub.domain.enums.HubStatus;
-import com.firstlogistics.hubservice.hub.domain.enums.HubType;
 import com.firstlogistics.hubservice.hub.domain.exception.HubErrorCode;
 import com.firstlogistics.hubservice.hub.domain.exception.HubException;
 import com.firstlogistics.hubservice.hub.domain.repository.HubRepository;
