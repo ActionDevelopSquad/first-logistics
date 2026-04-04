@@ -8,7 +8,6 @@ import com.firstlogistics.orderservice.application.port.dto.HubManagerResponse;
 import common.response.ApiResponse;
 import common.security.entity.enums.UserRole;
 import common.security.security.util.SecurityUtils;
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -36,34 +35,59 @@ public class SecurityRoleCheck implements RoleCheck {
     }
 
     private boolean hasRole(UserRole role) {
-        UserRole currentRole = getCurrentUserRole();
-        return currentRole != null && currentRole == role;
+        try {
+            UserRole currentRole = SecurityUtils.currentUser().getRole();
+            return currentRole != null && currentRole == role;
+        } catch (Exception e) {
+            log.warn("권한 확인 중 인증 예외 발생: {}", e.getMessage());
+            return false;
+        }
     }
 
-    private boolean isMaster() {
+    @Override
+    public boolean isMaster() {
         return hasRole(UserRole.MASTER);
+    }
+
+    @Override
+    public boolean isHubManager() {
+        return hasRole(UserRole.HUB_MANAGER);
+    }
+
+    @Override
+    public boolean isCompanyManager() {
+        return hasRole(UserRole.COMPANY_MANAGER);
+    }
+
+    @Override
+    public UUID getCurrentUserId() {
+        try {
+            return SecurityUtils.currentUser().getUserId();
+        } catch (Exception e) {
+            log.warn("권한 확인 중 인증 예외 발생: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    @Override
+    public UUID getCurrentUserHubId() {
+        if (!isHubManager()) return null;
+
+        try {
+            ApiResponse<HubManagerResponse> response = hubClient.getHubManagerInfo(getCurrentUserId());
+            if (response != null && response.getData() != null) {
+                return response.getData().hubId();
+            }
+        } catch (Exception e) {
+            log.error("허브 정보 조회 실패: {}", e.getMessage());
+        }
+        return null;
     }
 
     private boolean isHubManagerOf(OrderId orderId) {
         if (hasRole(UserRole.HUB_MANAGER)) {
-            UUID userId = getCurrentUserId();
-
-            try {
-                // 허브 서비스에서 본인의 소속 허브 ID를 가져와서 비교
-                ApiResponse<HubManagerResponse> response = hubClient.getHubManagerInfo(userId);
-
-                if (response != null && response.getStatus().is2xxSuccessful() && response.getData() != null) {
-                    UUID hubId = response.getData().hubId();
-                    return orderRepository.existsByIdAndSupplierHubId(orderId, hubId);
-                }
-                return false;
-            } catch (FeignException.NotFound e) {
-                log.info("허브 관리자 정보를 찾을 수 없습니다. userId: {}", userId);
-                return false;
-            } catch (Exception e) {
-                log.error("허브 권한 검증 중 외부 서비스 오류 발생: {}", e.getMessage());
-                return false;
-            }
+            UUID hubId = getCurrentUserHubId();
+            return orderRepository.existsByIdAndSupplierHubId(orderId, hubId);
         }
         return false;
     }
@@ -82,21 +106,4 @@ public class SecurityRoleCheck implements RoleCheck {
         return false;
     }
 
-    private UUID getCurrentUserId() {
-        try {
-            return SecurityUtils.currentUser().getUserId();
-        } catch (Exception e) {
-            log.warn("권한 확인 중 인증 예외 발생: {}", e.getMessage());
-            return null;
-        }
-    }
-
-    private UserRole getCurrentUserRole() {
-        try {
-            return SecurityUtils.currentUser().getRole();
-        } catch (Exception e) {
-            log.warn("권한 확인 중 인증 예외 발생: {}", e.getMessage());
-            return null;
-        }
-    }
 }
