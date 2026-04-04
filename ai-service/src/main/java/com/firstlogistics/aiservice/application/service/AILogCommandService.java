@@ -40,7 +40,7 @@ public class AILogCommandService {
         AILogResult aiLogResult = AILogResult.from(aiLogRepository.save(aiLog));
 
         eventPublisher.publishEvent(NotificationCreatedEvent.of(
-                MessengerMessageId.of(aiLogResult.id()),
+                aiLogResult.messageId(),
                 command.hubManagerSlackId(),
                 aiLogResult.responseContent(),
                 aiLogResult.messengerType()
