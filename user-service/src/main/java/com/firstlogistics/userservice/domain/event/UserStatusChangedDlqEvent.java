@@ -21,7 +21,7 @@ public record UserStatusChangedDlqEvent(
     ) {
         return new UserStatusChangedDlqEvent(
                 event.userId(),
-                event.organizationId(),
+                event.hubId(),
                 event.userRole().name(),
                 event.username(),
                 event.previousStatus().name(),

@@ -2,13 +2,13 @@ package com.firstlogistics.userservice.domain.event;
 
 import com.firstlogistics.userservice.domain.entity.User;
 import com.firstlogistics.userservice.domain.enums.Status;
-import common.jpa.entity.enums.UserRole;
+import common.security.entity.enums.UserRole;
 
 import java.util.UUID;
 
 public record UserStatusChangedEvent(
         UUID userId,
-        UUID organizationId,
+        UUID hubId,
         UserRole userRole,
         Status status,
         Status previousStatus,
