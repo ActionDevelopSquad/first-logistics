@@ -6,6 +6,7 @@ import com.firstlogistics.productservice.product.presentation.dto.request.Create
 import com.firstlogistics.productservice.product.presentation.dto.request.GetProductsRequest;
 import com.firstlogistics.productservice.product.presentation.dto.response.CreateProductResponse;
 import com.firstlogistics.productservice.product.presentation.dto.response.ProductPageResponse;
+import com.firstlogistics.productservice.product.presentation.dto.response.ProductResponse;
 import common.response.ApiResponse;
 import common.response.CommonSuccessCode;
 import common.security.entity.enums.UserRole;
@@ -14,11 +15,13 @@ import common.security.security.domain.CustomUserDetails;
 import common.security.security.util.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,6 +45,13 @@ public class ProductController {
                         request.toCommand(currentUser.getUserId(), currentUser.getRole().name())));
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(CommonSuccessCode.CREATED, response));
+    }
+
+    @GetMapping("/{productId}")
+    public ResponseEntity<ApiResponse<ProductResponse>> getProduct(
+            @PathVariable UUID productId) {
+        ProductResponse response = ProductResponse.from(productQueryService.getById(productId));
+        return ResponseEntity.ok(ApiResponse.success(CommonSuccessCode.OK, response));
     }
 
     @GetMapping
