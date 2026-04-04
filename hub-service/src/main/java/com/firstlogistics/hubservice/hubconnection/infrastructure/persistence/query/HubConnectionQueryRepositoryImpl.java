@@ -57,6 +57,18 @@ public class HubConnectionQueryRepositoryImpl implements HubConnectionQueryRepos
             if(spec.status()!= null){
                 builder.and(hubConnection.status.eq(spec.status()));
             }
+            if(spec.sourceHubId()!=null){
+                builder.and(hubConnection.sourceHubId.eq(spec.sourceHubId().id()));
+            }
+            if(spec.destinationHubId()!=null){
+                builder.and(hubConnection.destinationHubId.eq(spec.destinationHubId().id()));
+            }
+            if(spec.time()!=null){
+                builder.and(hubConnection.minutes.eq(spec.time().minutes()));
+            }
+            if(spec.distance()!=null){
+                builder.and(hubConnection.meters.eq(spec.distance().meters()));
+            }
 
         }
         List<HubConnection> content = queryFactory
