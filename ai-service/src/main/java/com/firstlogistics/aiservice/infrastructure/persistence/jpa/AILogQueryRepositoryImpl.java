@@ -27,6 +27,7 @@ public class AILogQueryRepositoryImpl implements AILogQueryRepository {
                         aiLog.messengerType,
                         aiLog.requestContent,
                         aiLog.responseContent,
+                        aiLog.systemPrompt,
                         aiLog.status,
                         aiLog.createdAt
                 ))
