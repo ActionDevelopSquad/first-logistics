@@ -1,9 +1,10 @@
 package com.firstlogistics.userservice.domain.entity;
 
+import com.firstlogistics.userservice.domain.enums.ManagerType;
 import com.firstlogistics.userservice.domain.enums.Status;
 import com.firstlogistics.userservice.domain.exception.UserErrorCode;
 import com.firstlogistics.userservice.domain.exception.UserException;
-import common.jpa.entity.enums.UserRole;
+import common.security.entity.enums.UserRole;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,7 +26,8 @@ public class User {
     private String slackId;
     private Status status;
     private UserRole userRole;
-    private UUID organizationId;
+    private UUID hubId;
+    private ManagerType managerType;
     private LocalDateTime lastLoginAt;
 
     public static User create(
@@ -36,7 +38,8 @@ public class User {
             String email,
             String slackId,
             UserRole role,
-            UUID organizationId) {
+            UUID hubId,
+            ManagerType managerType) {
         return new User(
                 userId,
                 username,
@@ -46,7 +49,8 @@ public class User {
                 slackId,
                 Status.PENDING,
                 role,
-                organizationId,
+                hubId,
+                managerType,
                 null
         );
     }
@@ -84,7 +88,7 @@ public class User {
         }
 
         if (this.userRole == UserRole.HUB_MANAGER) {
-            if (!this.organizationId.equals(targetUser.getOrganizationId())) {
+            if (!this.hubId.equals(targetUser.getHubId())) {
                 return false;
             }
 
@@ -122,7 +126,8 @@ public class User {
             String slackId,
             Status status,
             UserRole userRole,
-            UUID organizationId,
+            UUID hubId,
+            ManagerType managerType,
             LocalDateTime lastLoginAt
     ) {
         return new User(
@@ -134,7 +139,8 @@ public class User {
                 slackId,
                 status,
                 userRole,
-                organizationId,
+                hubId,
+                managerType,
                 lastLoginAt
         );
     }

@@ -8,13 +8,14 @@ import com.firstlogistics.userservice.application.dto.result.TokenResult;
 import com.firstlogistics.userservice.application.port.KeycloakService;
 import com.firstlogistics.userservice.application.port.KeycloakTokenService;
 import com.firstlogistics.userservice.domain.entity.User;
+import com.firstlogistics.userservice.domain.enums.ManagerType;
 import com.firstlogistics.userservice.domain.enums.Status;
 import com.firstlogistics.userservice.domain.event.DomainEvent;
 import com.firstlogistics.userservice.domain.event.UserStatusChangedEvent;
 import com.firstlogistics.userservice.domain.exception.UserErrorCode;
 import com.firstlogistics.userservice.domain.exception.UserException;
 import com.firstlogistics.userservice.domain.repository.UserRepository;
-import common.jpa.entity.enums.UserRole;
+import common.security.entity.enums.UserRole;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -203,7 +204,8 @@ class UserServiceTest {
                     "test@google.com",
                     "slack-123",
                     UserRole.COMPANY_MANAGER,
-                    UUID.randomUUID()
+                    UUID.randomUUID(),
+                    ManagerType.HUB_DELIVERY
             );
 
             given(keycloakService.signup(command)).willReturn(userId);
@@ -242,7 +244,8 @@ class UserServiceTest {
                     "test@google.com",
                     "slack-123",
                     UserRole.COMPANY_MANAGER,
-                    UUID.randomUUID()
+                    UUID.randomUUID(),
+                    ManagerType.HUB_DELIVERY
             );
 
             given(keycloakService.signup(command))
@@ -337,7 +340,7 @@ class UserServiceTest {
 
             UserStatusChangedEvent publishedEvent = eventCaptor.getValue();
             assertThat(publishedEvent.userId()).isEqualTo(user.getId());
-            assertThat(publishedEvent.organizationId()).isEqualTo(user.getOrganizationId());
+            assertThat(publishedEvent.hubId()).isEqualTo(user.getHubId());
             assertThat(publishedEvent.userRole()).isEqualTo(user.getUserRole());
             assertThat(publishedEvent.status()).isEqualTo(Status.APPROVED);
             assertThat(publishedEvent.previousStatus()).isEqualTo(Status.PENDING);
@@ -388,7 +391,7 @@ class UserServiceTest {
 
             UserStatusChangedEvent publishedEvent = eventCaptor.getValue();
             assertThat(publishedEvent.userId()).isEqualTo(user.getId());
-            assertThat(publishedEvent.organizationId()).isEqualTo(user.getOrganizationId());
+            assertThat(publishedEvent.hubId()).isEqualTo(user.getHubId());
             assertThat(publishedEvent.userRole()).isEqualTo(user.getUserRole());
             assertThat(publishedEvent.status()).isEqualTo(Status.REJECTED);
             assertThat(publishedEvent.previousStatus()).isEqualTo(Status.PENDING);
@@ -595,8 +598,9 @@ class UserServiceTest {
                 "test@google.com",
                 "slack-123",
                 Status.PENDING,
-                UserRole.COMPANY_MANAGER,
+                UserRole.DELIVERY_MANAGER,
                 UUID.randomUUID(),
+                ManagerType.HUB_DELIVERY,
                 null
         );
     }
@@ -610,8 +614,9 @@ class UserServiceTest {
                 "test@google.com",
                 "slack-123",
                 Status.APPROVED,
-                UserRole.COMPANY_MANAGER,
+                UserRole.DELIVERY_MANAGER,
                 UUID.randomUUID(),
+                ManagerType.HUB_DELIVERY,
                 null
         );
     }
@@ -625,8 +630,9 @@ class UserServiceTest {
                 "test@google.com",
                 "slack-123",
                 Status.REJECTED,
-                UserRole.COMPANY_MANAGER,
+                UserRole.DELIVERY_MANAGER,
                 UUID.randomUUID(),
+                ManagerType.HUB_DELIVERY,
                 null
         );
     }

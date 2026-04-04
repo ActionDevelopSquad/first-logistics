@@ -27,7 +27,7 @@ public record UserResult(
                 user.getUserRole(),
                 user.getStatus(),
                 user.getSlackId(),
-                user.getOrganizationId(),
+                user.getHubId(),
                 user.getLastLoginAt()
         );
     }

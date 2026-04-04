@@ -1,8 +1,9 @@
 package com.firstlogistics.userservice.presentation.dto.request;
 
 import com.firstlogistics.userservice.application.dto.command.UserCreateCommand;
+import com.firstlogistics.userservice.domain.enums.ManagerType;
 import com.firstlogistics.userservice.domain.vo.Password;
-import common.jpa.entity.enums.UserRole;
+import common.security.entity.enums.UserRole;
 import jakarta.validation.constraints.*;
 
 import java.util.UUID;
@@ -42,10 +43,22 @@ public record UserCreateRequest(
         @NotNull(message = "권한을 입력해주세요.")
         UserRole userRole,
 
-        @NotNull(message = "소속 아이디를 입력해주세요.")
-        UUID organizationId
+        @NotNull(message = "허브 아이디를 입력해주세요.")
+        UUID hubId,
+
+        ManagerType managerType
 )
 {
+        public UserCreateRequest {
+                if (userRole == UserRole.DELIVERY_MANAGER && managerType == null) {
+                        throw new IllegalArgumentException("배송 담당자는 managerType을 입력해야 합니다.");
+                }
+
+                if (userRole != UserRole.DELIVERY_MANAGER && managerType != null) {
+                        throw new IllegalArgumentException("배송 담당자가 아닌 경우 managerType을 입력할 수 없습니다.");
+                }
+        }
+
         public UserCreateCommand toCommand() {
                 return new UserCreateCommand(
                         username.trim(),
@@ -56,7 +69,8 @@ public record UserCreateRequest(
                         email.trim(),
                         slackId.trim(),
                         userRole,
-                        organizationId
+                        hubId,
+                        managerType
                 );
         }
 }

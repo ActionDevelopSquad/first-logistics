@@ -19,7 +19,7 @@ import com.firstlogistics.userservice.domain.exception.UserErrorCode;
 import com.firstlogistics.userservice.domain.exception.UserException;
 import com.firstlogistics.userservice.domain.repository.UserQueryRepository;
 import com.firstlogistics.userservice.domain.repository.UserRepository;
-import common.jpa.entity.enums.UserRole;
+import common.security.entity.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -87,7 +87,7 @@ public class UserService {
     @Transactional
     public UUID signup(UserCreateCommand command) {
         // 권한별 소속 아이디가 존재하는지 확인
-        organizationValidationService.validateOrganizationExists(command.organizationId(), command.userRole());
+        organizationValidationService.validateOrganizationExists(command.hubId(), command.userRole());
 
         UUID userId = keycloakService.signup(command);
 
@@ -100,7 +100,7 @@ public class UserService {
                     command.email(),
                     command.slackId(),
                     command.userRole(),
-                    command.organizationId()
+                    command.hubId()
             );
 
             userRepository.save(user);
@@ -165,7 +165,7 @@ public class UserService {
             targetUser.reject();
         }
 
-        event.publish(UserStatusChangedEvent.of(targetUser, targetUser.getOrganizationId(), targetUser.getStatus()));
+        event.publish(UserStatusChangedEvent.of(targetUser, targetUser.getHubId(), targetUser.getStatus()));
 
         userRepository.update(targetUser);
     }

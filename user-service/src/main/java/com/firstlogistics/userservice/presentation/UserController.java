@@ -11,6 +11,9 @@ import com.firstlogistics.userservice.presentation.dto.response.UserIdResponse;
 import com.firstlogistics.userservice.presentation.dto.response.UserListResponse;
 import com.firstlogistics.userservice.presentation.dto.response.UserResponse;
 import common.response.ApiResponse;
+import common.security.aop.OnlyMaster;
+import common.security.aop.RequireRole;
+import common.security.entity.enums.UserRole;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -90,6 +93,7 @@ public class UserController {
      * GET /api/v1/users/{userId}
      * Role : MASTER
      */
+    @OnlyMaster
     @GetMapping("/{userId}")
     public ResponseEntity<ApiResponse<UserResponse>> getUser(@PathVariable("userId") UUID userId) {
         UserResponse response = UserResponse.from(userService.getUser(userId));
@@ -117,6 +121,7 @@ public class UserController {
      * GET /api/v1/users
      * Role : MASTER
      */
+    @OnlyMaster
     @GetMapping
     public ResponseEntity<ApiResponse<UserListResponse>> getUsers(@ModelAttribute UsersGetRequest request, Pageable pageable) {
         Page<UserResult> result = userService.getUsers(request.toQuery(), pageable);
@@ -133,6 +138,7 @@ public class UserController {
      * PATCH /api/v1/users/{userId}/role
      * Role : MASTER
      */
+    @OnlyMaster
     @PatchMapping("/{userId}/role")
     public ResponseEntity<ApiResponse<UserIdResponse>> updateRole(@PathVariable("userId") UUID userId, @RequestBody UpdateRoleRequest request) {
         userService.updateRole(userId, request.role());
@@ -147,6 +153,7 @@ public class UserController {
      * PATCH /api/v1/users/{userId}/status
      * Role : MASTER, HUB_MANAGER
      */
+    @RequireRole({UserRole.MASTER, UserRole.HUB_MANAGER})
     @PatchMapping("/{userId}/status")
     public ResponseEntity<ApiResponse<UserIdResponse>> updateStatus(
             @PathVariable("userId") UUID userId,
@@ -166,6 +173,7 @@ public class UserController {
      * PUT /api/v1/users/{userId}
      * Role : MASTER
      */
+    @OnlyMaster
     @PutMapping("/{userId}")
     public ResponseEntity<ApiResponse<UserIdResponse>> update(
             @PathVariable("userId") UUID userId,
@@ -183,6 +191,7 @@ public class UserController {
      * DELETE /api/v1/users/{userId}
      * Role : MASTER
      */
+    @OnlyMaster
     @DeleteMapping("/{userId}")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable("userId") UUID userId,
