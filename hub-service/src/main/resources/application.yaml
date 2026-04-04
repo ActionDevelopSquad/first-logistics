@@ -19,5 +19,8 @@ spring:
     redis:
       url: ${REDIS_URL}
 
+route:
+  default-policy: HYBRID
+
 server:
   port: 8083
