@@ -24,19 +24,29 @@ public class SecurityRoleCheck implements RoleCheck {
     private final HubClient hubClient;
 
     @Override
-    public boolean hasRole(UserRole role) {
-        return SecurityUtils.currentUser().getRole() == role;
+    public boolean canRequestCancel(OrderId orderId) {
+        return isReceiverOf(orderId);
     }
 
     @Override
-    public boolean isMaster() {
+    public boolean canAcceptOrCancel(OrderId orderId) {
+        return isMaster() ||
+                isHubManagerOf(orderId) ||
+                isSupplierOf(orderId);
+    }
+
+    private boolean hasRole(UserRole role) {
+        UserRole currentRole = getCurrentUserRole();
+        return currentRole != null && currentRole == role;
+    }
+
+    private boolean isMaster() {
         return hasRole(UserRole.MASTER);
     }
 
-    @Override
-    public boolean isHubManagerOf(OrderId orderId) {
+    private boolean isHubManagerOf(OrderId orderId) {
         if (hasRole(UserRole.HUB_MANAGER)) {
-            UUID userId = SecurityUtils.currentUser().getUserId();
+            UUID userId = getCurrentUserId();
 
             try {
                 // 허브 서비스에서 본인의 소속 허브 ID를 가져와서 비교
@@ -58,33 +68,35 @@ public class SecurityRoleCheck implements RoleCheck {
         return false;
     }
 
-    @Override
-    public boolean isSupplierOf(OrderId orderId) {
-        UUID userId = SecurityUtils.currentUser().getUserId();
+    private boolean isSupplierOf(OrderId orderId) {
         if (hasRole(UserRole.COMPANY_MANAGER)) {
-            return orderRepository.existsByIdAndSupplierManagerId(orderId, userId);
+            return orderRepository.existsByIdAndSupplierManagerId(orderId, getCurrentUserId());
         }
         return false;
     }
 
-    @Override
-    public boolean isReceiverOf(OrderId orderId) {
-        UUID userId = SecurityUtils.currentUser().getUserId();
+    private boolean isReceiverOf(OrderId orderId) {
         if (hasRole(UserRole.COMPANY_MANAGER)) {
-            return orderRepository.existsByIdAndReceiverManagerId(orderId, userId);
+            return orderRepository.existsByIdAndReceiverManagerId(orderId, getCurrentUserId());
         }
         return false;
     }
 
-    @Override
-    public boolean canRequestCancel(OrderId orderId) {
-        return isReceiverOf(orderId);
+    private UUID getCurrentUserId() {
+        try {
+            return SecurityUtils.currentUser().getUserId();
+        } catch (Exception e) {
+            log.warn("권한 확인 중 인증 예외 발생: {}", e.getMessage());
+            return null;
+        }
     }
 
-    @Override
-    public boolean canAcceptOrCancel(OrderId orderId) {
-        return isMaster() ||
-                isHubManagerOf(orderId) ||
-                isSupplierOf(orderId);
+    private UserRole getCurrentUserRole() {
+        try {
+            return SecurityUtils.currentUser().getRole();
+        } catch (Exception e) {
+            log.warn("권한 확인 중 인증 예외 발생: {}", e.getMessage());
+            return null;
+        }
     }
 }
