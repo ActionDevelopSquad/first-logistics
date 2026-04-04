@@ -30,18 +30,16 @@ public class DeliveryPermissionValidator {
 		}
 	}
 
-	public void validateRole(String role, Set<UserRole> allowedRoles) {
+	public UserRole validateRole(String role, Set<UserRole> allowedRoles) {
 		UserRole userRole = parseUserRole(role);
 		if (!allowedRoles.contains(userRole)) {
 			throw new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
 		}
+		return userRole;
 	}
 
 	public void validate(DeliveryAccessContext context, String role, UUID userId, Set<UserRole> allowedRoles) {
-		UserRole userRole = parseUserRole(role);
-		if (!allowedRoles.contains(userRole)) {
-			throw new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
-		}
+		UserRole userRole = validateRole(role, allowedRoles);
 		RolePermissionStrategy strategy = strategies.get(userRole);
 		if (strategy == null) {
 			throw new DeliveryException(DeliveryErrorCode.INVALID_ROLE_SCOPE);

@@ -1179,15 +1179,36 @@ class DeliveryCommandServiceTest {
 	// ===== 시스템 배송 취소 테스트 =====
 
 	@Nested
+	@DisplayName("시스템 배송 취소 실패")
+	class CancelDeliveryBySystemFail {
+
+		@Test
+		@DisplayName("배송 출발 후 취소 불가")
+		void cancelDeliveryBySystem_fail_invalidStatusTransition() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.FOR_HUB_MOVING);
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.cancelDeliveryBySystem(delivery));
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.INVALID_STATUS_TRANSITION);
+		}
+	}
+
+	@Nested
 	@DisplayName("시스템 배송 취소 성공")
 	class CancelDeliveryBySystemSuccess {
 
 		@Test
-		@DisplayName("무조건 취소 (어떤 상태든)")
+		@DisplayName("CREATED 상태에서 취소 성공")
 		void cancelDeliveryBySystem_success() {
 			// given
 			UUID deliveryId = UUID.randomUUID();
-			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.FOR_HUB_MOVING);
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
 
 			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
 
@@ -1205,7 +1226,7 @@ class DeliveryCommandServiceTest {
 		void cancelDeliveryBySystem_success_eventPublished() {
 			// given
 			UUID deliveryId = UUID.randomUUID();
-			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.HUB_WAITING);
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
 
 			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
 

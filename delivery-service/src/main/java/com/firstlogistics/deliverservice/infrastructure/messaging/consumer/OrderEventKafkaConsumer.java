@@ -46,7 +46,8 @@ public class OrderEventKafkaConsumer {
 	public void handleOrderCancelled(OrderCancelledEvent event, Acknowledgment ack) {
 		log.info("order.cancelled 이벤트 수신 - orderId: {}", event.orderId());
 
-		deliveryCommandFacade.cancelDeliveryBySystem(event.orderId());
+		// 배송 취소(배송 출발 전 취소) 추후 고도화
+//		deliveryCommandFacade.cancelDeliveryBySystem(event.orderId());
 
 		ack.acknowledge();
 	}
