@@ -66,26 +66,31 @@ public class DeliveryCommandFacade {
                 );
     }
 
-    public ChangeDeliveryStatusResult cancelDelivery(ChangeDeliveryStatusCommand command) {
+    public void cancelDeliveryBySystem(ChangeDeliveryStatusCommand command) {
         Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
-            .orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
-
-        DeliveryAccessContext accessContext = DeliveryAccessContext.from(delivery);
-        deliveryPermissionValidator.validate(accessContext, command.role(), command.userId(),
-            Set.of(UserRole.MASTER, UserRole.HUB_MANAGER));
-
-        return deliveryCommandService.cancelDelivery(delivery);
-    }
-
-    public void cancelDeliveryBySystem(UUID orderId) {
-        Delivery delivery = deliveryRepository.findByOrderId(orderId)
             .orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
 
         if (delivery.getStatus() == DeliveryStatus.CANCELLED) {
             return;
         }
 
-        deliveryCommandService.cancelDeliveryBySystem(delivery);
+        executeCancelDelivery(delivery);
+    }
+
+    public ChangeDeliveryStatusResult cancelDelivery(ChangeDeliveryStatusCommand command, String role, UUID userId) {
+        Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
+            .orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
+
+        DeliveryAccessContext accessContext = DeliveryAccessContext.from(delivery);
+        deliveryPermissionValidator.validate(accessContext, role, userId,
+            Set.of(UserRole.MASTER, UserRole.HUB_MANAGER));
+
+        return executeCancelDelivery(delivery);
+    }
+
+
+    private ChangeDeliveryStatusResult executeCancelDelivery(Delivery delivery) {
+        return deliveryCommandService.cancelDelivery(delivery);
     }
 
     private List<String> generateLockKeys(HubRouteResponse hubRoute) {

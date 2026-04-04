@@ -82,7 +82,7 @@ public class DeliveryController {
 		@RequestHeader("X-User-Role") String role
 	) {
 		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_STARTED,
-				ChangeDeliveryStatusResponse.from(deliveryCommandService.startHubDelivery(ChangeDeliveryStatusCommand.of(deliveryId, role, userId)))
+				ChangeDeliveryStatusResponse.from(deliveryCommandService.startHubDelivery(ChangeDeliveryStatusCommand.of(deliveryId), role, userId))
 		));
 	}
 
@@ -93,7 +93,7 @@ public class DeliveryController {
 		@RequestHeader("X-User-Role") String role
 	) {
 		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_HUB_ARRIVED,
-				ChangeDeliveryStatusResponse.from(deliveryCommandService.arriveHub(ChangeDeliveryStatusCommand.of(deliveryId, role, userId)))
+				ChangeDeliveryStatusResponse.from(deliveryCommandService.arriveHub(ChangeDeliveryStatusCommand.of(deliveryId), role, userId))
 		));
 	}
 
@@ -104,7 +104,7 @@ public class DeliveryController {
 		@RequestHeader("X-User-Role") String role
 	) {
 		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_RECEIVED,
-				ChangeDeliveryStatusResponse.from(deliveryCommandService.receiveAtHub(ChangeDeliveryStatusCommand.of(deliveryId, role, userId)))
+				ChangeDeliveryStatusResponse.from(deliveryCommandService.receiveAtHub(ChangeDeliveryStatusCommand.of(deliveryId), role, userId))
 		));
 	}
 
@@ -115,7 +115,7 @@ public class DeliveryController {
 		@RequestHeader("X-User-Role") String role
 	) {
 		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_COMPANY_STARTED,
-				ChangeDeliveryStatusResponse.from(deliveryCommandService.startCompanyDelivery(ChangeDeliveryStatusCommand.of(deliveryId, role, userId)))
+				ChangeDeliveryStatusResponse.from(deliveryCommandService.startCompanyDelivery(ChangeDeliveryStatusCommand.of(deliveryId), role, userId))
 		));
 	}
 
@@ -126,7 +126,7 @@ public class DeliveryController {
 		@RequestHeader("X-User-Role") String role
 	) {
 		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_COMPLETED,
-				ChangeDeliveryStatusResponse.from(deliveryCommandService.completeDelivery(ChangeDeliveryStatusCommand.of(deliveryId, role, userId)))
+				ChangeDeliveryStatusResponse.from(deliveryCommandService.completeDelivery(ChangeDeliveryStatusCommand.of(deliveryId), role, userId))
 		));
 	}
 
@@ -137,7 +137,7 @@ public class DeliveryController {
 		@RequestHeader("X-User-Role") String role
 	) {
 		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_CANCELLED,
-				ChangeDeliveryStatusResponse.from(deliveryCommandFacade.cancelDelivery(ChangeDeliveryStatusCommand.of(deliveryId, role, userId)))
+				ChangeDeliveryStatusResponse.from(deliveryCommandFacade.cancelDelivery(ChangeDeliveryStatusCommand.of(deliveryId), role, userId))
 		));
 	}
 

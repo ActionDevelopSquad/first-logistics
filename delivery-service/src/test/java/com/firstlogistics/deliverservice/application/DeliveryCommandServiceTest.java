@@ -557,12 +557,12 @@ class DeliveryCommandServiceTest {
 			// given
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
-			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.empty());
 
 			// when
-			Throwable throwable = catchThrowable(() -> deliveryCommandService.startHubDelivery(command));
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.startHubDelivery(command, "MASTER", userId));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -577,15 +577,16 @@ class DeliveryCommandServiceTest {
 			// given
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
+			String role = "COMPANY_MANAGER";
 			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
-			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "COMPANY_MANAGER", userId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
 			willThrow(new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED))
-				.given(deliveryPermissionValidator).validate(any(), eq("COMPANY_MANAGER"), eq(userId), any());
+				.given(deliveryPermissionValidator).validate(any(), eq(role), eq(userId), any());
 
 			// when
-			Throwable throwable = catchThrowable(() -> deliveryCommandService.startHubDelivery(command));
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.startHubDelivery(command, role, userId));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -601,12 +602,12 @@ class DeliveryCommandServiceTest {
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
 			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.FOR_HUB_MOVING);
-			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
 
 			// when
-			Throwable throwable = catchThrowable(() -> deliveryCommandService.startHubDelivery(command));
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.startHubDelivery(command, "MASTER", userId));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -627,13 +628,13 @@ class DeliveryCommandServiceTest {
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
 			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
-			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
 			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
 
 			// when
-			ChangeDeliveryStatusResult result = deliveryCommandService.startHubDelivery(command);
+			ChangeDeliveryStatusResult result = deliveryCommandService.startHubDelivery(command, "MASTER", userId);
 
 			// then
 			assertThat(result.deliveryId()).isEqualTo(deliveryId);
@@ -649,13 +650,13 @@ class DeliveryCommandServiceTest {
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
 			Delivery delivery = stubDeliveryWithMultipleRoutes(deliveryId, DeliveryStatus.HUB_WAITING);
-			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
 			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
 
 			// when
-			ChangeDeliveryStatusResult result = deliveryCommandService.startHubDelivery(command);
+			ChangeDeliveryStatusResult result = deliveryCommandService.startHubDelivery(command, "MASTER", userId);
 
 			// then
 			assertThat(result.deliveryId()).isEqualTo(deliveryId);
@@ -671,13 +672,13 @@ class DeliveryCommandServiceTest {
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
 			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
-			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
 			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
 
 			// when
-			deliveryCommandService.startHubDelivery(command);
+			deliveryCommandService.startHubDelivery(command, "MASTER", userId);
 
 			// then
 			assertThat(delivery.getRoutes().get(0).getStatus()).isEqualTo(RouteStatus.MOVING);
@@ -702,12 +703,12 @@ class DeliveryCommandServiceTest {
 			// given
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
-			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.empty());
 
 			// when
-			Throwable throwable = catchThrowable(() -> deliveryCommandService.arriveHub(command));
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.arriveHub(command, "MASTER", userId));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -723,12 +724,12 @@ class DeliveryCommandServiceTest {
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
 			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.HUB_WAITING);
-			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
 
 			// when
-			Throwable throwable = catchThrowable(() -> deliveryCommandService.arriveHub(command));
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.arriveHub(command, "MASTER", userId));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -749,13 +750,13 @@ class DeliveryCommandServiceTest {
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
 			Delivery delivery = stubMovingDeliveryWithMultipleRoutes(deliveryId);
-			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
 			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
 
 			// when
-			ChangeDeliveryStatusResult result = deliveryCommandService.arriveHub(command);
+			ChangeDeliveryStatusResult result = deliveryCommandService.arriveHub(command, "MASTER", userId);
 
 			// then
 			assertThat(result.deliveryId()).isEqualTo(deliveryId);
@@ -773,13 +774,13 @@ class DeliveryCommandServiceTest {
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
 			Delivery delivery = stubMovingDeliveryLastRoute(deliveryId);
-			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
 			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
 
 			// when
-			ChangeDeliveryStatusResult result = deliveryCommandService.arriveHub(command);
+			ChangeDeliveryStatusResult result = deliveryCommandService.arriveHub(command, "MASTER", userId);
 
 			// then
 			assertThat(result.deliveryId()).isEqualTo(deliveryId);
@@ -797,13 +798,13 @@ class DeliveryCommandServiceTest {
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
 			Delivery delivery = stubMovingDeliveryLastRoute(deliveryId);
-			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
 			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
 
 			// when
-			deliveryCommandService.arriveHub(command);
+			deliveryCommandService.arriveHub(command, "MASTER", userId);
 
 			// then
 			ArgumentCaptor<DeliveryStatusChangedEvent> eventCaptor = ArgumentCaptor.forClass(DeliveryStatusChangedEvent.class);
@@ -826,12 +827,12 @@ class DeliveryCommandServiceTest {
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
 			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.HUB_WAITING);
-			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
 
 			// when
-			Throwable throwable = catchThrowable(() -> deliveryCommandService.receiveAtHub(command));
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.receiveAtHub(command, "MASTER", userId));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -852,13 +853,13 @@ class DeliveryCommandServiceTest {
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
 			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.HUB_ARRIVED);
-			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
 			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
 
 			// when
-			ChangeDeliveryStatusResult result = deliveryCommandService.receiveAtHub(command);
+			ChangeDeliveryStatusResult result = deliveryCommandService.receiveAtHub(command, "MASTER", userId);
 
 			// then
 			assertThat(result.deliveryId()).isEqualTo(deliveryId);
@@ -874,13 +875,13 @@ class DeliveryCommandServiceTest {
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
 			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.HUB_ARRIVED);
-			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
 			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
 
 			// when
-			deliveryCommandService.receiveAtHub(command);
+			deliveryCommandService.receiveAtHub(command, "MASTER", userId);
 
 			// then
 			ArgumentCaptor<DeliveryStatusChangedEvent> eventCaptor = ArgumentCaptor.forClass(DeliveryStatusChangedEvent.class);
@@ -902,12 +903,12 @@ class DeliveryCommandServiceTest {
 			// given
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
-			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.empty());
 
 			// when
-			Throwable throwable = catchThrowable(() -> deliveryCommandService.startCompanyDelivery(command));
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.startCompanyDelivery(command, "MASTER", userId));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -922,15 +923,16 @@ class DeliveryCommandServiceTest {
 			// given
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
+			String role = "COMPANY_MANAGER";
 			Delivery delivery = stubDeliveryAtFinalHub(deliveryId);
-			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "COMPANY_MANAGER", userId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
 			willThrow(new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED))
-				.given(deliveryPermissionValidator).validate(any(), eq("COMPANY_MANAGER"), eq(userId), any());
+				.given(deliveryPermissionValidator).validate(any(), eq(role), eq(userId), any());
 
 			// when
-			Throwable throwable = catchThrowable(() -> deliveryCommandService.startCompanyDelivery(command));
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.startCompanyDelivery(command, role, userId));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -946,12 +948,12 @@ class DeliveryCommandServiceTest {
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
 			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
-			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
 
 			// when
-			Throwable throwable = catchThrowable(() -> deliveryCommandService.startCompanyDelivery(command));
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.startCompanyDelivery(command, "MASTER", userId));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -967,12 +969,12 @@ class DeliveryCommandServiceTest {
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
 			Delivery delivery = stubDeliveryWithMultipleRoutes(deliveryId, DeliveryStatus.HUB_WAITING);
-			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
 
 			// when
-			Throwable throwable = catchThrowable(() -> deliveryCommandService.startCompanyDelivery(command));
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.startCompanyDelivery(command, "MASTER", userId));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -993,13 +995,13 @@ class DeliveryCommandServiceTest {
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
 			Delivery delivery = stubDeliveryAtFinalHub(deliveryId);
-			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
 			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
 
 			// when
-			ChangeDeliveryStatusResult result = deliveryCommandService.startCompanyDelivery(command);
+			ChangeDeliveryStatusResult result = deliveryCommandService.startCompanyDelivery(command, "MASTER", userId);
 
 			// then
 			assertThat(result.deliveryId()).isEqualTo(deliveryId);
@@ -1015,13 +1017,13 @@ class DeliveryCommandServiceTest {
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
 			Delivery delivery = stubDeliveryAtFinalHub(deliveryId);
-			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
 			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
 
 			// when
-			deliveryCommandService.startCompanyDelivery(command);
+			deliveryCommandService.startCompanyDelivery(command, "MASTER", userId);
 
 			// then
 			ArgumentCaptor<DeliveryStatusChangedEvent> eventCaptor = ArgumentCaptor.forClass(DeliveryStatusChangedEvent.class);
@@ -1043,12 +1045,12 @@ class DeliveryCommandServiceTest {
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
 			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.HUB_ARRIVED);
-			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
 
 			// when
-			Throwable throwable = catchThrowable(() -> deliveryCommandService.completeDelivery(command));
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.completeDelivery(command, "MASTER", userId));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -1069,13 +1071,13 @@ class DeliveryCommandServiceTest {
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
 			Delivery delivery = stubCompanyMovingDelivery(deliveryId);
-			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
 			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
 
 			// when
-			ChangeDeliveryStatusResult result = deliveryCommandService.completeDelivery(command);
+			ChangeDeliveryStatusResult result = deliveryCommandService.completeDelivery(command, "MASTER", userId);
 
 			// then
 			assertThat(result.deliveryId()).isEqualTo(deliveryId);
@@ -1091,13 +1093,13 @@ class DeliveryCommandServiceTest {
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
 			Delivery delivery = stubCompanyMovingDelivery(deliveryId);
-			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
 			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
 
 			// when
-			deliveryCommandService.completeDelivery(command);
+			deliveryCommandService.completeDelivery(command, "MASTER", userId);
 
 			// then
 			ArgumentCaptor<DeliveryStatusChangedEvent> eventCaptor = ArgumentCaptor.forClass(DeliveryStatusChangedEvent.class);
@@ -1173,71 +1175,6 @@ class DeliveryCommandServiceTest {
 			DeliveryStatusChangedEvent captured = eventCaptor.getValue();
 			assertThat(captured.status()).isEqualTo("CANCELLED");
 			assertThat(captured.deliveryId()).isEqualTo(deliveryId);
-		}
-	}
-
-	// ===== 시스템 배송 취소 테스트 =====
-
-	@Nested
-	@DisplayName("시스템 배송 취소 실패")
-	class CancelDeliveryBySystemFail {
-
-		@Test
-		@DisplayName("배송 출발 후 취소 불가")
-		void cancelDeliveryBySystem_fail_invalidStatusTransition() {
-			// given
-			UUID deliveryId = UUID.randomUUID();
-			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.FOR_HUB_MOVING);
-
-			// when
-			Throwable throwable = catchThrowable(() -> deliveryCommandService.cancelDeliveryBySystem(delivery));
-
-			// then
-			assertThat(throwable)
-				.isInstanceOf(DeliveryException.class)
-				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.INVALID_STATUS_TRANSITION);
-		}
-	}
-
-	@Nested
-	@DisplayName("시스템 배송 취소 성공")
-	class CancelDeliveryBySystemSuccess {
-
-		@Test
-		@DisplayName("CREATED 상태에서 취소 성공")
-		void cancelDeliveryBySystem_success() {
-			// given
-			UUID deliveryId = UUID.randomUUID();
-			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
-
-			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
-
-			// when
-			deliveryCommandService.cancelDeliveryBySystem(delivery);
-
-			// then
-			ArgumentCaptor<Delivery> captor = ArgumentCaptor.forClass(Delivery.class);
-			then(deliveryRepository).should().save(captor.capture());
-			assertThat(captor.getValue().getStatus()).isEqualTo(DeliveryStatus.CANCELLED);
-		}
-
-		@Test
-		@DisplayName("취소 시 이벤트 발행")
-		void cancelDeliveryBySystem_success_eventPublished() {
-			// given
-			UUID deliveryId = UUID.randomUUID();
-			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
-
-			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
-
-			// when
-			deliveryCommandService.cancelDeliveryBySystem(delivery);
-
-			// then
-			ArgumentCaptor<DeliveryStatusChangedEvent> eventCaptor = ArgumentCaptor.forClass(DeliveryStatusChangedEvent.class);
-			then(deliveryEventPublisher).should().publishDeliveryStatusChanged(eventCaptor.capture());
-			assertThat(eventCaptor.getValue().deliveryId()).isEqualTo(deliveryId);
-			assertThat(eventCaptor.getValue().status()).isEqualTo("CANCELLED");
 		}
 	}
 

@@ -206,13 +206,14 @@ class DeliveryCommandFacadeTest {
 			// given
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
-			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, "MASTER", userId);
+			String role = "MASTER";
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId)))
 				.willReturn(Optional.empty());
 
 			// when
-			Throwable throwable = catchThrowable(() -> deliveryCommandFacade.cancelDelivery(command));
+			Throwable throwable = catchThrowable(() -> deliveryCommandFacade.cancelDelivery(command, role, userId));
 
 			// then
 			assertThat(throwable)
@@ -227,7 +228,7 @@ class DeliveryCommandFacadeTest {
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
 			String role = "COMPANY_MANAGER";
-			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, role, userId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
 			Delivery delivery = stubDelivery(deliveryId, DeliveryStatus.CREATED);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId)))
@@ -239,7 +240,7 @@ class DeliveryCommandFacadeTest {
 				);
 
 			// when
-			Throwable throwable = catchThrowable(() -> deliveryCommandFacade.cancelDelivery(command));
+			Throwable throwable = catchThrowable(() -> deliveryCommandFacade.cancelDelivery(command, role, userId));
 
 			// then
 			assertThat(throwable)
@@ -260,7 +261,7 @@ class DeliveryCommandFacadeTest {
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
 			String role = "MASTER";
-			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId, role, userId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
 			Delivery delivery = stubDelivery(deliveryId, DeliveryStatus.CREATED);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId)))
@@ -269,7 +270,7 @@ class DeliveryCommandFacadeTest {
 				.willReturn(new ChangeDeliveryStatusResult(deliveryId));
 
 			// when
-			ChangeDeliveryStatusResult result = deliveryCommandFacade.cancelDelivery(command);
+			ChangeDeliveryStatusResult result = deliveryCommandFacade.cancelDelivery(command, role, userId);
 
 			// then
 			assertThat(result.deliveryId()).isEqualTo(deliveryId);
@@ -286,13 +287,13 @@ class DeliveryCommandFacadeTest {
 		@DisplayName("배송 미존재")
 		void cancelDeliveryBySystem_fail_deliveryNotFound() {
 			// given
-			UUID orderId = UUID.randomUUID();
+			UUID deliveryId = UUID.randomUUID();
 
-			given(deliveryRepository.findByOrderId(orderId))
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId)))
 				.willReturn(Optional.empty());
 
 			// when
-			Throwable throwable = catchThrowable(() -> deliveryCommandFacade.cancelDeliveryBySystem(orderId));
+			Throwable throwable = catchThrowable(() -> deliveryCommandFacade.cancelDeliveryBySystem(ChangeDeliveryStatusCommand.of(deliveryId)));
 
 			// then
 			assertThat(throwable)
@@ -309,36 +310,36 @@ class DeliveryCommandFacadeTest {
 		@DisplayName("정상 취소")
 		void cancelDeliveryBySystem_success() {
 			// given
-			UUID orderId = UUID.randomUUID();
 			UUID deliveryId = UUID.randomUUID();
 			Delivery delivery = stubDelivery(deliveryId, DeliveryStatus.CREATED);
 
-			given(deliveryRepository.findByOrderId(orderId))
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId)))
 				.willReturn(Optional.of(delivery));
+			given(deliveryCommandService.cancelDelivery(delivery))
+				.willReturn(new ChangeDeliveryStatusResult(deliveryId));
 
 			// when
-			deliveryCommandFacade.cancelDeliveryBySystem(orderId);
+			deliveryCommandFacade.cancelDeliveryBySystem(ChangeDeliveryStatusCommand.of(deliveryId));
 
 			// then
-			then(deliveryCommandService).should().cancelDeliveryBySystem(delivery);
+			then(deliveryCommandService).should().cancelDelivery(delivery);
 		}
 
 		@Test
 		@DisplayName("이미 취소된 배송 - 멱등하게 무시")
 		void cancelDeliveryBySystem_success_alreadyCancelled() {
 			// given
-			UUID orderId = UUID.randomUUID();
 			UUID deliveryId = UUID.randomUUID();
 			Delivery delivery = stubDelivery(deliveryId, DeliveryStatus.CANCELLED);
 
-			given(deliveryRepository.findByOrderId(orderId))
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId)))
 				.willReturn(Optional.of(delivery));
 
 			// when
-			deliveryCommandFacade.cancelDeliveryBySystem(orderId);
+			deliveryCommandFacade.cancelDeliveryBySystem(ChangeDeliveryStatusCommand.of(deliveryId));
 
 			// then
-			then(deliveryCommandService).should(never()).cancelDeliveryBySystem(any());
+			then(deliveryCommandService).should(never()).cancelDelivery(any());
 		}
 	}
 
