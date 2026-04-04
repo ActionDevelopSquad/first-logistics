@@ -1,4 +1,4 @@
-package com.firstlogistics.notificationservice.slackmessage.domain.enums;
+package com.firstlogistics.notificationservice.domain.enums;
 
 public enum SlackMessageStatus {
     PENDING,

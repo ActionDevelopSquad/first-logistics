@@ -1,4 +1,4 @@
-package com.firstlogistics.notificationservice.slackmessage.domain.vo;
+package com.firstlogistics.notificationservice.domain.vo;
 
 import java.util.UUID;
 

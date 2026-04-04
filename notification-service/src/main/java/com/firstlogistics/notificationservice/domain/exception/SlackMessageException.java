@@ -1,4 +1,4 @@
-package com.firstlogistics.notificationservice.slackmessage.domain.exception;
+package com.firstlogistics.notificationservice.domain.exception;
 
 import common.exception.BaseException;
 
