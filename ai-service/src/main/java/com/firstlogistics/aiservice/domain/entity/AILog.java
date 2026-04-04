@@ -64,7 +64,7 @@ public class AILog {
             throw new AILogException(AILogErrorCode.CANNOT_UPDATE_STATUS);
         }
 
-        if (status == AILogStatus.SUCCESS && this.messageId == null) {
+        if (status == AILogStatus.SUCCESS) {
             throw new AILogException(AILogErrorCode.MESSAGE_NOT_EXIST);
         }
 
