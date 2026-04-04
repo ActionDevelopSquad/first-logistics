@@ -4,13 +4,12 @@ import com.firstlogistics.companyservice.domain.exception.CompanyErrorCode;
 import com.firstlogistics.companyservice.domain.exception.CompanyException;
 import java.util.UUID;
 
-public record CompanyCreatedEvent(
+public record CompanyDeletedEvent(
 
-        UUID companyId,
-        String companyName
+        UUID companyId
 ) {
 
-    public CompanyCreatedEvent {
+    public CompanyDeletedEvent {
         if (companyId == null) {
             throw new CompanyException(CompanyErrorCode.INVALID_COMPANY_ID);
         }

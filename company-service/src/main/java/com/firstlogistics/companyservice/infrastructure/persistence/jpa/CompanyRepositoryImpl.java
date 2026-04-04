@@ -2,9 +2,9 @@ package com.firstlogistics.companyservice.infrastructure.persistence.jpa;
 
 import static com.firstlogistics.companyservice.infrastructure.persistence.jpa.QCompanyJpaEntity.companyJpaEntity;
 
-import com.firstlogistics.companyservice.domain.specification.CompanySearchSpec;
 import com.firstlogistics.companyservice.domain.entity.Company;
 import com.firstlogistics.companyservice.domain.repository.CompanyRepository;
+import com.firstlogistics.companyservice.domain.specification.CompanySearchSpec;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -63,19 +63,28 @@ public class CompanyRepositoryImpl implements CompanyRepository {
 
     @Override
     public Optional<Company> findById(UUID companyId) {
-        return companyJpaRepository.findByIdAndDeletedAtIsNull(companyId)
+        return companyJpaRepository.findById(companyId)
                 .map(CompanyMapper::toDomain);
     }
 
     @Override
     public Optional<Company> findByManagerId(UUID managerId) {
-        return companyJpaRepository.findByManagerIdAndDeletedAtIsNull(managerId)
+        return companyJpaRepository.findByManagerId(managerId)
                 .map(CompanyMapper::toDomain);
     }
 
     @Override
     public boolean existsByManagerId(UUID managerId) {
-        return companyJpaRepository.existsByManagerIdAndDeletedAtIsNull(managerId);
+        return companyJpaRepository.existsByManagerId(managerId);
+    }
+
+    @Override
+    public void delete(UUID companyId, UUID deletedBy) {
+        companyJpaRepository.findById(companyId)
+                .ifPresent(entity -> {
+                    entity.softDelete(deletedBy);
+                    companyJpaRepository.save(entity);
+                });
     }
 
     private OrderSpecifier<?>[] resolveOrderSpecifiers(Sort sort) {
