@@ -3,6 +3,8 @@ package com.firstlogistics.aiservice.application.facade;
 import com.firstlogistics.aiservice.application.dto.command.CreateAILogCommand;
 import com.firstlogistics.aiservice.application.service.AILogCommandService;
 import com.firstlogistics.aiservice.domain.event.DeliveryAcceptedEvent;
+import com.firstlogistics.aiservice.domain.exception.AILogErrorCode;
+import com.firstlogistics.aiservice.domain.exception.AILogException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,12 +16,16 @@ public class AIMessageFacade {
     private final AILogCommandService aiLogCommandService;
 
     public void processAiNotification(DeliveryAcceptedEvent event) {
+        if (event.currentHubId() == null) {
+            throw new AILogException(AILogErrorCode.INTERNAL_SERVER_ERROR);
+        }
+
         // 현재 허브 담당자 슬랙 id 추출
         String currentHubManagerSlackId = event.delivery().deliveryRoutes().stream()
                 .filter(route -> route.sourceHubId().equals(event.currentHubId()))
                 .map(DeliveryAcceptedEvent.DeliveryRouteInfo::hubDeliveryManagerSlackId)
                 .findFirst()
-                .orElse(event.delivery().companyDeliveryManagerSlackId());
+                .orElseThrow(() -> new AILogException(AILogErrorCode.INTERNAL_SERVER_ERROR));
 
         // 경유지 정보 조립 (예: 대전 센터, 부산 센터)
         String hubs = event.delivery().deliveryRoutes().stream()
