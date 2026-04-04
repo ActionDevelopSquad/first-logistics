@@ -35,8 +35,7 @@ public class AILogCommandService {
                 AILogStatus.SUCCESS,        // 4. 상태 (성공)
                 MessengerType.SLACK         // 5. 메신저 타입
         );
-
-//        AILog savedLog = aiLogRepository.save(aiLog);
+        
         AILogResult aiLogResult = AILogResult.from(aiLogRepository.save(aiLog));
 
         eventPublisher.publishEvent(NotificationCreatedEvent.of(
