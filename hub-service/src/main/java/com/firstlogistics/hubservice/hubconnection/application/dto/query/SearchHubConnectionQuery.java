@@ -18,7 +18,7 @@ public record SearchHubConnectionQuery(
         String status
 ) {
     public HubConnectionSpec toSpec(){
-        if(sourceHubId.equals(destinationHubId))
+        if (sourceHubId != null && sourceHubId.equals(destinationHubId))
             throw new HubConnectionException(HubConnectionErrorCode.SAME_SOURCE_AND_DESTINATION_HUB);
 
         return new HubConnectionSpec(
