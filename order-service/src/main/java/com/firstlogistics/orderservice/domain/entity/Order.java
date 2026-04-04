@@ -45,6 +45,7 @@ public class Order {
     public static Order create(
             UUID supplierCompanyId,
             UUID supplierManagerId,
+            UUID supplierHubId,
             UUID receiverCompanyId,
             UUID receiverManagerId,
             String roadAddress,
@@ -56,7 +57,7 @@ public class Order {
         validateInput(dueDate);
         Order order = new Order(
                 OrderId.of(),
-                Supplier.of(supplierCompanyId, supplierManagerId),
+                Supplier.of(supplierCompanyId, supplierManagerId, supplierHubId),
                 Receiver.of(receiverCompanyId, receiverManagerId),
                 null,
                 Address.of(roadAddress, detailAddress),
@@ -84,6 +85,7 @@ public class Order {
             UUID id,
             UUID supplierCompanyId,
             UUID supplierManagerId,
+            UUID supplierHubId,
             UUID receiverCompanyId,
             UUID receiverManagerId,
             UUID deliveryId,
@@ -101,7 +103,7 @@ public class Order {
     ) {
         return new Order(
                 OrderId.of(id),
-                Supplier.of(supplierCompanyId, supplierManagerId),
+                Supplier.of(supplierCompanyId, supplierManagerId, supplierHubId),
                 Receiver.of(receiverCompanyId, receiverManagerId),
                 deliveryId,
                 Address.of(roadAddress, detailAddress),

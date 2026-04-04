@@ -15,6 +15,7 @@ public enum OrderErrorCode implements ErrorCode {
     // 주문 생성 & 기본 정보 검증
     SUPPLIER_COMPANY_REQUIRED(HttpStatus.BAD_REQUEST, "ORD002", "공급 업체 ID는 필수 항목입니다."),
     SUPPLIER_MANAGER_REQUIRED(HttpStatus.BAD_REQUEST, "ORD003", "공급 담당자 ID는 필수 항목입니다."),
+    SUPPLIER_HUB_REQUIRED(HttpStatus.BAD_REQUEST, "ORD0023", "공급 업체 소속 허브 ID는 필수 항목입니다."),
     RECEIVER_COMPANY_REQUIRED(HttpStatus.BAD_REQUEST, "ORD004", "수신 업체 ID는 필수 항목입니다."),
     RECEIVER_MANAGER_REQUIRED(HttpStatus.BAD_REQUEST, "ORD005", "수신 담당자 ID는 필수 항목입니다."),
     DELIVERY_ADDRESS_REQUIRED(HttpStatus.BAD_REQUEST, "ORD006", "배송 주소는 필수입니다."),

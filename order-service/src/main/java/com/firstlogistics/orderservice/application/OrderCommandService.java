@@ -29,6 +29,8 @@ public class OrderCommandService {
     public UUID createOrder(CreateOrderCommand command) {
         // TODO: 나중에 userId와 검증 로직 필요
 
+        UUID hubId = UUID.randomUUID();
+
         List<OrderItemInput> itemInputs = command.items().stream()
                 .map(CreateOrderCommand.OrderItemCommand::toDomainInput)
                 .toList();
@@ -36,6 +38,7 @@ public class OrderCommandService {
         Order order = Order.create(
                 command.supplierCompanyId(),
                 command.supplierManagerId(),
+                hubId,
                 command.receiverCompanyId(),
                 command.receiverManagerId(),
                 command.roadAddress(),
