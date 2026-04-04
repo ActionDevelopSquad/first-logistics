@@ -14,18 +14,25 @@ public class AIMessageFacade {
     private final AILogCommandService aiLogCommandService;
 
     public void processAiNotification(DeliveryAcceptedEvent event) {
-        // 1. 경유지 정보 조립 (예: 대전 센터, 부산 센터)
+        // 현재 허브 담당자 슬랙 id 추출
+        String currentHubManagerSlackId = event.delivery().deliveryRoutes().stream()
+                .filter(route -> route.sourceHubId().equals(event.currentHubId()))
+                .map(DeliveryAcceptedEvent.DeliveryRouteInfo::hubDeliveryManagerSlackId)
+                .findFirst()
+                .orElse(event.delivery().companyDeliveryManagerSlackId());
+
+        // 경유지 정보 조립 (예: 대전 센터, 부산 센터)
         String hubs = event.delivery().deliveryRoutes().stream()
                 .map(DeliveryAcceptedEvent.DeliveryRouteInfo::destinationHubName)
                 .distinct()
                 .collect(Collectors.joining(", "));
 
-        // 2. 상품 정보 조립 (예: 오징어 50박스)
+        // 상품 정보 조립 (예: 오징어 50박스)
         String productInfo = event.order().orderItems().stream()
                 .map(item -> item.productName() + " " + item.quantity() + "개")
                 .collect(Collectors.joining(", "));
 
-        // 3. Command 생성
+        // Command 생성
         CreateAILogCommand command = new CreateAILogCommand(
                 event.order().orderId(),
                 event.delivery().receiverName(),
@@ -39,7 +46,7 @@ public class AIMessageFacade {
                 event.delivery().receiverRoadAddress() + " " + event.delivery().receiverDetailAddress(),
                 event.delivery().companyDeliveryManagerName(),
                 event.delivery().companyDeliveryManagerEmail(),
-                event.delivery().receiverSlackId()
+                currentHubManagerSlackId  // 현재 허브 담당자 슬랙 id
         );
 
         aiLogCommandService.createAILog(command);

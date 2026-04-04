@@ -9,7 +9,8 @@ import java.util.UUID;
 
 public record DeliveryAcceptedEvent(
         OrderInfo order,
-        DeliveryInfo delivery
+        DeliveryInfo delivery,
+        UUID currentHubId
 ) {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
