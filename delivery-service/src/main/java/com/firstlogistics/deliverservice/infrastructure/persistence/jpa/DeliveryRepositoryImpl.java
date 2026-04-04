@@ -1,6 +1,8 @@
 package com.firstlogistics.deliverservice.infrastructure.persistence.jpa;
 
 import com.firstlogistics.deliverservice.domain.entity.Delivery;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryRepository;
 import com.firstlogistics.deliverservice.domain.vo.DeliveryId;
 import lombok.RequiredArgsConstructor;
@@ -38,5 +40,13 @@ public class DeliveryRepositoryImpl implements DeliveryRepository {
 		DeliveryJpaEntity jpaEntity = deliveryMapper.toJpaEntity(delivery);
 		DeliveryJpaEntity savedEntity = deliveryJpaRepository.save(jpaEntity);
 		return deliveryMapper.toDomain(savedEntity);
+	}
+
+	@Override
+	public void deleteById(DeliveryId deliveryId, UUID userId) {
+		DeliveryJpaEntity jpaEntity = deliveryJpaRepository.findById(deliveryId.id())
+			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
+		jpaEntity.softDelete(userId);
+		jpaEntity.getRoutes().forEach(route -> route.softDelete(userId));
 	}
 }

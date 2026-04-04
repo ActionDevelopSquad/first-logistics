@@ -294,6 +294,18 @@ public class DeliveryCommandService {
 			DeliveryStatusChangedEvent.create(savedDelivery));
 	}
 
+	@Transactional
+	public void deleteDelivery(UUID deliveryId, String role, UUID userId) {
+		Delivery delivery = deliveryRepository.findById(DeliveryId.of(deliveryId))
+			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
+
+		DeliveryAccessContext accessContext = DeliveryAccessContext.from(delivery);
+		deliveryPermissionValidator.validate(accessContext, role, userId,
+			Set.of(UserRole.MASTER, UserRole.HUB_MANAGER));
+
+		deliveryRepository.deleteById(DeliveryId.of(deliveryId), userId);
+	}
+
 	private DeliveryCreatedEvent buildDeliveryCreatedEvent(
 			Delivery delivery,
 			CreateDeliveryCommand command,
