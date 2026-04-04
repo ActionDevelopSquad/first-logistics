@@ -22,6 +22,7 @@ public class DeliveryEventKafkaProducer {
 	private static final String TOPIC_STATUS_CHANGED = "delivery.status.changed";
 	private static final String TOPIC_ORDER_ACCEPTED_DLT = "order.accepted.DLT";
 	private static final String TOPIC_ORDER_CANCELLED_DLT = "order.cancelled.DLT";
+	private static final String TOPIC_USER_STATUS_CHANGED_DLT = "user.status.changed.DLT";
 
 	private final KafkaTemplate<String, Object> deliveryKafkaTemplate;
 
@@ -56,5 +57,10 @@ public class DeliveryEventKafkaProducer {
 	public void handleOrderCancelledDlt(String key, Object value) {
 		deliveryKafkaTemplate.send(TOPIC_ORDER_CANCELLED_DLT, key, value);
 		log.warn("DLT 적재 - topic: {}, key: {}", TOPIC_ORDER_CANCELLED_DLT, key);
+	}
+
+	public void handleUserStatusChangedDlt(String key, Object value) {
+		deliveryKafkaTemplate.send(TOPIC_USER_STATUS_CHANGED_DLT, key, value);
+		log.warn("DLT 적재 - topic: {}, key: {}", TOPIC_USER_STATUS_CHANGED_DLT, key);
 	}
 }

@@ -1,0 +1,83 @@
+package com.firstlogistics.deliverservice.application;
+
+import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryManagerCommand;
+import com.firstlogistics.deliverservice.application.dto.result.CreateDeliveryManagerResult;
+import com.firstlogistics.deliverservice.application.permission.DeliveryPermissionValidator;
+import com.firstlogistics.deliverservice.application.port.HubManagerPort;
+import com.firstlogistics.deliverservice.application.port.UserPort;
+import com.firstlogistics.deliverservice.application.port.dto.HubManagerResponse;
+import com.firstlogistics.deliverservice.application.port.dto.UserResponse;
+import com.firstlogistics.deliverservice.domain.entity.DeliveryManager;
+import com.firstlogistics.deliverservice.domain.enums.ManagerType;
+import com.firstlogistics.deliverservice.domain.enums.UserRole;
+import com.firstlogistics.deliverservice.domain.event.UserStatusChangedEvent;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
+import com.firstlogistics.deliverservice.domain.repository.DeliveryManagerRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Set;
+import java.util.UUID;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class DeliveryManagerCommandService {
+
+	private final DeliveryManagerRepository deliveryManagerRepository;
+	private final DeliveryPermissionValidator deliveryPermissionValidator;
+	private final HubManagerPort hubManagerPort;
+	private final UserPort userPort;
+
+	public CreateDeliveryManagerResult createDeliveryManager(
+		CreateDeliveryManagerCommand command, String role, UUID requestUserId
+	) {
+		UserRole userRole = deliveryPermissionValidator.validateRole(role,
+			Set.of(UserRole.MASTER, UserRole.HUB_MANAGER));
+
+		if (userRole == UserRole.HUB_MANAGER) {
+			HubManagerResponse hubManager = hubManagerPort.getHubManager(requestUserId);
+			if (!hubManager.hubId().equals(command.hubId())) {
+				throw new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
+			}
+		}
+
+		if (deliveryManagerRepository.existsByUserId(command.userId())) {
+			throw new DeliveryException(DeliveryErrorCode.DELIVERY_MANAGER_ALREADY_EXISTS);
+		}
+
+		UserResponse user = userPort.getUser(command.userId());
+
+		int nextSequence = deliveryManagerRepository.findNextSequence();
+		DeliveryManager deliveryManager = DeliveryManager.create(
+			command.userId(), user.name(), user.phone(),
+			command.hubId(), user.slackId(),
+			command.managerType(), nextSequence
+		);
+
+		DeliveryManager saved = deliveryManagerRepository.save(deliveryManager);
+		return CreateDeliveryManagerResult.from(saved);
+	}
+
+
+	public void createDeliveryManagerBySystem(UserStatusChangedEvent event) {
+		if (deliveryManagerRepository.existsByUserId(event.userId())) {
+			log.info("중복 배송담당자 무시 - userId: {}", event.userId());
+			return;
+		}
+
+		int nextSequence = deliveryManagerRepository.findNextSequence();
+		DeliveryManager deliveryManager = DeliveryManager.create(
+			event.userId(), event.name(), event.phone(),
+			event.organizationId(), event.slackId(),
+			ManagerType.HUB_DELIVERY, nextSequence
+		);
+
+		deliveryManagerRepository.save(deliveryManager);
+		log.info("배송담당자 자동 생성 - userId: {}, hubId: {}", event.userId(), event.organizationId());
+	}
+}

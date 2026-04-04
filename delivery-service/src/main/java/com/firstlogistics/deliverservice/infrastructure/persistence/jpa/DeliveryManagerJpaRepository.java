@@ -14,6 +14,8 @@ import java.util.UUID;
 
 public interface DeliveryManagerJpaRepository extends JpaRepository<DeliveryManagerJpaEntity, UUID> {
 
+	boolean existsByUserIdAndDeletedAtIsNull(UUID userId);
+
 	Optional<DeliveryManagerJpaEntity> findByUserIdAndDeletedAtIsNull(UUID userId);
 
 	@Query("SELECT COALESCE(MAX(ds.deliverySequence), 0) FROM DeliveryManagerJpaEntity ds WHERE ds.deletedAt IS NULL")
