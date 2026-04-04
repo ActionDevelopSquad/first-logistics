@@ -46,7 +46,8 @@ public enum OrderErrorCode implements ErrorCode {
 
     // 외부 서비스 호출 관련
     COMPANY_NOT_FOUND(HttpStatus.NOT_FOUND, "ORD024", "업체 정보를 찾을 수 없습니다."),
-    EXTERNAL_SERVICE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "ORD025", "외부 서비스 호출 중 오류가 발생했습니다.");
+    EXTERNAL_SERVICE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "ORD025", "외부 서비스 호출 중 오류가 발생했습니다."),
+    UNAUTHORIZED_ACCESS(HttpStatus.UNAUTHORIZED, "ORD026", "해당 주문에 대한 권한이 없습니다!");
 
     private final HttpStatus status;
     private final String code;

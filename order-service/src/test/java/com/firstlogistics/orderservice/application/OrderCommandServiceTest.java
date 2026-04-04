@@ -13,6 +13,7 @@ import com.firstlogistics.orderservice.domain.event.OrderCreatedEvent;
 import com.firstlogistics.orderservice.domain.repository.OrderRepository;
 import com.firstlogistics.orderservice.domain.exception.OrderException;
 import com.firstlogistics.orderservice.domain.exception.OrderErrorCode;
+import com.firstlogistics.orderservice.domain.service.RoleCheck;
 import com.firstlogistics.orderservice.domain.vo.OrderId;
 import common.event.Events;
 import org.junit.jupiter.api.AfterEach;
@@ -38,8 +39,6 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class OrderCommandServiceTest {
 
-    private static final UUID USER_ID = UUID.randomUUID();
-
     @Mock
     private OrderRepository orderRepository;
 
@@ -51,6 +50,9 @@ class OrderCommandServiceTest {
 
     @Mock
     private CompanyPort companyPort;
+
+    @Mock
+    private RoleCheck roleCheck;
 
     @BeforeEach
     void setUp() {
@@ -123,9 +125,10 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
+        when(roleCheck.canAcceptOrCancel(any())).thenReturn(true);
 
         // when
-        String resultStatus = orderCommandService.acceptOrder(USER_ID, orderId);
+        String resultStatus = orderCommandService.acceptOrder(orderId);
 
         // then
         assertThat(resultStatus).isEqualTo("ACCEPTED");
@@ -144,9 +147,10 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
+        when(roleCheck.canAcceptOrCancel(any())).thenReturn(true);
 
         // when & then
-        assertThatThrownBy(() -> orderCommandService.acceptOrder(USER_ID, orderId))
+        assertThatThrownBy(() -> orderCommandService.acceptOrder(orderId))
                 .isInstanceOf(OrderException.class)
                 .hasMessage(OrderErrorCode.INVALID_ORDER_STATUS.getMessage());
         verify(orderRepository, never()).save(any(Order.class));
@@ -164,13 +168,34 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
+        when(roleCheck.canAcceptOrCancel(any())).thenReturn(true);
 
         // when & then
-        assertThatThrownBy(() -> orderCommandService.acceptOrder(USER_ID, orderId))
+        assertThatThrownBy(() -> orderCommandService.acceptOrder(orderId))
                 .isInstanceOf(OrderException.class)
                 .hasMessage(OrderErrorCode.ALREADY_ACCEPTED.getMessage());
         verify(orderRepository, never()).save(any(Order.class));
         verify(eventPublisher, never()).publishEvent(any());
+    }
+
+    @Test
+    @DisplayName("실패: 권한이 없는 사용자가 승인 시도 시 예외가 발생한다")
+    void acceptOrder_Fail_Unauthorized() {
+        // given
+        UUID orderId = UUID.randomUUID();
+        Order order = OrderTestBuilder.builder()
+                .id(orderId)
+                .status(OrderStatus.RESERVED)
+                .build();
+
+        when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
+        // 권한 체크 실패 설정
+        when(roleCheck.canAcceptOrCancel(any())).thenReturn(false);
+
+        // when & then
+        assertThatThrownBy(() -> orderCommandService.acceptOrder(orderId))
+                .isInstanceOf(OrderException.class)
+                .hasMessage(OrderErrorCode.UNAUTHORIZED_ACCESS.getMessage());
     }
 
     // --- 주문 승인 거절 테스트 ---
@@ -186,9 +211,10 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
+        when(roleCheck.canAcceptOrCancel(any())).thenReturn(true);
 
         // when
-        String resultStatus = orderCommandService.rejectOrder(USER_ID, orderId);
+        String resultStatus = orderCommandService.rejectOrder(orderId);
 
         // then
         assertThat(resultStatus).isEqualTo("CANCELLED");
@@ -207,9 +233,10 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
+        when(roleCheck.canAcceptOrCancel(any())).thenReturn(true);
 
         // when & then
-        assertThatThrownBy(() -> orderCommandService.rejectOrder(USER_ID, orderId))
+        assertThatThrownBy(() -> orderCommandService.rejectOrder(orderId))
                 .isInstanceOf(OrderException.class)
                 .hasMessage(OrderErrorCode.ALREADY_CANCELLED.getMessage());
         verify(orderRepository, never()).save(any(Order.class));
@@ -229,9 +256,10 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
+        when(roleCheck.canAcceptOrCancel(any())).thenReturn(true);
 
         // when
-        String resultStatus = orderCommandService.cancelOrder(USER_ID, orderId);
+        String resultStatus = orderCommandService.cancelOrder(orderId);
 
         // then
         assertThat(resultStatus).isEqualTo("CANCELLED");
@@ -251,9 +279,10 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
+        when(roleCheck.canRequestCancel(any())).thenReturn(true);
 
         // when
-        String resultStatus = orderCommandService.requestCancel(USER_ID, orderId);
+        String resultStatus = orderCommandService.requestCancel(orderId);
 
         // then
         assertThat(resultStatus).isEqualTo("CANCEL_REQUESTED");
@@ -273,9 +302,10 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
+        when(roleCheck.canAcceptOrCancel(any())).thenReturn(true);
 
         // when
-        String resultStatus = orderCommandService.approveCancelRequest(USER_ID, orderId);
+        String resultStatus = orderCommandService.approveCancelRequest(orderId);
 
         // then
         assertThat(resultStatus).isEqualTo("CANCELLED");
@@ -296,9 +326,10 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
+        when(roleCheck.canAcceptOrCancel(any())).thenReturn(true);
 
         // when
-        String resultStatus = orderCommandService.rejectCancelRequest(USER_ID, orderId);
+        String resultStatus = orderCommandService.rejectCancelRequest(orderId);
 
         // then
         assertThat(resultStatus).isEqualTo("RESERVED");
@@ -317,9 +348,10 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
+        when(roleCheck.canAcceptOrCancel(any())).thenReturn(true);
 
         // when & then
-        assertThatThrownBy(() -> orderCommandService.rejectCancelRequest(USER_ID, orderId))
+        assertThatThrownBy(() -> orderCommandService.rejectCancelRequest(orderId))
                 .isInstanceOf(OrderException.class)
                 .hasMessage(OrderErrorCode.CANNOT_REJECT_CANCEL.getMessage());
     }

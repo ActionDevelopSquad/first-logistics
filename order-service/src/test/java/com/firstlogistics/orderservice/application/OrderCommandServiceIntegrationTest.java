@@ -5,6 +5,7 @@ import com.firstlogistics.orderservice.application.port.CompanyPort;
 import com.firstlogistics.orderservice.application.port.dto.CompanyResponse;
 import com.firstlogistics.orderservice.domain.event.OrderCreatedEvent;
 import com.firstlogistics.orderservice.domain.repository.OrderRepository;
+import com.firstlogistics.orderservice.domain.service.RoleCheck;
 import com.firstlogistics.orderservice.domain.vo.OrderId;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -47,6 +48,9 @@ class OrderCommandServiceIntegrationTest {
 
     @MockitoBean
     private CompanyPort companyPort;
+
+    @MockitoBean
+    private RoleCheck roleCheck;
 
     @Test
     @Rollback(false) // 이벤트핸들러 동작 확인하기 위해 롤백 안함
