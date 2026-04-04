@@ -18,7 +18,7 @@ public record AILogDetailResponse(
 ) {
     public static AILogDetailResponse from(AILogDetailResult result) {
         return new AILogDetailResponse(
-                result.id(),
+                result.id().id(),
                 result.status(),
                 result.messengerType(),
                 result.requestContent(),
