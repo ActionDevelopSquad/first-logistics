@@ -18,8 +18,8 @@ public record HubRouteLegResult(
     public static HubRouteLegResult from(HubRouteLeg leg){
         return new HubRouteLegResult(
                 leg.sequence(),
-                leg.sourceId().id(),
-                leg.destinationId().id(),
+                leg.sourceHubId().id(),
+                leg.destinationHubId().id(),
                 leg.time().minutes(),
                 leg.distance().meters()
         );

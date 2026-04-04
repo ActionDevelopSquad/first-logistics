@@ -11,7 +11,7 @@ public record HubRouteResult(
     UUID destinationId,
     int count,
     int totalTime,
-    int totalMeters,
+    int totalDistance,
     List<HubRouteLegResult> routes
 ) {
     public static HubRouteResult of(
@@ -20,8 +20,8 @@ public record HubRouteResult(
             List<HubRouteLegResult> routeLegResults
     ) {
         return new HubRouteResult(
-                hubRoute.sourceId().id(),
-                hubRoute.destinationId().id(),
+                hubRoute.sourceHubId().id(),
+                hubRoute.destinationHubId().id(),
                 routeLegResults.size(),
                 hubRoute.totalTime().minutes() + lastHubRouteLeg.minutes(),
                 hubRoute.totalDistance().meters() + lastHubRouteLeg.meters(),

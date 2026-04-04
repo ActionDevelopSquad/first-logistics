@@ -4,8 +4,8 @@ import com.firstlogistics.hubservice.hub.domain.vo.HubId;
 
 public record HubRouteLeg(
         int sequence,
-        HubId sourceId,
-        HubId destinationId,
+        HubId sourceHubId,
+        HubId destinationHubId,
         Time time,
         Distance distance
 ) {

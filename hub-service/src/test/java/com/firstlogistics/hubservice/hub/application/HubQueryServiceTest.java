@@ -6,6 +6,7 @@ import com.firstlogistics.hubservice.hub.application.dto.query.SearchHubsQuery;
 import com.firstlogistics.hubservice.hub.application.dto.result.HubDetailsResult;
 import com.firstlogistics.hubservice.hub.application.dto.result.HubSummaryResult;
 import com.firstlogistics.hubservice.hub.domain.enums.HubStatus;
+import com.firstlogistics.hubservice.hub.domain.enums.HubType;
 import com.firstlogistics.hubservice.hub.domain.exception.HubErrorCode;
 import com.firstlogistics.hubservice.hub.domain.exception.HubException;
 import com.firstlogistics.hubservice.hub.domain.repository.HubQueryRepository;
@@ -94,6 +95,7 @@ public class HubQueryServiceTest {
                 36.0,
                 126.0,
                 HubStatus.ACTIVE,
+                HubType.GENERAL,
                 LocalDateTime.now(),
                 LocalDateTime.now()
         );

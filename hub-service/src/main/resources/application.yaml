@@ -24,3 +24,12 @@ route:
 
 server:
   port: 8083
+
+naver:
+  map:
+    url: https://maps.apigw.ntruss.com
+    client-id: ${NAVER_MAP_CLIENT_ID}
+    client-secret: ${NAVER_MAP_CLIENT_SECRET}
+
+company-service:
+  url: ${COMPANY_SERVICE_URL:http://localhost:8084}

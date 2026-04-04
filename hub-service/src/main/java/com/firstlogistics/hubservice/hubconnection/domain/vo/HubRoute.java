@@ -6,8 +6,8 @@ import java.util.List;
 
 public record HubRoute(
         List<HubRouteLeg> routes,
-        HubId sourceId,
-        HubId destinationId,
+        HubId sourceHubId,
+        HubId destinationHubId,
         Time totalTime,
         Distance totalDistance,
         int routeCount

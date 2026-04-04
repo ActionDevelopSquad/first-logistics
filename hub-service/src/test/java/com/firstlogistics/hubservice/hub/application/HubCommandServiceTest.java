@@ -4,6 +4,7 @@ import com.firstlogistics.hubservice.hub.application.dto.command.CreateHubComman
 import com.firstlogistics.hubservice.hub.application.dto.result.HubResult;
 import com.firstlogistics.hubservice.hub.domain.entity.Hub;
 import com.firstlogistics.hubservice.hub.domain.enums.HubStatus;
+import com.firstlogistics.hubservice.hub.domain.enums.HubType;
 import com.firstlogistics.hubservice.hub.domain.exception.HubErrorCode;
 import com.firstlogistics.hubservice.hub.domain.exception.HubException;
 import com.firstlogistics.hubservice.hub.domain.repository.HubRepository;
@@ -35,7 +36,8 @@ public class HubCommandServiceTest {
           "서울 허브",
           "서울특별시",
           37.5665,
-          127.9780
+          127.9780,
+                "GENERAL"
         );
         given(hubRepository.existsByHubName(command.name())).willReturn(true);
 
@@ -55,7 +57,8 @@ public class HubCommandServiceTest {
                 "",
                 "서울특별시",
                 37.5665,
-                127.9780
+                127.9780,
+                "GENERAL"
         );
         given(hubRepository.existsByHubName(command.name())).willReturn(false);
         //when
@@ -75,7 +78,8 @@ public class HubCommandServiceTest {
                 "서울",
                 "서울특별시",
                 100.5665,
-                -200.9780
+                -200.9780,
+                "GENERAL"
         );
         given(hubRepository.existsByHubName(command.name())).willReturn(false);
         //when
@@ -95,7 +99,8 @@ public class HubCommandServiceTest {
                 "서울 허브",
                 "서울특별시",
                 37.5665,
-                127.9780
+                127.9780,
+                "GENERAL"
         );
         given(hubRepository.existsByHubName(command.name())).willReturn(false);
         given(hubRepository.save(any(Hub.class))).willAnswer(invocationOnMock -> invocationOnMock.getArgument(0));

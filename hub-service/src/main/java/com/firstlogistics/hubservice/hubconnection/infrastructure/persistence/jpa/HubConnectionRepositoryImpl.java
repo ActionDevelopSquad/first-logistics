@@ -1,5 +1,6 @@
 package com.firstlogistics.hubservice.hubconnection.infrastructure.persistence.jpa;
 
+import com.firstlogistics.hubservice.hub.domain.enums.HubStatus;
 import com.firstlogistics.hubservice.hub.domain.vo.HubId;
 import com.firstlogistics.hubservice.hubconnection.domain.entity.HubConnection;
 import com.firstlogistics.hubservice.hubconnection.domain.exception.HubConnectionErrorCode;
@@ -8,6 +9,8 @@ import com.firstlogistics.hubservice.hubconnection.domain.repository.HubConnecti
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
@@ -31,6 +34,12 @@ public class HubConnectionRepositoryImpl implements HubConnectionRepository {
                 throw new HubConnectionException(HubConnectionErrorCode.DUPLICATE_HUB_CONNECTION);
             throw e;
         }
+    }
+
+    @Override
+    public List<HubConnection> findAll() {
+        List<HubConnectionJpaEntity> entities = jpaRepository.findAll();
+        return entities.stream().map(mapper::toDomain).toList();
     }
 
     private boolean hasConstraintName(Throwable throwable, String expectedConstraintName ){
