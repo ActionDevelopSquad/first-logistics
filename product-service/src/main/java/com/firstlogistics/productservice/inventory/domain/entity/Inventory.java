@@ -5,16 +5,22 @@ import com.firstlogistics.productservice.inventory.domain.exception.InventoryExc
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Getter
 public class Inventory {
+
     private final UUID productId;
     private int available;
     private int reserved;
 
     public static Inventory create(UUID productId, int available, int reserved) {
         validate(productId, available, reserved);
+        return new Inventory(productId, available, reserved);
+    }
 
+    public static Inventory reconstitute(UUID productId, int available, int reserved) {
         return new Inventory(productId, available, reserved);
     }
 
@@ -58,9 +64,7 @@ public class Inventory {
 
     public void increase(int quantity) {
         validatePositive(quantity);
-
         available += quantity;
-
         validateInvariant();
     }
 
