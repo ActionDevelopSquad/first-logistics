@@ -11,6 +11,8 @@ import com.firstlogistics.hubservice.hubconnection.presentation.dto.response.Hub
 import common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -56,8 +58,8 @@ public class HubConnectionApiController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<ApiResponse<HubConnectionPageResponse>> searchHubConnection(@ModelAttribute SearchHubConnectionRequest request){
-        HubConnectionPageResponse response = HubConnectionPageResponse.from(hubConnectionQueryService.searchHubConnection(request.toQuery()));
+    public ResponseEntity<ApiResponse<HubConnectionPageResponse>> searchHubConnection(@ModelAttribute SearchHubConnectionRequest request, @PageableDefault Pageable pageable){
+        HubConnectionPageResponse response = HubConnectionPageResponse.from(hubConnectionQueryService.searchHubConnection(request.toQuery(),pageable));
         return ResponseEntity.status(HubConnectionSuccessCode.HUB_CONNECTION_LIST_RETRIEVED.getStatus())
                 .body(ApiResponse.success(HubConnectionSuccessCode.HUB_CONNECTION_LIST_RETRIEVED, response));
     }

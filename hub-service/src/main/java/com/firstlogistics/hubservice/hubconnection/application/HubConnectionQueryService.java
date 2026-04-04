@@ -7,6 +7,7 @@ import com.firstlogistics.hubservice.hubconnection.domain.repository.HubConnecti
 import com.firstlogistics.hubservice.hubconnection.domain.vo.HubConnectionId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -20,8 +21,8 @@ public class HubConnectionQueryService {
         HubConnection hubConnection = queryRepository.findById(HubConnectionId.of(hubConnectionId));
         return HubConnectionResult.from(hubConnection);
     }
-    public Page<HubConnectionResult> searchHubConnection(SearchHubConnectionQuery query){
-        Page<HubConnection> hubConnections = queryRepository.searchByCondition(query.toSpec());
+    public Page<HubConnectionResult> searchHubConnection(SearchHubConnectionQuery query, Pageable pageable){
+        Page<HubConnection> hubConnections = queryRepository.searchByCondition(query.toSpec(),pageable);
         return hubConnections.map(HubConnectionResult::from);
     }
 
