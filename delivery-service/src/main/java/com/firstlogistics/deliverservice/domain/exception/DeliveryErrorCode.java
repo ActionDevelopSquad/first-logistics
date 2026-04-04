@@ -52,12 +52,20 @@ public enum DeliveryErrorCode implements ErrorCode {
 	HUB_MANAGER_NOT_FOUND(HttpStatus.NOT_FOUND, "DR_E204", "허브 관리자를 찾을 수 없습니다."),
 	COMPANY_MANAGER_NOT_FOUND(HttpStatus.NOT_FOUND, "DR_E205", "업체 담당자를 찾을 수 없습니다."),
 
-	// 외부 서비스
+	// 외부 서비스 - 404 Not Found
 	HUB_NOT_FOUND(HttpStatus.NOT_FOUND, "DR_E401", "허브를 찾을 수 없습니다."),
 	COMPANY_NOT_FOUND(HttpStatus.NOT_FOUND, "DR_E402", "업체를 찾을 수 없습니다."),
 	USER_NOT_FOUND(HttpStatus.NOT_FOUND, "DR_E403", "사용자를 찾을 수 없습니다."),
-	EXTERNAL_SERVICE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "DR_E404", "외부 서비스 호출에 실패했습니다."),
 	HUB_ROUTE_INVALID(HttpStatus.UNPROCESSABLE_ENTITY, "DR_E405", "허브 경로 정보가 유효하지 않습니다."),
+	HUB_CONNECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "DR_E406", "허브 간 경로를 찾을 수 없습니다."),
+
+	// 외부 서비스 - 공통
+	EXTERNAL_SERVICE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "DR_E404", "외부 서비스 호출에 실패했습니다."),
+	EXTERNAL_SERVICE_BAD_REQUEST(HttpStatus.BAD_REQUEST, "DR_E407", "외부 서비스 요청이 유효하지 않습니다."),
+	EXTERNAL_SERVICE_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "DR_E408", "외부 서비스 인증에 실패했습니다."),
+	EXTERNAL_SERVICE_FORBIDDEN(HttpStatus.FORBIDDEN, "DR_E409", "외부 서비스 접근 권한이 없습니다."),
+	EXTERNAL_SERVICE_CONFLICT(HttpStatus.CONFLICT, "DR_E410", "외부 서비스 리소스 충돌이 발생했습니다."),
+	EXTERNAL_SERVICE_PRECONDITION_FAILED(HttpStatus.PRECONDITION_FAILED, "DR_E411", "외부 서비스 사전 조건이 충족되지 않았습니다."),
 
 	// 락
 	DELIVERY_MANAGER_ASSIGN_LOCK_ACQUISITION_FAILED(HttpStatus.CONFLICT, "DR_E301", "배송 담당자 배정 락 획득에 실패했습니다.")
