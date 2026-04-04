@@ -1,6 +1,6 @@
 package com.firstlogistics.orderservice.application;
 
-import com.firstlogistics.orderservice.application.dto.CreateOrderCommand;
+import com.firstlogistics.orderservice.application.dto.command.CreateOrderCommand;
 import com.firstlogistics.orderservice.application.port.CompanyPort;
 import com.firstlogistics.orderservice.application.port.dto.CompanyResponse;
 import com.firstlogistics.orderservice.domain.entity.Order;
