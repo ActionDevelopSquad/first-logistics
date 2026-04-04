@@ -1,8 +1,8 @@
 package com.firstlogistics.deliverservice.infrastructure.messaging.consumer;
 
-import com.firstlogistics.deliverservice.domain.event.DeliveryCreationFailedEvent;
+import com.firstlogistics.deliverservice.domain.event.DeliveryCancellationFailedEvent;
+import com.firstlogistics.deliverservice.domain.event.OrderCancelledEvent;
 import com.firstlogistics.deliverservice.infrastructure.messaging.producer.DeliveryEventKafkaProducer;
-import com.firstlogistics.deliverservice.domain.event.OrderAcceptedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -12,22 +12,22 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class OrderAcceptedRecoverer implements ConsumerRecordRecoverer {
+public class OrderCancelledRecoverer implements ConsumerRecordRecoverer {
 
 	private final DeliveryEventKafkaProducer deliveryEventKafkaProducer;
 
 	@Override
 	public void accept(ConsumerRecord<?, ?> record, Exception exception) {
-		if (!(record.value() instanceof OrderAcceptedEvent event)) {
+		if (!(record.value() instanceof OrderCancelledEvent event)) {
 			log.error("orderId 추출 실패 - record value 타입: {}",
 				record.value() == null ? "null" : record.value().getClass().getName());
-			deliveryEventKafkaProducer.handleOrderAcceptedDlt(String.valueOf(record.key()), record.value());
+			deliveryEventKafkaProducer.handleOrderCancelledDlt(String.valueOf(record.key()), record.value());
 			return;
 		}
 
-		deliveryEventKafkaProducer.handleDeliveryCreationFailed(
-			DeliveryCreationFailedEvent.create(event.orderId(), exception.getMessage())
+		deliveryEventKafkaProducer.handleDeliveryCancellationFailed(
+			DeliveryCancellationFailedEvent.create(event.orderId(), exception.getMessage())
 		);
-		deliveryEventKafkaProducer.handleOrderAcceptedDlt(String.valueOf(record.key()), record.value());
+		deliveryEventKafkaProducer.handleOrderCancelledDlt(String.valueOf(record.key()), record.value());
 	}
 }

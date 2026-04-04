@@ -17,7 +17,6 @@ import com.firstlogistics.deliverservice.domain.enums.UserRole;
 import com.firstlogistics.deliverservice.domain.event.DeliveryCreatedEvent;
 import com.firstlogistics.deliverservice.domain.event.DeliveryStatusChangedEvent;
 import com.firstlogistics.deliverservice.domain.event.DeliveryUpdatedEvent;
-import com.firstlogistics.deliverservice.domain.exception.DeliveryCreationException;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryRepository;
@@ -66,7 +65,7 @@ public class DeliveryCommandService {
 		}
 
 		if (hubRoute.routes() == null || hubRoute.routes().isEmpty()) {
-			throw new DeliveryCreationException(DeliveryErrorCode.HUB_ROUTE_INVALID);
+			throw new DeliveryException(DeliveryErrorCode.HUB_ROUTE_INVALID);
 		}
 
 		UUID sourceHubId = supplierCompany.hubId();
@@ -88,7 +87,7 @@ public class DeliveryCommandService {
 			LocalDateTime assignmentEnd = now.plusMinutes(cumulativeMinutes + step.durationMinutes());
 
 			DeliveryManager hubDeliveryManager = deliveryManagerRepository.findNextHubDeliveryManager(step.sourceHubId(), assignmentStart, assignmentEnd)
-				.orElseThrow(() -> new DeliveryCreationException(DeliveryErrorCode.HUB_DELIVERY_MANAGER_NOT_AVAILABLE));
+				.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.HUB_DELIVERY_MANAGER_NOT_AVAILABLE));
 
 			hubDeliveryManagers.add(hubDeliveryManager);
 			cumulativeMinutes += step.durationMinutes();
@@ -98,7 +97,7 @@ public class DeliveryCommandService {
 		LocalDateTime companyAssignmentEnd = companyAssignmentStart.plusMinutes(lastStep.durationMinutes());
 
 		DeliveryManager companyDeliveryManager = deliveryManagerRepository.findNextCompanyDeliveryManager(destinationHubId, companyAssignmentStart, companyAssignmentEnd)
-			.orElseThrow(() -> new DeliveryCreationException(DeliveryErrorCode.COMPANY_DELIVERY_MANAGER_NOT_AVAILABLE));
+			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.COMPANY_DELIVERY_MANAGER_NOT_AVAILABLE));
 
 		UserResponse receiver = userPort.getUser(command.receiverManagerId());
 
@@ -160,7 +159,7 @@ public class DeliveryCommandService {
 		Map<UUID, HubResponse> hubMap = hubPort.getHubs(hubIds).stream()
 			.collect(Collectors.toMap(HubResponse::hubId, hub -> hub));
 		if (!hubMap.keySet().containsAll(hubIds)) {
-			throw new DeliveryCreationException(DeliveryErrorCode.HUB_NOT_FOUND);
+			throw new DeliveryException(DeliveryErrorCode.HUB_NOT_FOUND);
 		}
 		UserResponse companyDeliveryManagerUser = userPort.getUser(companyDeliveryManager.getUserId());
 

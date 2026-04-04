@@ -53,7 +53,7 @@ class DeliveryCommandFacadeTest {
 
 	private static final UUID STUB_SOURCE_HUB_ID = UUID.randomUUID();
 	private static final UUID STUB_DESTINATION_HUB_ID = UUID.randomUUID();
-	private static final UUID STUB_ROUTE_MANAGER_ID = UUID.randomUUID();
+	private static final DeliveryManagerId STUB_ROUTE_MANAGER_ID = DeliveryManagerId.generate();
 
 	@Mock
 	private DeliveryCommandService deliveryCommandService;
@@ -180,8 +180,8 @@ class DeliveryCommandFacadeTest {
 			given(companyPort.getCompany(receiverCompanyId))
 				.willReturn(new CompanyResponse(receiverCompanyId, STUB_DESTINATION_HUB_ID, "수령업체", "서울시 강남구 테헤란로 123", "101동 202호"));
 			given(hubPort.getHubRoute(STUB_SOURCE_HUB_ID, STUB_DESTINATION_HUB_ID, receiverCompanyId))
-				.willReturn(new HubRouteResponse(List.of(
-					new HubRouteStepResponse(STUB_SOURCE_HUB_ID, STUB_DESTINATION_HUB_ID, 10000, 30)
+				.willReturn(new HubRouteResponse(STUB_SOURCE_HUB_ID, STUB_DESTINATION_HUB_ID, List.of(
+					new HubRouteStepResponse(0, STUB_SOURCE_HUB_ID, STUB_DESTINATION_HUB_ID, 10000, 30)
 				)));
 			given(distributedLockPort.executeWithMultiLock(any(), any()))
 				.willReturn(expectedResult);

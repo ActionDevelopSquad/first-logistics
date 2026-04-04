@@ -3,7 +3,7 @@ package com.firstlogistics.deliverservice.infrastructure.messaging.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.firstlogistics.deliverservice.domain.event.OrderCancelledEvent;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
-import com.firstlogistics.deliverservice.infrastructure.messaging.producer.DeliveryEventKafkaProducer;
+import com.firstlogistics.deliverservice.infrastructure.messaging.consumer.OrderCancelledRecoverer;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.annotation.Bean;
@@ -32,14 +32,9 @@ public class OrderCancelledConsumerConfig {
 	}
 
 	@Bean
-	public DefaultErrorHandler orderCancelledErrorHandler(DeliveryEventKafkaProducer deliveryEventKafkaProducer) {
-		DefaultErrorHandler errorHandler = new DefaultErrorHandler(
-			(record, exception) -> {
-				deliveryEventKafkaProducer.handleOrderCancelledDlt(String.valueOf(record.key()), record.value());
-			},
-			new FixedBackOff(1000L, 3L)
-		);
-		errorHandler.addNotRetryableExceptions(DeliveryException.class);
+	public DefaultErrorHandler orderCancelledErrorHandler(OrderCancelledRecoverer recoverer) {
+		DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, new FixedBackOff(1000L, 3L));
+		errorHandler.addNotRetryableExceptions();
 		return errorHandler;
 	}
 

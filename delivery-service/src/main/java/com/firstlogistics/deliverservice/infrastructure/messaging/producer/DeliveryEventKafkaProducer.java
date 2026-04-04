@@ -1,7 +1,9 @@
 package com.firstlogistics.deliverservice.infrastructure.messaging.producer;
 
+import com.firstlogistics.deliverservice.domain.event.DeliveryCancellationFailedEvent;
 import com.firstlogistics.deliverservice.domain.event.DeliveryCreatedEvent;
 import com.firstlogistics.deliverservice.domain.event.DeliveryCreationFailedEvent;
+import com.firstlogistics.deliverservice.domain.event.DeliveryManagerCreationFailedEvent;
 import com.firstlogistics.deliverservice.domain.event.DeliveryStatusChangedEvent;
 import com.firstlogistics.deliverservice.domain.event.DeliveryUpdatedEvent;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,8 @@ public class DeliveryEventKafkaProducer {
 	private static final String TOPIC_CREATED = "delivery.created";
 	private static final String TOPIC_UPDATED = "delivery.updated";
 	private static final String TOPIC_CREATION_FAILED = "delivery.creation.failed";
+	private static final String TOPIC_CANCELLATION_FAILED = "delivery.cancellation.failed";
+	private static final String TOPIC_MANAGER_CREATION_FAILED = "delivery-manager.creation.failed";
 	private static final String TOPIC_STATUS_CHANGED = "delivery.status.changed";
 	private static final String TOPIC_ORDER_ACCEPTED_DLT = "order.accepted.DLT";
 	private static final String TOPIC_ORDER_CANCELLED_DLT = "order.cancelled.DLT";
@@ -47,6 +51,16 @@ public class DeliveryEventKafkaProducer {
 	public void handleDeliveryCreationFailed(DeliveryCreationFailedEvent event) {
 		deliveryKafkaTemplate.send(TOPIC_CREATION_FAILED, event.orderId().toString(), event);
 		log.warn("이벤트 발행 - topic: {}, orderId: {}", TOPIC_CREATION_FAILED, event.orderId());
+	}
+
+	public void handleDeliveryCancellationFailed(DeliveryCancellationFailedEvent event) {
+		deliveryKafkaTemplate.send(TOPIC_CANCELLATION_FAILED, event.orderId().toString(), event);
+		log.warn("이벤트 발행 - topic: {}, orderId: {}", TOPIC_CANCELLATION_FAILED, event.orderId());
+	}
+
+	public void handleDeliveryManagerCreationFailed(DeliveryManagerCreationFailedEvent event) {
+		deliveryKafkaTemplate.send(TOPIC_MANAGER_CREATION_FAILED, event.userId().toString(), event);
+		log.warn("이벤트 발행 - topic: {}, userId: {}", TOPIC_MANAGER_CREATION_FAILED, event.userId());
 	}
 
 	public void handleOrderAcceptedDlt(String key, Object value) {

@@ -3,7 +3,7 @@ package com.firstlogistics.deliverservice.infrastructure.messaging.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.firstlogistics.deliverservice.domain.event.UserStatusChangedEvent;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
-import com.firstlogistics.deliverservice.infrastructure.messaging.producer.DeliveryEventKafkaProducer;
+import com.firstlogistics.deliverservice.infrastructure.messaging.consumer.UserStatusChangedRecoverer;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.annotation.Bean;
@@ -34,13 +34,9 @@ public class UserStatusChangedConsumerConfig {
 	}
 
 	@Bean
-	public DefaultErrorHandler userStatusChangedErrorHandler(DeliveryEventKafkaProducer deliveryEventKafkaProducer) {
-		DefaultErrorHandler errorHandler = new DefaultErrorHandler(
-			(record, exception) ->
-				deliveryEventKafkaProducer.handleUserStatusChangedDlt(String.valueOf(record.key()), record.value()),
-			new FixedBackOff(1000L, 3L)
-		);
-		errorHandler.addNotRetryableExceptions(DeliveryException.class);
+	public DefaultErrorHandler userStatusChangedErrorHandler(UserStatusChangedRecoverer recoverer) {
+		DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, new FixedBackOff(1000L, 3L));
+		errorHandler.addNotRetryableExceptions();
 		return errorHandler;
 	}
 
