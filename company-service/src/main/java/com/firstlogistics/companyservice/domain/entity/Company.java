@@ -96,6 +96,16 @@ public class Company {
         this.geoLocation = GeoLocation.of(latitude, longitude);
     }
 
+    public void changeManagerId(UUID newManagerId) {
+        if (this.status == CompanyStatus.INACTIVE) {
+            throw new CompanyException(CompanyErrorCode.COMPANY_INACTIVE);
+        }
+        if (newManagerId == null) {
+            throw new CompanyException(CompanyErrorCode.INVALID_MANAGER_ID);
+        }
+        this.managerId = newManagerId;
+    }
+
     public void changeAddress(String roadAddress, String detailAddress, double latitude, double longitude) {
         if (this.status == CompanyStatus.INACTIVE) {
             throw new CompanyException(CompanyErrorCode.COMPANY_INACTIVE);
