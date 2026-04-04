@@ -54,6 +54,10 @@ class AILogQueryServiceTest {
         assertThat(result.messageId()).isEqualTo(MessengerMessageId.of(messageId));
         assertThat(result.status()).isEqualTo(AILogStatus.SUCCESS);
         assertThat(result.requestContent()).isEqualTo("테스트 요청");
+        assertThat(result.messengerType()).isEqualTo(MessengerType.SLACK);
+        assertThat(result.responseContent()).isEqualTo("테스트 응답");
+        assertThat(result.systemPrompt()).isEqualTo("시스템 프롬프트");
+        assertThat(result.createdAt()).isEqualTo(projection.createdAt());
         verify(aiLogQueryRepository).findById(aiLogId);
     }
 
