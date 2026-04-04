@@ -17,7 +17,8 @@ public enum DeliverySuccessCode implements SuccessCode {
 	DELIVERY_HUB_ARRIVED(HttpStatus.OK, "DR_S006", "허브에 도착하였습니다."),
 	DELIVERY_COMPANY_STARTED(HttpStatus.OK, "DR_S007", "업체 배송이 시작되었습니다."),
 	DELIVERY_COMPLETED(HttpStatus.OK, "DR_S008", "배송이 완료되었습니다."),
-	DELIVERY_RECEIVED(HttpStatus.OK, "DR_S009", "입고가 완료되었습니다.");
+	DELIVERY_RECEIVED(HttpStatus.OK, "DR_S009", "입고가 완료되었습니다."),
+	DELIVERY_CANCELLED(HttpStatus.OK, "DR_S010", "배송이 취소되었습니다.");
 
 	private final HttpStatus status;
 	private final String code;

@@ -12,5 +12,7 @@ public interface DeliveryRepository {
 
 	Optional<Delivery> findById(DeliveryId deliveryId);
 
+	Optional<Delivery> findByOrderId(UUID orderId);
+
 	Delivery save(Delivery delivery);
 }

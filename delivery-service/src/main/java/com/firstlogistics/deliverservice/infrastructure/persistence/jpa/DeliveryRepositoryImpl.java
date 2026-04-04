@@ -28,6 +28,12 @@ public class DeliveryRepositoryImpl implements DeliveryRepository {
 	}
 
 	@Override
+	public Optional<Delivery> findByOrderId(UUID orderId) {
+		return deliveryJpaRepository.findByOrderId(orderId)
+			.map(deliveryMapper::toDomain);
+	}
+
+	@Override
 	public Delivery save(Delivery delivery) {
 		DeliveryJpaEntity jpaEntity = deliveryMapper.toJpaEntity(delivery);
 		DeliveryJpaEntity savedEntity = deliveryJpaRepository.save(jpaEntity);

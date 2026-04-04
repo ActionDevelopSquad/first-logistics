@@ -1,11 +1,9 @@
 package com.firstlogistics.deliverservice.infrastructure.messaging.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.firstlogistics.deliverservice.domain.exception.DeliveryCreationException;
+import com.firstlogistics.deliverservice.domain.event.OrderCancelledEvent;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
-import com.firstlogistics.deliverservice.domain.exception.DistributedLockException;
-import com.firstlogistics.deliverservice.infrastructure.messaging.consumer.OrderAcceptedRecoverer;
-import com.firstlogistics.deliverservice.domain.event.OrderAcceptedEvent;
+import com.firstlogistics.deliverservice.infrastructure.messaging.producer.DeliveryEventKafkaProducer;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.annotation.Bean;
@@ -20,35 +18,40 @@ import org.springframework.util.backoff.FixedBackOff;
 
 @Configuration
 @RequiredArgsConstructor
-public class OrderAcceptedConsumerConfig {
+public class OrderCancelledConsumerConfig {
 
 	private final KafkaConsumerConfig kafkaConsumerConfig;
 	private final ObjectMapper objectMapper;
 
 	@Bean
-	public ConsumerFactory<String, OrderAcceptedEvent> orderAcceptedConsumerFactory() {
-		JsonDeserializer<OrderAcceptedEvent> deserializer = new JsonDeserializer<>(OrderAcceptedEvent.class, objectMapper);
+	public ConsumerFactory<String, OrderCancelledEvent> orderCancelledConsumerFactory() {
+		JsonDeserializer<OrderCancelledEvent> deserializer = new JsonDeserializer<>(OrderCancelledEvent.class, objectMapper);
 		deserializer.addTrustedPackages("com.firstlogistics.deliverservice.domain.event");
 		deserializer.setUseTypeHeaders(false);
 		return new DefaultKafkaConsumerFactory<>(kafkaConsumerConfig.commonConsumerProps(), new StringDeserializer(), deserializer);
 	}
 
 	@Bean
-	public DefaultErrorHandler orderAcceptedErrorHandler(OrderAcceptedRecoverer recoverer) {
-		DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, new FixedBackOff(1000L, 3L));
-		errorHandler.addNotRetryableExceptions(DeliveryCreationException.class, DeliveryException.class, DistributedLockException.class);
+	public DefaultErrorHandler orderCancelledErrorHandler(DeliveryEventKafkaProducer deliveryEventKafkaProducer) {
+		DefaultErrorHandler errorHandler = new DefaultErrorHandler(
+			(record, exception) -> {
+				deliveryEventKafkaProducer.handleOrderCancelledDlt(String.valueOf(record.key()), record.value());
+			},
+			new FixedBackOff(1000L, 3L)
+		);
+		errorHandler.addNotRetryableExceptions(DeliveryException.class);
 		return errorHandler;
 	}
 
 	@Bean
-	public ConcurrentKafkaListenerContainerFactory<String, OrderAcceptedEvent> orderAcceptedListenerContainerFactory(
-		DefaultErrorHandler orderAcceptedErrorHandler
+	public ConcurrentKafkaListenerContainerFactory<String, OrderCancelledEvent> orderCancelledListenerContainerFactory(
+		DefaultErrorHandler orderCancelledErrorHandler
 	) {
-		ConcurrentKafkaListenerContainerFactory<String, OrderAcceptedEvent> factory =
+		ConcurrentKafkaListenerContainerFactory<String, OrderCancelledEvent> factory =
 			new ConcurrentKafkaListenerContainerFactory<>();
-		factory.setConsumerFactory(orderAcceptedConsumerFactory());
+		factory.setConsumerFactory(orderCancelledConsumerFactory());
 		factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
-		factory.setCommonErrorHandler(orderAcceptedErrorHandler);
+		factory.setCommonErrorHandler(orderCancelledErrorHandler);
 		return factory;
 	}
 }
