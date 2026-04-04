@@ -140,4 +140,14 @@ public class DeliveryController {
 				ChangeDeliveryStatusResponse.from(deliveryCommandFacade.cancelDelivery(ChangeDeliveryStatusCommand.of(deliveryId, role, userId)))
 		));
 	}
+
+	@DeleteMapping("/{deliveryId}")
+	public ResponseEntity<ApiResponse<Void>> deleteDelivery(
+		@PathVariable UUID deliveryId,
+		@RequestHeader("X-User-Id") UUID userId,
+		@RequestHeader("X-User-Role") String role
+	) {
+		deliveryCommandService.deleteDelivery(deliveryId, role, userId);
+		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_DELETED, null));
+	}
 }

@@ -15,4 +15,6 @@ public interface DeliveryRepository {
 	Optional<Delivery> findByOrderId(UUID orderId);
 
 	Delivery save(Delivery delivery);
+
+	void deleteById(DeliveryId deliveryId, UUID userId);
 }
