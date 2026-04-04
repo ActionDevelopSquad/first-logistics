@@ -12,6 +12,7 @@ import com.firstlogistics.deliverservice.application.publisher.DeliveryEventPubl
 import com.firstlogistics.deliverservice.domain.entity.Delivery;
 import com.firstlogistics.deliverservice.domain.entity.DeliveryRoute;
 import com.firstlogistics.deliverservice.domain.entity.DeliveryManager;
+import com.firstlogistics.deliverservice.domain.enums.DeliveryStatus;
 import com.firstlogistics.deliverservice.domain.enums.UserRole;
 import com.firstlogistics.deliverservice.domain.event.DeliveryCreatedEvent;
 import com.firstlogistics.deliverservice.domain.event.DeliveryStatusChangedEvent;
@@ -275,6 +276,36 @@ public class DeliveryCommandService {
 		return ChangeDeliveryStatusResult.from(savedDelivery);
 	}
 
+	public ChangeDeliveryStatusResult cancelDelivery(Delivery delivery) {
+		delivery.cancelDelivery();
+		Delivery savedDelivery = deliveryRepository.save(delivery);
+
+		deliveryEventPublisher.publishDeliveryStatusChanged(
+			DeliveryStatusChangedEvent.create(savedDelivery));
+
+		return ChangeDeliveryStatusResult.from(savedDelivery);
+	}
+
+	public void cancelDeliveryBySystem(Delivery delivery) {
+		delivery.cancelBySystem();
+		Delivery savedDelivery = deliveryRepository.save(delivery);
+
+		deliveryEventPublisher.publishDeliveryStatusChanged(
+			DeliveryStatusChangedEvent.create(savedDelivery));
+	}
+
+	@Transactional
+	public void deleteDelivery(UUID deliveryId, String role, UUID userId) {
+		Delivery delivery = deliveryRepository.findById(DeliveryId.of(deliveryId))
+			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
+
+		DeliveryAccessContext accessContext = DeliveryAccessContext.from(delivery);
+		deliveryPermissionValidator.validate(accessContext, role, userId,
+			Set.of(UserRole.MASTER, UserRole.HUB_MANAGER));
+
+		deliveryRepository.deleteById(DeliveryId.of(deliveryId), userId);
+	}
+
 	private DeliveryCreatedEvent buildDeliveryCreatedEvent(
 			Delivery delivery,
 			CreateDeliveryCommand command,
@@ -324,8 +355,11 @@ public class DeliveryCommandService {
 
 		DeliveryCreatedEvent.DeliveryInfo deliveryInfo = DeliveryCreatedEvent.DeliveryInfo.of(
 			delivery.getId().id(),
+			delivery.getCurrentHubId(),
 			receiver.name(),
 			delivery.getReceiverSlackId(),
+			receiver.email(),
+			receiver.phone(),
 			command.receiverRoadAddress(),
 			command.receiverDetailAddress(),
 			deliveryRoutes,

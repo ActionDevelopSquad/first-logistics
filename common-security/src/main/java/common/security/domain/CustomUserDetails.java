@@ -1,4 +1,4 @@
-package common.security.security.domain;
+package common.security.domain;
 
 import common.security.entity.enums.UserRole;
 import lombok.Getter;

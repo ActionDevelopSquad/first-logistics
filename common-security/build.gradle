@@ -7,7 +7,10 @@ dependencies {
     implementation project(':common-jpa')
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
     api 'org.springframework.boot:spring-boot-starter-aop'
     api 'org.springframework.boot:spring-boot-starter-security'
+
     testImplementation 'org.springframework.security:spring-security-test'
 }

@@ -37,7 +37,7 @@ public class DeliveryController {
 	) {
 		return ResponseEntity.status(DeliverySuccessCode.DELIVERY_CREATED.getStatus())
 			.body(ApiResponse.success(DeliverySuccessCode.DELIVERY_CREATED,
-					CreateDeliveryResponse.from(deliveryCommandFacade.createDelivery(request.toCommand()))
+					CreateDeliveryResponse.from(deliveryCommandFacade.createDelivery(request.toCommand(), role, userId))
 			));
 	}
 
@@ -49,6 +49,17 @@ public class DeliveryController {
 	) {
 		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_LIST_FOUND,
 				DeliveryListResponse.from(deliveryQueryService.getDeliveries(request.toQuery(role, userId))))
+		);
+	}
+
+	@GetMapping("/{deliveryId}")
+	public ResponseEntity<ApiResponse<DeliveryDetailResponse>> getDelivery(
+		@PathVariable UUID deliveryId,
+		@RequestHeader("X-User-Role") String role,
+		@RequestHeader("X-User-Id") UUID userId
+	) {
+		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_DETAIL_FOUND,
+				DeliveryDetailResponse.from(deliveryQueryService.getDelivery(deliveryId, role, userId)))
 		);
 	}
 
@@ -119,14 +130,24 @@ public class DeliveryController {
 		));
 	}
 
-	@GetMapping("/{deliveryId}")
-	public ResponseEntity<ApiResponse<DeliveryDetailResponse>> getDelivery(
+	@PostMapping("/{deliveryId}/cancel")
+	public ResponseEntity<ApiResponse<ChangeDeliveryStatusResponse>> cancelDelivery(
 		@PathVariable UUID deliveryId,
-		@RequestHeader("X-User-Role") String role,
-		@RequestHeader("X-User-Id") UUID userId
+		@RequestHeader("X-User-Id") UUID userId,
+		@RequestHeader("X-User-Role") String role
 	) {
-		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_DETAIL_FOUND,
-				DeliveryDetailResponse.from(deliveryQueryService.getDelivery(deliveryId, role, userId)))
-		);
+		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_CANCELLED,
+				ChangeDeliveryStatusResponse.from(deliveryCommandFacade.cancelDelivery(ChangeDeliveryStatusCommand.of(deliveryId, role, userId)))
+		));
+	}
+
+	@DeleteMapping("/{deliveryId}")
+	public ResponseEntity<ApiResponse<Void>> deleteDelivery(
+		@PathVariable UUID deliveryId,
+		@RequestHeader("X-User-Id") UUID userId,
+		@RequestHeader("X-User-Role") String role
+	) {
+		deliveryCommandService.deleteDelivery(deliveryId, role, userId);
+		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_DELETED, null));
 	}
 }

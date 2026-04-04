@@ -1,9 +1,9 @@
-package common.security.security.config;
+package common.security.config;
 
 import common.jpa.config.CurrentAuditorProvider;
 import common.jpa.config.JpaAuditingConfig;
 import common.security.entity.exception.AuthException;
-import common.security.security.util.SecurityUtils;
+import common.security.util.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.context.annotation.Configuration;

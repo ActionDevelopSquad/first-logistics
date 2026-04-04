@@ -1108,6 +1108,139 @@ class DeliveryCommandServiceTest {
 		}
 	}
 
+	// ===== 배송 취소 테스트 =====
+
+	@Nested
+	@DisplayName("배송 취소 실패")
+	class CancelDeliveryFail {
+
+		@Test
+		@DisplayName("CREATED 아닌 상태 (FOR_HUB_MOVING)")
+		void cancelDelivery_fail_invalidStatus() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.FOR_HUB_MOVING);
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.cancelDelivery(delivery));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.INVALID_STATUS_TRANSITION);
+		}
+	}
+
+	@Nested
+	@DisplayName("배송 취소 성공")
+	class CancelDeliverySuccess {
+
+		@Test
+		@DisplayName("CREATED → CANCELLED")
+		void cancelDelivery_success() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
+
+			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
+
+			// when
+			ChangeDeliveryStatusResult result = deliveryCommandService.cancelDelivery(delivery);
+
+			// then
+			assertThat(result.deliveryId()).isEqualTo(deliveryId);
+			ArgumentCaptor<Delivery> captor = ArgumentCaptor.forClass(Delivery.class);
+			then(deliveryRepository).should().save(captor.capture());
+			assertThat(captor.getValue().getStatus()).isEqualTo(DeliveryStatus.CANCELLED);
+		}
+
+		@Test
+		@DisplayName("취소 시 이벤트 발행")
+		void cancelDelivery_success_eventPublished() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
+
+			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
+
+			// when
+			deliveryCommandService.cancelDelivery(delivery);
+
+			// then
+			ArgumentCaptor<DeliveryStatusChangedEvent> eventCaptor = ArgumentCaptor.forClass(DeliveryStatusChangedEvent.class);
+			then(deliveryEventPublisher).should().publishDeliveryStatusChanged(eventCaptor.capture());
+			DeliveryStatusChangedEvent captured = eventCaptor.getValue();
+			assertThat(captured.status()).isEqualTo("CANCELLED");
+			assertThat(captured.deliveryId()).isEqualTo(deliveryId);
+		}
+	}
+
+	// ===== 시스템 배송 취소 테스트 =====
+
+	@Nested
+	@DisplayName("시스템 배송 취소 실패")
+	class CancelDeliveryBySystemFail {
+
+		@Test
+		@DisplayName("배송 출발 후 취소 불가")
+		void cancelDeliveryBySystem_fail_invalidStatusTransition() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.FOR_HUB_MOVING);
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.cancelDeliveryBySystem(delivery));
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.INVALID_STATUS_TRANSITION);
+		}
+	}
+
+	@Nested
+	@DisplayName("시스템 배송 취소 성공")
+	class CancelDeliveryBySystemSuccess {
+
+		@Test
+		@DisplayName("CREATED 상태에서 취소 성공")
+		void cancelDeliveryBySystem_success() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
+
+			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
+
+			// when
+			deliveryCommandService.cancelDeliveryBySystem(delivery);
+
+			// then
+			ArgumentCaptor<Delivery> captor = ArgumentCaptor.forClass(Delivery.class);
+			then(deliveryRepository).should().save(captor.capture());
+			assertThat(captor.getValue().getStatus()).isEqualTo(DeliveryStatus.CANCELLED);
+		}
+
+		@Test
+		@DisplayName("취소 시 이벤트 발행")
+		void cancelDeliveryBySystem_success_eventPublished() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
+
+			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
+
+			// when
+			deliveryCommandService.cancelDeliveryBySystem(delivery);
+
+			// then
+			ArgumentCaptor<DeliveryStatusChangedEvent> eventCaptor = ArgumentCaptor.forClass(DeliveryStatusChangedEvent.class);
+			then(deliveryEventPublisher).should().publishDeliveryStatusChanged(eventCaptor.capture());
+			assertThat(eventCaptor.getValue().deliveryId()).isEqualTo(deliveryId);
+			assertThat(eventCaptor.getValue().status()).isEqualTo("CANCELLED");
+		}
+	}
+
 	// --- 배송 수정 테스트 픽스처 ---
 
 	private static final UUID STUB_SOURCE_HUB_ID = UUID.randomUUID();

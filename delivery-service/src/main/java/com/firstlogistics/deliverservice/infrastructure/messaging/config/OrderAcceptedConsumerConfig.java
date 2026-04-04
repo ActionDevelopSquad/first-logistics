@@ -28,7 +28,7 @@ public class OrderAcceptedConsumerConfig {
 	@Bean
 	public ConsumerFactory<String, OrderAcceptedEvent> orderAcceptedConsumerFactory() {
 		JsonDeserializer<OrderAcceptedEvent> deserializer = new JsonDeserializer<>(OrderAcceptedEvent.class, objectMapper);
-		deserializer.addTrustedPackages("*");
+		deserializer.addTrustedPackages("com.firstlogistics.deliverservice.domain.event");
 		deserializer.setUseTypeHeaders(false);
 		return new DefaultKafkaConsumerFactory<>(kafkaConsumerConfig.commonConsumerProps(), new StringDeserializer(), deserializer);
 	}
