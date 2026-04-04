@@ -1,8 +1,11 @@
 package com.firstlogistics.productservice.product.presentation;
 
 import com.firstlogistics.productservice.product.application.ProductCommandService;
+import com.firstlogistics.productservice.product.application.ProductQueryService;
 import com.firstlogistics.productservice.product.presentation.dto.request.CreateProductRequest;
+import com.firstlogistics.productservice.product.presentation.dto.request.GetProductsRequest;
 import com.firstlogistics.productservice.product.presentation.dto.response.CreateProductResponse;
+import com.firstlogistics.productservice.product.presentation.dto.response.ProductPageResponse;
 import common.response.ApiResponse;
 import common.response.CommonSuccessCode;
 import common.security.entity.enums.UserRole;
@@ -11,8 +14,11 @@ import common.security.security.domain.CustomUserDetails;
 import common.security.security.util.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,12 +30,26 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProductController {
 
     private final ProductCommandService productCommandService;
+    private final ProductQueryService productQueryService;
 
     @RequireRole({UserRole.MASTER, UserRole.HUB_MANAGER, UserRole.COMPANY_MANAGER})
     @PostMapping
-    public ResponseEntity<ApiResponse<CreateProductResponse>> register(@Valid @RequestBody CreateProductRequest request) {
+    public ResponseEntity<ApiResponse<CreateProductResponse>> register(
+            @Valid @RequestBody CreateProductRequest request) {
         CustomUserDetails currentUser = SecurityUtils.currentUser();
-        CreateProductResponse response = CreateProductResponse.from(productCommandService.register(request.toCommand(currentUser.getUserId(), currentUser.getRole().name())));
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(CommonSuccessCode.CREATED, response));
+        CreateProductResponse response = CreateProductResponse.from(
+                productCommandService.register(
+                        request.toCommand(currentUser.getUserId(), currentUser.getRole().name())));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(CommonSuccessCode.CREATED, response));
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<ProductPageResponse>> getProducts(
+            @ModelAttribute GetProductsRequest request,
+            Pageable pageable) {
+        ProductPageResponse response = ProductPageResponse.from(
+                productQueryService.search(request.toQuery(), pageable));
+        return ResponseEntity.ok(ApiResponse.success(CommonSuccessCode.OK, response));
     }
 }
