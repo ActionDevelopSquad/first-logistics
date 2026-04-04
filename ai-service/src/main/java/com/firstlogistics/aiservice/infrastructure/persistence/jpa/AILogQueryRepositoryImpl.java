@@ -3,6 +3,7 @@ package com.firstlogistics.aiservice.infrastructure.persistence.jpa;
 
 import com.firstlogistics.aiservice.domain.projection.AILogDetailProjection;
 import com.firstlogistics.aiservice.domain.repository.AILogQueryRepository;
+import com.firstlogistics.aiservice.domain.vo.AILogId;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +34,7 @@ public class AILogQueryRepositoryImpl implements AILogQueryRepository {
                 ))
                 .from(aiLog)
                 .where(
-                        aiLog.id.eq(aiLogId),
+                        aiLog.id.eq(AILogId.of(aiLogId).id()),
                         aiLog.deletedAt.isNull()
                 )
                 .fetchOne();
