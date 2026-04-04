@@ -10,17 +10,21 @@ import com.firstlogistics.companyservice.presentation.dto.response.CompanyRespon
 import com.firstlogistics.companyservice.presentation.dto.response.CreateCompanyResponse;
 import common.response.ApiResponse;
 import common.response.CommonSuccessCode;
+import common.security.entity.enums.UserRole;
+import common.security.security.aop.RequireRole;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -34,6 +38,7 @@ public class CompanyController {
     private final CompanyCommandService companyCommandService;
     private final CompanyQueryService companyQueryService;
 
+    @RequireRole({UserRole.MASTER, UserRole.HUB_MANAGER})
     @PostMapping
     public ResponseEntity<ApiResponse<CreateCompanyResponse>> register(
             @Valid @RequestBody CreateCompanyRequest request) {
@@ -58,6 +63,7 @@ public class CompanyController {
         return ResponseEntity.ok(ApiResponse.success(CommonSuccessCode.OK, response));
     }
 
+    @RequireRole({UserRole.MASTER, UserRole.HUB_MANAGER, UserRole.COMPANY_MANAGER})
     @PatchMapping("/{companyId}")
     public ResponseEntity<ApiResponse<CompanyResponse>> updateCompany(
             @PathVariable UUID companyId,
@@ -67,6 +73,7 @@ public class CompanyController {
         return ResponseEntity.ok(ApiResponse.success(CommonSuccessCode.OK, response));
     }
 
+    @RequireRole({UserRole.MASTER, UserRole.HUB_MANAGER})
     @PatchMapping("/{companyId}/deactivate")
     public ResponseEntity<ApiResponse<CompanyResponse>> deactivateCompany(
             @PathVariable UUID companyId) {
@@ -75,12 +82,22 @@ public class CompanyController {
         return ResponseEntity.ok(ApiResponse.success(CommonSuccessCode.OK, response));
     }
 
+    @RequireRole({UserRole.MASTER, UserRole.HUB_MANAGER})
     @PatchMapping("/{companyId}/activate")
     public ResponseEntity<ApiResponse<CompanyResponse>> activateCompany(
             @PathVariable UUID companyId) {
         CompanyResponse response = CompanyResponse.from(
                 companyCommandService.activate(companyId));
         return ResponseEntity.ok(ApiResponse.success(CommonSuccessCode.OK, response));
+    }
+
+    @RequireRole({UserRole.MASTER, UserRole.HUB_MANAGER})
+    @DeleteMapping("/{companyId}")
+    public ResponseEntity<ApiResponse<Void>> deleteCompany(
+            @PathVariable UUID companyId,
+            @RequestHeader("X-User-Id") UUID userId) {
+        companyCommandService.delete(companyId, userId);
+        return ResponseEntity.ok(ApiResponse.success(CommonSuccessCode.OK, null));
     }
 
     @GetMapping("/manager/{managerId}")

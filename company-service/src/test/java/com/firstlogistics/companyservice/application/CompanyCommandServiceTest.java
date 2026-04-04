@@ -4,32 +4,35 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.verify;
 
 import com.firstlogistics.companyservice.application.dto.command.CreateCompanyCommand;
 import com.firstlogistics.companyservice.application.dto.command.UpdateCompanyCommand;
 import com.firstlogistics.companyservice.application.dto.result.CompanyResult;
-import com.firstlogistics.companyservice.application.port.CompanyEventPublisher;
 import com.firstlogistics.companyservice.application.port.HubPort;
 import com.firstlogistics.companyservice.domain.entity.Company;
 import com.firstlogistics.companyservice.domain.entity.Supplier;
 import com.firstlogistics.companyservice.domain.enums.CompanyStatus;
-import com.firstlogistics.companyservice.domain.event.CompanyCreatedEvent;
+import com.firstlogistics.companyservice.domain.event.CompanyActivatedEvent;
+import com.firstlogistics.companyservice.domain.event.CompanyDeactivatedEvent;
+import com.firstlogistics.companyservice.domain.event.CompanyDeletedEvent;
 import com.firstlogistics.companyservice.domain.exception.CompanyErrorCode;
 import com.firstlogistics.companyservice.domain.exception.CompanyException;
 import com.firstlogistics.companyservice.domain.repository.CompanyRepository;
 import com.firstlogistics.companyservice.domain.vo.CompanyAddress;
 import com.firstlogistics.companyservice.domain.vo.GeoLocation;
+import common.event.Events;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -44,7 +47,7 @@ class CompanyCommandServiceTest {
     private HubPort hubPort;
 
     @Mock
-    private CompanyEventPublisher eventPublisher;
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @InjectMocks
     private CompanyCommandService companyCommandService;
@@ -52,6 +55,11 @@ class CompanyCommandServiceTest {
     private static final UUID FIXED_HUB_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID FIXED_MANAGER_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
     private static final UUID FIXED_COMPANY_ID = UUID.fromString("00000000-0000-0000-0000-000000000003");
+
+    @BeforeEach
+    void initEvents() {
+        new Events().init(applicationEventPublisher);
+    }
 
     @Nested
     @DisplayName("업체 생성 (register)")
@@ -90,27 +98,6 @@ class CompanyCommandServiceTest {
             assertThat(result.name()).isEqualTo("테스트업체");
             assertThat(result.type()).isEqualTo("SUPPLIER");
             assertThat(result.status()).isEqualTo(CompanyStatus.ACTIVE.name());
-        }
-
-        @Test
-        @DisplayName("저장 후 CompanyCreatedEvent가 발행된다")
-        void register_publishesEvent() {
-            // given
-            given(hubPort.getHubId(any(GeoLocation.class)))
-                    .willReturn(FIXED_HUB_ID);
-            given(companyRepository.save(any()))
-                    .willAnswer(invocation -> invocation.getArgument(0));
-
-            ArgumentCaptor<CompanyCreatedEvent> eventCaptor = ArgumentCaptor.forClass(CompanyCreatedEvent.class);
-
-            // when
-            CompanyResult result = companyCommandService.register(validCommand);
-
-            // then
-            verify(eventPublisher).publish(eventCaptor.capture());
-            CompanyCreatedEvent publishedEvent = eventCaptor.getValue();
-            assertThat(publishedEvent.companyId()).isEqualTo(result.id());
-            assertThat(publishedEvent.companyName()).isEqualTo("테스트업체");
         }
 
         @Test
@@ -264,6 +251,54 @@ class CompanyCommandServiceTest {
     }
 
     @Nested
+    @DisplayName("업체 삭제 (delete)")
+    class Delete {
+
+        private static final UUID FIXED_DELETED_BY = UUID.fromString("00000000-0000-0000-0000-000000000010");
+
+        private Company activeCompany;
+
+        @BeforeEach
+        void setUp() {
+            activeCompany = Company.reconstitute(
+                    FIXED_COMPANY_ID, FIXED_HUB_ID, FIXED_MANAGER_ID, "테스트업체",
+                    new Supplier(), CompanyStatus.ACTIVE,
+                    CompanyAddress.of("서울특별시 송파구 송파대로 55", "3층"),
+                    GeoLocation.of(37.514, 127.106)
+            );
+        }
+
+        @Test
+        @DisplayName("존재하는 업체를 삭제하면 성공한다")
+        void delete_success() {
+            // given
+            given(companyRepository.findById(FIXED_COMPANY_ID))
+                    .willReturn(Optional.of(activeCompany));
+            willDoNothing().given(companyRepository).delete(FIXED_COMPANY_ID, FIXED_DELETED_BY);
+
+            // when
+            companyCommandService.delete(FIXED_COMPANY_ID, FIXED_DELETED_BY);
+
+            // then
+            verify(companyRepository).delete(FIXED_COMPANY_ID, FIXED_DELETED_BY);
+            verify(applicationEventPublisher).publishEvent(any(CompanyDeletedEvent.class));
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 companyId로 삭제하면 예외가 발생한다")
+        void delete_companyNotFound_throwsException() {
+            // given
+            given(companyRepository.findById(FIXED_COMPANY_ID))
+                    .willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> companyCommandService.delete(FIXED_COMPANY_ID, FIXED_DELETED_BY))
+                    .isInstanceOf(CompanyException.class)
+                    .hasMessageContaining(CompanyErrorCode.COMPANY_NOT_FOUND.getMessage());
+        }
+    }
+
+    @Nested
     @DisplayName("업체 비활성화 (deactivate)")
     class Deactivate {
 
@@ -293,6 +328,7 @@ class CompanyCommandServiceTest {
 
             // then
             assertThat(result.status()).isEqualTo(CompanyStatus.INACTIVE.name());
+            verify(applicationEventPublisher).publishEvent(any(CompanyDeactivatedEvent.class));
         }
 
         @Test
@@ -358,6 +394,7 @@ class CompanyCommandServiceTest {
 
             // then
             assertThat(result.status()).isEqualTo(CompanyStatus.ACTIVE.name());
+            verify(applicationEventPublisher).publishEvent(any(CompanyActivatedEvent.class));
         }
 
         @Test
