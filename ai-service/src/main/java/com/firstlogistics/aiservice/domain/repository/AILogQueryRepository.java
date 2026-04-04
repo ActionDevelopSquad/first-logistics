@@ -8,5 +8,5 @@ import java.util.UUID;
 
 public interface AILogQueryRepository {
 
-    Optional<AILogDetailProjection> findById(UUID aiLogId);
+    Optional<AILogDetailProjection> findById(AILogId aiLogId);
 }

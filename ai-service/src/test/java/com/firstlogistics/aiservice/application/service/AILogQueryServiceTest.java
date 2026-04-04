@@ -44,7 +44,7 @@ class AILogQueryServiceTest {
         UUID messageId = UUID.randomUUID();
 
         AILogDetailProjection projection = createProjection(aiLogId, messageId);
-        given(aiLogQueryRepository.findById(aiLogId)).willReturn(Optional.of(projection));
+        given(aiLogQueryRepository.findById(AILogId.of(aiLogId))).willReturn(Optional.of(projection));
 
         // when
         AILogDetailResult result = aiLogQueryService.getAILog(aiLogId);
@@ -58,7 +58,7 @@ class AILogQueryServiceTest {
         assertThat(result.responseContent()).isEqualTo("테스트 응답");
         assertThat(result.systemPrompt()).isEqualTo("시스템 프롬프트");
         assertThat(result.createdAt()).isEqualTo(projection.createdAt());
-        verify(aiLogQueryRepository).findById(aiLogId);
+        verify(aiLogQueryRepository).findById(AILogId.of(aiLogId));
     }
 
     @Test
@@ -67,7 +67,7 @@ class AILogQueryServiceTest {
         // given
         UUID aiLogId = UUID.randomUUID();
 
-        given(aiLogQueryRepository.findById(aiLogId)).willReturn(Optional.empty());
+        given(aiLogQueryRepository.findById(AILogId.of(aiLogId))).willReturn(Optional.empty());
 
         // when & then
         assertThatThrownBy(() -> aiLogQueryService.getAILog(aiLogId))

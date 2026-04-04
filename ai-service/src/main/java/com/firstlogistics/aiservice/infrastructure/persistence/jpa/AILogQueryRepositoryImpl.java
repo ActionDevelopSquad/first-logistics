@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
-import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
@@ -20,7 +19,7 @@ public class AILogQueryRepositoryImpl implements AILogQueryRepository {
     private static final QAILogJpaEntity aiLog = QAILogJpaEntity.aILogJpaEntity;
 
     @Override
-    public Optional<AILogDetailProjection> findById(UUID aiLogId) {
+    public Optional<AILogDetailProjection> findById(AILogId aiLogId) {
         AILogDetailProjection result = queryFactory
                 .select(Projections.constructor(AILogDetailProjection.class,
                         aiLog.id,
@@ -34,7 +33,7 @@ public class AILogQueryRepositoryImpl implements AILogQueryRepository {
                 ))
                 .from(aiLog)
                 .where(
-                        aiLog.id.eq(AILogId.of(aiLogId).id()),
+                        aiLog.id.eq(aiLogId.id()),
                         aiLog.deletedAt.isNull()
                 )
                 .fetchOne();
