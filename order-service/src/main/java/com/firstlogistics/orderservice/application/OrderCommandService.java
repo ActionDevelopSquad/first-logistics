@@ -2,6 +2,7 @@ package com.firstlogistics.orderservice.application;
 
 import com.firstlogistics.orderservice.application.dto.CreateOrderCommand;
 import com.firstlogistics.orderservice.domain.entity.Order;
+import com.firstlogistics.orderservice.domain.enums.OrderCancelType;
 import com.firstlogistics.orderservice.domain.event.OrderAcceptedEvent;
 import com.firstlogistics.orderservice.domain.event.OrderCancelledEvent;
 import com.firstlogistics.orderservice.domain.event.OrderCreatedEvent;
@@ -63,14 +64,40 @@ public class OrderCommandService {
         return order.getStatus().name();
     }
 
+    // 주문 거절로 인한 취소
     @Transactional
     public String rejectOrder(UUID userId, UUID orderId) {
+        return processCancellation(userId, orderId, OrderCancelType.SUPPLIER_CANCEL);
+    }
+
+    // 관리자가 직접 주문 취소
+    @Transactional
+    public String cancelOrder(UUID userId, UUID orderId) {
+        return processCancellation(userId, orderId, OrderCancelType.ADMIN_CANCEL);
+    }
+
+    @Transactional
+    public String requestCancel(UUID userId, UUID orderId) {
         Order order = getOrder(orderId);
-        order.cancel();
+        order.requestCancel();
 
         orderRepository.save(order);
 
-        Events.trigger(OrderCancelledEvent.from(order));
+        return order.getStatus().name();
+    }
+
+    // 주문 취소 요청 승인으로 인한 취소
+    @Transactional
+    public String approveCancelRequest(UUID userId, UUID orderId) {
+        return processCancellation(userId, orderId, OrderCancelType.ORDERER_REQUEST);
+    }
+
+    @Transactional
+    public String rejectCancelRequest(UUID userId, UUID orderId) {
+        Order order = getOrder(orderId);
+        order.rejectCancelRequest();
+
+        orderRepository.save(order);
 
         return order.getStatus().name();
     }
@@ -78,5 +105,16 @@ public class OrderCommandService {
     private Order getOrder(UUID orderId) {
         return orderRepository.findById(OrderId.of(orderId))
                 .orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));
+    }
+
+    private String processCancellation(UUID userId, UUID orderId, OrderCancelType cancelType) {
+        Order order  = getOrder(orderId);
+        order.cancel(cancelType);
+
+        orderRepository.save(order);
+
+        Events.trigger(OrderCancelledEvent.from(order));
+
+        return order.getStatus().name();
     }
 }

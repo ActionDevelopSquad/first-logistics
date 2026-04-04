@@ -1,8 +1,0 @@
-package common.jpa.domain.enums;
-
-public enum UserRole {
-    MASTER,
-    HUB_MANAGER,
-    DELIVERY_MANAGER,
-    COMPANY_MANAGER;
-}

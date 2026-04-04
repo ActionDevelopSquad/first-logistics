@@ -3,7 +3,7 @@ package com.firstlogistics.userservice.domain.entity;
 import com.firstlogistics.userservice.domain.enums.Status;
 import com.firstlogistics.userservice.domain.exception.UserErrorCode;
 import com.firstlogistics.userservice.domain.exception.UserException;
-import common.jpa.domain.enums.UserRole;
+import common.jpa.entity.enums.UserRole;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,10 +25,30 @@ public class User {
     private String slackId;
     private Status status;
     private UserRole userRole;
+    private UUID organizationId;
     private LocalDateTime lastLoginAt;
 
-    public static User create(UUID userId, String username, String name, String phone, String email, String slackId, UserRole role) {
-        return new User(userId, username, name, phone, email, slackId, Status.PENDING, role, null);
+    public static User create(
+            UUID userId,
+            String username,
+            String name,
+            String phone,
+            String email,
+            String slackId,
+            UserRole role,
+            UUID organizationId) {
+        return new User(
+                userId,
+                username,
+                name,
+                phone,
+                email,
+                slackId,
+                Status.PENDING,
+                role,
+                organizationId,
+                null
+        );
     }
 
     public void update(String name, String email, String phone, String slackId) {
@@ -39,22 +59,46 @@ public class User {
     }
 
     public void canLogin() {
-        if (this.status != Status.APPROVE) {
+        if (this.status != Status.APPROVED) {
             throw new UserException(UserErrorCode.CAN_LOGIN_ONLY_APPROVE);
         }
     }
 
     public void approve() {
-        if (this.status == Status.APPROVE) {
+        if (this.status == Status.APPROVED) {
             throw new UserException(UserErrorCode.ALREADY_APPROVE);
         }
-        this.status = Status.APPROVE;
+        this.status = Status.APPROVED;
     }
 
     public void reject() {
         if (this.status == Status.REJECTED) {
             throw new UserException(UserErrorCode.ALREADY_REJECTED);
         }
+        this.status = Status.REJECTED;
+    }
+
+    public boolean canManage(User targetUser) {
+        if (this.userRole == UserRole.MASTER) {
+            return true;
+        }
+
+        if (this.userRole == UserRole.HUB_MANAGER) {
+            if (!this.organizationId.equals(targetUser.getOrganizationId())) {
+                return false;
+            }
+
+            return targetUser.getUserRole() == UserRole.COMPANY_MANAGER || targetUser.getUserRole() == UserRole.DELIVERY_MANAGER;
+        }
+
+        return false;
+    }
+
+    public void rollbackStatus() {
+        this.status = Status.PENDING;
+    }
+
+    public void deliveryManagerOver() {
         this.status = Status.REJECTED;
     }
 
@@ -78,6 +122,7 @@ public class User {
             String slackId,
             Status status,
             UserRole userRole,
+            UUID organizationId,
             LocalDateTime lastLoginAt
     ) {
         return new User(
@@ -89,6 +134,7 @@ public class User {
                 slackId,
                 status,
                 userRole,
+                organizationId,
                 lastLoginAt
         );
     }

@@ -3,6 +3,7 @@ package com.firstlogistics.orderservice.application;
 import com.firstlogistics.orderservice.application.dto.CreateOrderCommand;
 import com.firstlogistics.orderservice.domain.entity.Order;
 import com.firstlogistics.orderservice.domain.entity.OrderTestBuilder;
+import com.firstlogistics.orderservice.domain.enums.OrderCancelType;
 import com.firstlogistics.orderservice.domain.enums.OrderStatus;
 import com.firstlogistics.orderservice.domain.event.OrderAcceptedEvent;
 import com.firstlogistics.orderservice.domain.event.OrderCancelledEvent;
@@ -204,5 +205,113 @@ class OrderCommandServiceTest {
                 .hasMessage(OrderErrorCode.ALREADY_CANCELLED.getMessage());
         verify(orderRepository, never()).save(any(Order.class));
         verify(eventPublisher, never()).publishEvent(any());
+    }
+
+    // --- 주문 취소 및 취소 요청 테스트 ---
+
+    @Test
+    @DisplayName("성공: 관리자가 직접 주문을 취소하면 CANCELLED 상태가 되고 ADMIN_CANCEL 사유가 저장된다")
+    void cancelOrder_Success() {
+        // given
+        UUID orderId = UUID.randomUUID();
+        Order order = OrderTestBuilder.builder()
+                .id(orderId)
+                .status(OrderStatus.RESERVED)
+                .build();
+
+        when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
+
+        // when
+        String resultStatus = orderCommandService.cancelOrder(USER_ID, orderId);
+
+        // then
+        assertThat(resultStatus).isEqualTo("CANCELLED");
+        assertThat(order.getCancelType()).isEqualTo(OrderCancelType.ADMIN_CANCEL);
+        verify(orderRepository).save(order);
+        verify(eventPublisher).publishEvent(any(OrderCancelledEvent.class));
+    }
+
+    @Test
+    @DisplayName("성공: 발주처가 취소 요청 시 CANCEL_REQUESTED 상태가 된다")
+    void requestCancel_Success() {
+        // given
+        UUID orderId = UUID.randomUUID();
+        Order order = OrderTestBuilder.builder()
+                .id(orderId)
+                .status(OrderStatus.RESERVED)
+                .build();
+
+        when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
+
+        // when
+        String resultStatus = orderCommandService.requestCancel(USER_ID, orderId);
+
+        // then
+        assertThat(resultStatus).isEqualTo("CANCEL_REQUESTED");
+        verify(orderRepository).save(order);
+    }
+
+    @Test
+    @DisplayName("성공: 취소 요청을 승인하면 CANCELLED 상태가 되고 ORDERER_REQUEST 사유가 저장된다")
+    void approveCancelRequest_Success() {
+        // given
+        UUID orderId = UUID.randomUUID();
+        // 취소 요청 상태의 주문 준비
+        Order order = OrderTestBuilder.builder()
+                .id(orderId)
+                .status(OrderStatus.CANCEL_REQUESTED)
+                .previousStatus(OrderStatus.RESERVED)
+                .build();
+
+        when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
+
+        // when
+        String resultStatus = orderCommandService.approveCancelRequest(USER_ID, orderId);
+
+        // then
+        assertThat(resultStatus).isEqualTo("CANCELLED");
+        assertThat(order.getCancelType()).isEqualTo(OrderCancelType.ORDERER_REQUEST);
+        verify(orderRepository).save(order);
+        verify(eventPublisher).publishEvent(any(OrderCancelledEvent.class));
+    }
+
+    @Test
+    @DisplayName("성공: 취소 요청을 반려하면 이전 상태로 복구된다")
+    void rejectCancelRequest_Success() {
+        // given
+        UUID orderId = UUID.randomUUID();
+        Order order = OrderTestBuilder.builder()
+                .id(orderId)
+                .status(OrderStatus.CANCEL_REQUESTED)
+                .previousStatus(OrderStatus.RESERVED)
+                .build();
+
+        when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
+
+        // when
+        String resultStatus = orderCommandService.rejectCancelRequest(USER_ID, orderId);
+
+        // then
+        assertThat(resultStatus).isEqualTo("RESERVED");
+        assertThat(order.getPreviousStatus()).isNull();
+        verify(orderRepository).save(order);
+    }
+
+    @Test
+    @DisplayName("실패: 취소 요청 상태가 아닌 주문을 반려하려 하면 예외가 발생한다")
+    void rejectCancelRequest_Fail_InvalidStatus() {
+        // given
+        UUID orderId = UUID.randomUUID();
+        Order order = OrderTestBuilder.builder()
+                .id(orderId)
+                .status(OrderStatus.ACCEPTED)
+                .build();
+
+        when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
+
+        // when & then
+        assertThatThrownBy(() -> orderCommandService.rejectCancelRequest(USER_ID, orderId))
+                .isInstanceOf(OrderException.class)
+                .hasMessage(OrderErrorCode.CANNOT_REJECT_CANCEL.getMessage());
     }
 }

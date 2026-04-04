@@ -3,7 +3,7 @@ package com.firstlogistics.companyservice.application.dto.command;
 import java.util.UUID;
 
 public record CreateCompanyCommand(
-        UUID userId,
+        UUID managerId,
         String name,
         String type,
         String roadAddress,

@@ -2,18 +2,29 @@ plugins {
     id 'org.springframework.boot'
 }
 
+ext {
+    set('querydslVersion', "5.0.0")
+}
+
 dependencies {
     implementation project(':common')
     implementation project(':common-jpa')
+    implementation project(':common-event')
+    implementation project(':common-security')
+
+    implementation "com.querydsl:querydsl-jpa:${querydslVersion}:jakarta"
+    annotationProcessor "com.querydsl:querydsl-apt:${querydslVersion}:jakarta"
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.keycloak:keycloak-admin-client:26.0.7'
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 //    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 
-//    runtimeOnly 'org.postgresql:postgresql'
+    runtimeOnly 'org.postgresql:postgresql'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    runtimeOnly 'com.h2database:h2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
