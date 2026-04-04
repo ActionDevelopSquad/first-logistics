@@ -152,7 +152,7 @@ class OrderCommandServiceTest {
         // when & then
         assertThatThrownBy(() -> orderCommandService.acceptOrder(orderId))
                 .isInstanceOf(OrderException.class)
-                .hasMessage(OrderErrorCode.INVALID_ORDER_STATUS.getMessage());
+                .hasMessage(OrderErrorCode.INVALID_ORDER_STATUS_CHANGE.getMessage());
         verify(orderRepository, never()).save(any(Order.class));
         verify(eventPublisher, never()).publishEvent(any());
     }

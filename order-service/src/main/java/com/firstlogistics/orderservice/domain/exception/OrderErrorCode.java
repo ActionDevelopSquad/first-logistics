@@ -30,7 +30,8 @@ public enum OrderErrorCode implements ErrorCode {
     INVALID_MONEY_AMOUNT(HttpStatus.BAD_REQUEST, "ORD013", "금액은 null이거나 0보다 작을 수 없습니다."),
 
     // 주문 상태 전이 & 멱등성 보장
-    INVALID_ORDER_STATUS(HttpStatus.BAD_REQUEST, "ORD014", "허용되지 않은 주문 상태 변경입니다."),
+    INVALID_ORDER_STATUS(HttpStatus.BAD_REQUEST, "ORD027", "유효하지 않은 주문 상태입니다."),
+    INVALID_ORDER_STATUS_CHANGE(HttpStatus.BAD_REQUEST, "ORD014", "허용되지 않은 주문 상태 변경입니다."),
     ALREADY_ACCEPTED(HttpStatus.BAD_REQUEST, "ORD015", "이미 승인된 주문입니다."),
     ALREADY_CANCELLED(HttpStatus.BAD_REQUEST, "ORD016", "이미 취소된 주문입니다."),
     ALREADY_CANCEL_REQUESTED(HttpStatus.BAD_REQUEST, "ORD017", "이미 취소 요청된 주문입니다."),
