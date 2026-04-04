@@ -1,10 +1,15 @@
 package com.firstlogistics.aiservice.application.facade;
 
 import com.firstlogistics.aiservice.application.dto.command.CreateAILogCommand;
+import com.firstlogistics.aiservice.application.dto.result.AILogResult;
 import com.firstlogistics.aiservice.application.service.AILogCommandService;
 import com.firstlogistics.aiservice.domain.event.DeliveryAcceptedEvent;
+import com.firstlogistics.aiservice.domain.event.NotificationCreatedEvent;
+import com.firstlogistics.aiservice.domain.vo.MessengerMessageId;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.stream.Collectors;
 
@@ -12,14 +17,17 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AIMessageFacade {
     private final AILogCommandService aiLogCommandService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public void processAiNotification(DeliveryAcceptedEvent event) {
         // 현재 허브 담당자 슬랙 id 추출
-        String currentHubManagerSlackId = event.delivery().deliveryRoutes().stream()
+        DeliveryAcceptedEvent.DeliveryRouteInfo currentRoute = event.delivery().deliveryRoutes().stream()
                 .filter(route -> route.sourceHubId().equals(event.currentHubId()))
-                .map(DeliveryAcceptedEvent.DeliveryRouteInfo::hubDeliveryManagerSlackId)
                 .findFirst()
-                .orElse(event.delivery().companyDeliveryManagerSlackId());
+                .orElse(event.delivery().deliveryRoutes().getFirst());
+
+        String currentHubManagerSlackId = currentRoute.hubDeliveryManagerSlackId();
+        String currentHubName = currentRoute.sourceHubName();
 
         // 경유지 정보 조립 (예: 대전 센터, 부산 센터)
         String hubs = event.delivery().deliveryRoutes().stream()
@@ -41,7 +49,7 @@ public class AIMessageFacade {
                 event.order().orderDueDate(),
                 productInfo,
                 event.order().orderRequestNote(),
-                event.delivery().deliveryRoutes().getFirst().sourceHubName(), // 첫 출발지
+                currentHubName,
                 hubs,
                 event.delivery().receiverRoadAddress() + " " + event.delivery().receiverDetailAddress(),
                 event.delivery().companyDeliveryManagerName(),
