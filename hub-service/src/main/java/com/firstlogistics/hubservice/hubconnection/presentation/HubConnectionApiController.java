@@ -1,8 +1,11 @@
 package com.firstlogistics.hubservice.hubconnection.presentation;
 
 import com.firstlogistics.hubservice.hubconnection.application.HubConnectionCommandService;
+import com.firstlogistics.hubservice.hubconnection.application.HubConnectionQueryService;
 import com.firstlogistics.hubservice.hubconnection.application.HubRouteQueryService;
 import com.firstlogistics.hubservice.hubconnection.presentation.dto.request.CreateHubConnectionRequest;
+import com.firstlogistics.hubservice.hubconnection.presentation.dto.request.SearchHubConnectionRequest;
+import com.firstlogistics.hubservice.hubconnection.presentation.dto.response.HubConnectionPageResponse;
 import com.firstlogistics.hubservice.hubconnection.presentation.dto.response.HubConnectionResponse;
 import com.firstlogistics.hubservice.hubconnection.presentation.dto.response.HubRouteResponse;
 import common.response.ApiResponse;
@@ -20,6 +23,7 @@ public class HubConnectionApiController {
 
     private final HubConnectionCommandService commandService;
     private final HubRouteQueryService hubRouteQueryService;
+    private final HubConnectionQueryService hubConnectionQueryService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<HubConnectionResponse>> create(@Valid @RequestBody CreateHubConnectionRequest request){
@@ -42,5 +46,19 @@ public class HubConnectionApiController {
         return ResponseEntity.status(HubConnectionSuccessCode.HUB_ROUTES_RETRIEVED.getStatus())
                 .body(ApiResponse.success(HubConnectionSuccessCode.HUB_ROUTES_RETRIEVED, response));
 
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<HubConnectionResponse>> getHubConnection(@PathVariable UUID id){
+        HubConnectionResponse response = HubConnectionResponse.from(hubConnectionQueryService.getHubConnection(id));
+        return ResponseEntity.status(HubConnectionSuccessCode.HUB_CONNECTION_RETRIEVED.getStatus())
+                .body(ApiResponse.success(HubConnectionSuccessCode.HUB_CONNECTION_RETRIEVED, response));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<HubConnectionPageResponse>> searchHubConnection(@ModelAttribute SearchHubConnectionRequest request){
+        HubConnectionPageResponse response = HubConnectionPageResponse.from(hubConnectionQueryService.searchHubConnection(request.toQuery()));
+        return ResponseEntity.status(HubConnectionSuccessCode.HUB_CONNECTION_LIST_RETRIEVED.getStatus())
+                .body(ApiResponse.success(HubConnectionSuccessCode.HUB_CONNECTION_LIST_RETRIEVED, response));
     }
 }
