@@ -346,6 +346,8 @@ public class DeliveryCommandService {
 			delivery.getCurrentHubId(),
 			receiver.name(),
 			delivery.getReceiverSlackId(),
+			receiver.email(),
+			receiver.phone(),
 			command.receiverRoadAddress(),
 			command.receiverDetailAddress(),
 			deliveryRoutes,

@@ -83,6 +83,8 @@ class DeliveryEventKafkaProducerTest {
             UUID.randomUUID(),
             "수령인",
             receiverSlackId,
+            "receiver@test.com",
+            "010-1111-1111",
             "서울시 강남구 테헤란로 123",
             "101호",
             List.of(),
