@@ -3,27 +3,21 @@ package com.firstlogistics.userservice.application.service;
 import com.firstlogistics.userservice.application.dto.command.LoginCommand;
 import com.firstlogistics.userservice.application.dto.command.UserCreateCommand;
 import com.firstlogistics.userservice.application.dto.command.UserUpdateCommand;
-import com.firstlogistics.userservice.application.dto.query.UserGetQuery;
 import com.firstlogistics.userservice.application.dto.result.TokenInfo;
 import com.firstlogistics.userservice.application.dto.result.TokenResult;
-import com.firstlogistics.userservice.application.dto.result.UserResult;
 import com.firstlogistics.userservice.application.port.KeycloakService;
 import com.firstlogistics.userservice.application.port.KeycloakTokenService;
 import com.firstlogistics.userservice.application.port.OrganizationValidationService;
-import com.firstlogistics.userservice.domain.dto.UsersSpec;
 import com.firstlogistics.userservice.domain.entity.User;
 import com.firstlogistics.userservice.domain.enums.Status;
 import com.firstlogistics.userservice.domain.event.DomainEvent;
 import com.firstlogistics.userservice.domain.event.UserStatusChangedEvent;
 import com.firstlogistics.userservice.domain.exception.UserErrorCode;
 import com.firstlogistics.userservice.domain.exception.UserException;
-import com.firstlogistics.userservice.domain.repository.UserQueryRepository;
 import com.firstlogistics.userservice.domain.repository.UserRepository;
 import common.security.entity.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,14 +27,13 @@ import java.util.UUID;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class UserService {
+public class UserCommandService {
 
     private final KeycloakTokenService tokenService;
     private final KeycloakService keycloakService;
     private final OrganizationValidationService organizationValidationService;
 
     private final UserRepository userRepository;
-    private final UserQueryRepository userQueryRepository;
     private final DomainEvent event;
 
     @Transactional
@@ -71,7 +64,6 @@ public class UserService {
         tokenService.logout(refreshToken);
     }
 
-    @Transactional
     public TokenResult refresh(String refreshToken) {
         TokenInfo refresh = tokenService.refresh(refreshToken);
 
@@ -125,20 +117,6 @@ public class UserService {
             }
             throw e;
         }
-    }
-
-    public UserResult getUser(UUID userId) {
-        return UserResult.fromDomain(userRepository.findByIdNotDeleted(userId));
-    }
-
-    public UserResult getMyPage(UUID userId) {
-        return UserResult.fromDomain(userRepository.findByIdNotDeleted(userId));
-    }
-
-    public Page<UserResult> getUsers(UserGetQuery query, Pageable pageable) {
-        Page<UsersSpec> specPage = userQueryRepository.getUsers(query.toSpec(), pageable);
-
-        return specPage.map(UserResult::fromSpec);
     }
 
     @Transactional

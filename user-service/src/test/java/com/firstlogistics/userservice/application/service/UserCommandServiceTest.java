@@ -36,7 +36,7 @@ import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("UserService 단위 테스트")
-class UserServiceTest {
+class UserCommandServiceTest {
 
     @Mock
     private KeycloakTokenService tokenService;
@@ -51,7 +51,7 @@ class UserServiceTest {
     private DomainEvent event;
 
     @InjectMocks
-    private UserService userService;
+    private UserCommandService userCommandService;
 
     @Nested
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -80,7 +80,7 @@ class UserServiceTest {
             LocalDateTime beforeLogin = LocalDateTime.now();
 
             // when
-            TokenResult result = userService.login(command);
+            TokenResult result = userCommandService.login(command);
 
             // then
             assertEquals(tokenInfo.accessToken(), result.accessToken());
@@ -110,7 +110,7 @@ class UserServiceTest {
             given(userRepository.findByUsernameNotDeleted(command.username())).willReturn(pendingUser);
 
             // when & then
-            assertThatThrownBy(() -> userService.login(command))
+            assertThatThrownBy(() -> userCommandService.login(command))
                     .isInstanceOf(UserException.class)
                     .hasMessageContaining(UserErrorCode.CAN_LOGIN_ONLY_APPROVE.getMessage());
 
@@ -130,7 +130,7 @@ class UserServiceTest {
             given(userRepository.findByUsernameNotDeleted(command.username())).willReturn(rejectedUser);
 
             // when & then
-            assertThatThrownBy(() -> userService.login(command))
+            assertThatThrownBy(() -> userCommandService.login(command))
                     .isInstanceOf(UserException.class)
                     .hasMessageContaining(UserErrorCode.CAN_LOGIN_ONLY_APPROVE.getMessage());
 
@@ -152,7 +152,7 @@ class UserServiceTest {
             String refreshToken = "refresh-token";
 
             // when
-            userService.logout(refreshToken);
+            userCommandService.logout(refreshToken);
 
             // then
             then(tokenService).should(times(1)).logout(refreshToken);
@@ -163,7 +163,7 @@ class UserServiceTest {
         @DisplayName("refresh token이 null이면 로그아웃 실패")
         void logout_fail_when_refresh_token_is_null() {
             // when & then
-            assertThatThrownBy(() -> userService.logout(null))
+            assertThatThrownBy(() -> userCommandService.logout(null))
                     .isInstanceOf(UserException.class)
                     .hasMessageContaining(UserErrorCode.REFRESH_TOKEN_NOT_FOUND.getMessage());
 
@@ -175,7 +175,7 @@ class UserServiceTest {
         @DisplayName("refresh token이 blank면 로그아웃 실패")
         void logout_fail_when_refresh_token_is_blank() {
             // when & then
-            assertThatThrownBy(() -> userService.logout("   "))
+            assertThatThrownBy(() -> userCommandService.logout("   "))
                     .isInstanceOf(UserException.class)
                     .hasMessageContaining(UserErrorCode.REFRESH_TOKEN_NOT_FOUND.getMessage());
 
@@ -211,7 +211,7 @@ class UserServiceTest {
             given(keycloakService.signup(command)).willReturn(userId);
 
             // when
-            UUID result = userService.signup(command);
+            UUID result = userCommandService.signup(command);
 
             // then
             assertThat(result).isEqualTo(userId);
@@ -252,7 +252,7 @@ class UserServiceTest {
                     .willThrow(new UserException(UserErrorCode.DUPLICATED_USERNAME));
 
             // when & then
-            assertThatThrownBy(() -> userService.signup(command))
+            assertThatThrownBy(() -> userCommandService.signup(command))
                     .isInstanceOf(UserException.class)
                     .extracting("errorCode")
                     .isEqualTo(UserErrorCode.DUPLICATED_USERNAME);
@@ -280,7 +280,7 @@ class UserServiceTest {
             given(userRepository.findByIdNotDeleted(userId)).willReturn(user);
 
             // when
-            userService.updateRole(userId, role);
+            userCommandService.updateRole(userId, role);
 
             // then
             then(userRepository).should(times(1)).findByIdNotDeleted(userId);
@@ -300,7 +300,7 @@ class UserServiceTest {
             given(userRepository.findByIdNotDeleted(userId)).willReturn(user);
 
             // when
-            assertThatThrownBy(() -> userService.updateRole(userId, user.getUserRole()))
+            assertThatThrownBy(() -> userCommandService.updateRole(userId, user.getUserRole()))
                     .isInstanceOf(UserException.class)
                     .hasMessageContaining("현재 권한과 수정된 권한이 동일합니다.");
 
@@ -328,7 +328,7 @@ class UserServiceTest {
             given(userRepository.findByIdNotDeleted(userId)).willReturn(user);
 
             // when
-            userService.updateStatus(userId, Status.APPROVED, loginId);
+            userCommandService.updateStatus(userId, Status.APPROVED, loginId);
 
             // then
             assertThat(user.getStatus()).isEqualTo(Status.APPROVED);
@@ -358,7 +358,7 @@ class UserServiceTest {
             given(userRepository.findByIdNotDeleted(userId)).willReturn(user);
 
             // when & then
-            assertThatThrownBy(() -> userService.updateStatus(userId, Status.APPROVED, loginId))
+            assertThatThrownBy(() -> userCommandService.updateStatus(userId, Status.APPROVED, loginId))
                     .isInstanceOf(UserException.class)
                     .hasMessageContaining(UserErrorCode.ALREADY_APPROVE.getMessage());
 
@@ -379,7 +379,7 @@ class UserServiceTest {
             given(userRepository.findByIdNotDeleted(userId)).willReturn(user);
 
             // when
-            userService.updateStatus(userId, Status.REJECTED, loginId);
+            userCommandService.updateStatus(userId, Status.REJECTED, loginId);
 
             // then
             assertThat(user.getStatus()).isEqualTo(Status.REJECTED);
@@ -409,7 +409,7 @@ class UserServiceTest {
             given(userRepository.findByIdNotDeleted(userId)).willReturn(user);
 
             // when & then
-            assertThatThrownBy(() -> userService.updateStatus(userId, Status.REJECTED, loginId))
+            assertThatThrownBy(() -> userCommandService.updateStatus(userId, Status.REJECTED, loginId))
                     .isInstanceOf(UserException.class)
                     .hasMessageContaining(UserErrorCode.ALREADY_REJECTED.getMessage());
 
@@ -444,7 +444,7 @@ class UserServiceTest {
             given(userRepository.findByIdNotDeleted(userId)).willReturn(user);
 
             // when
-            userService.update(command);
+            userCommandService.update(command);
 
             // then
             then(userRepository).should(times(1)).findByIdNotDeleted(userId);
@@ -477,7 +477,7 @@ class UserServiceTest {
                     .willThrow(new UserException(UserErrorCode.USER_NOT_FOUND));
 
             // when & then
-            assertThatThrownBy(() -> userService.update(command))
+            assertThatThrownBy(() -> userCommandService.update(command))
                     .isInstanceOf(UserException.class)
                     .hasMessageContaining(UserErrorCode.USER_NOT_FOUND.getMessage());
 
@@ -510,7 +510,7 @@ class UserServiceTest {
                     .given(keycloakService).updateUser(command);
 
             // when & then
-            assertThatThrownBy(() -> userService.update(command))
+            assertThatThrownBy(() -> userCommandService.update(command))
                     .isInstanceOf(UserException.class)
                     .hasMessageContaining(UserErrorCode.AUTH_SERVER_INTERNAL_ERROR.getMessage());
 
@@ -536,7 +536,7 @@ class UserServiceTest {
             willDoNothing().given(userRepository).delete(userId, deletedUserId);
 
             // when
-            userService.delete(userId, deletedUserId);
+            userCommandService.delete(userId, deletedUserId);
 
             // then
             then(userRepository).should(times(1)).delete(userId, deletedUserId);
@@ -559,7 +559,7 @@ class UserServiceTest {
                     .given(userRepository).delete(userId, deletedUserId);
 
             // when & then
-            assertThatThrownBy(() -> userService.delete(userId, deletedUserId))
+            assertThatThrownBy(() -> userCommandService.delete(userId, deletedUserId))
                     .isInstanceOf(RuntimeException.class)
                     .hasMessage("DB 삭제 실패");
 
@@ -580,7 +580,7 @@ class UserServiceTest {
                     .given(keycloakService).deleteUser(userId);
 
             // when & then
-            assertThatThrownBy(() -> userService.delete(userId, deletedUserId))
+            assertThatThrownBy(() -> userCommandService.delete(userId, deletedUserId))
                     .isInstanceOf(RuntimeException.class)
                     .hasMessage("Keycloak 삭제 실패");
 
