@@ -311,7 +311,7 @@ class DeliveryCommandFacadeTest {
 			// given
 			UUID orderId = UUID.randomUUID();
 			UUID deliveryId = UUID.randomUUID();
-			Delivery delivery = stubDelivery(deliveryId, DeliveryStatus.FOR_HUB_MOVING);
+			Delivery delivery = stubDelivery(deliveryId, DeliveryStatus.CREATED);
 
 			given(deliveryRepository.findByOrderId(orderId))
 				.willReturn(Optional.of(delivery));

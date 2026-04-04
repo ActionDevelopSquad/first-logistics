@@ -1236,6 +1236,7 @@ class DeliveryCommandServiceTest {
 			// then
 			ArgumentCaptor<DeliveryStatusChangedEvent> eventCaptor = ArgumentCaptor.forClass(DeliveryStatusChangedEvent.class);
 			then(deliveryEventPublisher).should().publishDeliveryStatusChanged(eventCaptor.capture());
+			assertThat(eventCaptor.getValue().deliveryId()).isEqualTo(deliveryId);
 			assertThat(eventCaptor.getValue().status()).isEqualTo("CANCELLED");
 		}
 	}
