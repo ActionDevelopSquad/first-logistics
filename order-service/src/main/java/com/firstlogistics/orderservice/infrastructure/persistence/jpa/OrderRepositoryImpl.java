@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
@@ -30,6 +31,21 @@ public class OrderRepositoryImpl implements OrderRepository {
     @Override
     public boolean existsById(OrderId id) {
         return jpaRepository.existsById(id.id());
+    }
+
+    @Override
+    public boolean existsByIdAndSupplierManagerId(OrderId id, UUID supplierManagerId) {
+        return jpaRepository.existsByIdAndSupplierManagerId(id.id(), supplierManagerId);
+    }
+
+    @Override
+    public boolean existsByIdAndReceiverManagerId(OrderId id, UUID receiverManagerId) {
+        return jpaRepository.existsByIdAndReceiverManagerId(id.id(), receiverManagerId);
+    }
+
+    @Override
+    public boolean existsByIdAndSupplierHubId(OrderId id, UUID hubId) {
+        return jpaRepository.existsByIdAndSupplierHubId(id.id(), hubId);
     }
 
 }
