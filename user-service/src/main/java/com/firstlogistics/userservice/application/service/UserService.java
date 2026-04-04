@@ -100,7 +100,8 @@ public class UserService {
                     command.email(),
                     command.slackId(),
                     command.userRole(),
-                    command.hubId()
+                    command.hubId(),
+                    command.managerType()
             );
 
             userRepository.save(user);
