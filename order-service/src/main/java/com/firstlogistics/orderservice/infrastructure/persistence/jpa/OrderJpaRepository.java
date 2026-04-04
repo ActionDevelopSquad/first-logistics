@@ -16,5 +16,5 @@ public interface OrderJpaRepository extends JpaRepository<OrderJpaEntity, UUID> 
 
     boolean existsByIdAndReceiverManagerId(UUID id, UUID receiverManagerId);
 
-    boolean existsByIdAndSupplierHubId(UUID id, UUID hugId);
+    boolean existsByIdAndSupplierHubId(UUID id, UUID hubId);
 }

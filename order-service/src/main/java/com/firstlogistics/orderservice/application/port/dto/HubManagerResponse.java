@@ -1,4 +1,4 @@
-package com.firstlogistics.orderservice.infrastructure.feign.dto;
+package com.firstlogistics.orderservice.application.port.dto;
 
 import java.util.UUID;
 

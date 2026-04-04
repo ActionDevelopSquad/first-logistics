@@ -196,6 +196,9 @@ class OrderCommandServiceTest {
         assertThatThrownBy(() -> orderCommandService.acceptOrder(orderId))
                 .isInstanceOf(OrderException.class)
                 .hasMessage(OrderErrorCode.UNAUTHORIZED_ACCESS.getMessage());
+
+        verify(orderRepository, never()).save(any(Order.class));
+        verify(eventPublisher, never()).publishEvent(any(OrderCancelledEvent.class));
     }
 
     // --- 주문 승인 거절 테스트 ---

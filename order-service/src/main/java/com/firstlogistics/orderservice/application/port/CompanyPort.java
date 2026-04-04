@@ -6,5 +6,5 @@ import java.util.UUID;
 
 public interface CompanyPort {
 
-    CompanyResponse getCompanyById(UUID managerId);
+    CompanyResponse getCompanyById(UUID companyId);
 }

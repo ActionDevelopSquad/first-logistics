@@ -4,7 +4,7 @@ import com.firstlogistics.orderservice.domain.repository.OrderRepository;
 import com.firstlogistics.orderservice.domain.service.RoleCheck;
 import com.firstlogistics.orderservice.domain.vo.OrderId;
 import com.firstlogistics.orderservice.infrastructure.feign.HubClient;
-import com.firstlogistics.orderservice.infrastructure.feign.dto.HubManagerResponse;
+import com.firstlogistics.orderservice.application.port.dto.HubManagerResponse;
 import common.response.ApiResponse;
 import common.security.entity.enums.UserRole;
 import common.security.security.util.SecurityUtils;
