@@ -1,7 +1,6 @@
 package com.firstlogistics.aiservice.infrastructure.messaging.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.querydsl.core.annotations.Config;
 import common.kafka.config.KafkaProducerConfig;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -16,7 +15,7 @@ import java.util.Map;
 
 @Configuration
 @RequiredArgsConstructor
-public class NotififcationProducerConfig {
+public class NotificationProducerConfig {
 
     private final KafkaProducerConfig kafkaProducerConfig;
     private final ObjectMapper objectMapper;
