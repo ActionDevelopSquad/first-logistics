@@ -1,6 +1,7 @@
 package com.firstlogistics.orderservice.application;
 
 import com.firstlogistics.orderservice.application.dto.CreateOrderCommand;
+import com.firstlogistics.orderservice.application.port.CompanyPort;
 import com.firstlogistics.orderservice.domain.entity.Order;
 import com.firstlogistics.orderservice.domain.enums.OrderCancelType;
 import com.firstlogistics.orderservice.domain.event.OrderAcceptedEvent;
@@ -11,7 +12,10 @@ import com.firstlogistics.orderservice.domain.exception.OrderException;
 import com.firstlogistics.orderservice.domain.repository.OrderRepository;
 import com.firstlogistics.orderservice.domain.vo.OrderId;
 import com.firstlogistics.orderservice.domain.vo.OrderItemInput;
+import com.firstlogistics.orderservice.infrastructure.feign.CompanyClient;
+import com.firstlogistics.orderservice.application.port.dto.CompanyResponse;
 import common.event.Events;
+import common.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,12 +28,12 @@ import java.util.UUID;
 public class OrderCommandService {
 
     private final OrderRepository orderRepository;
+    private final CompanyPort companyPort;
 
     @Transactional
     public UUID createOrder(CreateOrderCommand command) {
-        // TODO: 나중에 userId와 검증 로직 필요
 
-        UUID hubId = UUID.randomUUID();
+        CompanyResponse supplierCompany = companyPort.getCompanyById(command.supplierCompanyId());
 
         List<OrderItemInput> itemInputs = command.items().stream()
                 .map(CreateOrderCommand.OrderItemCommand::toDomainInput)
@@ -38,7 +42,7 @@ public class OrderCommandService {
         Order order = Order.create(
                 command.supplierCompanyId(),
                 command.supplierManagerId(),
-                hubId,
+                supplierCompany.hubId(),
                 command.receiverCompanyId(),
                 command.receiverManagerId(),
                 command.roadAddress(),

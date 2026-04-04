@@ -24,6 +24,8 @@ app:
   services:
     hub-service:
       url: http://localhost:8083
+    company-service:
+      url: http://localhost:8084
 
 logging:
   level:

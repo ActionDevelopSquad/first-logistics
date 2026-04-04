@@ -1,6 +1,8 @@
 package com.firstlogistics.orderservice.application;
 
 import com.firstlogistics.orderservice.application.dto.CreateOrderCommand;
+import com.firstlogistics.orderservice.application.port.CompanyPort;
+import com.firstlogistics.orderservice.application.port.dto.CompanyResponse;
 import com.firstlogistics.orderservice.domain.entity.Order;
 import com.firstlogistics.orderservice.domain.entity.OrderTestBuilder;
 import com.firstlogistics.orderservice.domain.enums.OrderCancelType;
@@ -47,6 +49,9 @@ class OrderCommandServiceTest {
     @Mock
     private ApplicationEventPublisher eventPublisher;
 
+    @Mock
+    private CompanyPort companyPort;
+
     @BeforeEach
     void setUp() {
         new Events().init(eventPublisher);
@@ -63,35 +68,39 @@ class OrderCommandServiceTest {
     @DisplayName("성공: 올바른 주문 생성 요청 시 주문 ID를 반환하고 주문 생성 이벤트를 발행한다")
     void createOrder_Success() {
         // given
-        CreateOrderCommand.OrderItemCommand item = new CreateOrderCommand.OrderItemCommand(
-                UUID.randomUUID(), "테스트 상품", 10000L, 2
-        );
-        CreateOrderCommand command = new CreateOrderCommand(
-                UUID.randomUUID(), UUID.randomUUID(),
-                UUID.randomUUID(), UUID.randomUUID(),
-                "서울시 강남구", "상세주소", LocalDateTime.now().plusDays(1),
-                "빨리 배송해주세요", List.of(item)
-        );
+        UUID supplierCompanyId = UUID.randomUUID();
+        UUID hubId = UUID.randomUUID();
+
+        CreateOrderCommand command = createTestCommand(supplierCompanyId);
+
+        when(companyPort.getCompanyById(supplierCompanyId))
+                .thenReturn(new CompanyResponse(supplierCompanyId, hubId, UUID.randomUUID()));
 
         // when
-        UUID orderId = orderCommandService.createOrder(command);
+        UUID resultId = orderCommandService.createOrder(command);
 
         // then
-        assertThat(orderId).isNotNull();
-        verify(orderRepository, times(1)).save(any(Order.class));
-        verify(eventPublisher, times(1)).publishEvent(any(OrderCreatedEvent.class));
+        assertThat(resultId).isNotNull();
+        verify(orderRepository).save(any(Order.class));
+        verify(eventPublisher).publishEvent(any(OrderCreatedEvent.class));
     }
 
     @Test
     @DisplayName("실패: 주문 상품이 없는 경우 예외가 발생한다")
     void createOrder_Fail_NoItems() {
         // given
+        UUID supplierCompanyId = UUID.randomUUID();
+
         CreateOrderCommand command = new CreateOrderCommand(
+                supplierCompanyId, UUID.randomUUID(),
                 UUID.randomUUID(), UUID.randomUUID(),
-                UUID.randomUUID(), UUID.randomUUID(),
-                "서울시 강남구", "상세주소", LocalDateTime.now().plusDays(1),
+                "배송 주소", "상세 주소",
+                LocalDateTime.now().plusDays(1),
                 "메모", List.of() // 빈 리스트
         );
+
+        when(companyPort.getCompanyById(supplierCompanyId))
+                .thenReturn(new CompanyResponse(supplierCompanyId, UUID.randomUUID(), UUID.randomUUID()));
 
         // when & then
         assertThatThrownBy(() -> orderCommandService.createOrder(command))
@@ -313,5 +322,26 @@ class OrderCommandServiceTest {
         assertThatThrownBy(() -> orderCommandService.rejectCancelRequest(USER_ID, orderId))
                 .isInstanceOf(OrderException.class)
                 .hasMessage(OrderErrorCode.CANNOT_REJECT_CANCEL.getMessage());
+    }
+
+    private CreateOrderCommand createTestCommand(UUID supplierId) {
+        CreateOrderCommand.OrderItemCommand item = new CreateOrderCommand.OrderItemCommand(
+                UUID.randomUUID(), // productId
+                "테스트 상품",      // productName
+                10000L,           // price
+                2                 // quantity
+        );
+
+        return new CreateOrderCommand(
+                supplierId,          // 공급 업체 ID
+                UUID.randomUUID(),   // 공급 업체 매니저 ID
+                UUID.randomUUID(),         // 수령 업체 ID
+                UUID.randomUUID(),   // 수령 업체 매니저 ID
+                "배송 주소",
+                "상세 주소",
+                LocalDateTime.now().plusDays(1), // 배송 희망일
+                "요청 메모", // 요청 메모
+                List.of(item)        // 상품 리스트
+        );
     }
 }

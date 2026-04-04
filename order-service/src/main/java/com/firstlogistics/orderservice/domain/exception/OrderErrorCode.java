@@ -42,7 +42,11 @@ public enum OrderErrorCode implements ErrorCode {
     DELIVERY_ALREADY_ASSIGNED(HttpStatus.BAD_REQUEST, "ORD021", "이미 배송이 할당된 주문입니다."),
 
     // 동시성 제어
-    ALREADY_PROCESSING(HttpStatus.CONFLICT, "ORD022", "현재 다른 요청이 처리 중입니다. 잠시 후 다시 시도해주세요.");
+    ALREADY_PROCESSING(HttpStatus.CONFLICT, "ORD022", "현재 다른 요청이 처리 중입니다. 잠시 후 다시 시도해주세요."),
+
+    // 외부 서비스 호출 관련
+    COMPANY_NOT_FOUND(HttpStatus.NOT_FOUND, "ORD024", "업체 정보를 찾을 수 없습니다."),
+    EXTERNAL_SERVICE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "ORD025", "외부 서비스 호출 중 오류가 발생했습니다.");
 
     private final HttpStatus status;
     private final String code;
