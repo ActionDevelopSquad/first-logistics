@@ -47,7 +47,7 @@ public class OrderController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<Page<OrderSummaryResponse>>> getOrders(
-            @ModelAttribute SearchOrderRequest request,
+            @ModelAttribute @Valid SearchOrderRequest request,
             @PageableDefault(size = 10) Pageable pageable
     ) {
         Page<OrderSummaryResponse> response = orderQueryService.getOrders(request.toQuery(), pageable)
