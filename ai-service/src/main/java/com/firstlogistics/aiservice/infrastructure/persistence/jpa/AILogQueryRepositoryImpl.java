@@ -3,13 +3,13 @@ package com.firstlogistics.aiservice.infrastructure.persistence.jpa;
 
 import com.firstlogistics.aiservice.domain.projection.AILogDetailProjection;
 import com.firstlogistics.aiservice.domain.repository.AILogQueryRepository;
+import com.firstlogistics.aiservice.domain.vo.AILogId;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
-import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
@@ -19,7 +19,7 @@ public class AILogQueryRepositoryImpl implements AILogQueryRepository {
     private static final QAILogJpaEntity aiLog = QAILogJpaEntity.aILogJpaEntity;
 
     @Override
-    public Optional<AILogDetailProjection> findById(UUID aiLogId) {
+    public Optional<AILogDetailProjection> findById(AILogId aiLogId) {
         AILogDetailProjection result = queryFactory
                 .select(Projections.constructor(AILogDetailProjection.class,
                         aiLog.id,
@@ -27,12 +27,13 @@ public class AILogQueryRepositoryImpl implements AILogQueryRepository {
                         aiLog.messengerType,
                         aiLog.requestContent,
                         aiLog.responseContent,
+                        aiLog.systemPrompt,
                         aiLog.status,
                         aiLog.createdAt
                 ))
                 .from(aiLog)
                 .where(
-                        aiLog.id.eq(aiLogId),
+                        aiLog.id.eq(aiLogId.id()),
                         aiLog.deletedAt.isNull()
                 )
                 .fetchOne();
