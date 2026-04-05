@@ -56,8 +56,10 @@ public enum DeliveryErrorCode implements ErrorCode {
 	HUB_NOT_FOUND(HttpStatus.NOT_FOUND, "DR_E401", "허브를 찾을 수 없습니다."),
 	COMPANY_NOT_FOUND(HttpStatus.NOT_FOUND, "DR_E402", "업체를 찾을 수 없습니다."),
 	USER_NOT_FOUND(HttpStatus.NOT_FOUND, "DR_E403", "사용자를 찾을 수 없습니다."),
-	HUB_ROUTE_INVALID(HttpStatus.UNPROCESSABLE_ENTITY, "DR_E405", "허브 경로 정보가 유효하지 않습니다."),
 	HUB_CONNECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "DR_E406", "허브 간 경로를 찾을 수 없습니다."),
+
+	// 외부 서비스 - 422 Unprocessable Entity
+	HUB_ROUTE_INVALID(HttpStatus.UNPROCESSABLE_ENTITY, "DR_E405", "허브 경로 정보가 유효하지 않습니다."),
 
 	// 외부 서비스 - 공통
 	EXTERNAL_SERVICE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "DR_E404", "외부 서비스 호출에 실패했습니다."),
@@ -66,6 +68,9 @@ public enum DeliveryErrorCode implements ErrorCode {
 	EXTERNAL_SERVICE_FORBIDDEN(HttpStatus.FORBIDDEN, "DR_E409", "외부 서비스 접근 권한이 없습니다."),
 	EXTERNAL_SERVICE_CONFLICT(HttpStatus.CONFLICT, "DR_E410", "외부 서비스 리소스 충돌이 발생했습니다."),
 	EXTERNAL_SERVICE_PRECONDITION_FAILED(HttpStatus.PRECONDITION_FAILED, "DR_E411", "외부 서비스 사전 조건이 충족되지 않았습니다."),
+
+	// 데이터 무결성
+	DUPLICATE_RESOURCE(HttpStatus.CONFLICT, "DR_E501", "이미 존재하는 리소스입니다."),
 
 	// 락
 	DELIVERY_MANAGER_ASSIGN_LOCK_ACQUISITION_FAILED(HttpStatus.CONFLICT, "DR_E301", "배송 담당자 배정 락 획득에 실패했습니다.")

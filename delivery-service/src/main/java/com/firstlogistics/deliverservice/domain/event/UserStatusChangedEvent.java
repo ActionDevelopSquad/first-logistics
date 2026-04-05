@@ -11,8 +11,9 @@ import java.util.UUID;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record UserStatusChangedEvent(
 	UUID userId,
-	UUID organizationId,
+	UUID hubId,
 	String userRole,
+	String managerType,
 	String status,
 	String previousStatus,
 	String username,

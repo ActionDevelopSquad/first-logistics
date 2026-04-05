@@ -70,14 +70,27 @@ public class DeliveryManagerCommandService {
 			return;
 		}
 
+		ManagerType managerType = parseManagerType(event.managerType());
+
 		int nextSequence = deliveryManagerRepository.findNextSequence();
 		DeliveryManager deliveryManager = DeliveryManager.create(
 			event.userId(), event.name(), event.phone(),
-			event.organizationId(), event.slackId(),
-			ManagerType.HUB_DELIVERY, nextSequence
+			event.hubId(), event.slackId(),
+			managerType, nextSequence
 		);
 
 		deliveryManagerRepository.save(deliveryManager);
-		log.info("배송담당자 자동 생성 - userId: {}, hubId: {}", event.userId(), event.organizationId());
+		log.info("배송담당자 자동 생성 - userId: {}, hubId: {}, type: {}", event.userId(), event.hubId(), managerType);
+	}
+
+	private ManagerType parseManagerType(String managerType) {
+		if (managerType == null || managerType.isBlank()) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_DELIVERY_MANAGER_PARAMS);
+		}
+		try {
+			return ManagerType.valueOf(managerType);
+		} catch (IllegalArgumentException exception) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_DELIVERY_MANAGER_PARAMS);
+		}
 	}
 }
