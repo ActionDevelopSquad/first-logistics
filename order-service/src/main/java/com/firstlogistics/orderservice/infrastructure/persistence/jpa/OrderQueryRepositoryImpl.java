@@ -84,12 +84,13 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
         if (spec.isCompanyManager()) {
             UUID userId = spec.getMyUserId();
 
-            if (spec.searchType() == OrderSearchType.RECEIVED) {
-                // 수령 주문 조회
-                return orderJpaEntity.receiverManagerId.eq(userId);
-            } else if (spec.searchType() == OrderSearchType.SENT) {
+            if (spec.searchType() == OrderSearchType.SENT) {
                 // 공급 주문 조회
                 return orderJpaEntity.supplierManagerId.eq(userId);
+            } else {
+                // 수령 주문 조회 (기본값)
+                // null이거나 RECEIVED인 경우
+                return orderJpaEntity.receiverManagerId.eq(userId);
             }
         }
 
