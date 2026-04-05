@@ -104,6 +104,7 @@ public class DeliveryJpaEntity extends BaseAuditEntity {
 			receiverId, receiverSlackId,
 			receiverCompanyId, receiverCompanyDeliveryManagerId,
 			currentHubId,
+			null,
 			new ArrayList<>()
 		);
 	}

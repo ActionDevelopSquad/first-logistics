@@ -76,7 +76,7 @@ public class DeliveryManagerJpaEntity extends BaseAuditEntity {
 		return new DeliveryManagerJpaEntity(
 			id, userId, managerName, phoneNumber,
 			hubId, slackId, managerType,
-			deliverySequence, new ArrayList<>()
+			deliverySequence, null, new ArrayList<>()
 		);
 	}
 

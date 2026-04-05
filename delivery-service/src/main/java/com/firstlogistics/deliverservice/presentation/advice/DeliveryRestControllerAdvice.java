@@ -3,6 +3,8 @@ package com.firstlogistics.deliverservice.presentation.advice;
 import common.exception.GlobalExceptionHandler;
 import common.response.ApiResponse;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
+import com.firstlogistics.deliverservice.infrastructure.exception.ExternalServiceErrorCode;
+import com.firstlogistics.deliverservice.infrastructure.exception.ExternalServiceException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -28,5 +30,14 @@ public class DeliveryRestControllerAdvice extends GlobalExceptionHandler {
 		return ResponseEntity
 			.status(DeliveryErrorCode.OPTIMISTIC_LOCK_CONFLICT.getStatus())
 			.body(ApiResponse.error(DeliveryErrorCode.OPTIMISTIC_LOCK_CONFLICT));
+	}
+
+	@ExceptionHandler(ExternalServiceException.class)
+	public ResponseEntity<ApiResponse<Void>> handleExternalServiceException(ExternalServiceException e) {
+		ExternalServiceErrorCode errorCode = e.getErrorCode();
+		log.warn("[ExternalServiceException] code: {}, message: {}", errorCode.getCode(), errorCode.getMessage());
+		return ResponseEntity
+			.status(errorCode.getStatus())
+			.body(ApiResponse.error(errorCode));
 	}
 }

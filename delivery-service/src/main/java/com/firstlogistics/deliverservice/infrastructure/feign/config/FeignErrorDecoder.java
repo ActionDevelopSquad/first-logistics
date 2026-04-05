@@ -2,6 +2,8 @@ package com.firstlogistics.deliverservice.infrastructure.feign.config;
 
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
+import com.firstlogistics.deliverservice.infrastructure.exception.ExternalServiceErrorCode;
+import com.firstlogistics.deliverservice.infrastructure.exception.ExternalServiceException;
 import feign.Response;
 import feign.codec.ErrorDecoder;
 
@@ -10,17 +12,17 @@ public class FeignErrorDecoder implements ErrorDecoder {
 	@Override
 	public Exception decode(String methodKey, Response response) {
 		return switch (response.status()) {
-			case 400 -> new DeliveryException(DeliveryErrorCode.EXTERNAL_SERVICE_BAD_REQUEST);
-			case 401 -> new DeliveryException(DeliveryErrorCode.EXTERNAL_SERVICE_UNAUTHORIZED);
-			case 403 -> new DeliveryException(DeliveryErrorCode.EXTERNAL_SERVICE_FORBIDDEN);
+			case 400 -> new ExternalServiceException(ExternalServiceErrorCode.BAD_REQUEST);
+			case 401 -> new ExternalServiceException(ExternalServiceErrorCode.UNAUTHORIZED);
+			case 403 -> new ExternalServiceException(ExternalServiceErrorCode.FORBIDDEN);
 			case 404 -> handleNotFound(methodKey);
-			case 409 -> new DeliveryException(DeliveryErrorCode.EXTERNAL_SERVICE_CONFLICT);
-			case 412 -> new DeliveryException(DeliveryErrorCode.EXTERNAL_SERVICE_PRECONDITION_FAILED);
-			default -> new DeliveryException(DeliveryErrorCode.EXTERNAL_SERVICE_ERROR);
+			case 409 -> new ExternalServiceException(ExternalServiceErrorCode.CONFLICT);
+			case 412 -> new ExternalServiceException(ExternalServiceErrorCode.PRECONDITION_FAILED);
+			default -> new ExternalServiceException(ExternalServiceErrorCode.INTERNAL_ERROR);
 		};
 	}
 
-	private DeliveryException handleNotFound(String methodKey) {
+	private RuntimeException handleNotFound(String methodKey) {
 		if (methodKey.startsWith("HubClient#getHubManagerByUserId")) {
 			return new DeliveryException(DeliveryErrorCode.HUB_MANAGER_NOT_FOUND);
 		}
@@ -39,6 +41,6 @@ public class FeignErrorDecoder implements ErrorDecoder {
 		if (methodKey.startsWith("UserClient#")) {
 			return new DeliveryException(DeliveryErrorCode.USER_NOT_FOUND);
 		}
-		return new DeliveryException(DeliveryErrorCode.EXTERNAL_SERVICE_ERROR);
+		return new ExternalServiceException(ExternalServiceErrorCode.INTERNAL_ERROR);
 	}
 }

@@ -1,5 +1,6 @@
 package com.firstlogistics.deliverservice.infrastructure.messaging.consumer;
 
+import com.firstlogistics.deliverservice.application.DeliveryCommandService;
 import com.firstlogistics.deliverservice.application.DeliveryQueryService;
 import com.firstlogistics.deliverservice.application.dto.command.ChangeDeliveryStatusCommand;
 import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryCommand;
@@ -19,6 +20,7 @@ public class OrderEventKafkaConsumer {
 
 	private final DeliveryQueryService deliveryQueryService;
 	private final DeliveryCommandFacade deliveryCommandFacade;
+	private final DeliveryCommandService deliveryCommandService;
 
 	@KafkaListener(
 		topics = "order.accepted",
@@ -47,7 +49,7 @@ public class OrderEventKafkaConsumer {
 	public void handleOrderCancelled(OrderCancelledEvent event, Acknowledgment ack) {
 		log.info("order.cancelled 이벤트 수신 - orderId: {}, deliveryId: {}", event.orderId(), event.deliveryId());
 
-		deliveryCommandFacade.cancelDeliveryBySystem(ChangeDeliveryStatusCommand.of(event.deliveryId()));
+		deliveryCommandService.cancelDeliveryBySystem(ChangeDeliveryStatusCommand.of(event.deliveryId()));
 
 		ack.acknowledge();
 	}

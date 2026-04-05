@@ -275,7 +275,14 @@ public class DeliveryCommandService {
 		return ChangeDeliveryStatusResult.from(savedDelivery);
 	}
 
-	public ChangeDeliveryStatusResult cancelDelivery(Delivery delivery) {
+	public ChangeDeliveryStatusResult cancelDelivery(ChangeDeliveryStatusCommand command, String role, UUID userId) {
+		Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
+			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
+
+		DeliveryAccessContext accessContext = DeliveryAccessContext.from(delivery);
+		deliveryPermissionValidator.validate(accessContext, role, userId,
+			Set.of(UserRole.MASTER, UserRole.HUB_MANAGER));
+
 		delivery.cancelDelivery();
 		Delivery savedDelivery = deliveryRepository.save(delivery);
 
@@ -285,7 +292,21 @@ public class DeliveryCommandService {
 		return ChangeDeliveryStatusResult.from(savedDelivery);
 	}
 
-	@Transactional
+	public void cancelDeliveryBySystem(ChangeDeliveryStatusCommand command) {
+		Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
+			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
+
+		if (delivery.getStatus() == DeliveryStatus.CANCELLED) {
+			return;
+		}
+
+		delivery.cancelDelivery();
+		Delivery savedDelivery = deliveryRepository.save(delivery);
+
+		deliveryEventPublisher.publishDeliveryStatusChanged(
+			DeliveryStatusChangedEvent.create(savedDelivery));
+	}
+
 	public void deleteDelivery(UUID deliveryId, String role, UUID userId) {
 		Delivery delivery = deliveryRepository.findById(DeliveryId.of(deliveryId))
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
