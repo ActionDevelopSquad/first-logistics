@@ -17,7 +17,7 @@ public class HubRouteDomainConfig {
     }
 
     @Bean
-    public P2PHubHybridStrategy P2PHubHybridStrategy(){
+    public P2PHubHybridStrategy p2PHubHybridStrategy(){
         return new P2PHubHybridStrategy();
     }
 
