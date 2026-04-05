@@ -11,9 +11,8 @@ import com.firstlogistics.orderservice.domain.exception.OrderErrorCode;
 import com.firstlogistics.orderservice.domain.exception.OrderException;
 import com.firstlogistics.orderservice.domain.repository.OrderQueryRepository;
 import com.firstlogistics.orderservice.domain.repository.OrderRepository;
-import com.firstlogistics.orderservice.domain.service.RoleCheck;
+import com.firstlogistics.orderservice.application.port.OrderAuthorityCheckPort;
 import com.firstlogistics.orderservice.domain.specification.OrderSearchSpec;
-import com.firstlogistics.orderservice.domain.specification.OrderSearchType;
 import com.firstlogistics.orderservice.domain.vo.OrderId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -30,7 +29,7 @@ public class OrderQueryService {
 
     private final OrderQueryRepository orderQueryRepository;
     private final OrderRepository orderRepository;
-    private final RoleCheck roleCheck;
+    private final OrderAuthorityCheckPort authorityCheck;
     private final UserContextPort userContext;
     private final HubPort hubPort;
 
@@ -39,9 +38,7 @@ public class OrderQueryService {
         UUID restrictedUserId = null;
 
         if (userContext.isHubManager()) {
-            restrictedHubId = hubPort.getHubManagerByUserId(userContext.getCurrentUserId())
-                    .map(HubManagerResponse::hubId)
-                    .orElse(null);
+            restrictedHubId = getHubIdByUserId(userContext.getCurrentUserId());
         } else if (userContext.isCompanyManager()) {
             restrictedUserId = userContext.getCurrentUserId();
         }
@@ -56,15 +53,15 @@ public class OrderQueryService {
         Order order = orderRepository.findById(OrderId.of(orderId))
                 .orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));
 
-        UUID myHubId = getHubIdByUserId(userContext.getCurrentUserId());
+        UUID myUserId = userContext.getCurrentUserId();
+        UUID myHubId = getHubIdByUserId(myUserId);
 
-        if (!roleCheck.canView(
-                order.getId(),
+        if (!authorityCheck.canView(
                 order.getSupplier().hubId(),
                 order.getSupplier().managerId(),
                 order.getReceiver().managerId(),
                 myHubId,
-                userContext.getCurrentUserId()
+                myUserId
         )) {
             throw new OrderException(OrderErrorCode.UNAUTHORIZED_ACCESS);
         }

@@ -36,21 +36,6 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public boolean existsByIdAndSupplierManagerId(OrderId id, UUID supplierManagerId) {
-        return jpaRepository.existsByIdAndSupplierManagerId(id.id(), supplierManagerId);
-    }
-
-    @Override
-    public boolean existsByIdAndReceiverManagerId(OrderId id, UUID receiverManagerId) {
-        return jpaRepository.existsByIdAndReceiverManagerId(id.id(), receiverManagerId);
-    }
-
-    @Override
-    public boolean existsByIdAndSupplierHubId(OrderId id, UUID hubId) {
-        return jpaRepository.existsByIdAndSupplierHubId(id.id(), hubId);
-    }
-
-    @Override
     public void deleteById(OrderId id, UUID userId) {
         OrderJpaEntity order = jpaRepository.findById(id.id())
                 .orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));

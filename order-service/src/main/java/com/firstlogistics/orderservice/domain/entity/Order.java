@@ -4,7 +4,6 @@ import com.firstlogistics.orderservice.domain.enums.OrderCancelType;
 import com.firstlogistics.orderservice.domain.enums.OrderStatus;
 import com.firstlogistics.orderservice.domain.exception.OrderErrorCode;
 import com.firstlogistics.orderservice.domain.exception.OrderException;
-import com.firstlogistics.orderservice.domain.service.RoleCheck;
 import com.firstlogistics.orderservice.domain.vo.Address;
 import com.firstlogistics.orderservice.domain.vo.Money;
 import com.firstlogistics.orderservice.domain.vo.OrderId;
@@ -179,11 +178,7 @@ public class Order {
         this.status = resultStatus;
     }
 
-    public void accept(UUID hubId, RoleCheck roleCheck) {
-        if (!roleCheck.canAcceptOrCancel(this.id, hubId)) {
-            throw new OrderException(OrderErrorCode.UNAUTHORIZED_ACCESS);
-        }
-
+    public void accept() {
         if (this.status == OrderStatus.ACCEPTED) {
             throw new OrderException(OrderErrorCode.ALREADY_ACCEPTED);
         }
@@ -218,11 +213,7 @@ public class Order {
     }
 
     // 주문 취소 / 거절 / 취소 요청 승인 (나중에 필요하면 분리)
-    public void cancel(OrderCancelType cancelType, UUID hubId, RoleCheck roleCheck) {
-        if (!roleCheck.canAcceptOrCancel(this.id, hubId)) {
-            throw new OrderException(OrderErrorCode.UNAUTHORIZED_ACCESS);
-        }
-
+    public void cancel(OrderCancelType cancelType) {
         if (cancelType == null) {
             throw new OrderException(OrderErrorCode.CANCEL_TYPE_REQUIRED);
         }
@@ -237,11 +228,7 @@ public class Order {
         this.cancelType = cancelType;
     }
 
-    public void requestCancel(RoleCheck roleCheck) {
-        if (!roleCheck.canRequestCancel(this.id)) {
-            throw new OrderException(OrderErrorCode.UNAUTHORIZED_ACCESS);
-        }
-
+    public void requestCancel() {
         // 이미 취소 요청 or 취소 된 상태인 경우
         if (this.status == OrderStatus.CANCEL_REQUESTED || this.status == OrderStatus.CANCELLED) {
             throw new OrderException(OrderErrorCode.ALREADY_CANCEL_REQUESTED);
@@ -251,11 +238,7 @@ public class Order {
         this.status = OrderStatus.CANCEL_REQUESTED;
     }
 
-    public void rejectCancelRequest(UUID hubId, RoleCheck roleCheck) {
-        if (!roleCheck.canAcceptOrCancel(this.id, hubId)) {
-            throw new OrderException(OrderErrorCode.UNAUTHORIZED_ACCESS);
-        }
-
+    public void rejectCancelRequest() {
         // 취소 요청 상태에서만 가능
         if (this.status != OrderStatus.CANCEL_REQUESTED || this.previousStatus == null) {
             throw new OrderException(OrderErrorCode.CANNOT_REJECT_CANCEL);

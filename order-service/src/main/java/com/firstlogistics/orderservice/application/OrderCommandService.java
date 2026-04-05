@@ -13,7 +13,7 @@ import com.firstlogistics.orderservice.domain.event.OrderCreatedEvent;
 import com.firstlogistics.orderservice.domain.exception.OrderErrorCode;
 import com.firstlogistics.orderservice.domain.exception.OrderException;
 import com.firstlogistics.orderservice.domain.repository.OrderRepository;
-import com.firstlogistics.orderservice.domain.service.RoleCheck;
+import com.firstlogistics.orderservice.application.port.OrderAuthorityCheckPort;
 import com.firstlogistics.orderservice.domain.vo.OrderId;
 import com.firstlogistics.orderservice.domain.vo.OrderItemInput;
 import com.firstlogistics.orderservice.application.port.dto.CompanyResponse;
@@ -31,7 +31,7 @@ public class OrderCommandService {
 
     private final OrderRepository orderRepository;
     private final CompanyPort companyPort;
-    private final RoleCheck roleCheck;
+    private final OrderAuthorityCheckPort authorityCheck;
     private final HubPort hubPort;
     private final UserContextPort userContext;
 
@@ -66,8 +66,9 @@ public class OrderCommandService {
 
     @Transactional
     public String acceptOrder(UUID orderId) {
-        Order order = getOrder(orderId);
-        order.accept(getHubIdByUserId(userContext.getCurrentUserId()), roleCheck);
+        Order order = getOrderWithAuthorityCheck(orderId, AuthorityAction.ACCEPT_OR_CANCEL);
+
+        order.accept();
 
         orderRepository.save(order);
 
@@ -90,8 +91,9 @@ public class OrderCommandService {
 
     @Transactional
     public String requestCancel(UUID orderId) {
-        Order order = getOrder(orderId);
-        order.requestCancel(roleCheck);
+        Order order = getOrderWithAuthorityCheck(orderId, AuthorityAction.REQUEST_CANCEL)
+;
+        order.requestCancel();
 
         orderRepository.save(order);
 
@@ -106,8 +108,9 @@ public class OrderCommandService {
 
     @Transactional
     public String rejectCancelRequest(UUID orderId) {
-        Order order = getOrder(orderId);
-        order.rejectCancelRequest(getHubIdByUserId(userContext.getCurrentUserId()), roleCheck);
+        Order order = getOrderWithAuthorityCheck(orderId, AuthorityAction.ACCEPT_OR_CANCEL);
+
+        order.rejectCancelRequest();
 
         orderRepository.save(order);
 
@@ -116,27 +119,14 @@ public class OrderCommandService {
 
     @Transactional
     public void deleteOrder(UUID orderId) {
-        Order order = getOrder(orderId);
-        UUID userId = userContext.getCurrentUserId();
-
-        if (!roleCheck.canDelete(order.getId(),
-                order.getSupplier().hubId(),
-                getHubIdByUserId(userId))
-        ) {
-            throw new OrderException(OrderErrorCode.UNAUTHORIZED_ACCESS);
-        }
-
-        orderRepository.deleteById(order.getId(), userId);
-    }
-
-    private Order getOrder(UUID orderId) {
-        return orderRepository.findById(OrderId.of(orderId))
-                .orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));
+        Order order = getOrderWithAuthorityCheck(orderId, AuthorityAction.DELETE);
+        orderRepository.deleteById(order.getId(), userContext.getCurrentUserId());
     }
 
     private String processCancellation(UUID orderId, OrderCancelType cancelType) {
-        Order order  = getOrder(orderId);
-        order.cancel(cancelType, getHubIdByUserId(userContext.getCurrentUserId()), roleCheck);
+        Order order  = getOrderWithAuthorityCheck(orderId, AuthorityAction.ACCEPT_OR_CANCEL);
+
+        order.cancel(cancelType);
 
         orderRepository.save(order);
 
@@ -145,9 +135,28 @@ public class OrderCommandService {
         return order.getStatus().name();
     }
 
-    private UUID getHubIdByUserId(UUID userId) {
-        if (!userContext.isHubManager()) return null;
-        return hubPort.getHubManagerByUserId(userId).map(HubManagerResponse::hubId)
-                .orElseThrow(() -> new OrderException(OrderErrorCode.HUB_MANAGER_NOT_FOUND));
+    // 권한 체크용 공통 메서드
+    private Order getOrderWithAuthorityCheck(UUID orderId, AuthorityAction action) {
+        Order order = orderRepository.findById(OrderId.of(orderId))
+                    .orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));
+        UUID userId = userContext.getCurrentUserId();
+        UUID myHubId = userContext.isHubManager()
+                ? hubPort.getHubManagerByUserId(userId)
+                .map(HubManagerResponse::hubId)
+                .orElseThrow(() -> new OrderException(OrderErrorCode.HUB_MANAGER_NOT_FOUND))
+                : null;
+
+        boolean hasAuthority = switch (action) {
+            case ACCEPT_OR_CANCEL -> authorityCheck.canAcceptOrCancel(order.getSupplier().hubId(), order.getSupplier().managerId(), myHubId, userId);
+            case DELETE -> authorityCheck.canDelete(order.getSupplier().hubId(), myHubId);
+            case REQUEST_CANCEL -> authorityCheck.canRequestCancel(order.getReceiver().managerId(), userId);
+        };
+
+        if (!hasAuthority) {
+            throw new OrderException(OrderErrorCode.UNAUTHORIZED_ACCESS);
+        }
+        return order;
     }
+
+    private enum AuthorityAction { ACCEPT_OR_CANCEL, DELETE, REQUEST_CANCEL }
 }

@@ -30,6 +30,7 @@ public enum OrderErrorCode implements ErrorCode {
     INVALID_MONEY_AMOUNT(HttpStatus.BAD_REQUEST, "ORD013", "금액은 null이거나 0보다 작을 수 없습니다."),
 
     // 주문 상태 전이 & 멱등성 보장
+    INVALID_ORDER_STATUS(HttpStatus.BAD_REQUEST, "ORD028", "유효하지 않은 주문 상태입니다."),
     INVALID_ORDER_STATUS_CHANGE(HttpStatus.BAD_REQUEST, "ORD014", "허용되지 않은 주문 상태 변경입니다."),
     ALREADY_ACCEPTED(HttpStatus.BAD_REQUEST, "ORD015", "이미 승인된 주문입니다."),
     ALREADY_CANCELLED(HttpStatus.BAD_REQUEST, "ORD016", "이미 취소된 주문입니다."),
@@ -48,7 +49,7 @@ public enum OrderErrorCode implements ErrorCode {
     COMPANY_NOT_FOUND(HttpStatus.NOT_FOUND, "ORD024", "업체 정보를 찾을 수 없습니다."),
     EXTERNAL_SERVICE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "ORD025", "외부 서비스 호출 중 오류가 발생했습니다."),
     UNAUTHORIZED_ACCESS(HttpStatus.UNAUTHORIZED, "ORD026", "해당 주문에 대한 권한이 없습니다."),
-    HUB_MANAGER_NOT_FOUND(HttpStatus.NOT_FOUND, "ORD024", "허브 관리자 정보를 찾을 수 없습니다."),;
+    HUB_MANAGER_NOT_FOUND(HttpStatus.NOT_FOUND, "ORD027", "허브 관리자 정보를 찾을 수 없습니다.");
 
     private final HttpStatus status;
     private final String code;
