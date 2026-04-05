@@ -2,4 +2,8 @@ package com.firstlogistics.productservice.inventory.infrastructure.messaging.eve
 
 import java.util.UUID;
 
-public record InventoryReservationFailedEvent(UUID orderId, String reason) {}
+public record InventoryReservationFailedEvent(
+        UUID orderId,
+        String reason
+) {
+}

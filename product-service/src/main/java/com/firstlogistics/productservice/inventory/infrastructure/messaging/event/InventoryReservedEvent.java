@@ -2,4 +2,7 @@ package com.firstlogistics.productservice.inventory.infrastructure.messaging.eve
 
 import java.util.UUID;
 
-public record InventoryReservedEvent(UUID orderId) {}
+public record InventoryReservedEvent(
+        UUID orderId
+) {
+}
