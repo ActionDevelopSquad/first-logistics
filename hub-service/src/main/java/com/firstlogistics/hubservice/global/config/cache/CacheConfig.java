@@ -1,4 +1,4 @@
-package com.firstlogistics.hubservice.hubManager.infrastructure.cache.config;
+package com.firstlogistics.hubservice.global.config.cache;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
