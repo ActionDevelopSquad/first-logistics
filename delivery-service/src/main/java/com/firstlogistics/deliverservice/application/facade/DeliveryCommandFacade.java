@@ -3,7 +3,6 @@ package com.firstlogistics.deliverservice.application.facade;
 import com.firstlogistics.deliverservice.application.DeliveryCommandService;
 import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryCommand;
 import com.firstlogistics.deliverservice.application.dto.result.CreateDeliveryResult;
-import com.firstlogistics.deliverservice.application.permission.DeliveryPermissionValidator;
 import com.firstlogistics.deliverservice.application.port.CompanyPort;
 import com.firstlogistics.deliverservice.application.port.HubPort;
 import com.firstlogistics.deliverservice.application.port.dto.CompanyResponse;
@@ -11,7 +10,6 @@ import com.firstlogistics.deliverservice.application.port.dto.HubRouteResponse;
 import com.firstlogistics.deliverservice.application.port.dto.HubRouteStepResponse;
 import com.firstlogistics.deliverservice.application.port.DistributedLockPort;
 import com.firstlogistics.deliverservice.application.support.DeliveryLockKeyGenerator;
-import com.firstlogistics.deliverservice.domain.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -23,13 +21,11 @@ import java.util.UUID;
 public class DeliveryCommandFacade {
 
     private final DeliveryCommandService deliveryCommandService;
-    private final DeliveryPermissionValidator deliveryPermissionValidator;
     private final CompanyPort companyPort;
     private final HubPort hubPort;
     private final DistributedLockPort distributedLockPort;
 
-    public CreateDeliveryResult createDelivery(CreateDeliveryCommand command, String role, UUID userId) {
-        deliveryPermissionValidator.validateRole(role, UserRole.MASTER_ONLY);
+    public CreateDeliveryResult createDelivery(CreateDeliveryCommand command) {
         return executeCreateDelivery(command);
     }
 

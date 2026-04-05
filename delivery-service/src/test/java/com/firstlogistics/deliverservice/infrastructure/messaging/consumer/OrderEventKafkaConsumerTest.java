@@ -42,7 +42,10 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
 
 @Slf4j
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@SpringBootTest(
+	webEnvironment = SpringBootTest.WebEnvironment.NONE,
+	properties = "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration,common.security.config.SecurityConfig,common.security.config.CommonSecurityAutoConfig,common.security.config.FeignAuthPropagationConfig"
+)
 @ActiveProfiles("test")
 @EmbeddedKafka(partitions = 1, topics = {"order.accepted", "delivery.creation.failed", "order.accepted.DLT"},
 		bootstrapServersProperty = "spring.kafka.bootstrap-servers")

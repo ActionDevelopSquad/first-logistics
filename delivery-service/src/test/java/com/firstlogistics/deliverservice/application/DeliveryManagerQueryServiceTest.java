@@ -3,12 +3,11 @@ package com.firstlogistics.deliverservice.application;
 import com.firstlogistics.deliverservice.application.dto.query.DeliveryManagerListQuery;
 import com.firstlogistics.deliverservice.application.dto.result.DeliveryManagerDetailResult;
 import com.firstlogistics.deliverservice.application.dto.result.DeliveryManagerListResult;
-import com.firstlogistics.deliverservice.application.permission.DeliveryPermissionValidator;
 import com.firstlogistics.deliverservice.application.port.HubManagerPort;
 import com.firstlogistics.deliverservice.application.port.dto.HubManagerResponse;
 import com.firstlogistics.deliverservice.domain.entity.DeliveryManager;
 import com.firstlogistics.deliverservice.domain.enums.ManagerType;
-import com.firstlogistics.deliverservice.domain.enums.UserRole;
+import common.security.entity.enums.UserRole;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.projection.DeliveryManagerSummaryProjection;
@@ -30,7 +29,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,17 +40,11 @@ import static org.mockito.BDDMockito.given;
 @ExtendWith(MockitoExtension.class)
 class DeliveryManagerQueryServiceTest {
 
-	private static final Set<UserRole> ALLOWED_ROLES =
-		Set.of(UserRole.MASTER, UserRole.HUB_MANAGER, UserRole.DELIVERY_MANAGER);
-
 	@Mock
 	private DeliveryManagerRepository deliveryManagerRepository;
 
 	@Mock
 	private DeliveryManagerQueryRepository deliveryManagerQueryRepository;
-
-	@Mock
-	private DeliveryPermissionValidator deliveryPermissionValidator;
 
 	@Mock
 	private HubManagerPort hubManagerPort;
@@ -61,32 +53,6 @@ class DeliveryManagerQueryServiceTest {
 	private DeliveryManagerQueryService deliveryManagerQueryService;
 
 	// ===== 배송 담당자 목록 조회 =====
-
-	@Nested
-	@DisplayName("배송 담당자 목록 조회 실패")
-	class GetDeliveryManagersFail {
-
-		@Test
-		@DisplayName("허용되지 않은 권한")
-		void getDeliveryManagers_fail_accessDenied() {
-			// given
-			UUID userId = UUID.randomUUID();
-			DeliveryManagerListQuery query = new DeliveryManagerListQuery(
-				"COMPANY_MANAGER", userId, null, null, null, null, null, null, 10
-			);
-
-			given(deliveryPermissionValidator.validateRole("COMPANY_MANAGER", ALLOWED_ROLES))
-				.willThrow(new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED));
-
-			// when
-			Throwable throwable = catchThrowable(() -> deliveryManagerQueryService.getDeliveryManagers(query));
-
-			// then
-			assertThat(throwable)
-				.isInstanceOf(DeliveryException.class)
-				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
-		}
-	}
 
 	@Nested
 	@DisplayName("배송 담당자 목록 조회 성공")
@@ -101,8 +67,6 @@ class DeliveryManagerQueryServiceTest {
 				"MASTER", userId, null, null, null, null, null, null, 10
 			);
 
-			given(deliveryPermissionValidator.validateRole("MASTER", ALLOWED_ROLES))
-				.willReturn(UserRole.MASTER);
 			given(deliveryManagerQueryRepository.findDeliveryManagers(any(DeliveryManagerSearchSpec.class)))
 				.willReturn(List.of(stubSummaryProjection()));
 
@@ -124,8 +88,6 @@ class DeliveryManagerQueryServiceTest {
 				"HUB_MANAGER", userId, null, null, null, null, null, null, 10
 			);
 
-			given(deliveryPermissionValidator.validateRole("HUB_MANAGER", ALLOWED_ROLES))
-				.willReturn(UserRole.HUB_MANAGER);
 			given(hubManagerPort.getHubManager(userId))
 				.willReturn(new HubManagerResponse(UUID.randomUUID(), hubId));
 			given(deliveryManagerQueryRepository.findDeliveryManagers(any(DeliveryManagerSearchSpec.class)))
@@ -150,8 +112,6 @@ class DeliveryManagerQueryServiceTest {
 				"DELIVERY_MANAGER", userId, null, null, null, null, null, null, 10
 			);
 
-			given(deliveryPermissionValidator.validateRole("DELIVERY_MANAGER", ALLOWED_ROLES))
-				.willReturn(UserRole.DELIVERY_MANAGER);
 			given(deliveryManagerRepository.findByUserId(userId))
 				.willReturn(Optional.of(stubDeliveryManager(managerId, hubId, userId)));
 			given(deliveryManagerQueryRepository.findDeliveryManagers(any(DeliveryManagerSearchSpec.class)))
@@ -173,8 +133,6 @@ class DeliveryManagerQueryServiceTest {
 				"MASTER", userId, null, null, null, null, null, null, 10
 			);
 
-			given(deliveryPermissionValidator.validateRole("MASTER", ALLOWED_ROLES))
-				.willReturn(UserRole.MASTER);
 
 			List<DeliveryManagerSummaryProjection> projections = new ArrayList<>();
 			for (int index = 0; index < 11; index++) {
@@ -205,14 +163,12 @@ class DeliveryManagerQueryServiceTest {
 			UUID managerId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
 
-			given(deliveryPermissionValidator.validateRole("MASTER", ALLOWED_ROLES))
-				.willReturn(UserRole.MASTER);
 			given(deliveryManagerRepository.findById(DeliveryManagerId.of(managerId)))
 				.willReturn(Optional.empty());
 
 			// when
 			Throwable throwable = catchThrowable(() ->
-				deliveryManagerQueryService.getDeliveryManager(managerId, "MASTER", userId));
+				deliveryManagerQueryService.getDeliveryManager(managerId, UserRole.MASTER, userId));
 
 			// then
 			assertThat(throwable)
@@ -229,8 +185,6 @@ class DeliveryManagerQueryServiceTest {
 			UUID managerHubId = UUID.randomUUID();
 			UUID requestUserHubId = UUID.randomUUID();
 
-			given(deliveryPermissionValidator.validateRole("HUB_MANAGER", ALLOWED_ROLES))
-				.willReturn(UserRole.HUB_MANAGER);
 			given(deliveryManagerRepository.findById(DeliveryManagerId.of(managerId)))
 				.willReturn(Optional.of(stubDeliveryManager(managerId, managerHubId)));
 			given(hubManagerPort.getHubManager(userId))
@@ -238,7 +192,7 @@ class DeliveryManagerQueryServiceTest {
 
 			// when
 			Throwable throwable = catchThrowable(() ->
-				deliveryManagerQueryService.getDeliveryManager(managerId, "HUB_MANAGER", userId));
+				deliveryManagerQueryService.getDeliveryManager(managerId, UserRole.HUB_MANAGER, userId));
 
 			// then
 			assertThat(throwable)
@@ -256,8 +210,6 @@ class DeliveryManagerQueryServiceTest {
 			UUID hubId = UUID.randomUUID();
 			UUID requestManagerId = UUID.randomUUID();
 
-			given(deliveryPermissionValidator.validateRole("DELIVERY_MANAGER", ALLOWED_ROLES))
-				.willReturn(UserRole.DELIVERY_MANAGER);
 			given(deliveryManagerRepository.findById(DeliveryManagerId.of(managerId)))
 				.willReturn(Optional.of(stubDeliveryManager(managerId, hubId, otherUserId)));
 			given(deliveryManagerRepository.findByUserId(requestUserId))
@@ -265,7 +217,7 @@ class DeliveryManagerQueryServiceTest {
 
 			// when
 			Throwable throwable = catchThrowable(() ->
-				deliveryManagerQueryService.getDeliveryManager(managerId, "DELIVERY_MANAGER", requestUserId));
+				deliveryManagerQueryService.getDeliveryManager(managerId, UserRole.DELIVERY_MANAGER, requestUserId));
 
 			// then
 			assertThat(throwable)
@@ -286,14 +238,12 @@ class DeliveryManagerQueryServiceTest {
 			UUID userId = UUID.randomUUID();
 			UUID hubId = UUID.randomUUID();
 
-			given(deliveryPermissionValidator.validateRole("MASTER", ALLOWED_ROLES))
-				.willReturn(UserRole.MASTER);
 			given(deliveryManagerRepository.findById(DeliveryManagerId.of(managerId)))
 				.willReturn(Optional.of(stubDeliveryManager(managerId, hubId)));
 
 			// when
 			DeliveryManagerDetailResult result =
-				deliveryManagerQueryService.getDeliveryManager(managerId, "MASTER", userId);
+				deliveryManagerQueryService.getDeliveryManager(managerId, UserRole.MASTER, userId);
 
 			// then
 			assertThat(result.managerId()).isEqualTo(managerId);
@@ -308,8 +258,6 @@ class DeliveryManagerQueryServiceTest {
 			UUID userId = UUID.randomUUID();
 			UUID hubId = UUID.randomUUID();
 
-			given(deliveryPermissionValidator.validateRole("HUB_MANAGER", ALLOWED_ROLES))
-				.willReturn(UserRole.HUB_MANAGER);
 			given(deliveryManagerRepository.findById(DeliveryManagerId.of(managerId)))
 				.willReturn(Optional.of(stubDeliveryManager(managerId, hubId)));
 			given(hubManagerPort.getHubManager(userId))
@@ -317,7 +265,7 @@ class DeliveryManagerQueryServiceTest {
 
 			// when
 			DeliveryManagerDetailResult result =
-				deliveryManagerQueryService.getDeliveryManager(managerId, "HUB_MANAGER", userId);
+				deliveryManagerQueryService.getDeliveryManager(managerId, UserRole.HUB_MANAGER, userId);
 
 			// then
 			assertThat(result.managerId()).isEqualTo(managerId);
@@ -332,8 +280,6 @@ class DeliveryManagerQueryServiceTest {
 			UUID hubId = UUID.randomUUID();
 			DeliveryManager manager = stubDeliveryManager(managerId, hubId, requestUserId);
 
-			given(deliveryPermissionValidator.validateRole("DELIVERY_MANAGER", ALLOWED_ROLES))
-				.willReturn(UserRole.DELIVERY_MANAGER);
 			given(deliveryManagerRepository.findById(DeliveryManagerId.of(managerId)))
 				.willReturn(Optional.of(manager));
 			given(deliveryManagerRepository.findByUserId(requestUserId))
@@ -341,7 +287,7 @@ class DeliveryManagerQueryServiceTest {
 
 			// when
 			DeliveryManagerDetailResult result =
-				deliveryManagerQueryService.getDeliveryManager(managerId, "DELIVERY_MANAGER", requestUserId);
+				deliveryManagerQueryService.getDeliveryManager(managerId, UserRole.DELIVERY_MANAGER, requestUserId);
 
 			// then
 			assertThat(result.managerId()).isEqualTo(managerId);
@@ -361,14 +307,12 @@ class DeliveryManagerQueryServiceTest {
 			UUID targetUserId = UUID.randomUUID();
 			UUID requestUserId = UUID.randomUUID();
 
-			given(deliveryPermissionValidator.validateRole("MASTER", ALLOWED_ROLES))
-				.willReturn(UserRole.MASTER);
 			given(deliveryManagerRepository.findByUserId(targetUserId))
 				.willReturn(Optional.empty());
 
 			// when
 			Throwable throwable = catchThrowable(() ->
-				deliveryManagerQueryService.getDeliveryManagerByUserId(targetUserId, "MASTER", requestUserId));
+				deliveryManagerQueryService.getDeliveryManagerByUserId(targetUserId, UserRole.MASTER, requestUserId));
 
 			// then
 			assertThat(throwable)
@@ -389,14 +333,12 @@ class DeliveryManagerQueryServiceTest {
 			UUID managerId = UUID.randomUUID();
 			UUID hubId = UUID.randomUUID();
 
-			given(deliveryPermissionValidator.validateRole("DELIVERY_MANAGER", ALLOWED_ROLES))
-				.willReturn(UserRole.DELIVERY_MANAGER);
 			given(deliveryManagerRepository.findByUserId(targetUserId))
 				.willReturn(Optional.of(stubDeliveryManager(managerId, hubId)));
 
 			// when
 			DeliveryManagerDetailResult result =
-				deliveryManagerQueryService.getDeliveryManagerByUserId(targetUserId, "DELIVERY_MANAGER", targetUserId);
+				deliveryManagerQueryService.getDeliveryManagerByUserId(targetUserId, UserRole.DELIVERY_MANAGER, targetUserId);
 
 			// then
 			assertThat(result.managerId()).isEqualTo(managerId);

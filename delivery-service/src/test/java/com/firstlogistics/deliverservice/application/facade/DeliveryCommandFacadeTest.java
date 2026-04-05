@@ -3,8 +3,7 @@ package com.firstlogistics.deliverservice.application.facade;
 import com.firstlogistics.deliverservice.application.DeliveryCommandService;
 import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryCommand;
 import com.firstlogistics.deliverservice.application.dto.result.CreateDeliveryResult;
-import com.firstlogistics.deliverservice.application.permission.DeliveryPermissionValidator;
-import com.firstlogistics.deliverservice.domain.enums.UserRole;
+import common.security.entity.enums.UserRole;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.application.port.CompanyPort;
@@ -34,8 +33,6 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
 
 @Slf4j
 @ExtendWith(MockitoExtension.class)
@@ -52,9 +49,6 @@ class DeliveryCommandFacadeTest {
 
 	@Mock
 	private HubPort hubPort;
-
-	@Mock
-	private DeliveryPermissionValidator deliveryPermissionValidator;
 
 	@Mock
 	private DistributedLockPort distributedLockPort;
@@ -115,48 +109,18 @@ class DeliveryCommandFacadeTest {
 		}
 	}
 
-	// ─── createDelivery (권한 검증 포함) ────────────────────────────────
-
-	@Nested
-	@DisplayName("createDelivery 실패")
-	class CreateDeliveryFail {
-
-		@Test
-		@DisplayName("MASTER 외 권한으로 배송 생성 시도")
-		void createDelivery_fail_accessDenied() {
-			// given
-			UUID supplierCompanyId = UUID.randomUUID();
-			UUID receiverCompanyId = UUID.randomUUID();
-			UUID userId = UUID.randomUUID();
-			String role = "HUB_MANAGER";
-			CreateDeliveryCommand command = stubCommand(supplierCompanyId, receiverCompanyId);
-
-			doThrow(new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED))
-				.when(deliveryPermissionValidator).validateRole(role, Set.of(UserRole.MASTER));
-
-			// when
-			Throwable throwable = catchThrowable(() -> deliveryCommandFacade.createDelivery(command, role, userId));
-
-			// then
-			assertThat(throwable)
-				.isInstanceOf(DeliveryException.class)
-				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
-			then(companyPort).should(never()).getCompany(any());
-		}
-	}
+	// ─── createDelivery ────────────────────────────────
 
 	@Nested
 	@DisplayName("createDelivery 성공")
 	class CreateDeliverySuccess {
 
 		@Test
-		@DisplayName("MASTER 권한으로 배송 생성 성공")
+		@DisplayName("배송 생성 성공")
 		void createDelivery_success() {
 			// given
 			UUID supplierCompanyId = UUID.randomUUID();
 			UUID receiverCompanyId = UUID.randomUUID();
-			UUID userId = UUID.randomUUID();
-			String role = "MASTER";
 			CreateDeliveryCommand command = stubCommand(supplierCompanyId, receiverCompanyId);
 			UUID deliveryId = UUID.randomUUID();
 			CreateDeliveryResult expectedResult = new CreateDeliveryResult(deliveryId);
@@ -173,7 +137,7 @@ class DeliveryCommandFacadeTest {
 				.willReturn(expectedResult);
 
 			// when
-			CreateDeliveryResult result = deliveryCommandFacade.createDelivery(command, role, userId);
+			CreateDeliveryResult result = deliveryCommandFacade.createDelivery(command);
 
 			// then
 			assertThat(result.deliveryId()).isEqualTo(deliveryId);

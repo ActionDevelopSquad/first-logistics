@@ -15,6 +15,6 @@ public interface CompanyClient {
 	@GetMapping("/api/v1/companies/{companyId}")
 	FeignApiResponse<CompanyResponse> getCompany(@PathVariable("companyId") UUID companyId);
 
-	@GetMapping("/api/v1/company-managers/users/{userId}")
-	FeignApiResponse<CompanyResponse> getCompanyManager(@PathVariable("userId") UUID userId);
+	@GetMapping("/api/v1/companies/manager/{managerId}")
+	FeignApiResponse<CompanyResponse> getCompanyManager(@PathVariable("managerId") UUID managerId);
 }

@@ -4,14 +4,13 @@ import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryM
 import com.firstlogistics.deliverservice.application.dto.command.UpdateDeliveryManagerCommand;
 import com.firstlogistics.deliverservice.application.dto.result.CreateDeliveryManagerResult;
 import com.firstlogistics.deliverservice.application.dto.result.UpdateDeliveryManagerResult;
-import com.firstlogistics.deliverservice.application.permission.DeliveryPermissionValidator;
 import com.firstlogistics.deliverservice.application.port.HubManagerPort;
 import com.firstlogistics.deliverservice.application.port.UserPort;
 import com.firstlogistics.deliverservice.application.port.dto.HubManagerResponse;
 import com.firstlogistics.deliverservice.application.port.dto.UserResponse;
 import com.firstlogistics.deliverservice.domain.entity.DeliveryManager;
 import com.firstlogistics.deliverservice.domain.enums.ManagerType;
-import com.firstlogistics.deliverservice.domain.enums.UserRole;
+import common.security.entity.enums.UserRole;
 import com.firstlogistics.deliverservice.domain.event.UserStatusChangedEvent;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
@@ -31,17 +30,13 @@ import java.util.UUID;
 public class DeliveryManagerCommandService {
 
 	private final DeliveryManagerRepository deliveryManagerRepository;
-	private final DeliveryPermissionValidator deliveryPermissionValidator;
 	private final HubManagerPort hubManagerPort;
 	private final UserPort userPort;
 
 	public CreateDeliveryManagerResult createDeliveryManager(
-		CreateDeliveryManagerCommand command, String role, UUID requestUserId
+		CreateDeliveryManagerCommand command, UserRole role, UUID requestUserId
 	) {
-		UserRole userRole = deliveryPermissionValidator.validateRole(role,
-			UserRole.MANAGERS);
-
-		if (userRole == UserRole.HUB_MANAGER) {
+		if (role == UserRole.HUB_MANAGER) {
 			HubManagerResponse hubManager = hubManagerPort.getHubManager(requestUserId);
 			if (!hubManager.hubId().equals(command.hubId())) {
 				throw new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
@@ -67,14 +62,12 @@ public class DeliveryManagerCommandService {
 
 
 	public UpdateDeliveryManagerResult updateDeliveryManager(
-		UpdateDeliveryManagerCommand command, String role, UUID requestUserId
+		UpdateDeliveryManagerCommand command, UserRole role, UUID requestUserId
 	) {
-		UserRole userRole = deliveryPermissionValidator.validateRole(role, UserRole.MANAGERS);
-
 		DeliveryManager manager = deliveryManagerRepository.findById(DeliveryManagerId.of(command.managerId()))
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_MANAGER_NOT_FOUND));
 
-		if (userRole == UserRole.HUB_MANAGER) {
+		if (role == UserRole.HUB_MANAGER) {
 			UUID hubId = hubManagerPort.getHubManager(requestUserId).hubId();
 			if (!hubId.equals(manager.getHubId())) {
 				throw new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
@@ -86,13 +79,11 @@ public class DeliveryManagerCommandService {
 		return UpdateDeliveryManagerResult.from(saved);
 	}
 
-	public void deleteDeliveryManager(UUID managerId, String role, UUID requestUserId) {
-		UserRole userRole = deliveryPermissionValidator.validateRole(role, UserRole.MANAGERS);
-
+	public void deleteDeliveryManager(UUID managerId, UserRole role, UUID requestUserId) {
 		DeliveryManager manager = deliveryManagerRepository.findById(DeliveryManagerId.of(managerId))
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_MANAGER_NOT_FOUND));
 
-		if (userRole == UserRole.HUB_MANAGER) {
+		if (role == UserRole.HUB_MANAGER) {
 			UUID hubId = hubManagerPort.getHubManager(requestUserId).hubId();
 			if (!hubId.equals(manager.getHubId())) {
 				throw new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED);

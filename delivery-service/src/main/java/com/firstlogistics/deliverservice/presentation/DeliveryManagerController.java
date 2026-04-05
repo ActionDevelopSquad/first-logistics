@@ -11,6 +11,10 @@ import com.firstlogistics.deliverservice.presentation.dto.response.DeliveryManag
 import com.firstlogistics.deliverservice.presentation.dto.response.DeliveryManagerListResponse;
 import com.firstlogistics.deliverservice.presentation.dto.response.UpdateDeliveryManagerResponse;
 import common.response.ApiResponse;
+import common.security.aop.RequireRole;
+import common.security.domain.CustomUserDetails;
+import common.security.entity.enums.UserRole;
+import common.security.util.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +24,6 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,23 +39,22 @@ public class DeliveryManagerController {
 	private final DeliveryManagerCommandService deliveryManagerCommandService;
 	private final DeliveryManagerQueryService deliveryManagerQueryService;
 
+	@RequireRole({UserRole.MASTER, UserRole.HUB_MANAGER})
 	@PostMapping
 	public ResponseEntity<ApiResponse<CreateDeliveryManagerResponse>> createDeliveryManager(
-		@RequestBody @Valid CreateDeliveryManagerRequest request,
-		@RequestHeader("X-User-Id") UUID userId,
-		@RequestHeader("X-User-Role") String role
+		@RequestBody @Valid CreateDeliveryManagerRequest request
 	) {
+		CustomUserDetails user = SecurityUtils.currentUser();
 		return ResponseEntity.status(DeliveryManagerSuccessCode.DELIVERY_MANAGER_CREATED.getStatus())
 			.body(ApiResponse.success(DeliveryManagerSuccessCode.DELIVERY_MANAGER_CREATED,
 				CreateDeliveryManagerResponse.from(
-					deliveryManagerCommandService.createDeliveryManager(request.toCommand(), role, userId))
+					deliveryManagerCommandService.createDeliveryManager(request.toCommand(), user.getRole(), user.getUserId()))
 			));
 	}
 
+	@RequireRole({UserRole.MASTER, UserRole.HUB_MANAGER, UserRole.DELIVERY_MANAGER})
 	@GetMapping
 	public ResponseEntity<ApiResponse<DeliveryManagerListResponse>> getDeliveryManagers(
-		@RequestHeader("X-User-Id") UUID userId,
-		@RequestHeader("X-User-Role") String role,
 		@RequestParam(required = false) ManagerType managerType,
 		@RequestParam(required = false) UUID hubId,
 		@RequestParam(required = false) String managerName,
@@ -61,8 +63,9 @@ public class DeliveryManagerController {
 		@RequestParam(required = false) LocalDateTime cursorCreatedAt,
 		@RequestParam(defaultValue = "10") int size
 	) {
+		CustomUserDetails user = SecurityUtils.currentUser();
 		DeliveryManagerListQuery query = new DeliveryManagerListQuery(
-			role, userId, managerType, hubId, managerName, phoneNumber,
+			user.getRole().name(), user.getUserId(), managerType, hubId, managerName, phoneNumber,
 			cursorId, cursorCreatedAt, size
 		);
 		return ResponseEntity.ok(ApiResponse.success(DeliveryManagerSuccessCode.DELIVERY_MANAGER_LIST_FOUND,
@@ -70,48 +73,48 @@ public class DeliveryManagerController {
 		));
 	}
 
+	@RequireRole({UserRole.MASTER, UserRole.HUB_MANAGER, UserRole.DELIVERY_MANAGER})
 	@GetMapping("/{managerId}")
 	public ResponseEntity<ApiResponse<DeliveryManagerDetailResponse>> getDeliveryManager(
-		@PathVariable UUID managerId,
-		@RequestHeader("X-User-Id") UUID userId,
-		@RequestHeader("X-User-Role") String role
+		@PathVariable UUID managerId
 	) {
+		CustomUserDetails user = SecurityUtils.currentUser();
 		return ResponseEntity.ok(ApiResponse.success(DeliveryManagerSuccessCode.DELIVERY_MANAGER_FOUND,
-			DeliveryManagerDetailResponse.from(deliveryManagerQueryService.getDeliveryManager(managerId, role, userId))
+			DeliveryManagerDetailResponse.from(deliveryManagerQueryService.getDeliveryManager(managerId, user.getRole(), user.getUserId()))
 		));
 	}
 
+	@RequireRole({UserRole.MASTER, UserRole.HUB_MANAGER})
 	@PatchMapping("/{managerId}")
 	public ResponseEntity<ApiResponse<UpdateDeliveryManagerResponse>> updateDeliveryManager(
 		@PathVariable UUID managerId,
-		@RequestBody @Valid UpdateDeliveryManagerRequest request,
-		@RequestHeader("X-User-Id") UUID userId,
-		@RequestHeader("X-User-Role") String role
+		@RequestBody @Valid UpdateDeliveryManagerRequest request
 	) {
+		CustomUserDetails user = SecurityUtils.currentUser();
 		return ResponseEntity.ok(ApiResponse.success(DeliveryManagerSuccessCode.DELIVERY_MANAGER_UPDATED,
 			UpdateDeliveryManagerResponse.from(
-				deliveryManagerCommandService.updateDeliveryManager(request.toCommand(managerId), role, userId))
+				deliveryManagerCommandService.updateDeliveryManager(request.toCommand(managerId), user.getRole(), user.getUserId()))
 		));
 	}
 
+	@RequireRole({UserRole.MASTER, UserRole.HUB_MANAGER, UserRole.DELIVERY_MANAGER})
 	@GetMapping("/users/{targetUserId}")
 	public ResponseEntity<ApiResponse<DeliveryManagerDetailResponse>> getDeliveryManagerByUserId(
-		@PathVariable UUID targetUserId,
-		@RequestHeader("X-User-Id") UUID userId,
-		@RequestHeader("X-User-Role") String role
+		@PathVariable UUID targetUserId
 	) {
+		CustomUserDetails user = SecurityUtils.currentUser();
 		return ResponseEntity.ok(ApiResponse.success(DeliveryManagerSuccessCode.DELIVERY_MANAGER_FOUND,
-			DeliveryManagerDetailResponse.from(deliveryManagerQueryService.getDeliveryManagerByUserId(targetUserId, role, userId))
+			DeliveryManagerDetailResponse.from(deliveryManagerQueryService.getDeliveryManagerByUserId(targetUserId, user.getRole(), user.getUserId()))
 		));
 	}
 
+	@RequireRole({UserRole.MASTER, UserRole.HUB_MANAGER})
 	@DeleteMapping("/{managerId}")
 	public ResponseEntity<ApiResponse<Void>> deleteDeliveryManager(
-		@PathVariable UUID managerId,
-		@RequestHeader("X-User-Id") UUID userId,
-		@RequestHeader("X-User-Role") String role
+		@PathVariable UUID managerId
 	) {
-		deliveryManagerCommandService.deleteDeliveryManager(managerId, role, userId);
+		CustomUserDetails user = SecurityUtils.currentUser();
+		deliveryManagerCommandService.deleteDeliveryManager(managerId, user.getRole(), user.getUserId());
 		return ResponseEntity.ok(ApiResponse.success(DeliveryManagerSuccessCode.DELIVERY_MANAGER_DELETED, null));
 	}
 }

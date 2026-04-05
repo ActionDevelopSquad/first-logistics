@@ -2,6 +2,12 @@ plugins {
     id 'java-library'
 }
 
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+
 dependencies {
     implementation project(':common')
     implementation project(':common-jpa')

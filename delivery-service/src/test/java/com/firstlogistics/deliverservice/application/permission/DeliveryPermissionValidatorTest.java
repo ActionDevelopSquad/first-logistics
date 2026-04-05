@@ -11,7 +11,7 @@ import com.firstlogistics.deliverservice.application.port.dto.CompanyResponse;
 import com.firstlogistics.deliverservice.application.port.dto.HubManagerResponse;
 import com.firstlogistics.deliverservice.domain.entity.DeliveryManager;
 import com.firstlogistics.deliverservice.domain.enums.ManagerType;
-import com.firstlogistics.deliverservice.domain.enums.UserRole;
+import common.security.entity.enums.UserRole;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryManagerRepository;
@@ -59,8 +59,6 @@ class DeliveryPermissionValidatorTest {
 		validator = new DeliveryPermissionValidator(strategies);
 	}
 
-	private static final Set<UserRole> ALL_ROLES = Set.of(UserRole.values());
-
 	private static final UUID SOURCE_HUB_ID = UUID.randomUUID();
 	private static final UUID DESTINATION_HUB_ID = UUID.randomUUID();
 	private static final UUID RECEIVER_COMPANY_ID = UUID.randomUUID();
@@ -70,47 +68,6 @@ class DeliveryPermissionValidatorTest {
 		return new DeliveryAccessContext(
 			SOURCE_HUB_ID, DESTINATION_HUB_ID, RECEIVER_COMPANY_ID, List.of(ROUTE_MANAGER_ID)
 		);
-	}
-
-	@Nested
-	@DisplayName("parseUserRole")
-	class ParseUserRole {
-
-		@Test
-		@DisplayName("유효하지 않은 역할 문자열")
-		void parseUserRole_fail_invalidRole() {
-			// given & when
-			Throwable throwable = catchThrowable(() -> validator.parseUserRole("INVALID"));
-			log.info("throwable = {}", throwable.getMessage());
-
-			// then
-			assertThat(throwable)
-				.isInstanceOf(DeliveryException.class)
-				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.INVALID_ROLE_SCOPE);
-		}
-
-		@Test
-		@DisplayName("null 역할")
-		void parseUserRole_fail_nullRole() {
-			// given & when
-			Throwable throwable = catchThrowable(() -> validator.parseUserRole(null));
-			log.info("throwable = {}", throwable.getMessage());
-
-			// then
-			assertThat(throwable)
-				.isInstanceOf(DeliveryException.class)
-				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.INVALID_ROLE_SCOPE);
-		}
-
-		@Test
-		@DisplayName("유효한 역할 파싱 성공")
-		void parseUserRole_success() {
-			// when
-			UserRole result = validator.parseUserRole("MASTER");
-
-			// then
-			assertThat(result).isEqualTo(UserRole.MASTER);
-		}
 	}
 
 	@Nested
@@ -124,7 +81,7 @@ class DeliveryPermissionValidatorTest {
 			DeliveryAccessContext context = stubContext();
 
 			// when & then (예외 없음)
-			validator.validate(context, "MASTER", UUID.randomUUID(), ALL_ROLES);
+			validator.validate(context, UserRole.MASTER, UUID.randomUUID());
 		}
 	}
 
@@ -141,7 +98,7 @@ class DeliveryPermissionValidatorTest {
 			given(hubManagerPort.getHubManager(userId)).willReturn(new HubManagerResponse(userId, SOURCE_HUB_ID));
 
 			// when & then (예외 없음)
-			validator.validate(context, "HUB_MANAGER", userId, ALL_ROLES);
+			validator.validate(context, UserRole.HUB_MANAGER, userId);
 		}
 
 		@Test
@@ -153,7 +110,7 @@ class DeliveryPermissionValidatorTest {
 			given(hubManagerPort.getHubManager(userId)).willReturn(new HubManagerResponse(userId, DESTINATION_HUB_ID));
 
 			// when & then (예외 없음)
-			validator.validate(context, "HUB_MANAGER", userId, ALL_ROLES);
+			validator.validate(context, UserRole.HUB_MANAGER, userId);
 		}
 
 		@Test
@@ -166,7 +123,7 @@ class DeliveryPermissionValidatorTest {
 			given(hubManagerPort.getHubManager(userId)).willReturn(new HubManagerResponse(userId, otherHubId));
 
 			// when
-			Throwable throwable = catchThrowable(() -> validator.validate(context, "HUB_MANAGER", userId, ALL_ROLES));
+			Throwable throwable = catchThrowable(() -> validator.validate(context, UserRole.HUB_MANAGER, userId));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -192,7 +149,7 @@ class DeliveryPermissionValidatorTest {
 			given(deliveryManagerRepository.findByUserId(userId)).willReturn(Optional.of(manager));
 
 			// when & then (예외 없음)
-			validator.validate(context, "DELIVERY_MANAGER", userId, ALL_ROLES);
+			validator.validate(context, UserRole.DELIVERY_MANAGER, userId);
 		}
 
 		@Test
@@ -205,7 +162,7 @@ class DeliveryPermissionValidatorTest {
 			given(deliveryManagerRepository.findByUserId(userId)).willReturn(Optional.of(otherManager));
 
 			// when
-			Throwable throwable = catchThrowable(() -> validator.validate(context, "DELIVERY_MANAGER", userId, ALL_ROLES));
+			Throwable throwable = catchThrowable(() -> validator.validate(context, UserRole.DELIVERY_MANAGER, userId));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -223,7 +180,7 @@ class DeliveryPermissionValidatorTest {
 			given(deliveryManagerRepository.findByUserId(userId)).willReturn(Optional.empty());
 
 			// when
-			Throwable throwable = catchThrowable(() -> validator.validate(context, "DELIVERY_MANAGER", userId, ALL_ROLES));
+			Throwable throwable = catchThrowable(() -> validator.validate(context, UserRole.DELIVERY_MANAGER, userId));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -247,7 +204,7 @@ class DeliveryPermissionValidatorTest {
 				.willReturn(new CompanyResponse(RECEIVER_COMPANY_ID, UUID.randomUUID(), "테스트업체", "서울시 강남구 테헤란로 123", "101동 202호"));
 
 			// when & then (예외 없음)
-			validator.validate(context, "COMPANY_MANAGER", userId, ALL_ROLES);
+			validator.validate(context, UserRole.COMPANY_MANAGER, userId);
 		}
 
 		@Test
@@ -261,7 +218,7 @@ class DeliveryPermissionValidatorTest {
 				.willReturn(new CompanyResponse(otherCompanyId, UUID.randomUUID(), "다른업체", "다른주소", "다른상세주소"));
 
 			// when
-			Throwable throwable = catchThrowable(() -> validator.validate(context, "COMPANY_MANAGER", userId, ALL_ROLES));
+			Throwable throwable = catchThrowable(() -> validator.validate(context, UserRole.COMPANY_MANAGER, userId));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -271,39 +228,4 @@ class DeliveryPermissionValidatorTest {
 		}
 	}
 
-	@Nested
-	@DisplayName("allowedRoles 기반 권한 제어")
-	class AllowedRolesValidation {
-
-		@Test
-		@DisplayName("허용되지 않은 역할 거부")
-		void validate_fail_roleNotAllowed() {
-			// given
-			UUID userId = UUID.randomUUID();
-			DeliveryAccessContext context = stubContext();
-			Set<UserRole> allowedRoles = Set.of(UserRole.MASTER, UserRole.HUB_MANAGER, UserRole.DELIVERY_MANAGER);
-
-			// when
-			Throwable throwable = catchThrowable(() ->
-				validator.validate(context, "COMPANY_MANAGER", userId, allowedRoles));
-			log.info("throwable = {}", throwable.getMessage());
-
-			// then
-			assertThat(throwable)
-				.isInstanceOf(DeliveryException.class)
-				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
-		}
-
-		@Test
-		@DisplayName("허용된 역할이면 Strategy 검증 진행")
-		void validate_success_roleAllowedAndPasses() {
-			// given
-			UUID userId = UUID.randomUUID();
-			DeliveryAccessContext context = stubContext();
-			Set<UserRole> allowedRoles = Set.of(UserRole.MASTER, UserRole.HUB_MANAGER);
-
-			// when & then (MASTER는 무조건 통과)
-			validator.validate(context, "MASTER", userId, allowedRoles);
-		}
-	}
 }

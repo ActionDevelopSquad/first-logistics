@@ -2,14 +2,13 @@ package com.firstlogistics.deliverservice.application;
 
 import com.firstlogistics.deliverservice.application.dto.command.UpdateDeliveryManagerCommand;
 import com.firstlogistics.deliverservice.application.dto.result.UpdateDeliveryManagerResult;
-import com.firstlogistics.deliverservice.application.permission.DeliveryPermissionValidator;
 import com.firstlogistics.deliverservice.application.port.HubManagerPort;
 import com.firstlogistics.deliverservice.application.port.UserPort;
 import com.firstlogistics.deliverservice.application.port.dto.HubManagerResponse;
 import com.firstlogistics.deliverservice.domain.entity.DeliveryManager;
 import com.firstlogistics.deliverservice.domain.entity.ManagerTimetable;
 import com.firstlogistics.deliverservice.domain.enums.ManagerType;
-import com.firstlogistics.deliverservice.domain.enums.UserRole;
+import common.security.entity.enums.UserRole;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryManagerRepository;
@@ -45,9 +44,6 @@ class DeliveryManagerCommandServiceTest {
 	private DeliveryManagerRepository deliveryManagerRepository;
 
 	@Mock
-	private DeliveryPermissionValidator deliveryPermissionValidator;
-
-	@Mock
 	private HubManagerPort hubManagerPort;
 
 	@Mock
@@ -63,28 +59,6 @@ class DeliveryManagerCommandServiceTest {
 	class UpdateDeliveryManagerFail {
 
 		@Test
-		@DisplayName("허용되지 않은 권한")
-		void updateDeliveryManager_fail_accessDenied() {
-			// given
-			UUID managerId = UUID.randomUUID();
-			UUID userId = UUID.randomUUID();
-			UUID newHubId = UUID.randomUUID();
-			UpdateDeliveryManagerCommand command = new UpdateDeliveryManagerCommand(managerId, newHubId, ManagerType.COMPANY_DELIVERY);
-
-			given(deliveryPermissionValidator.validateRole("DELIVERY_MANAGER", UserRole.MANAGERS))
-				.willThrow(new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED));
-
-			// when
-			Throwable throwable = catchThrowable(() ->
-				deliveryManagerCommandService.updateDeliveryManager(command, "DELIVERY_MANAGER", userId));
-
-			// then
-			assertThat(throwable)
-				.isInstanceOf(DeliveryException.class)
-				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
-		}
-
-		@Test
 		@DisplayName("배송 담당자 미존재")
 		void updateDeliveryManager_fail_notFound() {
 			// given
@@ -93,14 +67,12 @@ class DeliveryManagerCommandServiceTest {
 			UUID newHubId = UUID.randomUUID();
 			UpdateDeliveryManagerCommand command = new UpdateDeliveryManagerCommand(managerId, newHubId, ManagerType.HUB_DELIVERY);
 
-			given(deliveryPermissionValidator.validateRole("MASTER", UserRole.MANAGERS))
-				.willReturn(UserRole.MASTER);
 			given(deliveryManagerRepository.findById(DeliveryManagerId.of(managerId)))
 				.willReturn(Optional.empty());
 
 			// when
 			Throwable throwable = catchThrowable(() ->
-				deliveryManagerCommandService.updateDeliveryManager(command, "MASTER", userId));
+				deliveryManagerCommandService.updateDeliveryManager(command, UserRole.MASTER, userId));
 
 			// then
 			assertThat(throwable)
@@ -119,8 +91,6 @@ class DeliveryManagerCommandServiceTest {
 			UUID newHubId = UUID.randomUUID();
 			UpdateDeliveryManagerCommand command = new UpdateDeliveryManagerCommand(managerId, newHubId, ManagerType.COMPANY_DELIVERY);
 
-			given(deliveryPermissionValidator.validateRole("HUB_MANAGER", UserRole.MANAGERS))
-				.willReturn(UserRole.HUB_MANAGER);
 			given(deliveryManagerRepository.findById(DeliveryManagerId.of(managerId)))
 				.willReturn(Optional.of(stubDeliveryManager(managerId, managerHubId)));
 			given(hubManagerPort.getHubManager(userId))
@@ -128,7 +98,7 @@ class DeliveryManagerCommandServiceTest {
 
 			// when
 			Throwable throwable = catchThrowable(() ->
-				deliveryManagerCommandService.updateDeliveryManager(command, "HUB_MANAGER", userId));
+				deliveryManagerCommandService.updateDeliveryManager(command, UserRole.HUB_MANAGER, userId));
 
 			// then
 			assertThat(throwable)
@@ -149,14 +119,12 @@ class DeliveryManagerCommandServiceTest {
 			DeliveryManager manager = stubDeliveryManager(managerId, hubId);
 			manager.assignDelivery(DeliveryId.generate(), LocalDateTime.now(), LocalDateTime.now().plusHours(1));
 
-			given(deliveryPermissionValidator.validateRole("MASTER", UserRole.MANAGERS))
-				.willReturn(UserRole.MASTER);
 			given(deliveryManagerRepository.findById(DeliveryManagerId.of(managerId)))
 				.willReturn(Optional.of(manager));
 
 			// when
 			Throwable throwable = catchThrowable(() ->
-				deliveryManagerCommandService.updateDeliveryManager(command, "MASTER", userId));
+				deliveryManagerCommandService.updateDeliveryManager(command, UserRole.MASTER, userId));
 
 			// then
 			assertThat(throwable)
@@ -179,8 +147,6 @@ class DeliveryManagerCommandServiceTest {
 			UUID newHubId = UUID.randomUUID();
 			UpdateDeliveryManagerCommand command = new UpdateDeliveryManagerCommand(managerId, newHubId, ManagerType.COMPANY_DELIVERY);
 
-			given(deliveryPermissionValidator.validateRole("MASTER", UserRole.MANAGERS))
-				.willReturn(UserRole.MASTER);
 			given(deliveryManagerRepository.findById(DeliveryManagerId.of(managerId)))
 				.willReturn(Optional.of(stubDeliveryManager(managerId, currentHubId)));
 			given(deliveryManagerRepository.save(any(DeliveryManager.class)))
@@ -188,7 +154,7 @@ class DeliveryManagerCommandServiceTest {
 
 			// when
 			UpdateDeliveryManagerResult result =
-				deliveryManagerCommandService.updateDeliveryManager(command, "MASTER", userId);
+				deliveryManagerCommandService.updateDeliveryManager(command, UserRole.MASTER, userId);
 
 			// then
 			assertThat(result.managerId()).isEqualTo(managerId);
@@ -211,8 +177,6 @@ class DeliveryManagerCommandServiceTest {
 			UUID newHubId = UUID.randomUUID();
 			UpdateDeliveryManagerCommand command = new UpdateDeliveryManagerCommand(managerId, newHubId, ManagerType.HUB_DELIVERY);
 
-			given(deliveryPermissionValidator.validateRole("HUB_MANAGER", UserRole.MANAGERS))
-				.willReturn(UserRole.HUB_MANAGER);
 			given(deliveryManagerRepository.findById(DeliveryManagerId.of(managerId)))
 				.willReturn(Optional.of(stubDeliveryManager(managerId, hubId)));
 			given(hubManagerPort.getHubManager(userId))
@@ -222,7 +186,7 @@ class DeliveryManagerCommandServiceTest {
 
 			// when
 			UpdateDeliveryManagerResult result =
-				deliveryManagerCommandService.updateDeliveryManager(command, "HUB_MANAGER", userId);
+				deliveryManagerCommandService.updateDeliveryManager(command, UserRole.HUB_MANAGER, userId);
 
 			// then
 			assertThat(result.managerId()).isEqualTo(managerId);
@@ -243,14 +207,12 @@ class DeliveryManagerCommandServiceTest {
 			UUID managerId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
 
-			given(deliveryPermissionValidator.validateRole("MASTER", UserRole.MANAGERS))
-				.willReturn(UserRole.MASTER);
 			given(deliveryManagerRepository.findById(DeliveryManagerId.of(managerId)))
 				.willReturn(Optional.empty());
 
 			// when
 			Throwable throwable = catchThrowable(() ->
-				deliveryManagerCommandService.deleteDeliveryManager(managerId, "MASTER", userId));
+				deliveryManagerCommandService.deleteDeliveryManager(managerId, UserRole.MASTER, userId));
 
 			// then
 			assertThat(throwable)
@@ -267,8 +229,6 @@ class DeliveryManagerCommandServiceTest {
 			UUID managerHubId = UUID.randomUUID();
 			UUID requestUserHubId = UUID.randomUUID();
 
-			given(deliveryPermissionValidator.validateRole("HUB_MANAGER", UserRole.MANAGERS))
-				.willReturn(UserRole.HUB_MANAGER);
 			given(deliveryManagerRepository.findById(DeliveryManagerId.of(managerId)))
 				.willReturn(Optional.of(stubDeliveryManager(managerId, managerHubId)));
 			given(hubManagerPort.getHubManager(userId))
@@ -276,7 +236,7 @@ class DeliveryManagerCommandServiceTest {
 
 			// when
 			Throwable throwable = catchThrowable(() ->
-				deliveryManagerCommandService.deleteDeliveryManager(managerId, "HUB_MANAGER", userId));
+				deliveryManagerCommandService.deleteDeliveryManager(managerId, UserRole.HUB_MANAGER, userId));
 
 			// then
 			assertThat(throwable)
@@ -295,14 +255,12 @@ class DeliveryManagerCommandServiceTest {
 			DeliveryManager manager = stubDeliveryManager(managerId, hubId);
 			manager.assignDelivery(DeliveryId.generate(), LocalDateTime.now(), LocalDateTime.now().plusHours(1));
 
-			given(deliveryPermissionValidator.validateRole("MASTER", UserRole.MANAGERS))
-				.willReturn(UserRole.MASTER);
 			given(deliveryManagerRepository.findById(DeliveryManagerId.of(managerId)))
 				.willReturn(Optional.of(manager));
 
 			// when
 			Throwable throwable = catchThrowable(() ->
-				deliveryManagerCommandService.deleteDeliveryManager(managerId, "MASTER", userId));
+				deliveryManagerCommandService.deleteDeliveryManager(managerId, UserRole.MASTER, userId));
 
 			// then
 			assertThat(throwable)
@@ -323,13 +281,11 @@ class DeliveryManagerCommandServiceTest {
 			UUID userId = UUID.randomUUID();
 			UUID hubId = UUID.randomUUID();
 
-			given(deliveryPermissionValidator.validateRole("MASTER", UserRole.MANAGERS))
-				.willReturn(UserRole.MASTER);
 			given(deliveryManagerRepository.findById(DeliveryManagerId.of(managerId)))
 				.willReturn(Optional.of(stubDeliveryManager(managerId, hubId)));
 
 			// when & then (예외 없음)
-			deliveryManagerCommandService.deleteDeliveryManager(managerId, "MASTER", userId);
+			deliveryManagerCommandService.deleteDeliveryManager(managerId, UserRole.MASTER, userId);
 
 			then(deliveryManagerRepository).should().deleteById(DeliveryManagerId.of(managerId), userId);
 		}

@@ -1,6 +1,6 @@
 package com.firstlogistics.deliverservice.infrastructure.persistence.jpa;
 
-import com.firstlogistics.deliverservice.domain.enums.UserRole;
+import common.security.entity.enums.UserRole;
 import com.firstlogistics.deliverservice.domain.projection.DeliveryManagerSummaryProjection;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryManagerQueryRepository;
 import com.firstlogistics.deliverservice.domain.spec.DeliveryManagerSearchSpec;

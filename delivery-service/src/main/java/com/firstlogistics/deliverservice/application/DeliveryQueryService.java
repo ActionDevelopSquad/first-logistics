@@ -12,7 +12,7 @@ import com.firstlogistics.deliverservice.application.port.UserPort;
 import com.firstlogistics.deliverservice.application.port.dto.CompanyResponse;
 import com.firstlogistics.deliverservice.application.port.dto.HubResponse;
 import com.firstlogistics.deliverservice.application.port.dto.UserResponse;
-import com.firstlogistics.deliverservice.domain.enums.UserRole;
+import common.security.entity.enums.UserRole;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.projection.DeliveryDetailProjection;
@@ -51,7 +51,7 @@ public class DeliveryQueryService {
 	}
 
 	public DeliveryListResult getDeliveries(DeliveryListQuery query) {
-		UserRole userRole = deliveryPermissionValidator.parseUserRole(query.role());
+		UserRole userRole = UserRole.valueOf(query.role());
 
 		UUID hubId =
 				userRole == UserRole.HUB_MANAGER
@@ -86,15 +86,14 @@ public class DeliveryQueryService {
 		return DeliveryListResult.from(results, hasNext);
 	}
 
-	public DeliveryDetailResult getDelivery(UUID deliveryId, String role, UUID userId) {
+	public DeliveryDetailResult getDelivery(UUID deliveryId, UserRole role, UUID userId) {
 		DeliveryDetailProjection deliveryDetail = deliveryQueryRepository.findById(deliveryId)
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
 
 		List<DeliveryDetailProjection.RouteDetail> routes = deliveryQueryRepository.findRoutesByDeliveryId(deliveryId);
 
 		DeliveryAccessContext accessContext = DeliveryAccessContext.from(deliveryDetail, routes);
-		deliveryPermissionValidator.validate(accessContext, role, userId,
-			UserRole.ALL);
+		deliveryPermissionValidator.validate(accessContext, role, userId);
 
 		List<UUID> hubIds = routes.stream()
 			.flatMap(route -> Stream.of(route.sourceHubId(), route.destinationHubId()))
