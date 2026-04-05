@@ -40,10 +40,7 @@ public class HubConnectionApiController {
                                                                    @RequestParam UUID destinationCompanyId,
                                                                    @RequestParam(required = false) String policy
     ){
-        HubRouteResponse response;
-        if(policy == null || policy.isBlank())
-            response = HubRouteResponse.from(hubRouteQueryService.getRoute(sourceHubId,destinationHubId,destinationCompanyId));
-        else response = HubRouteResponse.from(hubRouteQueryService.getRoute(sourceHubId,destinationHubId,destinationCompanyId,policy));
+        HubRouteResponse response = HubRouteResponse.from(hubRouteQueryService.getRoute(sourceHubId,destinationCompanyId,policy));
 
         return ResponseEntity.status(HubConnectionSuccessCode.HUB_ROUTES_RETRIEVED.getStatus())
                 .body(ApiResponse.success(HubConnectionSuccessCode.HUB_ROUTES_RETRIEVED, response));

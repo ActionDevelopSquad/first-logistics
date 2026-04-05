@@ -24,7 +24,8 @@ public enum HubConnectionErrorCode implements ErrorCode {
     INVALID_HUB_ROUTE_POLICY(HttpStatus.BAD_REQUEST, "HBC_E014", "허브 연결 라우트 정책이 유효하지 않습니다."),
     EXTERNAL_SERVICE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "HBC_E015", "서버 내부에서 에러가 발생했습니다."),
     COMPANY_NOT_FOUND(HttpStatus.NOT_FOUND, "HBC_E016", "해당 업체 정보를 찾을 수 없습니다."),
-    HUB_ROUTE_PENDING(HttpStatus.INTERNAL_SERVER_ERROR, "HBC_E017", "배송 경로를 확정할 수 없어 배송을 보류 상태로 전환합니다.");
+    HUB_ROUTE_PENDING(HttpStatus.INTERNAL_SERVER_ERROR, "HBC_E017", "배송 경로를 확정할 수 없어 배송을 보류 상태로 전환합니다."),
+    INVALID_COMPANY_ID(HttpStatus.BAD_REQUEST, "HBC_E008", "업체 ID가 유효하지 않습니다.");
 
     private final HttpStatus status;
     private final String code;

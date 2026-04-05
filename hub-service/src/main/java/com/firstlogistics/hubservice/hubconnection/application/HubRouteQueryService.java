@@ -12,6 +12,7 @@ import com.firstlogistics.hubservice.hubconnection.application.port.dto.CompanyR
 import com.firstlogistics.hubservice.hubconnection.application.port.dto.RouteMetricResponse;
 import com.firstlogistics.hubservice.hubconnection.domain.enums.RoutePolicy;
 import com.firstlogistics.hubservice.hubconnection.domain.service.HubRouteDomainService;
+import com.firstlogistics.hubservice.hubconnection.domain.vo.CompanyId;
 import com.firstlogistics.hubservice.hubconnection.domain.vo.HubRoute;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,35 +32,29 @@ public class HubRouteQueryService {
     private final RouteMetricPort routeMetricPort;
     private final HubQueryService hubQueryService;
 
-    public HubRouteResult getRoute(UUID sourceHubId, UUID destinationHubId, UUID destinationCompanyId){
+    public HubRouteResult getRoute(UUID sourceHubId,UUID destinationCompanyId, String policy){
+        CompanyId companyId = CompanyId.of(destinationCompanyId);
+        CompanyResponse company = companyPort.getCompany(companyId);
 
         return buildRoute(
                 HubId.of(sourceHubId),
-                HubId.of(destinationHubId),
-                destinationCompanyId,
-                policyProvider.getDefaultPolicy()
+                HubId.of(company.hubId()),
+                company,
+                resolvePolicy(policy)
         );
     }
-    public HubRouteResult getRoute(UUID sourceHubId, UUID destinationHubId, UUID destinationCompanyId, String policy){
-        return buildRoute(
-                HubId.of(sourceHubId),
-                HubId.of(destinationHubId),
-                destinationCompanyId,
-                RoutePolicy.from(policy)
-        );
-    }
+
 
 
     private HubRouteResult buildRoute(
             HubId sourceHubId,
             HubId destinationHubId,
-            UUID destinationCompanyId,
+            CompanyResponse destinationCompany,
             RoutePolicy policy
     ) {
         HubRoute hubRoute = hubRouteDomainService.calculateRoute(
                 sourceHubId,
                 destinationHubId,
-                destinationCompanyId,
                 policy
         );
 
@@ -72,7 +67,7 @@ public class HubRouteQueryService {
         HubRouteLegResult lastHubRouteLeg = createLastHubRouteLeg(
                 routeLegResults.size() + 1,
                 destinationHubId,
-                destinationCompanyId
+                destinationCompany
         );
 
         routeLegResults.add(lastHubRouteLeg);
@@ -80,12 +75,17 @@ public class HubRouteQueryService {
         return HubRouteResult.of(hubRoute, lastHubRouteLeg, routeLegResults);
     }
 
-    private HubRouteLegResult createLastHubRouteLeg(int sequence, HubId destinationHubId, UUID destinationCompanyId){
-        CompanyResponse company = companyPort.getCompany(destinationCompanyId);
+    private HubRouteLegResult createLastHubRouteLeg(int sequence, HubId destinationHubId, CompanyResponse company){
         HubDetailsResult hub = hubQueryService.getHub(destinationHubId.id());
 
         RouteMetricResponse metricResponse = routeMetricPort.getMetrics(hub.latitude(),hub.longitude(),company.latitude(), company.longitude());
 
-        return HubRouteLegResult.of(sequence,destinationHubId.id(),destinationCompanyId,metricResponse.durationMinutes(), metricResponse.distanceMeters());
+        return HubRouteLegResult.of(sequence,destinationHubId.id(),company.companyId(),metricResponse.durationMinutes(), metricResponse.distanceMeters());
+    }
+
+    private RoutePolicy resolvePolicy(String policy){
+        return (policy == null || policy.isBlank())
+                        ? policyProvider.getDefaultPolicy()
+                        : RoutePolicy.from(policy);
     }
 }
