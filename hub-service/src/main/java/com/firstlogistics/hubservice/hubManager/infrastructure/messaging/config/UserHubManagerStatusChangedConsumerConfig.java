@@ -50,13 +50,13 @@ public class UserHubManagerStatusChangedConsumerConfig {
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String,UserHubManagerStatusChangedEvent> userHubManagerStatusChangedListenerContainerFactory(
-            DefaultErrorHandler errorHandler
+            DefaultErrorHandler userHubManagerStatusChangedErrorHandler
     ){
         ConcurrentKafkaListenerContainerFactory<String,UserHubManagerStatusChangedEvent> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
 
         factory.setConsumerFactory(userHubManagerStatusChangedConsumerFactory());
-        factory.setCommonErrorHandler(errorHandler);
+        factory.setCommonErrorHandler(userHubManagerStatusChangedErrorHandler);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
 
         return factory;
