@@ -68,6 +68,15 @@ public class ProductRepositoryImpl implements ProductRepository {
         return new PageImpl<>(content, pageable, total);
     }
 
+    @Override
+    public void delete(UUID productId, UUID deletedBy) {
+        productJpaRepository.findById(productId)
+                .ifPresent(entity -> {
+                    entity.softDelete(deletedBy);
+                    productJpaRepository.save(entity);
+                });
+    }
+
     private OrderSpecifier<?>[] resolveOrderSpecifiers(Sort sort) {
         List<OrderSpecifier<?>> specifiers = sort.stream()
                 .map(order -> {
