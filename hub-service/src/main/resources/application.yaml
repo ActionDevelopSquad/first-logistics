@@ -38,7 +38,7 @@ naver:
     client-secret: ${NAVER_MAP_CLIENT_SECRET}
 
 company-service:
-  url: ${COMPANY_SERVICE_URL:http://localhost:8084}
+  url: ${COMPANY_SERVICE_URL}
 
 
 feign:
