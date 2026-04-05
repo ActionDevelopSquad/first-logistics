@@ -32,6 +32,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.verify;
 
 import java.util.Optional;
@@ -428,6 +430,93 @@ class ProductCommandServiceTest {
 
             // when & then
             assertThatThrownBy(() -> productCommandService.changeStatus(command))
+                    .isInstanceOf(ProductException.class)
+                    .hasMessageContaining(ProductErrorCode.PRODUCT_NOT_FOUND.getMessage());
+        }
+    }
+
+    @Nested
+    @DisplayName("상품 삭제 (delete)")
+    class Delete {
+
+        private Product product;
+
+        @BeforeEach
+        void setUp() {
+            product = Product.reconstitute(
+                    PRODUCT_ID, COMPANY_ID, HUB_ID, "마른오징어",
+                    Money.krw(15000), ProductStatus.SELLING
+            );
+        }
+
+        @Test
+        @DisplayName("MASTER 권한으로 상품을 삭제하면 성공한다")
+        void delete_master_success() {
+            // given
+            given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
+            willDoNothing().given(productRepository).delete(PRODUCT_ID, MANAGER_ID);
+
+            // when
+            productCommandService.delete(PRODUCT_ID, MANAGER_ID, UserRole.MASTER.name());
+
+            // then
+            verify(productRepository).delete(PRODUCT_ID, MANAGER_ID);
+        }
+
+        @Test
+        @DisplayName("HUB_MANAGER 권한으로 상품을 삭제하면 성공한다")
+        void delete_hubManager_success() {
+            // given
+            given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
+            willDoNothing().given(productRepository).delete(PRODUCT_ID, MANAGER_ID);
+
+            // when
+            productCommandService.delete(PRODUCT_ID, MANAGER_ID, UserRole.HUB_MANAGER.name());
+
+            // then
+            verify(productRepository).delete(PRODUCT_ID, MANAGER_ID);
+        }
+
+        @Test
+        @DisplayName("COMPANY_MANAGER가 본인 업체 상품을 삭제하면 성공한다")
+        void delete_companyManager_ownCompany_success() {
+            // given
+            given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
+            given(companyPort.getCompany(COMPANY_ID))
+                    .willReturn(new CompanyInfo(COMPANY_ID, HUB_ID, MANAGER_ID));
+            willDoNothing().given(productRepository).delete(PRODUCT_ID, MANAGER_ID);
+
+            // when
+            productCommandService.delete(PRODUCT_ID, MANAGER_ID, UserRole.COMPANY_MANAGER.name());
+
+            // then
+            verify(productRepository).delete(PRODUCT_ID, MANAGER_ID);
+        }
+
+        @Test
+        @DisplayName("COMPANY_MANAGER가 다른 업체 상품을 삭제하면 예외가 발생한다")
+        void delete_companyManager_otherCompany_throwsException() {
+            // given
+            given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
+            given(companyPort.getCompany(COMPANY_ID))
+                    .willReturn(new CompanyInfo(COMPANY_ID, HUB_ID, MANAGER_ID));
+
+            // when & then
+            assertThatThrownBy(() ->
+                    productCommandService.delete(PRODUCT_ID, OTHER_USER_ID, UserRole.COMPANY_MANAGER.name()))
+                    .isInstanceOf(ProductException.class)
+                    .hasMessageContaining(ProductErrorCode.UNAUTHORIZED_PRODUCT_DELETE.getMessage());
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 productId로 삭제하면 예외가 발생한다")
+        void delete_productNotFound_throwsException() {
+            // given
+            given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() ->
+                    productCommandService.delete(PRODUCT_ID, MANAGER_ID, UserRole.MASTER.name()))
                     .isInstanceOf(ProductException.class)
                     .hasMessageContaining(ProductErrorCode.PRODUCT_NOT_FOUND.getMessage());
         }
