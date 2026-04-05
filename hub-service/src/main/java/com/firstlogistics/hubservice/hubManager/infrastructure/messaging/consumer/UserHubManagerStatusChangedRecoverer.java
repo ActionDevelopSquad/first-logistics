@@ -18,12 +18,11 @@ public class UserHubManagerStatusChangedRecoverer implements ConsumerRecordRecov
     @Override
     public void accept(ConsumerRecord<?, ?> consumerRecord, Exception e) {
         Object value = consumerRecord.value();
-        if(!(value instanceof UserHubManagerStatusChangedEvent event))
+        if (!(value instanceof UserHubManagerStatusChangedEvent event))
             return;
         log.error("허브 매니저 생성 최종 실패. userId={}, organizationId={}",
                 event.userId(), event.organizationId(), e);
 
-        failedProducer.publish(new HubManagerAssignFailedEvent(
-              event.userId(), event.hubId()));
+        failedProducer.publish(HubManagerAssignFailedEvent.from(event));
     }
 }
