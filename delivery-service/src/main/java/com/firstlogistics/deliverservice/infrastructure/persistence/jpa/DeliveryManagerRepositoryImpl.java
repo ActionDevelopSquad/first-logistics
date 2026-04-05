@@ -39,8 +39,7 @@ public class DeliveryManagerRepositoryImpl implements DeliveryManagerRepository 
 
 	@Override
 	public Optional<DeliveryManager> findById(DeliveryManagerId id) {
-		return deliveryManagerJpaRepository.findById(id.id())
-			.filter(entity -> entity.getDeletedAt() == null)
+		return deliveryManagerJpaRepository.findByIdWithTimetables(id.id())
 			.map(deliveryManagerMapper::toDomain);
 	}
 
@@ -51,7 +50,7 @@ public class DeliveryManagerRepositoryImpl implements DeliveryManagerRepository 
 
 	@Override
 	public Optional<DeliveryManager> findByUserId(UUID userId) {
-		return deliveryManagerJpaRepository.findByUserIdAndDeletedAtIsNull(userId)
+		return deliveryManagerJpaRepository.findByUserIdWithTimetables(userId)
 			.map(deliveryManagerMapper::toDomain);
 	}
 
