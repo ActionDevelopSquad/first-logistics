@@ -16,6 +16,7 @@ import com.firstlogistics.hubservice.hubconnection.domain.repository.HubConnecti
 import com.firstlogistics.hubservice.hubconnection.domain.service.HubRouteDomainService;
 import com.firstlogistics.hubservice.hubconnection.domain.vo.CompanyId;
 import com.firstlogistics.hubservice.hubconnection.domain.vo.HubRoute;
+import com.firstlogistics.hubservice.hubconnection.domain.vo.RouteHub;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,7 +59,7 @@ public class HubRouteQueryService {
             RoutePolicy policy
     ) {
         List<HubConnection> connections = hubConnectionRepository.findAll();
-        Map<HubId, Hub> hubMap = hubRepository.findAll().stream().collect(Collectors.toMap(Hub::getId, hub -> hub));
+        Map<HubId, RouteHub> hubMap = hubRepository.findAll().stream().collect(Collectors.toMap(Hub::getId, RouteHub::from));
 
         HubRoute hubRoute = hubRouteDomainService.calculateRoute(
                 sourceHubId,

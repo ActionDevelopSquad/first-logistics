@@ -1,15 +1,11 @@
 package com.firstlogistics.hubservice.hubconnection.domain.strategy;
 
-import com.firstlogistics.hubservice.hub.domain.entity.Hub;
 import com.firstlogistics.hubservice.hub.domain.enums.HubType;
 import com.firstlogistics.hubservice.hub.domain.vo.HubId;
 import com.firstlogistics.hubservice.hubconnection.domain.entity.HubConnection;
 import com.firstlogistics.hubservice.hubconnection.domain.exception.HubConnectionErrorCode;
 import com.firstlogistics.hubservice.hubconnection.domain.exception.HubConnectionException;
-import com.firstlogistics.hubservice.hubconnection.domain.vo.Distance;
-import com.firstlogistics.hubservice.hubconnection.domain.vo.HubRoute;
-import com.firstlogistics.hubservice.hubconnection.domain.vo.HubRouteLeg;
-import com.firstlogistics.hubservice.hubconnection.domain.vo.Time;
+import com.firstlogistics.hubservice.hubconnection.domain.vo.*;
 
 import java.util.Comparator;
 import java.util.List;
@@ -23,7 +19,7 @@ public class P2PHubHybridStrategy implements HubRouteStrategy{
                     .thenComparingInt(route -> route.totalDistance().meters());
 
     @Override
-    public HubRoute calculate(HubId sourceHubId, HubId destinationHubId, List<HubConnection> connections, Map<HubId, Hub> hubMap) {
+    public HubRoute calculate(HubId sourceHubId, HubId destinationHubId, List<HubConnection> connections, Map<HubId, RouteHub> hubMap) {
         if(sourceHubId.equals(destinationHubId))
             return HubRoute.of(List.of(),sourceHubId, destinationHubId, Time.of(1), Distance.of(0),0);
 
@@ -67,13 +63,13 @@ public class P2PHubHybridStrategy implements HubRouteStrategy{
             HubId sourceHubId,
             HubId destinationHubId,
             List<HubConnection> connections,
-            Map<HubId, Hub> hubMap,
+            Map<HubId, RouteHub> hubMap,
             HubType hubType
     ) {
         return hubMap.values().stream()
-                .filter(Hub::isActive)
-                .filter(hub -> hub.getType() == hubType)
-                .map(Hub::getId)
+                .filter(RouteHub::isActive)
+                .filter(hub -> hub.type() == hubType)
+                .map(RouteHub::id)
                 .filter(hubId -> !hubId.equals(sourceHubId))
                 .filter(hubId -> !hubId.equals(destinationHubId))
                 .map(transitHubId -> createSingleTransitRoute(
