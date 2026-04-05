@@ -27,12 +27,12 @@ public record CreateHubRequest(
         @NotBlank
         String type
 ) {
-    public CreateHubCommand toCommand(){
+    public CreateHubCommand toCommand() {
         return new CreateHubCommand(
-            name,
-            roadAddress,
-            latitude,
-            longitude,
+                name,
+                roadAddress,
+                latitude,
+                longitude,
                 type
         );
     }
