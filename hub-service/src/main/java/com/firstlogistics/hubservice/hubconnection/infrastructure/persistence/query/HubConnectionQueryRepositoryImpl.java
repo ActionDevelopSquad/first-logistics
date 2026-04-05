@@ -95,7 +95,7 @@ public class HubConnectionQueryRepositoryImpl implements HubConnectionQueryRepos
     }
     private OrderSpecifier<?>[] getOrderSpecifiers(Sort sort) {
         if (sort == null || sort.isUnsorted()) {
-            return new OrderSpecifier[]{hubConnection.createdAt.desc()};
+            return new OrderSpecifier<?>[]{hubConnection.createdAt.desc()};
         }
 
         return sort.stream()
