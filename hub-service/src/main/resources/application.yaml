@@ -38,9 +38,9 @@ company-service:
 feign:
   client:
     config:
-      companyClient:
+      company-service:
         connectTimeout: 3000
         readTimeout: 5000
-      naverMapClient:
+      naver-map-client:
         connectTimeout: 3000
         readTimeout: 5000
