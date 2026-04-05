@@ -5,14 +5,17 @@ import com.firstlogistics.deliverservice.application.DeliveryManagerQueryService
 import com.firstlogistics.deliverservice.application.dto.query.DeliveryManagerListQuery;
 import com.firstlogistics.deliverservice.domain.enums.ManagerType;
 import com.firstlogistics.deliverservice.presentation.dto.request.CreateDeliveryManagerRequest;
+import com.firstlogistics.deliverservice.presentation.dto.request.UpdateDeliveryManagerRequest;
 import com.firstlogistics.deliverservice.presentation.dto.response.CreateDeliveryManagerResponse;
 import com.firstlogistics.deliverservice.presentation.dto.response.DeliveryManagerDetailResponse;
 import com.firstlogistics.deliverservice.presentation.dto.response.DeliveryManagerListResponse;
+import com.firstlogistics.deliverservice.presentation.dto.response.UpdateDeliveryManagerResponse;
 import common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -74,6 +77,19 @@ public class DeliveryManagerController {
 	) {
 		return ResponseEntity.ok(ApiResponse.success(DeliveryManagerSuccessCode.DELIVERY_MANAGER_FOUND,
 			DeliveryManagerDetailResponse.from(deliveryManagerQueryService.getDeliveryManager(managerId, role, userId))
+		));
+	}
+
+	@PatchMapping("/{managerId}")
+	public ResponseEntity<ApiResponse<UpdateDeliveryManagerResponse>> updateDeliveryManager(
+		@PathVariable UUID managerId,
+		@RequestBody @Valid UpdateDeliveryManagerRequest request,
+		@RequestHeader("X-User-Id") UUID userId,
+		@RequestHeader("X-User-Role") String role
+	) {
+		return ResponseEntity.ok(ApiResponse.success(DeliveryManagerSuccessCode.DELIVERY_MANAGER_UPDATED,
+			UpdateDeliveryManagerResponse.from(
+				deliveryManagerCommandService.updateDeliveryManager(request.toCommand(managerId), role, userId))
 		));
 	}
 

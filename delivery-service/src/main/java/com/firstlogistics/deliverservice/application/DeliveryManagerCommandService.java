@@ -1,7 +1,9 @@
 package com.firstlogistics.deliverservice.application;
 
 import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryManagerCommand;
+import com.firstlogistics.deliverservice.application.dto.command.UpdateDeliveryManagerCommand;
 import com.firstlogistics.deliverservice.application.dto.result.CreateDeliveryManagerResult;
+import com.firstlogistics.deliverservice.application.dto.result.UpdateDeliveryManagerResult;
 import com.firstlogistics.deliverservice.application.permission.DeliveryPermissionValidator;
 import com.firstlogistics.deliverservice.application.port.HubManagerPort;
 import com.firstlogistics.deliverservice.application.port.UserPort;
@@ -14,6 +16,7 @@ import com.firstlogistics.deliverservice.domain.event.UserStatusChangedEvent;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryManagerRepository;
+import com.firstlogistics.deliverservice.domain.vo.DeliveryManagerId;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -62,6 +65,26 @@ public class DeliveryManagerCommandService {
 		return CreateDeliveryManagerResult.from(saved);
 	}
 
+
+	public UpdateDeliveryManagerResult updateDeliveryManager(
+		UpdateDeliveryManagerCommand command, String role, UUID requestUserId
+	) {
+		UserRole userRole = deliveryPermissionValidator.validateRole(role, UserRole.MANAGERS);
+
+		DeliveryManager manager = deliveryManagerRepository.findById(DeliveryManagerId.of(command.managerId()))
+			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_MANAGER_NOT_FOUND));
+
+		if (userRole == UserRole.HUB_MANAGER) {
+			UUID hubId = hubManagerPort.getHubManager(requestUserId).hubId();
+			if (!hubId.equals(manager.getHubId())) {
+				throw new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
+			}
+		}
+
+		manager.reassign(command.hubId(), command.managerType());
+		DeliveryManager saved = deliveryManagerRepository.save(manager);
+		return UpdateDeliveryManagerResult.from(saved);
+	}
 
 	public void createDeliveryManagerBySystem(UserStatusChangedEvent event) {
 		if (deliveryManagerRepository.existsByUserId(event.userId())) {
