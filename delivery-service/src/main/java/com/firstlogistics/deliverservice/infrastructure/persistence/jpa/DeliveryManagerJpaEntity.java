@@ -52,7 +52,7 @@ public class DeliveryManagerJpaEntity extends BaseAuditEntity {
 	@Column(name = "manager_type", nullable = false)
 	private ManagerType managerType;
 
-	@Column(name = "delivery_sequence", nullable = false)
+	@Column(name = "delivery_sequence", nullable = false, unique = true)
 	private int deliverySequence;
 
 	@Version
