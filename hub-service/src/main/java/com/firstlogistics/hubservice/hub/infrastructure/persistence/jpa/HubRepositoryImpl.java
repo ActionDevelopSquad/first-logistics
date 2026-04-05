@@ -61,7 +61,7 @@ public class HubRepositoryImpl implements HubRepository {
     }
 
     @Override
-    @Cacheable(cacheNames = HUB_BY_ID_CACHE, key = "#result.id.id()")
+    @Cacheable(cacheNames = HUB_BY_ID_CACHE, key = "#hubId.id()")
     public Hub findById(HubId hubId) {
         HubJpaEntity entity = jpaRepository.findById(hubId.id())
                 .orElseThrow(() -> new HubException(HubErrorCode.HUB_NOT_FOUND));
