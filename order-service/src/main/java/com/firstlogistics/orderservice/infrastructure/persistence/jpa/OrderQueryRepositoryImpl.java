@@ -18,7 +18,6 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.UUID;
 
 import static com.firstlogistics.orderservice.infrastructure.persistence.jpa.QOrderJpaEntity.orderJpaEntity;
 
@@ -73,28 +72,19 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
 
     private BooleanExpression roleFilter(OrderSearchSpec spec) {
         // 마스터 관리자는 모든 주문 조회
-        if (spec.isMaster()) return null;
+        if (spec.restrictedHubId() == null && spec.restrictedUserId() == null) return null;
 
         // 허브 관리자는 담당 허브 주문만
-        if (spec.isHubManager()) {
-            return orderJpaEntity.supplierHubId.eq(spec.getMyHubId());
+        if (spec.restrictedHubId() != null) {
+            return orderJpaEntity.supplierHubId.eq(spec.restrictedHubId());
         }
 
         // 업체 관리자는 담당 업체 주문만
-        if (spec.isCompanyManager()) {
-            UUID userId = spec.getMyUserId();
-
-            if (spec.searchType() == OrderSearchType.SENT) {
-                // 공급 주문 조회
-                return orderJpaEntity.supplierManagerId.eq(userId);
-            } else {
-                // 수령 주문 조회 (기본값)
-                // null이거나 RECEIVED인 경우
-                return orderJpaEntity.receiverManagerId.eq(userId);
-            }
+        if (spec.searchType() == OrderSearchType.SENT) {
+            return orderJpaEntity.supplierManagerId.eq(spec.restrictedUserId());
+        } else {
+            return orderJpaEntity.receiverManagerId.eq(spec.restrictedUserId());
         }
-
-        return orderJpaEntity.id.isNull();
     }
 
     private BooleanExpression statusEq(OrderStatus status) {

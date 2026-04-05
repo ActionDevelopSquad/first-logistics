@@ -11,7 +11,6 @@ import com.firstlogistics.orderservice.domain.vo.OrderId;
 import com.firstlogistics.orderservice.domain.vo.OrderItemInput;
 import com.firstlogistics.orderservice.domain.vo.Receiver;
 import com.firstlogistics.orderservice.domain.vo.Supplier;
-import common.security.entity.enums.UserRole;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -180,8 +179,8 @@ public class Order {
         this.status = resultStatus;
     }
 
-    public void accept(RoleCheck roleCheck) {
-        if (!roleCheck.canAcceptOrCancel(this.id)) {
+    public void accept(UUID hubId, RoleCheck roleCheck) {
+        if (!roleCheck.canAcceptOrCancel(this.id, hubId)) {
             throw new OrderException(OrderErrorCode.UNAUTHORIZED_ACCESS);
         }
 
@@ -219,8 +218,8 @@ public class Order {
     }
 
     // 주문 취소 / 거절 / 취소 요청 승인 (나중에 필요하면 분리)
-    public void cancel(OrderCancelType cancelType, RoleCheck roleCheck) {
-        if (!roleCheck.canAcceptOrCancel(this.id)) {
+    public void cancel(OrderCancelType cancelType, UUID hubId, RoleCheck roleCheck) {
+        if (!roleCheck.canAcceptOrCancel(this.id, hubId)) {
             throw new OrderException(OrderErrorCode.UNAUTHORIZED_ACCESS);
         }
 
@@ -252,8 +251,8 @@ public class Order {
         this.status = OrderStatus.CANCEL_REQUESTED;
     }
 
-    public void rejectCancelRequest(RoleCheck roleCheck) {
-        if (!roleCheck.canAcceptOrCancel(this.id)) {
+    public void rejectCancelRequest(UUID hubId, RoleCheck roleCheck) {
+        if (!roleCheck.canAcceptOrCancel(this.id, hubId)) {
             throw new OrderException(OrderErrorCode.UNAUTHORIZED_ACCESS);
         }
 

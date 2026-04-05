@@ -2,6 +2,9 @@ package com.firstlogistics.orderservice.application;
 
 import com.firstlogistics.orderservice.application.dto.command.CreateOrderCommand;
 import com.firstlogistics.orderservice.application.port.CompanyPort;
+import com.firstlogistics.orderservice.application.port.HubPort;
+import com.firstlogistics.orderservice.application.port.UserContextPort;
+import com.firstlogistics.orderservice.application.port.dto.HubManagerResponse;
 import com.firstlogistics.orderservice.domain.entity.Order;
 import com.firstlogistics.orderservice.domain.enums.OrderCancelType;
 import com.firstlogistics.orderservice.domain.event.OrderAcceptedEvent;
@@ -29,6 +32,8 @@ public class OrderCommandService {
     private final OrderRepository orderRepository;
     private final CompanyPort companyPort;
     private final RoleCheck roleCheck;
+    private final HubPort hubPort;
+    private final UserContextPort userContext;
 
     @Transactional
     public UUID createOrder(CreateOrderCommand command) {
@@ -62,7 +67,7 @@ public class OrderCommandService {
     @Transactional
     public String acceptOrder(UUID orderId) {
         Order order = getOrder(orderId);
-        order.accept(roleCheck);
+        order.accept(getHubIdByUserId(userContext.getCurrentUserId()), roleCheck);
 
         orderRepository.save(order);
 
@@ -102,7 +107,7 @@ public class OrderCommandService {
     @Transactional
     public String rejectCancelRequest(UUID orderId) {
         Order order = getOrder(orderId);
-        order.rejectCancelRequest(roleCheck);
+        order.rejectCancelRequest(getHubIdByUserId(userContext.getCurrentUserId()), roleCheck);
 
         orderRepository.save(order);
 
@@ -112,12 +117,16 @@ public class OrderCommandService {
     @Transactional
     public void deleteOrder(UUID orderId) {
         Order order = getOrder(orderId);
+        UUID userId = userContext.getCurrentUserId();
 
-        if (!roleCheck.canDelete(order.getId(), order.getSupplier().hubId())) {
+        if (!roleCheck.canDelete(order.getId(),
+                order.getSupplier().hubId(),
+                getHubIdByUserId(userId))
+        ) {
             throw new OrderException(OrderErrorCode.UNAUTHORIZED_ACCESS);
         }
 
-        orderRepository.deleteById(order.getId(), roleCheck.getCurrentUserId());
+        orderRepository.deleteById(order.getId(), userId);
     }
 
     private Order getOrder(UUID orderId) {
@@ -127,12 +136,18 @@ public class OrderCommandService {
 
     private String processCancellation(UUID orderId, OrderCancelType cancelType) {
         Order order  = getOrder(orderId);
-        order.cancel(cancelType, roleCheck);
+        order.cancel(cancelType, getHubIdByUserId(userContext.getCurrentUserId()), roleCheck);
 
         orderRepository.save(order);
 
         Events.trigger(OrderCancelledEvent.from(order));
 
         return order.getStatus().name();
+    }
+
+    private UUID getHubIdByUserId(UUID userId) {
+        if (!userContext.isHubManager()) return null;
+        return hubPort.getHubManagerByUserId(userId).map(HubManagerResponse::hubId)
+                .orElseThrow(() -> new OrderException(OrderErrorCode.HUB_MANAGER_NOT_FOUND));
     }
 }

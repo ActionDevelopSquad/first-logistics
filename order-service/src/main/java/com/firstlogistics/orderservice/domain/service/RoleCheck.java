@@ -5,16 +5,12 @@ import com.firstlogistics.orderservice.domain.vo.OrderId;
 import java.util.UUID;
 
 public interface RoleCheck {
+
     boolean canRequestCancel(OrderId orderId);
-    boolean canAcceptOrCancel(OrderId orderId);
-    boolean canView(OrderId orderId, UUID hubId, UUID supplierManagerId, UUID receiverManagerId);
 
-    boolean canDelete(OrderId orderId, UUID hubId);
+    boolean canAcceptOrCancel(OrderId orderId, UUID supplierHubId);
 
-    boolean isMaster();
-    boolean isHubManager();
-    boolean isCompanyManager();
+    boolean canView(OrderId orderId, UUID supplierHubId, UUID supplierManagerId, UUID receiverManagerId, UUID myHubId, UUID myUserId);
 
-    UUID getCurrentUserId();
-    UUID getCurrentUserHubId();
+    boolean canDelete(OrderId orderId, UUID supplierHubId, UUID myHubId);
 }

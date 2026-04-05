@@ -1,7 +1,6 @@
 package com.firstlogistics.orderservice.application.dto.query;
 
 import com.firstlogistics.orderservice.domain.enums.OrderStatus;
-import com.firstlogistics.orderservice.domain.service.RoleCheck;
 import com.firstlogistics.orderservice.domain.specification.OrderSearchSpec;
 import com.firstlogistics.orderservice.domain.specification.OrderSearchType;
 
@@ -43,18 +42,19 @@ public record OrderSearchQuery(
         );
     }
 
-    public static OrderSearchSpec toSpec(OrderSearchQuery query, RoleCheck roleCheck) {
+    public OrderSearchSpec toSpec(UUID restrictedHubId, UUID restrictedUserId) {
         return new OrderSearchSpec(
-                query.status(),
-                query.supplierCompanyId(),
-                query.receiverCompanyId(),
-                query.hubId(),
-                query.startDate(),
-                query.endDate(),
-                query.minAmount(),
-                query.maxAmount(),
-                query.searchType(),
-                roleCheck
+                this.status,
+                this.supplierCompanyId,
+                this.receiverCompanyId,
+                this.hubId,
+                this.startDate,
+                this.endDate,
+                this.minAmount,
+                this.maxAmount,
+                this.searchType,
+                restrictedHubId,
+                restrictedUserId
         );
     }
 }
