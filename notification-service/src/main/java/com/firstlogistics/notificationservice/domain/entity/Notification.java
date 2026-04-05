@@ -18,7 +18,7 @@ import java.util.UUID;
 public class Notification {
     NotificationId id;
     UUID receiverId;
-    String slackId;
+    String messageId;
     String content;
     NotificationType type;
     NotificationStatus status;
@@ -26,20 +26,21 @@ public class Notification {
     LocalDateTime readAt;
 
     public static Notification create(
+            UUID notificationId,
             UUID receiverId,
-            String slackId,
+            String messageId,
             String content,
             NotificationType type,
-            MessengerType messengerType
+            String messengerType
     ) {
         return new Notification(
-                NotificationId.of(),
+                NotificationId.of(notificationId),
                 receiverId,
-                slackId,
+                messageId,
                 content,
                 type,
                 NotificationStatus.PENDING,
-                messengerType,
+                MessengerType.valueOf(messengerType.toUpperCase()),
                 null
         );
     }

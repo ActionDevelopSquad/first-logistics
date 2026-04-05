@@ -11,7 +11,7 @@ public class NotificationMapper {
         return new NotificationJpaEntity(
                 notification.getId().id(), // NotificationId VO에서 UUID 추출
                 notification.getReceiverId(),
-                notification.getSlackId(),
+                notification.getMessageId(),
                 notification.getContent(),
                 notification.getType(),
                 notification.getStatus(),
