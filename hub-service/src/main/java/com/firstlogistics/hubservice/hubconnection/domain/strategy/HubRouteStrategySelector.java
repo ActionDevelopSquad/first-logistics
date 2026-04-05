@@ -3,12 +3,10 @@ package com.firstlogistics.hubservice.hubconnection.domain.strategy;
 import com.firstlogistics.hubservice.hubconnection.domain.enums.RoutePolicy;
 import com.firstlogistics.hubservice.hubconnection.domain.exception.HubConnectionErrorCode;
 import com.firstlogistics.hubservice.hubconnection.domain.exception.HubConnectionException;
-import org.springframework.stereotype.Component;
 
 import java.util.EnumMap;
 import java.util.Map;
 
-@Component
 public class HubRouteStrategySelector {
     private final Map<RoutePolicy, HubRouteStrategy> strategyMap;
 

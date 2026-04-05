@@ -14,4 +14,6 @@ public interface HubRepository {
     boolean existsByHubId(HubId hubId);
 
     List<Hub> findAll();
+
+    Hub findById(HubId hubId);
 }

@@ -10,16 +10,12 @@ import com.firstlogistics.hubservice.hubconnection.domain.vo.Distance;
 import com.firstlogistics.hubservice.hubconnection.domain.vo.HubRoute;
 import com.firstlogistics.hubservice.hubconnection.domain.vo.HubRouteLeg;
 import com.firstlogistics.hubservice.hubconnection.domain.vo.Time;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-@RequiredArgsConstructor
-@Component
 public class P2PHubHybridStrategy implements HubRouteStrategy{
     private static final int HYBRID_DISTANCE_LIMIT_METERS = 250000;
     private static final Comparator<HubRoute> HUB_ROUTE_COMPARATOR =
