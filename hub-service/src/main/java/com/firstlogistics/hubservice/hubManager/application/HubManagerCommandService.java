@@ -20,7 +20,7 @@ public class HubManagerCommandService {
     @Transactional
     public void createHubManager(CreateHubManagerCommand command){
         UserId user = UserId.of(command.userId());
-        HubId hub = HubId.of(command.userId());
+        HubId hub = HubId.of(command.hubId());
         if(hubManagerRepository.existsByUserIdAndHubId(user,hub)){
             throw new HubManagerException(HubManagerErrorCode.DUPLICATE_HUB_MANAGER);
         }
