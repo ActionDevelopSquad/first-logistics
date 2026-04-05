@@ -57,6 +57,7 @@ public class CacheConfig {
         return RedisCacheManager.builder(redisConnectionFactory)
                 .cacheDefaults(defaultConfig)
                 .withInitialCacheConfigurations(cacheConfigurations)
+                .transactionAware()
                 .build();
     }
 }
