@@ -7,6 +7,7 @@ spring:
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -15,9 +16,14 @@ spring:
       hibernate:
         format_sql: true
         default_schema: hub
+
+  cache:
+    type: redis
+
   data:
     redis:
       url: ${REDIS_URL}
+
 
 route:
   default-policy: HYBRID
