@@ -7,7 +7,6 @@ import com.firstlogistics.hubservice.hubconnection.infrastructure.feign.CompanyC
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
