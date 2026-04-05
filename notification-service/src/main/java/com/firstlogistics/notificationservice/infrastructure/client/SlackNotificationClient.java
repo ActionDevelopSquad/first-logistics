@@ -4,9 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.firstlogistics.notificationservice.domain.client.NotificationClient;
 import com.firstlogistics.notificationservice.domain.enums.MessengerType;
 import com.firstlogistics.notificationservice.infrastructure.config.SlackProperties;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -23,6 +21,7 @@ public class SlackNotificationClient implements NotificationClient {
 
     public SlackNotificationClient(SlackProperties slackProperties) {
         this.slackProperties = slackProperties;
+
         this.restClient = RestClient.create("https://slack.com/api");
     }
 

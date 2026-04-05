@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public record AILogResult(
         UUID id,
-        MessengerMessageId messageId,
+        UUID messageId,
         AILogStatus status,
         MessengerType messengerType,
         String responseContent
@@ -17,7 +17,7 @@ public record AILogResult(
     public static AILogResult from(AILog aiLog) {
         return new AILogResult(
                 aiLog.getId().id(),
-                aiLog.getMessageId(),
+                aiLog.getMessageId().id(),
                 aiLog.getStatus(),
                 aiLog.getMessengerType(),
                 aiLog.getResponseContent()

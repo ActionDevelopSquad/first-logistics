@@ -1,15 +1,16 @@
 package com.firstlogistics.aiservice.domain.event;
 
 import com.firstlogistics.aiservice.domain.enums.MessengerType;
-import com.firstlogistics.aiservice.domain.vo.MessengerMessageId;
+
+import java.util.UUID;
 
 public record NotificationCreatedEvent(
-        MessengerMessageId messageId,
+        UUID messageId,
         String slackId,
         String content,
         MessengerType messengerType
 ) {
-    public static NotificationCreatedEvent of(MessengerMessageId messageId, String slackId, String content, MessengerType messengerType) {
+    public static NotificationCreatedEvent of(UUID messageId, String slackId, String content, MessengerType messengerType) {
         return new NotificationCreatedEvent(messageId, slackId, content, messengerType);
     }
 }
