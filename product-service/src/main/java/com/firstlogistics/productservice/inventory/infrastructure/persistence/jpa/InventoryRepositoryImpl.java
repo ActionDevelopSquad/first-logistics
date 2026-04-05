@@ -21,6 +21,11 @@ public class InventoryRepositoryImpl implements InventoryRepository {
     }
 
     @Override
+    public Inventory update(Inventory inventory) {
+        return save(inventory);
+    }
+
+    @Override
     public Optional<Inventory> findByProductId(UUID productId) {
         return inventoryJpaRepository.findByProductId(productId)
                 .map(InventoryMapper::toDomain);

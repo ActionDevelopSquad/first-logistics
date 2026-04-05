@@ -8,5 +8,7 @@ public interface InventoryRepository {
 
     Inventory save(Inventory inventory);
 
+    Inventory update(Inventory inventory);
+
     Optional<Inventory> findByProductId(UUID productId);
 }
