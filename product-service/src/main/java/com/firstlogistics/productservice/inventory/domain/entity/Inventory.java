@@ -21,6 +21,7 @@ public class Inventory {
     }
 
     public static Inventory reconstitute(UUID productId, int available, int reserved) {
+        validate(productId, available, reserved);
         return new Inventory(productId, available, reserved);
     }
 
