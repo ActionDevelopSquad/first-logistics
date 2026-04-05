@@ -1,6 +1,6 @@
 package com.firstlogistics.productservice.product.presentation;
 
-import com.firstlogistics.productservice.product.application.ProductCommandService;
+import com.firstlogistics.productservice.product.application.ProductCommandFacade;
 import com.firstlogistics.productservice.product.presentation.dto.request.CreateProductRequest;
 import com.firstlogistics.productservice.product.presentation.dto.response.CreateProductResponse;
 import common.response.ApiResponse;
@@ -23,13 +23,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ProductController {
 
-    private final ProductCommandService productCommandService;
+    private final ProductCommandFacade productCommandFacade;
 
     @RequireRole({UserRole.MASTER, UserRole.HUB_MANAGER, UserRole.COMPANY_MANAGER})
     @PostMapping
     public ResponseEntity<ApiResponse<CreateProductResponse>> register(@Valid @RequestBody CreateProductRequest request) {
         CustomUserDetails currentUser = SecurityUtils.currentUser();
-        CreateProductResponse response = CreateProductResponse.from(productCommandService.register(request.toCommand(currentUser.getUserId(), currentUser.getRole().name())));
+        CreateProductResponse response = CreateProductResponse.from(productCommandFacade.register(request.toCommand(currentUser.getUserId(), currentUser.getRole().name())));
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(CommonSuccessCode.CREATED, response));
     }
 }
