@@ -21,7 +21,7 @@ public class HubManagerAssignFailedProducer {
                                 event.userId(), event.organizationId(), ex);
                         return;
                     }
-                    log.warn("허브 매니저 실패 이벤트 발행 완료. topic={}, partition={}, offset={}, userId={}",
+                    log.info("허브 매니저 실패 이벤트 발행 완료. topic={}, partition={}, offset={}, userId={}",
                             TOPIC,
                             result.getRecordMetadata().partition(),
                             result.getRecordMetadata().offset(),
