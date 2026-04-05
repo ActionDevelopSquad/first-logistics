@@ -24,7 +24,7 @@ public record CreateHubRequest(
         @DecimalMax(value = "180.0")
         Double longitude,
 
-        @NotNull
+        @NotBlank
         String type
 ) {
     public CreateHubCommand toCommand(){
