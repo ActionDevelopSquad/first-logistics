@@ -1,6 +1,5 @@
 package com.firstlogistics.orderservice.infrastructure.security;
 
-import com.firstlogistics.orderservice.domain.entity.Order;
 import com.firstlogistics.orderservice.domain.repository.OrderRepository;
 import com.firstlogistics.orderservice.domain.service.RoleCheck;
 import com.firstlogistics.orderservice.domain.vo.OrderId;
@@ -92,8 +91,11 @@ public class SecurityRoleCheck implements RoleCheck {
     public UUID getCurrentUserHubId() {
         if (!isHubManager()) return null;
 
+        UUID userId = getCurrentUserId();
+        if (userId == null) return null;
+
         try {
-            ApiResponse<HubManagerResponse> response = hubClient.getHubManagerInfo(getCurrentUserId());
+            ApiResponse<HubManagerResponse> response = hubClient.getHubManagerInfo(userId);
             if (response != null && response.getData() != null) {
                 return response.getData().hubId();
             }
