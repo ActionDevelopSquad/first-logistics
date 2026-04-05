@@ -61,6 +61,13 @@ public class Product {
         }
     }
 
+    public void changeName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new ProductException(ProductErrorCode.INVALID_PRODUCT_NAME);
+        }
+        this.name = name;
+    }
+
     public void changePrice(Money price) {
         this.price = price;
     }

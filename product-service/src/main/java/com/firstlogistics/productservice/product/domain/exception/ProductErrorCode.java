@@ -17,7 +17,9 @@ public enum ProductErrorCode implements ErrorCode {
     PRODUCT_ALREADY_STOPPED(HttpStatus.BAD_REQUEST, "PRO007", "이미 판매 중지된 상품입니다."),
     COMPANY_NOT_FOUND(HttpStatus.NOT_FOUND, "PRO008", "업체를 찾을 수 없습니다."),
     UNAUTHORIZED_COMPANY_ACCESS(HttpStatus.FORBIDDEN, "PRO009", "본인 업체의 상품만 등록할 수 있습니다."),
-    COMPANY_SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "PRO010", "업체 서비스가 일시적으로 이용 불가능합니다. 잠시 후 다시 시도해주세요.");
+    COMPANY_SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "PRO010", "업체 서비스가 일시적으로 이용 불가능합니다. 잠시 후 다시 시도해주세요."),
+    UNAUTHORIZED_PRODUCT_UPDATE(HttpStatus.FORBIDDEN, "PRO011", "본인 업체의 상품만 수정할 수 있습니다."),
+    ;
 
     private final HttpStatus status;
     private final String code;

@@ -1,6 +1,7 @@
 package com.firstlogistics.productservice.product.application;
 
 import com.firstlogistics.productservice.product.application.dto.command.CreateProductCommand;
+import com.firstlogistics.productservice.product.application.dto.command.UpdateProductCommand;
 import com.firstlogistics.productservice.product.application.dto.result.ProductResult;
 import com.firstlogistics.productservice.product.application.port.CompanyPort.CompanyInfo;
 import com.firstlogistics.productservice.product.domain.entity.Product;
@@ -37,6 +38,28 @@ public class ProductCommandService {
         Events.trigger(new ProductCreatedEvent(saved.getId(), command.stock()));
 
         return ProductResult.from(saved);
+    }
+
+    @Transactional
+    public ProductResult update(UpdateProductCommand command) {
+        Product product = productRepository.findById(command.productId())
+                .orElseThrow(() -> new ProductException(ProductErrorCode.PRODUCT_NOT_FOUND));
+
+        if (UserRole.COMPANY_MANAGER.name().equals(command.requesterRole())) {
+            CompanyInfo companyInfo = companyPort.getCompany(product.getCompanyId());
+            if (!command.requesterId().equals(companyInfo.managerId())) {
+                throw new ProductException(ProductErrorCode.UNAUTHORIZED_PRODUCT_UPDATE);
+            }
+        }
+
+        if (command.name() != null) {
+            product.changeName(command.name());
+        }
+        if (command.price() != null) {
+            product.changePrice(new Money(command.price()));
+        }
+
+        return ProductResult.from(productRepository.save(product));
     }
 
     private void validateCompanyAccess(CreateProductCommand command, CompanyInfo companyInfo) {

@@ -5,6 +5,7 @@ import com.firstlogistics.productservice.product.application.ProductQueryService
 import com.firstlogistics.productservice.product.application.ProductCommandFacade;
 import com.firstlogistics.productservice.product.presentation.dto.request.CreateProductRequest;
 import com.firstlogistics.productservice.product.presentation.dto.request.GetProductsRequest;
+import com.firstlogistics.productservice.product.presentation.dto.request.UpdateProductRequest;
 import com.firstlogistics.productservice.product.presentation.dto.response.CreateProductResponse;
 import com.firstlogistics.productservice.product.presentation.dto.response.ProductPageResponse;
 import com.firstlogistics.productservice.product.presentation.dto.response.ProductResponse;
@@ -23,6 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -46,6 +48,18 @@ public class ProductController {
 
         CreateProductResponse response = CreateProductResponse.from(productCommandFacade.register(request.toCommand(currentUser.getUserId(), currentUser.getRole().name())));
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(CommonSuccessCode.CREATED, response));
+    }
+
+    @RequireRole({UserRole.MASTER, UserRole.HUB_MANAGER, UserRole.COMPANY_MANAGER})
+    @PatchMapping("/{productId}")
+    public ResponseEntity<ApiResponse<ProductResponse>> updateProduct(
+            @PathVariable UUID productId,
+            @Valid @RequestBody UpdateProductRequest request) {
+        CustomUserDetails currentUser = SecurityUtils.currentUser();
+        ProductResponse response = ProductResponse.from(
+                productCommandService.update(
+                        request.toCommand(currentUser.getUserId(), currentUser.getRole().name(), productId)));
+        return ResponseEntity.ok(ApiResponse.success(CommonSuccessCode.OK, response));
     }
 
     @GetMapping("/{productId}")
