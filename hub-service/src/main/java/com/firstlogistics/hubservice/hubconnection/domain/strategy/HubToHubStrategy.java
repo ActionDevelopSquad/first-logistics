@@ -12,6 +12,6 @@ public class HubToHubStrategy implements  HubRouteStrategy{
 
     @Override
     public HubRoute calculate(HubId sourceHubId, HubId destinationHubId, List<HubConnection> connections, Map<HubId, RouteHub> hubMap) {
-        return null;
+        throw new UnsupportedOperationException("HUB_TO_HUB routing is not yet implemented");
     }
 }
