@@ -16,7 +16,7 @@ public class HubRouteStrategySelector {
     ){
         Map<RoutePolicy,HubRouteStrategy> map = new EnumMap<>(RoutePolicy.class);
         map.put(RoutePolicy.HYBRID, p2PHubHybridStrategy);
-        map.put(RoutePolicy.HUB_TO_HUB, hubToHubStrategy);
+        //map.put(RoutePolicy.HUB_TO_HUB, hubToHubStrategy);
         this.strategyMap = Map.copyOf(map);
     }
 
