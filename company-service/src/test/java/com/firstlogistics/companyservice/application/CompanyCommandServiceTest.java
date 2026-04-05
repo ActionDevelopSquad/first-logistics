@@ -8,6 +8,7 @@ import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.verify;
 
+import com.firstlogistics.companyservice.application.dto.command.ChangeManagerIdCommand;
 import com.firstlogistics.companyservice.application.dto.command.CreateCompanyCommand;
 import com.firstlogistics.companyservice.application.dto.command.UpdateCompanyCommand;
 import com.firstlogistics.companyservice.application.dto.result.CompanyResult;
@@ -247,6 +248,88 @@ class CompanyCommandServiceTest {
             assertThatThrownBy(() -> companyCommandService.update(invalidTypeCommand))
                     .isInstanceOf(CompanyException.class)
                     .hasMessageContaining(CompanyErrorCode.INVALID_COMPANY_TYPE.getMessage());
+        }
+    }
+
+    @Nested
+    @DisplayName("업체 관리자 ID 수정 (changeManagerId)")
+    class ChangeManagerId {
+
+        private static final UUID NEW_MANAGER_ID = UUID.fromString("00000000-0000-0000-0000-000000000099");
+
+        private Company activeCompany;
+
+        @BeforeEach
+        void setUp() {
+            activeCompany = Company.reconstitute(
+                    FIXED_COMPANY_ID, FIXED_HUB_ID, FIXED_MANAGER_ID, "테스트업체",
+                    new Supplier(), CompanyStatus.ACTIVE,
+                    CompanyAddress.of("서울특별시 송파구 송파대로 55", "3층"),
+                    GeoLocation.of(37.514, 127.106)
+            );
+        }
+
+        @Test
+        @DisplayName("새로운 관리자 ID로 변경하면 성공한다")
+        void changeManagerId_success() {
+            // given
+            given(companyRepository.existsByManagerId(NEW_MANAGER_ID)).willReturn(false);
+            given(companyRepository.findById(FIXED_COMPANY_ID)).willReturn(Optional.of(activeCompany));
+            given(companyRepository.save(any())).willAnswer(invocation -> invocation.getArgument(0));
+
+            // when
+            CompanyResult result = companyCommandService.changeManagerId(
+                    new ChangeManagerIdCommand(FIXED_COMPANY_ID, NEW_MANAGER_ID));
+
+            // then
+            assertThat(result.managerId()).isEqualTo(NEW_MANAGER_ID);
+        }
+
+        @Test
+        @DisplayName("이미 업체를 관리하는 담당자 ID로 변경하면 예외가 발생한다")
+        void changeManagerId_duplicateManagerId_throwsException() {
+            // given
+            given(companyRepository.existsByManagerId(NEW_MANAGER_ID)).willReturn(true);
+
+            // when & then
+            assertThatThrownBy(() -> companyCommandService.changeManagerId(
+                    new ChangeManagerIdCommand(FIXED_COMPANY_ID, NEW_MANAGER_ID)))
+                    .isInstanceOf(CompanyException.class)
+                    .hasMessageContaining(CompanyErrorCode.DUPLICATE_MANAGER_ID.getMessage());
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 companyId로 변경하면 예외가 발생한다")
+        void changeManagerId_companyNotFound_throwsException() {
+            // given
+            given(companyRepository.existsByManagerId(NEW_MANAGER_ID)).willReturn(false);
+            given(companyRepository.findById(FIXED_COMPANY_ID)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> companyCommandService.changeManagerId(
+                    new ChangeManagerIdCommand(FIXED_COMPANY_ID, NEW_MANAGER_ID)))
+                    .isInstanceOf(CompanyException.class)
+                    .hasMessageContaining(CompanyErrorCode.COMPANY_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        @DisplayName("비활성화된 업체의 관리자 ID를 변경하면 예외가 발생한다")
+        void changeManagerId_inactiveCompany_throwsException() {
+            // given
+            Company inactiveCompany = Company.reconstitute(
+                    FIXED_COMPANY_ID, FIXED_HUB_ID, FIXED_MANAGER_ID, "테스트업체",
+                    new Supplier(), CompanyStatus.INACTIVE,
+                    CompanyAddress.of("서울특별시 송파구 송파대로 55", "3층"),
+                    GeoLocation.of(37.514, 127.106)
+            );
+            given(companyRepository.existsByManagerId(NEW_MANAGER_ID)).willReturn(false);
+            given(companyRepository.findById(FIXED_COMPANY_ID)).willReturn(Optional.of(inactiveCompany));
+
+            // when & then
+            assertThatThrownBy(() -> companyCommandService.changeManagerId(
+                    new ChangeManagerIdCommand(FIXED_COMPANY_ID, NEW_MANAGER_ID)))
+                    .isInstanceOf(CompanyException.class)
+                    .hasMessageContaining(CompanyErrorCode.COMPANY_INACTIVE.getMessage());
         }
     }
 

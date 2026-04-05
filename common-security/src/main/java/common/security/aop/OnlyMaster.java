@@ -1,4 +1,4 @@
-package common.security.security.aop;
+package common.security.aop;
 
 import java.lang.annotation.*;
 

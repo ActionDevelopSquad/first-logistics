@@ -1,8 +1,8 @@
-package common.security.security.filter;
+package common.security.filter;
 
 import common.security.entity.enums.UserRole;
-import common.security.security.domain.CustomUserDetails;
-import common.security.security.config.SecurityHeader;
+import common.security.domain.CustomUserDetails;
+import common.security.config.SecurityHeader;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

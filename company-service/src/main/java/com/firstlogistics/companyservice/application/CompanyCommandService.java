@@ -1,5 +1,6 @@
 package com.firstlogistics.companyservice.application;
 
+import com.firstlogistics.companyservice.application.dto.command.ChangeManagerIdCommand;
 import com.firstlogistics.companyservice.application.dto.command.CreateCompanyCommand;
 import com.firstlogistics.companyservice.application.dto.command.UpdateCompanyCommand;
 import com.firstlogistics.companyservice.application.dto.result.CompanyResult;
@@ -90,6 +91,20 @@ public class CompanyCommandService {
         CompanyResult result = CompanyResult.from(companyRepository.save(company));
         Events.trigger(new CompanyActivatedEvent(companyId));
         return result;
+    }
+
+    @Transactional
+    public CompanyResult changeManagerId(ChangeManagerIdCommand command) {
+        if (companyRepository.existsByManagerId(command.managerId())) {
+            throw new CompanyException(CompanyErrorCode.DUPLICATE_MANAGER_ID);
+        }
+
+        Company company = companyRepository.findById(command.companyId())
+                .orElseThrow(() -> new CompanyException(CompanyErrorCode.COMPANY_NOT_FOUND));
+
+        company.changeManagerId(command.managerId());
+
+        return CompanyResult.from(companyRepository.save(company));
     }
 
     @Transactional
