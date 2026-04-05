@@ -1,6 +1,7 @@
 package com.firstlogistics.productservice.product.application;
 
 import com.firstlogistics.productservice.product.application.dto.command.CreateProductCommand;
+import com.firstlogistics.productservice.product.application.dto.command.ChangeProductStatusCommand;
 import com.firstlogistics.productservice.product.application.dto.command.UpdateProductCommand;
 import com.firstlogistics.productservice.product.application.dto.result.ProductResult;
 import com.firstlogistics.productservice.product.application.port.CompanyPort.CompanyInfo;
@@ -273,6 +274,156 @@ class ProductCommandServiceTest {
 
             // when & then
             assertThatThrownBy(() -> productCommandService.update(command))
+                    .isInstanceOf(ProductException.class)
+                    .hasMessageContaining(ProductErrorCode.PRODUCT_NOT_FOUND.getMessage());
+        }
+    }
+
+    @Nested
+    @DisplayName("상품 상태 변경 (changeStatus)")
+    class ChangeStatus {
+
+        private Product sellingProduct;
+        private Product stoppedProduct;
+
+        @BeforeEach
+        void setUp() {
+            sellingProduct = Product.reconstitute(
+                    PRODUCT_ID, COMPANY_ID, HUB_ID, "마른오징어",
+                    Money.krw(15000), ProductStatus.SELLING
+            );
+            stoppedProduct = Product.reconstitute(
+                    PRODUCT_ID, COMPANY_ID, HUB_ID, "마른오징어",
+                    Money.krw(15000), ProductStatus.STOPPED
+            );
+        }
+
+        @Test
+        @DisplayName("MASTER 권한으로 판매 중인 상품을 판매 중지하면 성공한다")
+        void changeStatus_master_selling_to_stopped() {
+            // given
+            ChangeProductStatusCommand command = new ChangeProductStatusCommand(
+                    MANAGER_ID, UserRole.MASTER.name(), PRODUCT_ID, "STOPPED"
+            );
+            given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(sellingProduct));
+            given(productRepository.save(any())).willAnswer(invocation -> invocation.getArgument(0));
+
+            // when
+            ProductResult result = productCommandService.changeStatus(command);
+
+            // then
+            assertThat(result.status()).isEqualTo(ProductStatus.STOPPED.name());
+        }
+
+        @Test
+        @DisplayName("MASTER 권한으로 판매 중지된 상품을 판매 재개하면 성공한다")
+        void changeStatus_master_stopped_to_selling() {
+            // given
+            ChangeProductStatusCommand command = new ChangeProductStatusCommand(
+                    MANAGER_ID, UserRole.MASTER.name(), PRODUCT_ID, "SELLING"
+            );
+            given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(stoppedProduct));
+            given(productRepository.save(any())).willAnswer(invocation -> invocation.getArgument(0));
+
+            // when
+            ProductResult result = productCommandService.changeStatus(command);
+
+            // then
+            assertThat(result.status()).isEqualTo(ProductStatus.SELLING.name());
+        }
+
+        @Test
+        @DisplayName("COMPANY_MANAGER가 본인 업체 상품의 상태를 변경하면 성공한다")
+        void changeStatus_companyManager_ownCompany_success() {
+            // given
+            ChangeProductStatusCommand command = new ChangeProductStatusCommand(
+                    MANAGER_ID, UserRole.COMPANY_MANAGER.name(), PRODUCT_ID, "STOPPED"
+            );
+            given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(sellingProduct));
+            given(companyPort.getCompany(COMPANY_ID))
+                    .willReturn(new CompanyInfo(COMPANY_ID, HUB_ID, MANAGER_ID));
+            given(productRepository.save(any())).willAnswer(invocation -> invocation.getArgument(0));
+
+            // when
+            ProductResult result = productCommandService.changeStatus(command);
+
+            // then
+            assertThat(result.status()).isEqualTo(ProductStatus.STOPPED.name());
+        }
+
+        @Test
+        @DisplayName("COMPANY_MANAGER가 다른 업체 상품의 상태를 변경하면 예외가 발생한다")
+        void changeStatus_companyManager_otherCompany_throwsException() {
+            // given
+            ChangeProductStatusCommand command = new ChangeProductStatusCommand(
+                    OTHER_USER_ID, UserRole.COMPANY_MANAGER.name(), PRODUCT_ID, "STOPPED"
+            );
+            given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(sellingProduct));
+            given(companyPort.getCompany(COMPANY_ID))
+                    .willReturn(new CompanyInfo(COMPANY_ID, HUB_ID, MANAGER_ID));
+
+            // when & then
+            assertThatThrownBy(() -> productCommandService.changeStatus(command))
+                    .isInstanceOf(ProductException.class)
+                    .hasMessageContaining(ProductErrorCode.UNAUTHORIZED_PRODUCT_STATUS_CHANGE.getMessage());
+        }
+
+        @Test
+        @DisplayName("이미 판매 중인 상품을 판매 재개하면 예외가 발생한다")
+        void changeStatus_alreadySelling_throwsException() {
+            // given
+            ChangeProductStatusCommand command = new ChangeProductStatusCommand(
+                    MANAGER_ID, UserRole.MASTER.name(), PRODUCT_ID, "SELLING"
+            );
+            given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(sellingProduct));
+
+            // when & then
+            assertThatThrownBy(() -> productCommandService.changeStatus(command))
+                    .isInstanceOf(ProductException.class)
+                    .hasMessageContaining(ProductErrorCode.PRODUCT_ALREADY_SELLING.getMessage());
+        }
+
+        @Test
+        @DisplayName("이미 판매 중지된 상품을 판매 중지하면 예외가 발생한다")
+        void changeStatus_alreadyStopped_throwsException() {
+            // given
+            ChangeProductStatusCommand command = new ChangeProductStatusCommand(
+                    MANAGER_ID, UserRole.MASTER.name(), PRODUCT_ID, "STOPPED"
+            );
+            given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(stoppedProduct));
+
+            // when & then
+            assertThatThrownBy(() -> productCommandService.changeStatus(command))
+                    .isInstanceOf(ProductException.class)
+                    .hasMessageContaining(ProductErrorCode.PRODUCT_ALREADY_STOPPED.getMessage());
+        }
+
+        @Test
+        @DisplayName("유효하지 않은 상태 값이면 예외가 발생한다")
+        void changeStatus_invalidStatus_throwsException() {
+            // given
+            ChangeProductStatusCommand command = new ChangeProductStatusCommand(
+                    MANAGER_ID, UserRole.MASTER.name(), PRODUCT_ID, "INVALID"
+            );
+            given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(sellingProduct));
+
+            // when & then
+            assertThatThrownBy(() -> productCommandService.changeStatus(command))
+                    .isInstanceOf(ProductException.class)
+                    .hasMessageContaining(ProductErrorCode.INVALID_PRODUCT_STATUS.getMessage());
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 productId로 상태 변경하면 예외가 발생한다")
+        void changeStatus_productNotFound_throwsException() {
+            // given
+            ChangeProductStatusCommand command = new ChangeProductStatusCommand(
+                    MANAGER_ID, UserRole.MASTER.name(), PRODUCT_ID, "STOPPED"
+            );
+            given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> productCommandService.changeStatus(command))
                     .isInstanceOf(ProductException.class)
                     .hasMessageContaining(ProductErrorCode.PRODUCT_NOT_FOUND.getMessage());
         }
