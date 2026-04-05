@@ -1,7 +1,5 @@
 package com.firstlogistics.hubservice.hubconnection.infrastructure.persistence.query;
 
-import com.firstlogistics.hubservice.hubManager.domain.exception.HubManagerErrorCode;
-import com.firstlogistics.hubservice.hubManager.domain.exception.HubManagerException;
 import com.firstlogistics.hubservice.hubconnection.domain.entity.HubConnection;
 import com.firstlogistics.hubservice.hubconnection.domain.exception.HubConnectionErrorCode;
 import com.firstlogistics.hubservice.hubconnection.domain.exception.HubConnectionException;
@@ -111,7 +109,7 @@ public class HubConnectionQueryRepositoryImpl implements HubConnectionQueryRepos
                         case "meters" -> asc ? hubConnection.meters.asc() : hubConnection.meters.desc();
                         case "sourceHubId" -> asc ? hubConnection.sourceHubId.asc() : hubConnection.sourceHubId.desc();
                         case "destinationHubId" -> asc ? hubConnection.destinationHubId.asc() : hubConnection.destinationHubId.desc();
-                        default -> throw new HubManagerException(HubManagerErrorCode.INVALID_HUB_MANAGER_SORT);
+                        default -> throw new HubConnectionException(HubConnectionErrorCode.INVALID_HUB_CONNECTION_SORT);
                     };
                 })
                 .toArray(OrderSpecifier[]::new);

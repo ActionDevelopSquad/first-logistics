@@ -26,7 +26,8 @@ public enum HubConnectionErrorCode implements ErrorCode {
     COMPANY_NOT_FOUND(HttpStatus.NOT_FOUND, "HBC_E016", "해당 업체 정보를 찾을 수 없습니다."),
     HUB_ROUTE_PENDING(HttpStatus.INTERNAL_SERVER_ERROR, "HBC_E017", "배송 경로를 확정할 수 없어 배송을 보류 상태로 전환합니다."),
     INVALID_COMPANY_ID(HttpStatus.BAD_REQUEST, "HBC_E018", "업체 ID가 유효하지 않습니다."),
-    ROUTE_METRIC_UNAVAILABLE(HttpStatus.INTERNAL_SERVER_ERROR, "HBC_E019", "네이버 지도 경로 메트릭 정보를 조회할 수 없습니다.");
+    ROUTE_METRIC_UNAVAILABLE(HttpStatus.INTERNAL_SERVER_ERROR, "HBC_E019", "네이버 지도 경로 메트릭 정보를 조회할 수 없습니다."),
+    INVALID_HUB_CONNECTION_SORT(HttpStatus.BAD_REQUEST, "HBC_E020", "허브 연결 정보 정렬 형식이 유효하지 않습니다.");
 
     private final HttpStatus status;
     private final String code;
