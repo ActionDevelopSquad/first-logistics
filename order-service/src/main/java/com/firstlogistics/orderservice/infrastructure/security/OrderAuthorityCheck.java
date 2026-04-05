@@ -39,7 +39,7 @@ public class OrderAuthorityCheck implements OrderAuthorityCheckPort {
         if (userContext.isMaster()) return true;
 
         if (userContext.isHubManager()) {
-            return supplierHubId.equals(myHubId);
+            return Objects.equals(supplierHubId, myHubId);
         }
 
         if (userContext.isCompanyManager()) {
@@ -54,7 +54,7 @@ public class OrderAuthorityCheck implements OrderAuthorityCheckPort {
         if (userContext.isMaster()) return true;
 
         if (userContext.isHubManager()) {
-            return supplierHubId.equals(myHubId);
+            return Objects.equals(supplierHubId, myHubId);
         }
 
         return false;
