@@ -4,6 +4,7 @@ import com.firstlogistics.deliverservice.domain.entity.DeliveryManager;
 import com.firstlogistics.deliverservice.domain.enums.ManagerType;
 import com.firstlogistics.deliverservice.domain.enums.TimetableStatus;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryManagerRepository;
+import com.firstlogistics.deliverservice.domain.vo.DeliveryManagerId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
@@ -34,6 +35,13 @@ public class DeliveryManagerRepositoryImpl implements DeliveryManagerRepository 
 		List<DeliveryManagerJpaEntity> results = deliveryManagerJpaRepository
 			.findNextAvailableManager(hubId, ManagerType.COMPANY_DELIVERY, activeStatuses, assignmentStart, assignmentEnd, PageRequest.of(0, 1));
 		return results.isEmpty() ? Optional.empty() : Optional.of(deliveryManagerMapper.toDomain(results.get(0)));
+	}
+
+	@Override
+	public Optional<DeliveryManager> findById(DeliveryManagerId id) {
+		return deliveryManagerJpaRepository.findById(id.id())
+			.filter(entity -> entity.getDeletedAt() == null)
+			.map(deliveryManagerMapper::toDomain);
 	}
 
 	@Override

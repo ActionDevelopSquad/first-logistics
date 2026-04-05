@@ -9,7 +9,9 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum DeliveryManagerSuccessCode implements SuccessCode {
 
-	DELIVERY_MANAGER_CREATED(HttpStatus.CREATED, "DM_S001", "배송 담당자가 등록되었습니다.");
+	DELIVERY_MANAGER_CREATED(HttpStatus.CREATED, "DM_S001", "배송 담당자가 등록되었습니다."),
+	DELIVERY_MANAGER_LIST_FOUND(HttpStatus.OK, "DM_S002", "배송 담당자 목록을 조회했습니다."),
+	DELIVERY_MANAGER_FOUND(HttpStatus.OK, "DM_S003", "배송 담당자를 조회했습니다.");
 
 	private final HttpStatus status;
 	private final String code;
