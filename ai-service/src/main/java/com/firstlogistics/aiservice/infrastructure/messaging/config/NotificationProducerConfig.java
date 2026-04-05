@@ -1,6 +1,7 @@
 package com.firstlogistics.aiservice.infrastructure.messaging.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.firstlogistics.aiservice.domain.event.NotificationCreatedEvent;
 import common.kafka.config.KafkaProducerConfig;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -21,7 +22,7 @@ public class NotificationProducerConfig {
     private final ObjectMapper objectMapper;
 
     @Bean
-    public ProducerFactory<String, Object> notificationProducerFactory() {
+    public ProducerFactory<String, NotificationCreatedEvent> notificationProducerFactory() {
         Map<String, Object> props = kafkaProducerConfig.commonProducerProps();
         
         return new DefaultKafkaProducerFactory<>(
@@ -32,8 +33,8 @@ public class NotificationProducerConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, Object> notificationKafkaTemplate(
-            ProducerFactory<String, Object> notificationProducerFactory) {
+    public KafkaTemplate<String, NotificationCreatedEvent> notificationKafkaTemplate(
+            ProducerFactory<String, NotificationCreatedEvent> notificationProducerFactory) {
         return new KafkaTemplate<>(notificationProducerFactory);
     }
 }
