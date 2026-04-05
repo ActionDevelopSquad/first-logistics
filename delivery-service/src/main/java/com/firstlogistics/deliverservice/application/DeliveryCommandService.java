@@ -38,7 +38,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -177,7 +176,7 @@ public class DeliveryCommandService {
 
 		DeliveryAccessContext accessContext = DeliveryAccessContext.from(delivery);
 		deliveryPermissionValidator.validate(accessContext, command.role(), command.userId(),
-			Set.of(UserRole.MASTER, UserRole.HUB_MANAGER, UserRole.DELIVERY_MANAGER));
+			UserRole.OPERATORS);
 
 		delivery.reassignReceiver(command.receiverId(), command.receiverSlackId());
 		Delivery savedDelivery = deliveryRepository.save(delivery);
@@ -196,7 +195,7 @@ public class DeliveryCommandService {
 
 		DeliveryAccessContext accessContext = DeliveryAccessContext.from(delivery);
 		deliveryPermissionValidator.validate(accessContext, role, userId,
-			Set.of(UserRole.MASTER, UserRole.HUB_MANAGER, UserRole.DELIVERY_MANAGER));
+			UserRole.OPERATORS);
 
 		delivery.startHubDelivery();
 		Delivery savedDelivery = deliveryRepository.save(delivery);
@@ -213,7 +212,7 @@ public class DeliveryCommandService {
 
 		DeliveryAccessContext accessContext = DeliveryAccessContext.from(delivery);
 		deliveryPermissionValidator.validate(accessContext, role, userId,
-			Set.of(UserRole.MASTER, UserRole.HUB_MANAGER, UserRole.DELIVERY_MANAGER));
+			UserRole.OPERATORS);
 
 		delivery.startCompanyDelivery();
 		Delivery savedDelivery = deliveryRepository.save(delivery);
@@ -230,7 +229,7 @@ public class DeliveryCommandService {
 
 		DeliveryAccessContext accessContext = DeliveryAccessContext.from(delivery);
 		deliveryPermissionValidator.validate(accessContext, role, userId,
-			Set.of(UserRole.MASTER, UserRole.DELIVERY_MANAGER));
+			UserRole.MASTER_AND_DELIVERY);
 
 		delivery.arriveAtHub();
 		Delivery savedDelivery = deliveryRepository.save(delivery);
@@ -247,7 +246,7 @@ public class DeliveryCommandService {
 
 		DeliveryAccessContext accessContext = DeliveryAccessContext.from(delivery);
 		deliveryPermissionValidator.validate(accessContext, role, userId,
-			Set.of(UserRole.MASTER, UserRole.HUB_MANAGER));
+			UserRole.MANAGERS);
 
 		delivery.receiveAtHub();
 		Delivery savedDelivery = deliveryRepository.save(delivery);
@@ -264,7 +263,7 @@ public class DeliveryCommandService {
 
 		DeliveryAccessContext accessContext = DeliveryAccessContext.from(delivery);
 		deliveryPermissionValidator.validate(accessContext, role, userId,
-			Set.of(UserRole.MASTER, UserRole.DELIVERY_MANAGER));
+			UserRole.MASTER_AND_DELIVERY);
 
 		delivery.completeDelivery();
 		Delivery savedDelivery = deliveryRepository.save(delivery);
@@ -281,7 +280,7 @@ public class DeliveryCommandService {
 
 		DeliveryAccessContext accessContext = DeliveryAccessContext.from(delivery);
 		deliveryPermissionValidator.validate(accessContext, role, userId,
-			Set.of(UserRole.MASTER, UserRole.HUB_MANAGER));
+			UserRole.MANAGERS);
 
 		delivery.cancelDelivery();
 		Delivery savedDelivery = deliveryRepository.save(delivery);
@@ -313,7 +312,7 @@ public class DeliveryCommandService {
 
 		DeliveryAccessContext accessContext = DeliveryAccessContext.from(delivery);
 		deliveryPermissionValidator.validate(accessContext, role, userId,
-			Set.of(UserRole.MASTER, UserRole.HUB_MANAGER));
+			UserRole.MANAGERS);
 
 		deliveryRepository.deleteById(DeliveryId.of(deliveryId), userId);
 	}

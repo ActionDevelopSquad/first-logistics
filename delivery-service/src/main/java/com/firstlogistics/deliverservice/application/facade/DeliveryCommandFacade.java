@@ -16,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @Component
@@ -30,7 +29,7 @@ public class DeliveryCommandFacade {
     private final DistributedLockPort distributedLockPort;
 
     public CreateDeliveryResult createDelivery(CreateDeliveryCommand command, String role, UUID userId) {
-        deliveryPermissionValidator.validateRole(role, Set.of(UserRole.MASTER));
+        deliveryPermissionValidator.validateRole(role, UserRole.MASTER_ONLY);
         return executeCreateDelivery(command);
     }
 

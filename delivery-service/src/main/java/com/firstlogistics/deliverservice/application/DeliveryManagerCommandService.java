@@ -19,7 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -37,7 +36,7 @@ public class DeliveryManagerCommandService {
 		CreateDeliveryManagerCommand command, String role, UUID requestUserId
 	) {
 		UserRole userRole = deliveryPermissionValidator.validateRole(role,
-			Set.of(UserRole.MASTER, UserRole.HUB_MANAGER));
+			UserRole.MANAGERS);
 
 		if (userRole == UserRole.HUB_MANAGER) {
 			HubManagerResponse hubManager = hubManagerPort.getHubManager(requestUserId);

@@ -28,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -95,7 +94,7 @@ public class DeliveryQueryService {
 
 		DeliveryAccessContext accessContext = DeliveryAccessContext.from(deliveryDetail, routes);
 		deliveryPermissionValidator.validate(accessContext, role, userId,
-			Set.of(UserRole.MASTER, UserRole.HUB_MANAGER, UserRole.DELIVERY_MANAGER, UserRole.COMPANY_MANAGER));
+			UserRole.ALL);
 
 		List<UUID> hubIds = routes.stream()
 			.flatMap(route -> Stream.of(route.sourceHubId(), route.destinationHubId()))

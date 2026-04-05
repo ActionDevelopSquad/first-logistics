@@ -33,8 +33,7 @@ public class DeliveryManagerQueryService {
 	private final DeliveryPermissionValidator deliveryPermissionValidator;
 	private final HubManagerPort hubManagerPort;
 
-	private static final Set<UserRole> ALLOWED_ROLES =
-		Set.of(UserRole.MASTER, UserRole.HUB_MANAGER, UserRole.DELIVERY_MANAGER);
+	private static final Set<UserRole> ALLOWED_ROLES = UserRole.OPERATORS;
 
 	public DeliveryManagerListResult getDeliveryManagers(DeliveryManagerListQuery query) {
 		UserRole userRole = deliveryPermissionValidator.validateRole(query.role(), ALLOWED_ROLES);
