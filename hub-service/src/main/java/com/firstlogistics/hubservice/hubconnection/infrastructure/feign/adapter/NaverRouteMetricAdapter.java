@@ -51,7 +51,7 @@ public class NaverRouteMetricAdapter implements RouteMetricPort {
 
         return new RouteMetricResponse(
                 summary.distance(),
-                summary.duration() / 60000
+                (int) Math.ceil(summary.duration() / 60000.0)
         );
     }
 }
