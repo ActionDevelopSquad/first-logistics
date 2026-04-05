@@ -1,5 +1,9 @@
 package com.firstlogistics.productservice.product.application;
 
+import com.firstlogistics.productservice.inventory.application.InventoryQueryService;
+import com.firstlogistics.productservice.inventory.application.dto.result.InventoryResult;
+import com.firstlogistics.productservice.inventory.domain.exception.InventoryErrorCode;
+import com.firstlogistics.productservice.inventory.domain.exception.InventoryException;
 import com.firstlogistics.productservice.product.application.dto.query.ProductSearchQuery;
 import com.firstlogistics.productservice.product.application.dto.result.ProductResult;
 import com.firstlogistics.productservice.product.domain.entity.Product;
@@ -34,6 +38,9 @@ class ProductQueryServiceTest {
 
     @Mock
     private ProductRepository productRepository;
+
+    @Mock
+    private InventoryQueryService inventoryQueryService;
 
     @InjectMocks
     private ProductQueryService productQueryService;
@@ -141,6 +148,53 @@ class ProductQueryServiceTest {
             assertThatThrownBy(() -> productQueryService.getById(PRODUCT_ID))
                     .isInstanceOf(ProductException.class)
                     .hasMessageContaining(ProductErrorCode.PRODUCT_NOT_FOUND.getMessage());
+        }
+    }
+
+    @Nested
+    @DisplayName("재고 조회 (getStock)")
+    class GetStock {
+
+        @Test
+        @DisplayName("존재하는 상품의 재고를 조회하면 재고 정보를 반환한다")
+        void getStock_success() {
+            // given
+            InventoryResult inventoryResult = new InventoryResult(PRODUCT_ID, 100, 10);
+            given(inventoryQueryService.getByProductId(PRODUCT_ID)).willReturn(inventoryResult);
+
+            // when
+            InventoryResult result = productQueryService.getStock(PRODUCT_ID);
+
+            // then
+            assertThat(result.productId()).isEqualTo(PRODUCT_ID);
+            assertThat(result.available()).isEqualTo(100);
+            assertThat(result.reserved()).isEqualTo(10);
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 productId로 재고를 조회하면 예외가 발생한다")
+        void getStock_productNotFound_throwsException() {
+            // given
+            given(inventoryQueryService.getByProductId(PRODUCT_ID))
+                    .willThrow(new ProductException(ProductErrorCode.PRODUCT_NOT_FOUND));
+
+            // when & then
+            assertThatThrownBy(() -> productQueryService.getStock(PRODUCT_ID))
+                    .isInstanceOf(ProductException.class)
+                    .hasMessageContaining(ProductErrorCode.PRODUCT_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        @DisplayName("재고 정보가 없으면 INVENTORY_NOT_FOUND 예외가 발생한다")
+        void getStock_inventoryNotFound_throwsException() {
+            // given
+            given(inventoryQueryService.getByProductId(PRODUCT_ID))
+                    .willThrow(new InventoryException(InventoryErrorCode.INVENTORY_NOT_FOUND));
+
+            // when & then
+            assertThatThrownBy(() -> productQueryService.getStock(PRODUCT_ID))
+                    .isInstanceOf(InventoryException.class)
+                    .hasMessageContaining(InventoryErrorCode.INVENTORY_NOT_FOUND.getMessage());
         }
     }
 }
