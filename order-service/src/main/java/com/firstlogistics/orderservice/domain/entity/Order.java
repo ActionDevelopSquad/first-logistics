@@ -248,4 +248,9 @@ public class Order {
         this.previousStatus = null;
     }
 
+    public boolean isDeletable() {
+        // 주문 완료 or 취소 상태에서만 삭제 가능
+        return this.status == OrderStatus.COMPLETED || this.status == OrderStatus.CANCELLED;
+    }
+
 }

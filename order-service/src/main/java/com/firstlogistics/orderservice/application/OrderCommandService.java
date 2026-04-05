@@ -120,6 +120,11 @@ public class OrderCommandService {
     @Transactional
     public void deleteOrder(UUID orderId) {
         Order order = getOrderWithAuthorityCheck(orderId, AuthorityAction.DELETE);
+
+        if (!order.isDeletable()) {
+            throw new OrderException(OrderErrorCode.NOT_IN_DELETABLE_STATUS);
+        }
+
         orderRepository.deleteById(order.getId(), userContext.getCurrentUserId());
     }
 

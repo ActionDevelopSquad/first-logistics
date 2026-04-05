@@ -31,6 +31,7 @@ public enum OrderErrorCode implements ErrorCode {
 
     // 주문 상태 전이 & 멱등성 보장
     INVALID_ORDER_STATUS(HttpStatus.BAD_REQUEST, "ORD028", "유효하지 않은 주문 상태입니다."),
+    NOT_IN_DELETABLE_STATUS(HttpStatus.BAD_REQUEST, "ORD029", "삭제 가능한 주문 상태가 아닙니다."),
     INVALID_ORDER_STATUS_CHANGE(HttpStatus.BAD_REQUEST, "ORD014", "허용되지 않은 주문 상태 변경입니다."),
     ALREADY_ACCEPTED(HttpStatus.BAD_REQUEST, "ORD015", "이미 승인된 주문입니다."),
     ALREADY_CANCELLED(HttpStatus.BAD_REQUEST, "ORD016", "이미 취소된 주문입니다."),
