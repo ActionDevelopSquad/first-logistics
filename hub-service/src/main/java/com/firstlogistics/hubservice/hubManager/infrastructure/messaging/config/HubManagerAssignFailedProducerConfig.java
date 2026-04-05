@@ -22,7 +22,7 @@ public class HubManagerAssignFailedProducerConfig {
     private final ObjectMapper objectMapper;
 
     @Bean
-    public ProducerFactory<String, Object> hubManagerProducerFactory(){
+    public ProducerFactory<String, Object> hubManagerAssignFailedProducerFactory(){
         Map<String,Object> props = kafkaProducerConfig.commonProducerProps();
         props.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, ConsistentHashPartitioner.class);
 
@@ -34,8 +34,7 @@ public class HubManagerAssignFailedProducerConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, Object> hubManagerKafkaTemplate(){
-        return new KafkaTemplate<>(hubManagerProducerFactory());
+    public KafkaTemplate<String, Object> hubManagerAssignFailedKafkaTemplate() {
+        return new KafkaTemplate<>(hubManagerAssignFailedProducerFactory());
     }
-
 }
