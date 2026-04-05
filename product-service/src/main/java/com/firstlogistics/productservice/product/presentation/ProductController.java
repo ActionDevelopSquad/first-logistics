@@ -5,6 +5,7 @@ import com.firstlogistics.productservice.product.application.ProductQueryService
 import com.firstlogistics.productservice.product.application.ProductCommandFacade;
 import com.firstlogistics.productservice.product.presentation.dto.request.CreateProductRequest;
 import com.firstlogistics.productservice.product.presentation.dto.request.GetProductsRequest;
+import com.firstlogistics.productservice.product.presentation.dto.request.ChangeProductStatusRequest;
 import com.firstlogistics.productservice.product.presentation.dto.request.UpdateProductRequest;
 import com.firstlogistics.productservice.product.presentation.dto.response.CreateProductResponse;
 import com.firstlogistics.productservice.product.presentation.dto.response.ProductPageResponse;
@@ -58,6 +59,18 @@ public class ProductController {
         CustomUserDetails currentUser = SecurityUtils.currentUser();
         ProductResponse response = ProductResponse.from(
                 productCommandService.update(
+                        request.toCommand(currentUser.getUserId(), currentUser.getRole().name(), productId)));
+        return ResponseEntity.ok(ApiResponse.success(CommonSuccessCode.OK, response));
+    }
+
+    @RequireRole({UserRole.MASTER, UserRole.HUB_MANAGER, UserRole.COMPANY_MANAGER})
+    @PatchMapping("/{productId}/status")
+    public ResponseEntity<ApiResponse<ProductResponse>> changeProductStatus(
+            @PathVariable UUID productId,
+            @Valid @RequestBody ChangeProductStatusRequest request) {
+        CustomUserDetails currentUser = SecurityUtils.currentUser();
+        ProductResponse response = ProductResponse.from(
+                productCommandService.changeStatus(
                         request.toCommand(currentUser.getUserId(), currentUser.getRole().name(), productId)));
         return ResponseEntity.ok(ApiResponse.success(CommonSuccessCode.OK, response));
     }

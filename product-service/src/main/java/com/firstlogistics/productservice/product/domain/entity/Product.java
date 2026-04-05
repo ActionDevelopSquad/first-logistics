@@ -72,6 +72,13 @@ public class Product {
         this.price = price;
     }
 
+    public void startSelling() {
+        if (this.status == ProductStatus.SELLING) {
+            throw new ProductException(ProductErrorCode.PRODUCT_ALREADY_SELLING);
+        }
+        this.status = ProductStatus.SELLING;
+    }
+
     public void stopSelling() {
         if (this.status == ProductStatus.STOPPED) {
             throw new ProductException(ProductErrorCode.PRODUCT_ALREADY_STOPPED);

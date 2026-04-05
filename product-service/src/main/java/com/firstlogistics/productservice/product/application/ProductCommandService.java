@@ -1,7 +1,9 @@
 package com.firstlogistics.productservice.product.application;
 
 import com.firstlogistics.productservice.product.application.dto.command.CreateProductCommand;
+import com.firstlogistics.productservice.product.application.dto.command.ChangeProductStatusCommand;
 import com.firstlogistics.productservice.product.application.dto.command.UpdateProductCommand;
+import com.firstlogistics.productservice.product.domain.enums.ProductStatus;
 import com.firstlogistics.productservice.product.application.dto.result.ProductResult;
 import com.firstlogistics.productservice.product.application.port.CompanyPort.CompanyInfo;
 import com.firstlogistics.productservice.product.domain.entity.Product;
@@ -60,6 +62,36 @@ public class ProductCommandService {
         }
 
         return ProductResult.from(productRepository.save(product));
+    }
+
+    @Transactional
+    public ProductResult changeStatus(ChangeProductStatusCommand command) {
+        Product product = productRepository.findById(command.productId())
+                .orElseThrow(() -> new ProductException(ProductErrorCode.PRODUCT_NOT_FOUND));
+
+        if (UserRole.COMPANY_MANAGER.name().equals(command.requesterRole())) {
+            CompanyInfo companyInfo = companyPort.getCompany(product.getCompanyId());
+            if (!command.requesterId().equals(companyInfo.managerId())) {
+                throw new ProductException(ProductErrorCode.UNAUTHORIZED_PRODUCT_STATUS_CHANGE);
+            }
+        }
+
+        ProductStatus newStatus = resolveProductStatus(command.status());
+        if (newStatus == ProductStatus.SELLING) {
+            product.startSelling();
+        } else {
+            product.stopSelling();
+        }
+
+        return ProductResult.from(productRepository.save(product));
+    }
+
+    private ProductStatus resolveProductStatus(String status) {
+        try {
+            return ProductStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new ProductException(ProductErrorCode.INVALID_PRODUCT_STATUS);
+        }
     }
 
     private void validateCompanyAccess(CreateProductCommand command, CompanyInfo companyInfo) {
