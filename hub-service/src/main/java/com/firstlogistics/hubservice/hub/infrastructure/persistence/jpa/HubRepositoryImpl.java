@@ -6,6 +6,10 @@ import com.firstlogistics.hubservice.hub.domain.exception.HubException;
 import com.firstlogistics.hubservice.hub.domain.repository.HubRepository;
 import com.firstlogistics.hubservice.hub.domain.vo.HubId;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 
@@ -14,6 +18,9 @@ import java.util.List;
 @Repository
 @RequiredArgsConstructor
 public class HubRepositoryImpl implements HubRepository {
+    private static final String HUB_ALL_CACHE = "hub:all";
+    private static final String HUB_BY_ID_CACHE = "hub:byId";
+
     private final HubJpaRepository jpaRepository;
     private final HubMapper mapper;
 
@@ -23,6 +30,14 @@ public class HubRepositoryImpl implements HubRepository {
     }
 
     @Override
+    @Caching(
+            put = {
+                    @CachePut(cacheNames = HUB_BY_ID_CACHE, key = "#result.id().id()")
+            },
+            evict = {
+                    @CacheEvict(cacheNames = HUB_ALL_CACHE, allEntries = true)
+            }
+    )
     public Hub save(Hub hub) {
         try {
             HubJpaEntity savedEntity = jpaRepository.save(mapper.toJpaEntity(hub));
@@ -40,11 +55,13 @@ public class HubRepositoryImpl implements HubRepository {
     }
 
     @Override
+    @Cacheable(cacheNames = HUB_ALL_CACHE)
     public List<Hub> findAll() {
         return jpaRepository.findAll().stream().map(mapper::toDomain).toList();
     }
 
     @Override
+    @Cacheable(cacheNames = HUB_BY_ID_CACHE, key = "#result.id.id()")
     public Hub findById(HubId hubId) {
         HubJpaEntity entity = jpaRepository.findById(hubId.id())
                 .orElseThrow(() -> new HubException(HubErrorCode.HUB_NOT_FOUND));
