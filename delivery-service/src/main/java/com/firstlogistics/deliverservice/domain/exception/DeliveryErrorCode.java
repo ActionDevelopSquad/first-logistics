@@ -73,7 +73,8 @@ public enum DeliveryErrorCode implements ErrorCode {
 	DUPLICATE_RESOURCE(HttpStatus.CONFLICT, "DR_E501", "이미 존재하는 리소스입니다."),
 
 	// 락
-	DELIVERY_MANAGER_ASSIGN_LOCK_ACQUISITION_FAILED(HttpStatus.CONFLICT, "DR_E301", "배송 담당자 배정 락 획득에 실패했습니다.")
+	DELIVERY_MANAGER_ASSIGN_LOCK_ACQUISITION_FAILED(HttpStatus.CONFLICT, "DR_E301", "배송 담당자 배정 락 획득에 실패했습니다."),
+	OPTIMISTIC_LOCK_CONFLICT(HttpStatus.CONFLICT, "DR_E302", "다른 사용자가 동시에 수정하여 요청이 실패했습니다.")
 
 	;
 
