@@ -30,6 +30,7 @@ public class Hub {
             GeoLocation geoLocation,
             HubType hubType
     ) {
+        validateType(hubType);
         validateName(name);
         validateAddress(address);
         validateGeoLocation(geoLocation);
