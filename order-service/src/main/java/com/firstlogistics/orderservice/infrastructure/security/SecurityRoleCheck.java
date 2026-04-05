@@ -1,5 +1,7 @@
 package com.firstlogistics.orderservice.infrastructure.security;
 
+import com.firstlogistics.orderservice.domain.exception.OrderErrorCode;
+import com.firstlogistics.orderservice.domain.exception.OrderException;
 import com.firstlogistics.orderservice.domain.repository.OrderRepository;
 import com.firstlogistics.orderservice.domain.service.RoleCheck;
 import com.firstlogistics.orderservice.domain.vo.OrderId;
@@ -8,6 +10,7 @@ import com.firstlogistics.orderservice.application.port.dto.HubManagerResponse;
 import common.response.ApiResponse;
 import common.security.entity.enums.UserRole;
 import common.security.security.util.SecurityUtils;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -53,13 +56,8 @@ public class SecurityRoleCheck implements RoleCheck {
     }
 
     private boolean hasRole(UserRole role) {
-        try {
-            UserRole currentRole = SecurityUtils.currentUser().getRole();
-            return currentRole != null && currentRole == role;
-        } catch (Exception e) {
-            log.warn("권한 확인 중 인증 예외 발생: {}", e.getMessage());
-            return false;
-        }
+        UserRole currentRole = SecurityUtils.currentUser().getRole();
+        return currentRole != null && currentRole == role;
     }
 
     @Override
@@ -99,8 +97,11 @@ public class SecurityRoleCheck implements RoleCheck {
             if (response != null && response.getData() != null) {
                 return response.getData().hubId();
             }
+        } catch (FeignException.NotFound e) {
+            return null;
         } catch (Exception e) {
-            log.error("허브 정보 조회 실패: {}", e.getMessage());
+            log.error("허브 서비스 호출 중 시스템 에러 발생: {}", e.getMessage());
+            throw new OrderException(OrderErrorCode.EXTERNAL_SERVICE_ERROR);
         }
         return null;
     }
