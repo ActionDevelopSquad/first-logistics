@@ -73,6 +73,13 @@ public class HubCommandService {
         throw new HubException(HubErrorCode.INVALID_HUB_STATUS);
     }
 
+    @Transactional
+    public void delete(UUID hubId) {
+        Hub hub = hubRepository.findById(HubId.of(hubId));
+        hubRepository.delete(hub);
+        Events.trigger(HubDeletedEvent.from(hub));
+    }
+
     private HubResult activate(UUID hubId) {
         Hub hub = hubRepository.findById(HubId.of(hubId));
         hub.activate();
@@ -89,12 +96,5 @@ public class HubCommandService {
         Hub savedHub = hubRepository.save(hub);
         Events.trigger(HubDeactivatedEvent.from(savedHub));
         return HubResult.from(savedHub);
-    }
-
-    @Transactional
-    public void delete(UUID hubId) {
-        Hub hub = hubRepository.findById(HubId.of(hubId));
-        hubRepository.delete(hub);
-        Events.trigger(HubDeletedEvent.from(hub));
     }
 }
