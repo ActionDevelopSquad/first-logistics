@@ -109,6 +109,17 @@ public class OrderCommandService {
         return order.getStatus().name();
     }
 
+    @Transactional
+    public void deleteOrder(UUID orderId) {
+        Order order = getOrder(orderId);
+
+        if (!roleCheck.canDelete(order.getId(), order.getSupplier().hubId())) {
+            throw new OrderException(OrderErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        orderRepository.deleteById(order.getId(), roleCheck.getCurrentUserId());
+    }
+
     private Order getOrder(UUID orderId) {
         return orderRepository.findById(OrderId.of(orderId))
                 .orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));

@@ -19,4 +19,6 @@ public interface OrderRepository {
     boolean existsByIdAndReceiverManagerId(OrderId id, UUID receiverManagerId);
 
     boolean existsByIdAndSupplierHubId(OrderId id, UUID hubId);
+
+    void deleteById(OrderId id, UUID userId);
 }

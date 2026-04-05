@@ -8,6 +8,9 @@ public interface RoleCheck {
     boolean canRequestCancel(OrderId orderId);
     boolean canAcceptOrCancel(OrderId orderId);
     boolean canView(OrderId orderId, UUID hubId, UUID supplierManagerId, UUID receiverManagerId);
+
+    boolean canDelete(OrderId orderId, UUID hubId);
+
     boolean isMaster();
     boolean isHubManager();
     boolean isCompanyManager();

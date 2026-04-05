@@ -55,6 +55,18 @@ public class SecurityRoleCheck implements RoleCheck {
         return false;
     }
 
+    @Override
+    public boolean canDelete(OrderId orderId, UUID hubId) {
+        if (isMaster()) return true;
+
+        if (isHubManager()) {
+            UUID myHubId = getCurrentUserHubId();
+            return hubId.equals(myHubId);
+        }
+
+        return false;
+    }
+
     private boolean hasRole(UserRole role) {
         UserRole currentRole = SecurityUtils.currentUser().getRole();
         return currentRole != null && currentRole == role;
