@@ -17,25 +17,33 @@ public class OrderAuthorityCheck implements OrderAuthorityCheckPort {
     private final UserContextPort userContext;
 
     @Override
-    public boolean canRequestCancel(UUID receiverManagerId, UUID myUserId) {
+    public boolean canRequestCancel(UUID receiverManagerId) {
+        UUID myUserId = userContext.getCurrentUserId();
         if (!userContext.isCompanyManager()) return false;
         return Objects.equals(receiverManagerId, myUserId);
     }
 
     @Override
-    public boolean canAcceptOrCancel(UUID supplierHubId, UUID supplierManagerId, UUID myHubId, UUID myUserId) {
+    public boolean canAcceptOrCancel(UUID supplierHubId, UUID supplierManagerId, UUID myHubId) {
+        UUID myUserId = userContext.getCurrentUserId();
+
         if (userContext.isMaster()) return true;
+
         if (userContext.isHubManager()) {
             return Objects.equals(supplierHubId, myHubId);
         }
+
         if (userContext.isCompanyManager()) {
             return Objects.equals(supplierManagerId, myUserId);
         }
+
         return false;
     }
 
     @Override
-    public boolean canView(UUID supplierHubId, UUID supplierManagerId, UUID receiverManagerId, UUID myHubId, UUID myUserId) {
+    public boolean canView(UUID supplierHubId, UUID supplierManagerId, UUID receiverManagerId, UUID myHubId) {
+        UUID myUserId = userContext.getCurrentUserId();
+
         if (userContext.isMaster()) return true;
 
         if (userContext.isHubManager()) {

@@ -133,7 +133,7 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
-        when(authorityCheck.canAcceptOrCancel(any(), any(), any(), any())).thenReturn(true);
+        when(authorityCheck.canAcceptOrCancel(any(), any(), any())).thenReturn(true);
 
         // when
         String resultStatus = orderCommandService.acceptOrder(orderId);
@@ -155,7 +155,7 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
-        when(authorityCheck.canAcceptOrCancel(any(), any(), any(), any())).thenReturn(true);
+        when(authorityCheck.canAcceptOrCancel(any(), any(), any())).thenReturn(true);
 
         // when & then
         assertThatThrownBy(() -> orderCommandService.acceptOrder(orderId))
@@ -176,7 +176,7 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
-        when(authorityCheck.canAcceptOrCancel(any(), any(), any(), any())).thenReturn(true);
+        when(authorityCheck.canAcceptOrCancel(any(), any(), any())).thenReturn(true);
 
         // when & then
         assertThatThrownBy(() -> orderCommandService.acceptOrder(orderId))
@@ -198,7 +198,7 @@ class OrderCommandServiceTest {
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
         // 권한 체크 실패 설정
-        when(authorityCheck.canAcceptOrCancel(any(), any(), any(), any())).thenReturn(false);
+        when(authorityCheck.canAcceptOrCancel(any(), any(), any())).thenReturn(false);
 
         // when & then
         assertThatThrownBy(() -> orderCommandService.acceptOrder(orderId))
@@ -222,7 +222,7 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
-        when(authorityCheck.canAcceptOrCancel(any(), any(), any(), any())).thenReturn(true);
+        when(authorityCheck.canAcceptOrCancel(any(), any(), any())).thenReturn(true);
 
         // when
         String resultStatus = orderCommandService.rejectOrder(orderId);
@@ -244,7 +244,7 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
-        when(authorityCheck.canAcceptOrCancel(any(), any(), any(), any())).thenReturn(true);
+        when(authorityCheck.canAcceptOrCancel(any(), any(), any())).thenReturn(true);
 
         // when & then
         assertThatThrownBy(() -> orderCommandService.rejectOrder(orderId))
@@ -267,7 +267,7 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
-        when(authorityCheck.canAcceptOrCancel(any(), any(), any(), any())).thenReturn(true);
+        when(authorityCheck.canAcceptOrCancel(any(), any(), any())).thenReturn(true);
 
         // when
         String resultStatus = orderCommandService.cancelOrder(orderId);
@@ -290,7 +290,7 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
-        when(authorityCheck.canRequestCancel(any(), any())).thenReturn(true);
+        when(authorityCheck.canRequestCancel(any())).thenReturn(true);
 
         // when
         String resultStatus = orderCommandService.requestCancel(orderId);
@@ -313,7 +313,7 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
-        when(authorityCheck.canAcceptOrCancel(any(), any(), any(), any())).thenReturn(true);
+        when(authorityCheck.canAcceptOrCancel(any(), any(), any())).thenReturn(true);
 
         // when
         String resultStatus = orderCommandService.approveCancelRequest(orderId);
@@ -337,7 +337,7 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
-        when(authorityCheck.canAcceptOrCancel(any(), any(), any(), any())).thenReturn(true);
+        when(authorityCheck.canAcceptOrCancel(any(), any(), any())).thenReturn(true);
 
         // when
         String resultStatus = orderCommandService.rejectCancelRequest(orderId);
@@ -359,7 +359,7 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
-        when(authorityCheck.canAcceptOrCancel(any(), any(), any(), any())).thenReturn(true);
+        when(authorityCheck.canAcceptOrCancel(any(), any(), any())).thenReturn(true);
 
         // when & then
         assertThatThrownBy(() -> orderCommandService.rejectCancelRequest(orderId))

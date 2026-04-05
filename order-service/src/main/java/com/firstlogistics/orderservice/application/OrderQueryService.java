@@ -53,15 +53,13 @@ public class OrderQueryService {
         Order order = orderRepository.findById(OrderId.of(orderId))
                 .orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));
 
-        UUID myUserId = userContext.getCurrentUserId();
-        UUID myHubId = getHubIdByUserId(myUserId);
+        UUID myHubId = getHubIdByUserId(userContext.getCurrentUserId());
 
         if (!authorityCheck.canView(
                 order.getSupplier().hubId(),
                 order.getSupplier().managerId(),
                 order.getReceiver().managerId(),
-                myHubId,
-                myUserId
+                myHubId
         )) {
             throw new OrderException(OrderErrorCode.UNAUTHORIZED_ACCESS);
         }

@@ -144,17 +144,16 @@ public class OrderCommandService {
     private Order getOrderWithAuthorityCheck(UUID orderId, AuthorityAction action) {
         Order order = orderRepository.findById(OrderId.of(orderId))
                     .orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));
-        UUID userId = userContext.getCurrentUserId();
         UUID myHubId = userContext.isHubManager()
-                ? hubPort.getHubManagerByUserId(userId)
+                ? hubPort.getHubManagerByUserId(userContext.getCurrentUserId())
                 .map(HubManagerResponse::hubId)
                 .orElseThrow(() -> new OrderException(OrderErrorCode.HUB_MANAGER_NOT_FOUND))
                 : null;
 
         boolean hasAuthority = switch (action) {
-            case ACCEPT_OR_CANCEL -> authorityCheck.canAcceptOrCancel(order.getSupplier().hubId(), order.getSupplier().managerId(), myHubId, userId);
+            case ACCEPT_OR_CANCEL -> authorityCheck.canAcceptOrCancel(order.getSupplier().hubId(), order.getSupplier().managerId(), myHubId);
             case DELETE -> authorityCheck.canDelete(order.getSupplier().hubId(), myHubId);
-            case REQUEST_CANCEL -> authorityCheck.canRequestCancel(order.getReceiver().managerId(), userId);
+            case REQUEST_CANCEL -> authorityCheck.canRequestCancel(order.getReceiver().managerId());
         };
 
         if (!hasAuthority) {
