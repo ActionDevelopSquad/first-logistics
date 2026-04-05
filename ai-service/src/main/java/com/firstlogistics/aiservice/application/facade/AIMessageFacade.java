@@ -20,7 +20,7 @@ public class AIMessageFacade {
         DeliveryAcceptedEvent.DeliveryRouteInfo currentRoute = event.delivery().deliveryRoutes().stream()
                 .filter(route -> route.sourceHubId().equals(event.currentHubId()))
                 .findFirst()
-                .orElseThrow(() -> new AILogException(AILogErrorCode.INTERNAL_SERVER_ERROR));
+                .orElseThrow(() -> new AILogException(AILogErrorCode.CURRENT_HUB_ROUTE_NOT_FOUND));
 
         String currentHubManagerSlackId = currentRoute.hubDeliveryManagerSlackId();
         String currentHubName = currentRoute.sourceHubName();
