@@ -1,0 +1,36 @@
+package com.firstlogistics.notificationservice.infrastructure.persistence.jpa;
+
+import com.firstlogistics.notificationservice.domain.entity.Notification;
+import com.firstlogistics.notificationservice.domain.vo.NotificationId;
+import org.springframework.stereotype.Component;
+
+@Component
+public class NotificationMapper {
+
+    public NotificationJpaEntity toEntity(Notification notification) {
+        return new NotificationJpaEntity(
+                notification.getId().id(), // NotificationId VO에서 UUID 추출
+                notification.getReceiverId(),
+                notification.getSlackId(),
+                notification.getContent(),
+                notification.getType(),
+                notification.getStatus(),
+                notification.getMessengerType(),
+                notification.getReadAt()
+        );
+    }
+
+
+    public Notification toDomain(NotificationJpaEntity entity) {
+        return Notification.reconstitute(
+                NotificationId.of(entity.getId()),
+                entity.getReceiverId(),
+                entity.getSlackId(),
+                entity.getContent(),
+                entity.getType(),
+                entity.getStatus(),
+                entity.getMessengerType(),
+                entity.getReadAt()
+        );
+    }
+}

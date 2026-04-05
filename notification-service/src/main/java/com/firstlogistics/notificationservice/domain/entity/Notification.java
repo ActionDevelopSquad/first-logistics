@@ -39,8 +39,30 @@ public class Notification {
                 content,
                 type,
                 NotificationStatus.PENDING,
-                MessengerType.SLACK,
+                messengerType,
                 null
+        );
+    }
+
+    public static Notification reconstitute(
+            NotificationId id,
+            UUID receiverId,
+            String slackId,
+            String content,
+            NotificationType type,
+            NotificationStatus status,
+            MessengerType messengerType,
+            LocalDateTime readAt
+    ) {
+        return new Notification(
+                id,
+                receiverId,
+                slackId,
+                content,
+                type,
+                status,
+                messengerType,
+                readAt
         );
     }
 
