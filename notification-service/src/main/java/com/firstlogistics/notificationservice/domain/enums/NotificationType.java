@@ -1,6 +1,6 @@
 package com.firstlogistics.notificationservice.domain.enums;
 
-public enum SlackMessageType {
+public enum NotificationType {
     DEADLINE,
     DELIVERY
 }

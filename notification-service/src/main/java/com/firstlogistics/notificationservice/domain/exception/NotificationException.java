@@ -2,8 +2,8 @@ package com.firstlogistics.notificationservice.domain.exception;
 
 import common.exception.BaseException;
 
-public class SlackMessageException extends BaseException {
-    public SlackMessageException(SlackMessageErrorCode errorCode) {
+public class NotificationException extends BaseException {
+    public NotificationException(NotificationErrorCode errorCode) {
         super(errorCode);
     }
 }

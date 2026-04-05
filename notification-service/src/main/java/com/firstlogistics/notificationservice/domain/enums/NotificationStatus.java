@@ -1,12 +1,12 @@
 package com.firstlogistics.notificationservice.domain.enums;
 
-public enum SlackMessageStatus {
+public enum NotificationStatus {
     PENDING,
     SENT,
     RETRY,
     FAILED;
 
-    public boolean canTransitionTo(SlackMessageStatus nextStatus) {
+    public boolean canTransitionTo(NotificationStatus nextStatus) {
         // 성공(SENT) 상태는 어떤 상태로도 변경 불가
         if (this == SENT) {
             return false;

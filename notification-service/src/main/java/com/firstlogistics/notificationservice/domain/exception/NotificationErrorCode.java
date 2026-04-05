@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
-public enum SlackMessageErrorCode implements ErrorCode {
+public enum NotificationErrorCode implements ErrorCode {
     CANNOT_UPDATE_STATUS(HttpStatus.BAD_REQUEST, "SM001", "상태 변경을 할 수 없습니다.");
 
     private final HttpStatus status;
