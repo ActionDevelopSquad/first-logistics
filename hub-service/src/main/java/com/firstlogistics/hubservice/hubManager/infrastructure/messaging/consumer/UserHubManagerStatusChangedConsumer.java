@@ -2,6 +2,7 @@ package com.firstlogistics.hubservice.hubManager.infrastructure.messaging.consum
 
 
 import com.firstlogistics.hubservice.hubManager.application.HubManagerCommandService;
+import com.firstlogistics.hubservice.hubManager.application.dto.command.CreateHubManagerCommand;
 import com.firstlogistics.hubservice.hubManager.domain.event.UserHubManagerStatusChangedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -19,7 +20,7 @@ public class UserHubManagerStatusChangedConsumer {
     )
     public void consume(UserHubManagerStatusChangedEvent event, Acknowledgment ack){
         if(event.shouldCreateHubManager())
-            hubManagerCommandService.createHubManager(event.userId(), event.hubId());
+            hubManagerCommandService.createHubManager(CreateHubManagerCommand.from(event));
         ack.acknowledge();
     }
 }

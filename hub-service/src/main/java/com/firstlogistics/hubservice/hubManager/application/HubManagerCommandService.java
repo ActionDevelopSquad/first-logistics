@@ -1,6 +1,7 @@
 package com.firstlogistics.hubservice.hubManager.application;
 
 import com.firstlogistics.hubservice.hub.domain.vo.HubId;
+import com.firstlogistics.hubservice.hubManager.application.dto.command.CreateHubManagerCommand;
 import com.firstlogistics.hubservice.hubManager.domain.entity.HubManager;
 import com.firstlogistics.hubservice.hubManager.domain.exception.HubManagerErrorCode;
 import com.firstlogistics.hubservice.hubManager.domain.exception.HubManagerException;
@@ -18,9 +19,9 @@ public class HubManagerCommandService {
     private final HubManagerRepository hubManagerRepository;
 
     @Transactional
-    public void createHubManager(UUID userId, UUID hubId){
-        UserId user = UserId.of(userId);
-        HubId hub = HubId.of(hubId);
+    public void createHubManager(CreateHubManagerCommand command){
+        UserId user = UserId.of(command.userId());
+        HubId hub = HubId.of(command.userId());
         if(hubManagerRepository.existsByUserIdAndHubId(user,hub)){
             throw new HubManagerException(HubManagerErrorCode.DUPLICATE_HUB_MANAGER);
         }
