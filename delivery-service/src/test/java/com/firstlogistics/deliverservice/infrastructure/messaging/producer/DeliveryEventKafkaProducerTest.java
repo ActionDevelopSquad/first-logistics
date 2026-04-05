@@ -4,7 +4,7 @@ package com.firstlogistics.deliverservice.infrastructure.messaging.producer;
 import com.firstlogistics.deliverservice.infrastructure.feign.CompanyClient;
 import com.firstlogistics.deliverservice.infrastructure.feign.HubClient;
 import com.firstlogistics.deliverservice.infrastructure.feign.UserClient;
-import com.firstlogistics.deliverservice.infrastructure.messaging.config.KafkaConsumerConfig;
+import common.kafka.config.KafkaConsumerConfig;
 import com.firstlogistics.deliverservice.domain.event.DeliveryCreatedEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecords;

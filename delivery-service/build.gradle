@@ -16,6 +16,7 @@ dependencies {
     implementation project(':common')
     implementation project(':common-jpa')
     implementation project(':common-security')
+    implementation project(':common-event')
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -23,8 +24,6 @@ dependencies {
 //    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
-
-    implementation 'org.springframework.kafka:spring-kafka'
 
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.redisson:redisson-spring-boot-starter:3.37.0'

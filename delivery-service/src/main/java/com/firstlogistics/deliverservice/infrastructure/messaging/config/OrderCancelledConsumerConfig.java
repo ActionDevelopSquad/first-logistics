@@ -2,7 +2,7 @@ package com.firstlogistics.deliverservice.infrastructure.messaging.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.firstlogistics.deliverservice.domain.event.OrderCancelledEvent;
-import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
+import common.kafka.config.KafkaConsumerConfig;
 import com.firstlogistics.deliverservice.infrastructure.messaging.consumer.OrderCancelledRecoverer;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.common.serialization.StringDeserializer;
