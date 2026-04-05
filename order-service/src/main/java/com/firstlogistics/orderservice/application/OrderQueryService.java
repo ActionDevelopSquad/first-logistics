@@ -36,7 +36,11 @@ public class OrderQueryService {
         Order order =  orderRepository.findById(OrderId.of(orderId))
                 .orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));
 
-        if (!roleCheck.canView(order)) {
+        if (!roleCheck.canView(order.getId(),
+                order.getSupplier().hubId(),
+                order.getSupplier().managerId(),
+                order.getReceiver().managerId()
+        )) {
             throw new OrderException(OrderErrorCode.UNAUTHORIZED_ACCESS);
         }
 

@@ -36,18 +36,18 @@ public class SecurityRoleCheck implements RoleCheck {
     }
 
     @Override
-    public boolean canView(Order order) {
+    public boolean canView(OrderId orderId, UUID hubId, UUID supplierManagerId, UUID receiverManagerId) {
         if (isMaster()) return true;
 
         if (isHubManager()) {
-            UUID hubId = getCurrentUserHubId();
-            return order.getSupplier().hubId().equals(hubId);
+            UUID myHubId = getCurrentUserHubId();
+            return hubId.equals(myHubId);
         }
 
         if (isCompanyManager()) {
             UUID userId = getCurrentUserId();
-            return order.getSupplier().managerId().equals(userId) ||
-                    order.getReceiver().managerId().equals(userId);
+            return supplierManagerId.equals(userId) ||
+                    receiverManagerId.equals(userId);
         }
 
         return false;
