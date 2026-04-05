@@ -1,6 +1,9 @@
 spring:
   application:
     name: hub-service
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+
 
   datasource:
     url: ${POSTGRES_DB_URL}
