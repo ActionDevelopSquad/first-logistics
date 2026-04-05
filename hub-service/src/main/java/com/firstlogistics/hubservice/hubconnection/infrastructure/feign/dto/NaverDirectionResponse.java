@@ -24,8 +24,7 @@ public record NaverDirectionResponse(
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Summary(
-            int distance,
-            int duration
-    ) {
-    }
+            Integer distance,
+            Integer duration
+    ) { }
 }

@@ -43,7 +43,10 @@ public class NaverRouteMetricAdapter implements RouteMetricPort {
                 || response.route() == null
                 || response.route().traoptimal() == null
                 || response.route().traoptimal().isEmpty()
-                || response.route().traoptimal().getFirst().summary() == null) {
+                || response.route().traoptimal().getFirst().summary() == null
+                || response.route().traoptimal().getFirst().summary().duration() == null
+                || response.route().traoptimal().getFirst().summary().distance() == null
+        ) {
             throw new HubConnectionException(HubConnectionErrorCode.ROUTE_METRIC_UNAVAILABLE);
         }
 
