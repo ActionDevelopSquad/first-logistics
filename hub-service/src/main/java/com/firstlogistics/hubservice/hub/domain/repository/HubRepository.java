@@ -10,4 +10,8 @@ public interface HubRepository {
     Hub save(Hub hub);
 
     boolean existsByHubId(HubId hubId);
+
+    Hub findById(HubId hubId);
+
+    void delete(Hub hub);
 }

@@ -37,6 +37,18 @@ public class HubRepositoryImpl implements HubRepository {
         return jpaRepository.existsById(hubId.id());
     }
 
+    @Override
+    public Hub findById(HubId hubId) {
+        HubJpaEntity entity = jpaRepository.findById(hubId.id())
+                .orElseThrow(() -> new HubException(HubErrorCode.HUB_NOT_FOUND));
+        return mapper.toDomain(entity);
+    }
+
+    @Override
+    public void delete(Hub hub) {
+        jpaRepository.delete(mapper.toJpaEntity(hub));
+    }
+
     private boolean hasConstraintName(Throwable throwable, String expectedConstraintName ){
         Throwable cause = throwable;
         while(cause!=null){
