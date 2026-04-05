@@ -1,5 +1,7 @@
 package com.firstlogistics.productservice.product.application;
 
+import com.firstlogistics.productservice.inventory.application.InventoryQueryService;
+import com.firstlogistics.productservice.inventory.application.dto.result.InventoryResult;
 import com.firstlogistics.productservice.product.application.dto.query.ProductSearchQuery;
 import com.firstlogistics.productservice.product.application.dto.result.ProductResult;
 import com.firstlogistics.productservice.product.domain.exception.ProductErrorCode;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProductQueryService {
 
     private final ProductRepository productRepository;
+    private final InventoryQueryService inventoryQueryService;
 
     public Page<ProductResult> search(ProductSearchQuery query, Pageable pageable) {
         return productRepository.findAll(query.toSpec(), pageable)
@@ -28,5 +31,9 @@ public class ProductQueryService {
         return productRepository.findById(productId)
                 .map(ProductResult::from)
                 .orElseThrow(() -> new ProductException(ProductErrorCode.PRODUCT_NOT_FOUND));
+    }
+
+    public InventoryResult getStock(UUID productId) {
+        return inventoryQueryService.getByProductId(productId);
     }
 }

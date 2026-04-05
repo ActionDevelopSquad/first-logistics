@@ -7,6 +7,7 @@ import com.firstlogistics.productservice.product.presentation.dto.request.GetPro
 import com.firstlogistics.productservice.product.presentation.dto.response.CreateProductResponse;
 import com.firstlogistics.productservice.product.presentation.dto.response.ProductPageResponse;
 import com.firstlogistics.productservice.product.presentation.dto.response.ProductResponse;
+import com.firstlogistics.productservice.product.presentation.dto.response.StockResponse;
 import common.response.ApiResponse;
 import common.response.CommonSuccessCode;
 import common.security.entity.enums.UserRole;
@@ -51,6 +52,13 @@ public class ProductController {
     public ResponseEntity<ApiResponse<ProductResponse>> getProduct(
             @PathVariable UUID productId) {
         ProductResponse response = ProductResponse.from(productQueryService.getById(productId));
+        return ResponseEntity.ok(ApiResponse.success(CommonSuccessCode.OK, response));
+    }
+
+    @GetMapping("/{productId}/stock")
+    public ResponseEntity<ApiResponse<StockResponse>> getStock(
+            @PathVariable UUID productId) {
+        StockResponse response = StockResponse.from(productQueryService.getStock(productId));
         return ResponseEntity.ok(ApiResponse.success(CommonSuccessCode.OK, response));
     }
 
