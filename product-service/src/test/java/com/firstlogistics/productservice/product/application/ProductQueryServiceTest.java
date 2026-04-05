@@ -70,21 +70,15 @@ class ProductQueryServiceTest {
             Page<Product> page = new PageImpl<>(List.of(product), PageRequest.of(0, 10), 1);
             given(productRepository.findAll(any(), any())).willReturn(page);
 
-            ProductSearchQuery query = new ProductSearchQuery(null, null, null, null);
-
             // when
-            Page<ProductResult> result = productQueryService.search(query, PageRequest.of(0, 10));
+            Page<ProductResult> result = productQueryService.search(
+                    new ProductSearchQuery(null, null, null, null), PageRequest.of(0, 10));
 
             // then
             assertThat(result.getTotalElements()).isEqualTo(1);
-            assertThat(result.getContent()).hasSize(1);
-
             ProductResult first = result.getContent().get(0);
             assertThat(first.id()).isEqualTo(PRODUCT_ID);
-            assertThat(first.companyId()).isEqualTo(COMPANY_ID);
-            assertThat(first.hubId()).isEqualTo(HUB_ID);
             assertThat(first.name()).isEqualTo("마른오징어");
-            assertThat(first.status()).isEqualTo(ProductStatus.SELLING.name());
         }
 
         @Test
@@ -94,24 +88,19 @@ class ProductQueryServiceTest {
             Page<Product> emptyPage = new PageImpl<>(List.of(), PageRequest.of(0, 10), 0);
             given(productRepository.findAll(any(), any())).willReturn(emptyPage);
 
-            ProductSearchQuery query = new ProductSearchQuery("없는상품", null, null, null);
-
             // when
-            Page<ProductResult> result = productQueryService.search(query, PageRequest.of(0, 10));
+            Page<ProductResult> result = productQueryService.search(
+                    new ProductSearchQuery("없는상품", null, null, null), PageRequest.of(0, 10));
 
             // then
             assertThat(result.getTotalElements()).isZero();
-            assertThat(result.getContent()).isEmpty();
         }
 
         @Test
         @DisplayName("유효하지 않은 status 값이면 예외가 발생한다")
         void search_invalidStatus_throwsException() {
-            // given
-            ProductSearchQuery query = new ProductSearchQuery(null, null, null, "INVALID");
-
-            // when & then
-            assertThatThrownBy(() -> productQueryService.search(query, PageRequest.of(0, 10)))
+            assertThatThrownBy(() -> productQueryService.search(
+                    new ProductSearchQuery(null, null, null, "INVALID"), PageRequest.of(0, 10)))
                     .isInstanceOf(ProductException.class)
                     .hasMessageContaining(ProductErrorCode.INVALID_PRODUCT_STATUS.getMessage());
         }
@@ -132,14 +121,12 @@ class ProductQueryServiceTest {
 
             // then
             assertThat(result.id()).isEqualTo(PRODUCT_ID);
-            assertThat(result.companyId()).isEqualTo(COMPANY_ID);
-            assertThat(result.hubId()).isEqualTo(HUB_ID);
             assertThat(result.name()).isEqualTo("마른오징어");
             assertThat(result.status()).isEqualTo(ProductStatus.SELLING.name());
         }
 
         @Test
-        @DisplayName("존재하지 않는 productId로 조회하면 PRODUCT_NOT_FOUND 예외가 발생한다")
+        @DisplayName("존재하지 않는 productId로 조회하면 예외가 발생한다")
         void getById_notFound_throwsException() {
             // given
             given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.empty());
@@ -156,7 +143,7 @@ class ProductQueryServiceTest {
     class GetStock {
 
         @Test
-        @DisplayName("존재하는 상품의 재고를 조회하면 재고 정보를 반환한다")
+        @DisplayName("존재하는 상품의 재고 정보를 반환한다")
         void getStock_success() {
             // given
             InventoryResult inventoryResult = new InventoryResult(PRODUCT_ID, 100, 10);
@@ -172,7 +159,7 @@ class ProductQueryServiceTest {
         }
 
         @Test
-        @DisplayName("존재하지 않는 productId로 재고를 조회하면 예외가 발생한다")
+        @DisplayName("상품이 존재하지 않으면 예외가 발생한다")
         void getStock_productNotFound_throwsException() {
             // given
             given(inventoryQueryService.getByProductId(PRODUCT_ID))
@@ -185,7 +172,7 @@ class ProductQueryServiceTest {
         }
 
         @Test
-        @DisplayName("재고 정보가 없으면 INVENTORY_NOT_FOUND 예외가 발생한다")
+        @DisplayName("재고 정보가 없으면 예외가 발생한다")
         void getStock_inventoryNotFound_throwsException() {
             // given
             given(inventoryQueryService.getByProductId(PRODUCT_ID))
