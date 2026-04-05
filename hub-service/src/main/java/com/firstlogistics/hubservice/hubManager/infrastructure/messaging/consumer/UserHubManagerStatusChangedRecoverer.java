@@ -23,15 +23,26 @@ public class UserHubManagerStatusChangedRecoverer implements ConsumerRecordRecov
         if (!(value instanceof UserHubManagerStatusChangedEvent event))
             return;
 
-        if (e.getCause() instanceof HubManagerException he
-                && he.getErrorCode() == HubManagerErrorCode.DUPLICATE_HUB_MANAGER) {
+        HubManagerException hubManagerException = findHubManagerException(e);
+        if (hubManagerException != null
+                && hubManagerException.getErrorCode() == HubManagerErrorCode.DUPLICATE_HUB_MANAGER) {
             log.info("허브 매니저 이미 존재. userId={}", event.userId());
             return;
         }
 
         log.error("허브 매니저 생성 최종 실패. userId={}, organizationId={}",
                 event.userId(), event.organizationId(), e);
-
         failedProducer.publish(HubManagerAssignFailedEvent.from(event));
+    }
+
+    private HubManagerException findHubManagerException(Throwable throwable) {
+        Throwable cause = throwable;
+        while (cause != null) {
+            if (cause instanceof HubManagerException hubManagerException) {
+                return hubManagerException;
+            }
+            cause = cause.getCause();
+        }
+        return null;
     }
 }
