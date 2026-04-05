@@ -33,6 +33,8 @@ import com.firstlogistics.deliverservice.application.port.dto.HubResponse;
 import com.firstlogistics.deliverservice.application.port.dto.HubRouteResponse;
 import com.firstlogistics.deliverservice.application.port.dto.HubRouteStepResponse;
 import com.firstlogistics.deliverservice.application.port.dto.UserResponse;
+import com.firstlogistics.deliverservice.infrastructure.exception.InfraErrorCode;
+import com.firstlogistics.deliverservice.infrastructure.exception.InfraException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -200,7 +202,7 @@ class DeliveryCommandServiceTest {
 			given(deliveryManagerRepository.findNextCompanyDeliveryManager(eq(destinationHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
 				.willReturn(Optional.of(stubCompanyManager(destinationHubId)));
 			given(userPort.getUser(receiverManagerId))
-				.willThrow(new DeliveryException(DeliveryErrorCode.USER_NOT_FOUND));
+				.willThrow(new InfraException(InfraErrorCode.USER_NOT_FOUND));
 
 			// when
 			Throwable throwable = catchThrowable(() ->
@@ -209,8 +211,8 @@ class DeliveryCommandServiceTest {
 
 			// then
 			assertThat(throwable)
-				.isInstanceOf(DeliveryException.class)
-				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.USER_NOT_FOUND);
+				.isInstanceOf(InfraException.class)
+				.hasFieldOrPropertyWithValue("errorCode", InfraErrorCode.USER_NOT_FOUND);
 		}
 	}
 

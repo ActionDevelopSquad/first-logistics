@@ -6,8 +6,8 @@ import com.firstlogistics.deliverservice.application.facade.DeliveryCommandFacad
 import com.firstlogistics.deliverservice.infrastructure.feign.CompanyClient;
 import com.firstlogistics.deliverservice.infrastructure.feign.HubClient;
 import com.firstlogistics.deliverservice.infrastructure.feign.UserClient;
-import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
-import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
+import com.firstlogistics.deliverservice.infrastructure.exception.InfraErrorCode;
+import com.firstlogistics.deliverservice.infrastructure.exception.InfraException;
 import com.firstlogistics.deliverservice.infrastructure.messaging.config.KafkaConsumerConfig;
 import com.firstlogistics.deliverservice.domain.event.OrderAcceptedEvent;
 import lombok.extern.slf4j.Slf4j;
@@ -116,7 +116,7 @@ class OrderEventKafkaConsumerTest {
 			OrderAcceptedEvent event = createEvent();
 			given(deliveryQueryService.existsByOrderId(event.orderId())).willReturn(false);
 			given(deliveryCommandFacade.createDeliveryBySystem(any()))
-					.willThrow(new DeliveryException(DeliveryErrorCode.HUB_NOT_FOUND));
+					.willThrow(new InfraException(InfraErrorCode.HUB_NOT_FOUND));
 
 			// subscribe 대신 assign + seekToBeginning: 그룹 조인 없이 바로 파티션 읽기 (타이밍 문제 방지)
 			try (KafkaConsumer<String, String> sagaConsumer = createTestConsumer("saga-test")) {

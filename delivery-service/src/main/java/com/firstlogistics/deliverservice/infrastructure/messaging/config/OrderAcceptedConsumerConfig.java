@@ -2,7 +2,7 @@ package com.firstlogistics.deliverservice.infrastructure.messaging.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
-import com.firstlogistics.deliverservice.domain.exception.DistributedLockException;
+import com.firstlogistics.deliverservice.infrastructure.exception.DistributedLockException;
 import com.firstlogistics.deliverservice.infrastructure.messaging.consumer.OrderAcceptedRecoverer;
 import com.firstlogistics.deliverservice.domain.event.OrderAcceptedEvent;
 import lombok.RequiredArgsConstructor;

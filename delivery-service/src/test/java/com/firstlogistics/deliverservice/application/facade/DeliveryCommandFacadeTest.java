@@ -13,6 +13,8 @@ import com.firstlogistics.deliverservice.application.port.dto.CompanyResponse;
 import com.firstlogistics.deliverservice.application.port.dto.HubRouteResponse;
 import com.firstlogistics.deliverservice.application.port.dto.HubRouteStepResponse;
 import com.firstlogistics.deliverservice.application.port.DistributedLockPort;
+import com.firstlogistics.deliverservice.infrastructure.exception.InfraErrorCode;
+import com.firstlogistics.deliverservice.infrastructure.exception.InfraException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -77,15 +79,15 @@ class DeliveryCommandFacadeTest {
 			given(companyPort.getCompany(supplierCompanyId))
 				.willReturn(new CompanyResponse(supplierCompanyId, STUB_SOURCE_HUB_ID, "공급업체", "서울시 송파구 올림픽로 300", "A동 1층"));
 			given(companyPort.getCompany(receiverCompanyId))
-				.willThrow(new DeliveryException(DeliveryErrorCode.COMPANY_NOT_FOUND));
+				.willThrow(new InfraException(InfraErrorCode.COMPANY_NOT_FOUND));
 
 			// when
 			Throwable throwable = catchThrowable(() -> deliveryCommandFacade.createDeliveryBySystem(command));
 
 			// then
 			assertThat(throwable)
-				.isInstanceOf(DeliveryException.class)
-				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.COMPANY_NOT_FOUND);
+				.isInstanceOf(InfraException.class)
+				.hasFieldOrPropertyWithValue("errorCode", InfraErrorCode.COMPANY_NOT_FOUND);
 		}
 
 		@Test
@@ -101,15 +103,15 @@ class DeliveryCommandFacadeTest {
 			given(companyPort.getCompany(receiverCompanyId))
 				.willReturn(new CompanyResponse(receiverCompanyId, STUB_DESTINATION_HUB_ID, "수령업체", "서울시 강남구 테헤란로 123", "101동 202호"));
 			given(hubPort.getHubRoute(STUB_SOURCE_HUB_ID, STUB_DESTINATION_HUB_ID, receiverCompanyId))
-				.willThrow(new DeliveryException(DeliveryErrorCode.HUB_NOT_FOUND));
+				.willThrow(new InfraException(InfraErrorCode.HUB_NOT_FOUND));
 
 			// when
 			Throwable throwable = catchThrowable(() -> deliveryCommandFacade.createDeliveryBySystem(command));
 
 			// then
 			assertThat(throwable)
-				.isInstanceOf(DeliveryException.class)
-				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.HUB_NOT_FOUND);
+				.isInstanceOf(InfraException.class)
+				.hasFieldOrPropertyWithValue("errorCode", InfraErrorCode.HUB_NOT_FOUND);
 		}
 	}
 
