@@ -18,13 +18,13 @@ public enum OrderStatus {
 
     public static OrderStatus from(String status) {
         if (status == null || status.isBlank()) {
-            throw new OrderException(OrderErrorCode.INVALID_ORDER_STATUS_CHANGE);
+            return null;
         }
 
         try {
             return OrderStatus.valueOf(status.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new OrderException(OrderErrorCode.INVALID_ORDER_STATUS_CHANGE);
+            return null;
         }
     }
 
