@@ -5,12 +5,14 @@ import com.firstlogistics.hubservice.hubManager.application.HubManagerCommandSer
 import com.firstlogistics.hubservice.hubManager.application.dto.command.CreateHubManagerCommand;
 import com.firstlogistics.hubservice.hubManager.domain.event.UserHubManagerStatusChangedEvent;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class UserHubManagerStatusChangedConsumer {
     private final HubManagerCommandService hubManagerCommandService;
 
@@ -19,8 +21,12 @@ public class UserHubManagerStatusChangedConsumer {
             containerFactory = "userHubManagerStatusChangedListenerContainerFactory"
     )
     public void consume(UserHubManagerStatusChangedEvent event, Acknowledgment ack){
-        if(event.shouldCreateHubManager())
+        if(event.shouldCreateHubManager()) {
             hubManagerCommandService.createHubManager(CreateHubManagerCommand.from(event));
+        } else {
+            log.debug("허브 매니저 생성 조건 미충족. userId={}, status={}, userRole={}",
+                            event.userId(), event.status(), event.userRole());
+        }
         ack.acknowledge();
     }
 }
