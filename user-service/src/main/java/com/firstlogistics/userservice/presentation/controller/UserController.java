@@ -1,4 +1,4 @@
-package com.firstlogistics.userservice.presentation;
+package com.firstlogistics.userservice.presentation.controller;
 
 import com.firstlogistics.userservice.application.dto.command.LoginCommand;
 import com.firstlogistics.userservice.application.dto.command.UserCreateCommand;
@@ -6,6 +6,7 @@ import com.firstlogistics.userservice.application.dto.result.TokenResult;
 import com.firstlogistics.userservice.application.dto.result.UserResult;
 import com.firstlogistics.userservice.application.port.UserCommandService;
 import com.firstlogistics.userservice.application.service.UserQueryService;
+import com.firstlogistics.userservice.presentation.UserSuccessCode;
 import com.firstlogistics.userservice.presentation.dto.request.*;
 import com.firstlogistics.userservice.presentation.dto.response.TokenResponse;
 import com.firstlogistics.userservice.presentation.dto.response.UserIdResponse;
@@ -27,7 +28,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
-public class UserController {
+public class UserController implements UserControllerDocs{
 
     private final UserCommandService userCommandService;
     private final UserQueryService userQueryService;
