@@ -60,7 +60,7 @@ public class DeliveryQueryService {
 						: null;
 		UUID companyId =
 				userRole == UserRole.COMPANY_MANAGER
-						? companyPort.getCompanyByUserId(query.userId()).companyId()
+						? companyPort.getCompanyManager(query.userId()).companyId()
 						: null;
 		UUID deliveryManagerId =
 				userRole == UserRole.DELIVERY_MANAGER

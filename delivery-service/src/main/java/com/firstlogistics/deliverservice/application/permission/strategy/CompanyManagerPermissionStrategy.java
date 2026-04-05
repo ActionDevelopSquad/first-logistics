@@ -24,7 +24,7 @@ public class CompanyManagerPermissionStrategy implements RolePermissionStrategy 
 
 	@Override
 	public void validate(DeliveryAccessContext context, UUID userId) {
-		UUID companyId = companyPort.getCompanyByUserId(userId).companyId();
+		UUID companyId = companyPort.getCompanyManager(userId).companyId();
 		if (!companyId.equals(context.receiverCompanyId())) {
 			throw new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
 		}

@@ -30,7 +30,7 @@ public class FeignErrorDecoder implements ErrorDecoder {
 		if (methodKey.startsWith("HubClient#")) {
 			return new InfraException(InfraErrorCode.HUB_NOT_FOUND);
 		}
-		if (methodKey.startsWith("CompanyClient#getCompaniesByUserId")) {
+		if (methodKey.startsWith("CompanyClient#getCompanyManager")) {
 			return new InfraException(InfraErrorCode.COMPANY_MANAGER_NOT_FOUND);
 		}
 		if (methodKey.startsWith("CompanyClient#")) {

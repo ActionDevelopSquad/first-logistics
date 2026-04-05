@@ -234,7 +234,7 @@ class DeliveryQueryServiceTest {
 			DeliveryListQuery query = stubQueryForRole(UserRole.COMPANY_MANAGER, managerId);
 
 			given(deliveryPermissionValidator.parseUserRole(UserRole.COMPANY_MANAGER.name())).willReturn(UserRole.COMPANY_MANAGER);
-			given(companyPort.getCompanyByUserId(managerId)).willReturn(new CompanyResponse(companyId, UUID.randomUUID(), "테스트업체", "서울시 강남구 테헤란로 123", "101동 202호"));
+			given(companyPort.getCompanyManager(managerId)).willReturn(new CompanyResponse(companyId, UUID.randomUUID(), "테스트업체", "서울시 강남구 테헤란로 123", "101동 202호"));
 			given(deliveryQueryRepository.findDeliveries(any(DeliverySearchSpec.class))).willReturn(List.of(stubSummary()));
 
 			// when

@@ -243,7 +243,7 @@ class DeliveryPermissionValidatorTest {
 			// given
 			UUID userId = UUID.randomUUID();
 			DeliveryAccessContext context = stubContext();
-			given(companyPort.getCompanyByUserId(userId))
+			given(companyPort.getCompanyManager(userId))
 				.willReturn(new CompanyResponse(RECEIVER_COMPANY_ID, UUID.randomUUID(), "테스트업체", "서울시 강남구 테헤란로 123", "101동 202호"));
 
 			// when & then (예외 없음)
@@ -257,7 +257,7 @@ class DeliveryPermissionValidatorTest {
 			UUID userId = UUID.randomUUID();
 			UUID otherCompanyId = UUID.randomUUID();
 			DeliveryAccessContext context = stubContext();
-			given(companyPort.getCompanyByUserId(userId))
+			given(companyPort.getCompanyManager(userId))
 				.willReturn(new CompanyResponse(otherCompanyId, UUID.randomUUID(), "다른업체", "다른주소", "다른상세주소"));
 
 			// when
