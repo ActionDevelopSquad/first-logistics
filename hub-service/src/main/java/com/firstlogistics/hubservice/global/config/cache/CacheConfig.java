@@ -22,6 +22,15 @@ import java.util.Map;
 @Configuration
 @EnableCaching
 public class CacheConfig {
+    private static final String HUB_BY_ID_CACHE = "hub:byId";
+    private static final String HUB_ALL_CACHE = "hub:all";
+    private static final String HUB_CONNECTION_ALL_CACHE = "hubConnection:all";
+    private static final String ROUTE_HYBRID_RESULT_CACHE = "route:hybrid:result";
+    private static final String ROUTE_HUB_TO_HUB_RESULT_CACHE = "route:hubTohub:result";
+
+    private static final Duration DEFAULT_TTL = Duration.ofDays(1);
+    private static final Duration TTL_30_DAYS = Duration.ofDays(30);
+    private static final Duration TTL_10_DAYS = Duration.ofDays(10);
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -43,15 +52,15 @@ public class CacheConfig {
                 .serializeValuesWith(
                         RedisSerializationContext.SerializationPair.fromSerializer(serializer)
                 )
-                .entryTtl(Duration.ofDays(1))
+                .entryTtl(DEFAULT_TTL)
                 .disableCachingNullValues();
 
         Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
-        cacheConfigurations.put("hub:byId", defaultConfig.entryTtl(Duration.ofDays(30)));
-        cacheConfigurations.put("hub:all", defaultConfig.entryTtl(Duration.ofDays(30)));
-        cacheConfigurations.put("hubConnection:all", defaultConfig.entryTtl(Duration.ofDays(30)));
-        cacheConfigurations.put("route:hybrid:result", defaultConfig.entryTtl(Duration.ofDays(10)));
-        cacheConfigurations.put("route:hubTohub:result", defaultConfig.entryTtl(Duration.ofDays(10)));
+        cacheConfigurations.put(HUB_BY_ID_CACHE, defaultConfig.entryTtl(TTL_30_DAYS));
+        cacheConfigurations.put(HUB_ALL_CACHE, defaultConfig.entryTtl(TTL_30_DAYS));
+        cacheConfigurations.put(HUB_CONNECTION_ALL_CACHE, defaultConfig.entryTtl(TTL_30_DAYS));
+        cacheConfigurations.put(ROUTE_HYBRID_RESULT_CACHE, defaultConfig.entryTtl(TTL_10_DAYS));
+        cacheConfigurations.put(ROUTE_HUB_TO_HUB_RESULT_CACHE, defaultConfig.entryTtl(TTL_10_DAYS));
 
 
         return RedisCacheManager.builder(redisConnectionFactory)
