@@ -1,9 +1,11 @@
 package com.firstlogistics.hubservice.hub.application;
 
+import com.firstlogistics.hubservice.hub.application.dto.command.ChangeHubStatusCommand;
 import com.firstlogistics.hubservice.hub.application.dto.command.CreateHubCommand;
 import com.firstlogistics.hubservice.hub.application.dto.command.UpdateHubCommand;
 import com.firstlogistics.hubservice.hub.application.dto.result.HubResult;
 import com.firstlogistics.hubservice.hub.domain.entity.Hub;
+import com.firstlogistics.hubservice.hub.domain.enums.HubStatus;
 import com.firstlogistics.hubservice.hub.domain.event.HubActivatedEvent;
 import com.firstlogistics.hubservice.hub.domain.event.HubDeactivatedEvent;
 import com.firstlogistics.hubservice.hub.domain.event.HubDeletedEvent;
@@ -62,7 +64,16 @@ public class HubCommandService {
     }
 
     @Transactional
-    public HubResult activate(UUID hubId) {
+    public HubResult changeStatus(UUID hubId, ChangeHubStatusCommand command){
+        if(command.status() == HubStatus.ACTIVE)
+            return activate(hubId);
+        if(command.status() == HubStatus.INACTIVE)
+            return deactivate(hubId);
+
+        throw new HubException(HubErrorCode.INVALID_HUB_STATUS);
+    }
+
+    private HubResult activate(UUID hubId) {
         Hub hub = hubRepository.findById(HubId.of(hubId));
         hub.activate();
 
@@ -71,8 +82,7 @@ public class HubCommandService {
         return HubResult.from(savedHub);
     }
 
-    @Transactional
-    public HubResult deactivate(UUID hubId) {
+    private HubResult deactivate(UUID hubId) {
         Hub hub = hubRepository.findById(HubId.of(hubId));
         hub.deactivate();
 
