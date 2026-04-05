@@ -1,6 +1,8 @@
 package com.firstlogistics.deliverservice.infrastructure.persistence.jpa;
 
 import com.firstlogistics.deliverservice.domain.entity.DeliveryManager;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.enums.ManagerType;
 import com.firstlogistics.deliverservice.domain.enums.TimetableStatus;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryManagerRepository;
@@ -57,6 +59,14 @@ public class DeliveryManagerRepositoryImpl implements DeliveryManagerRepository 
 	@Override
 	public int findNextSequence() {
 		return deliveryManagerJpaRepository.findMaxSequence() + 1;
+	}
+
+	@Override
+	public void deleteById(DeliveryManagerId id, UUID userId) {
+		DeliveryManagerJpaEntity jpaEntity = deliveryManagerJpaRepository.findByIdWithTimetables(id.id())
+			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_MANAGER_NOT_FOUND));
+		jpaEntity.softDelete(userId);
+		jpaEntity.getTimetables().forEach(timetable -> timetable.softDelete(userId));
 	}
 
 	@Override

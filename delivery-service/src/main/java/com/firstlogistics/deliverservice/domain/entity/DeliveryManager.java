@@ -83,6 +83,12 @@ public class DeliveryManager {
 				|| timetable.getStatus() == TimetableStatus.HUB_MOVING);
 	}
 
+	public void validateDeletable() {
+		if (hasActiveDelivery()) {
+			throw new DeliveryException(DeliveryErrorCode.DELIVERY_MANAGER_NOT_MODIFIABLE);
+		}
+	}
+
 	public void assignDelivery(DeliveryId deliveryId, LocalDateTime start, LocalDateTime end) {
 		ManagerTimetable timetable = ManagerTimetable.create(this.id, deliveryId, start, end);
 		this.timetables.add(timetable);

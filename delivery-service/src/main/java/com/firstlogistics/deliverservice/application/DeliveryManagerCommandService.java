@@ -86,6 +86,23 @@ public class DeliveryManagerCommandService {
 		return UpdateDeliveryManagerResult.from(saved);
 	}
 
+	public void deleteDeliveryManager(UUID managerId, String role, UUID requestUserId) {
+		UserRole userRole = deliveryPermissionValidator.validateRole(role, UserRole.MANAGERS);
+
+		DeliveryManager manager = deliveryManagerRepository.findById(DeliveryManagerId.of(managerId))
+			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_MANAGER_NOT_FOUND));
+
+		if (userRole == UserRole.HUB_MANAGER) {
+			UUID hubId = hubManagerPort.getHubManager(requestUserId).hubId();
+			if (!hubId.equals(manager.getHubId())) {
+				throw new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
+			}
+		}
+
+		manager.validateDeletable();
+		deliveryManagerRepository.deleteById(DeliveryManagerId.of(managerId), requestUserId);
+	}
+
 	public void createDeliveryManagerBySystem(UserStatusChangedEvent event) {
 		if (deliveryManagerRepository.existsByUserId(event.userId())) {
 			log.info("중복 배송담당자 무시 - userId: {}", event.userId());

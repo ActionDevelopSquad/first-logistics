@@ -22,4 +22,6 @@ public interface DeliveryManagerRepository {
 	Optional<DeliveryManager> findByUserId(UUID userId);
 
 	DeliveryManager save(DeliveryManager deliveryManager);
+
+	void deleteById(DeliveryManagerId id, UUID userId);
 }

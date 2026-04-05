@@ -230,6 +230,111 @@ class DeliveryManagerCommandServiceTest {
 		}
 	}
 
+	// ===== 배송 담당자 삭제 =====
+
+	@Nested
+	@DisplayName("배송 담당자 삭제 실패")
+	class DeleteDeliveryManagerFail {
+
+		@Test
+		@DisplayName("배송 담당자 미존재")
+		void deleteDeliveryManager_fail_notFound() {
+			// given
+			UUID managerId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+
+			given(deliveryPermissionValidator.validateRole("MASTER", UserRole.MANAGERS))
+				.willReturn(UserRole.MASTER);
+			given(deliveryManagerRepository.findById(DeliveryManagerId.of(managerId)))
+				.willReturn(Optional.empty());
+
+			// when
+			Throwable throwable = catchThrowable(() ->
+				deliveryManagerCommandService.deleteDeliveryManager(managerId, "MASTER", userId));
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.DELIVERY_MANAGER_NOT_FOUND);
+		}
+
+		@Test
+		@DisplayName("HUB_MANAGER 타 허브 담당자 삭제 시 접근 거부")
+		void deleteDeliveryManager_fail_hubManagerAccessDenied() {
+			// given
+			UUID managerId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			UUID managerHubId = UUID.randomUUID();
+			UUID requestUserHubId = UUID.randomUUID();
+
+			given(deliveryPermissionValidator.validateRole("HUB_MANAGER", UserRole.MANAGERS))
+				.willReturn(UserRole.HUB_MANAGER);
+			given(deliveryManagerRepository.findById(DeliveryManagerId.of(managerId)))
+				.willReturn(Optional.of(stubDeliveryManager(managerId, managerHubId)));
+			given(hubManagerPort.getHubManager(userId))
+				.willReturn(new HubManagerResponse(UUID.randomUUID(), requestUserHubId));
+
+			// when
+			Throwable throwable = catchThrowable(() ->
+				deliveryManagerCommandService.deleteDeliveryManager(managerId, "HUB_MANAGER", userId));
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
+		}
+
+		@Test
+		@DisplayName("활성 배송이 배정된 상태에서 삭제 시도")
+		void deleteDeliveryManager_fail_hasActiveDelivery() {
+			// given
+			UUID managerId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			UUID hubId = UUID.randomUUID();
+
+			DeliveryManager manager = stubDeliveryManager(managerId, hubId);
+			manager.assignDelivery(DeliveryId.generate(), LocalDateTime.now(), LocalDateTime.now().plusHours(1));
+
+			given(deliveryPermissionValidator.validateRole("MASTER", UserRole.MANAGERS))
+				.willReturn(UserRole.MASTER);
+			given(deliveryManagerRepository.findById(DeliveryManagerId.of(managerId)))
+				.willReturn(Optional.of(manager));
+
+			// when
+			Throwable throwable = catchThrowable(() ->
+				deliveryManagerCommandService.deleteDeliveryManager(managerId, "MASTER", userId));
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.DELIVERY_MANAGER_NOT_MODIFIABLE);
+		}
+	}
+
+	@Nested
+	@DisplayName("배송 담당자 삭제 성공")
+	class DeleteDeliveryManagerSuccess {
+
+		@Test
+		@DisplayName("MASTER 삭제 성공")
+		void deleteDeliveryManager_success_master() {
+			// given
+			UUID managerId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			UUID hubId = UUID.randomUUID();
+
+			given(deliveryPermissionValidator.validateRole("MASTER", UserRole.MANAGERS))
+				.willReturn(UserRole.MASTER);
+			given(deliveryManagerRepository.findById(DeliveryManagerId.of(managerId)))
+				.willReturn(Optional.of(stubDeliveryManager(managerId, hubId)));
+
+			// when & then (예외 없음)
+			deliveryManagerCommandService.deleteDeliveryManager(managerId, "MASTER", userId);
+
+			then(deliveryManagerRepository).should().deleteById(DeliveryManagerId.of(managerId), userId);
+		}
+	}
+
 	// ===== 헬퍼 =====
 
 	private DeliveryManager stubDeliveryManager(UUID managerId, UUID hubId) {

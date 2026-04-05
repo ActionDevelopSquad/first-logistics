@@ -14,6 +14,7 @@ import common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -102,5 +103,15 @@ public class DeliveryManagerController {
 		return ResponseEntity.ok(ApiResponse.success(DeliveryManagerSuccessCode.DELIVERY_MANAGER_FOUND,
 			DeliveryManagerDetailResponse.from(deliveryManagerQueryService.getDeliveryManagerByUserId(targetUserId, role, userId))
 		));
+	}
+
+	@DeleteMapping("/{managerId}")
+	public ResponseEntity<ApiResponse<Void>> deleteDeliveryManager(
+		@PathVariable UUID managerId,
+		@RequestHeader("X-User-Id") UUID userId,
+		@RequestHeader("X-User-Role") String role
+	) {
+		deliveryManagerCommandService.deleteDeliveryManager(managerId, role, userId);
+		return ResponseEntity.ok(ApiResponse.success(DeliveryManagerSuccessCode.DELIVERY_MANAGER_DELETED, null));
 	}
 }
