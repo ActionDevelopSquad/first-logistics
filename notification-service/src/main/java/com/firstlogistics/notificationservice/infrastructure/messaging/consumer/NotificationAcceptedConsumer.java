@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+import org.springframework.kafka.support.Acknowledgment;
 
 @Slf4j
 @Component
@@ -19,10 +20,17 @@ public class NotificationAcceptedConsumer {
             groupId = "notification-service-group",
             containerFactory = "notificationCreatedListenerContainerFactory"
     )
-    public void consume(NotificationAcceptedEvent event) {
-        // record의 accessor를 사용하여 userId 포함 여부 확인 로그
-        log.info("Received notification request. User: {}, MsgId: {}", event.userId(), event.messageId());
+    public void consume(NotificationAcceptedEvent event, Acknowledgment ack) {
+        try {
+            log.info("Received notification request. User: {}, MsgId: {}", event.userId(), event.messageId());
 
-        notificationFacade.handleDeadlineNotificationRequest(event);
+            notificationFacade.handleDeadlineNotificationRequest(event);
+
+            ack.acknowledge();
+            log.info("Message acknowledged successfully.");
+
+        } catch (Exception e) {
+            log.error("Error processing notification: {}", e.getMessage());
+        }
     }
 }

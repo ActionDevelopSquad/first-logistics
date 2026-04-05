@@ -21,3 +21,6 @@ spring:
       group-id: notification-service-group
       auto-offset-reset: earliest
       enable-auto-commit: false
+
+slack:
+  token: ${SLACK_BOT_TOKEN}
