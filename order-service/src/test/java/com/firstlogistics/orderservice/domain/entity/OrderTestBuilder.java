@@ -11,6 +11,7 @@ public class OrderTestBuilder {
     private UUID id = UUID.randomUUID();
     private UUID supplierCompanyId = UUID.randomUUID();
     private UUID supplierManagerId = UUID.randomUUID();
+    private UUID supplierHubId = UUID.randomUUID();
     private UUID receiverCompanyId = UUID.randomUUID();
     private UUID receiverManagerId = UUID.randomUUID();
     private UUID deliveryId = null;
@@ -50,9 +51,14 @@ public class OrderTestBuilder {
         return this;
     }
 
+    public OrderTestBuilder supplierHubId(UUID supplierHubId) {
+        this.supplierHubId = supplierHubId;
+        return this;
+    }
+
     public Order build() {
         return Order.reconstitute(
-                id, supplierCompanyId, supplierManagerId, receiverCompanyId, receiverManagerId,
+                id, supplierCompanyId, supplierManagerId, supplierHubId, receiverCompanyId, receiverManagerId,
                 deliveryId, roadAddress, detailAddress, totalAmount, dueDate,
                 requestMemo, status, previousStatus, cancelType, orderedAt, orderItems, version
         );

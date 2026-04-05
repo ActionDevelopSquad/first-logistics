@@ -1,6 +1,8 @@
 package com.firstlogistics.orderservice.application;
 
 import com.firstlogistics.orderservice.application.dto.CreateOrderCommand;
+import com.firstlogistics.orderservice.application.port.CompanyPort;
+import com.firstlogistics.orderservice.application.port.dto.CompanyResponse;
 import com.firstlogistics.orderservice.domain.entity.Order;
 import com.firstlogistics.orderservice.domain.entity.OrderTestBuilder;
 import com.firstlogistics.orderservice.domain.enums.OrderCancelType;
@@ -11,6 +13,7 @@ import com.firstlogistics.orderservice.domain.event.OrderCreatedEvent;
 import com.firstlogistics.orderservice.domain.repository.OrderRepository;
 import com.firstlogistics.orderservice.domain.exception.OrderException;
 import com.firstlogistics.orderservice.domain.exception.OrderErrorCode;
+import com.firstlogistics.orderservice.domain.service.RoleCheck;
 import com.firstlogistics.orderservice.domain.vo.OrderId;
 import common.event.Events;
 import org.junit.jupiter.api.AfterEach;
@@ -36,8 +39,6 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class OrderCommandServiceTest {
 
-    private static final UUID USER_ID = UUID.randomUUID();
-
     @Mock
     private OrderRepository orderRepository;
 
@@ -46,6 +47,12 @@ class OrderCommandServiceTest {
 
     @Mock
     private ApplicationEventPublisher eventPublisher;
+
+    @Mock
+    private CompanyPort companyPort;
+
+    @Mock
+    private RoleCheck roleCheck;
 
     @BeforeEach
     void setUp() {
@@ -63,35 +70,39 @@ class OrderCommandServiceTest {
     @DisplayName("성공: 올바른 주문 생성 요청 시 주문 ID를 반환하고 주문 생성 이벤트를 발행한다")
     void createOrder_Success() {
         // given
-        CreateOrderCommand.OrderItemCommand item = new CreateOrderCommand.OrderItemCommand(
-                UUID.randomUUID(), "테스트 상품", 10000L, 2
-        );
-        CreateOrderCommand command = new CreateOrderCommand(
-                UUID.randomUUID(), UUID.randomUUID(),
-                UUID.randomUUID(), UUID.randomUUID(),
-                "서울시 강남구", "상세주소", LocalDateTime.now().plusDays(1),
-                "빨리 배송해주세요", List.of(item)
-        );
+        UUID supplierCompanyId = UUID.randomUUID();
+        UUID hubId = UUID.randomUUID();
+
+        CreateOrderCommand command = createTestCommand(supplierCompanyId);
+
+        when(companyPort.getCompanyById(supplierCompanyId))
+                .thenReturn(new CompanyResponse(supplierCompanyId, hubId, UUID.randomUUID()));
 
         // when
-        UUID orderId = orderCommandService.createOrder(command);
+        UUID resultId = orderCommandService.createOrder(command);
 
         // then
-        assertThat(orderId).isNotNull();
-        verify(orderRepository, times(1)).save(any(Order.class));
-        verify(eventPublisher, times(1)).publishEvent(any(OrderCreatedEvent.class));
+        assertThat(resultId).isNotNull();
+        verify(orderRepository).save(any(Order.class));
+        verify(eventPublisher).publishEvent(any(OrderCreatedEvent.class));
     }
 
     @Test
     @DisplayName("실패: 주문 상품이 없는 경우 예외가 발생한다")
     void createOrder_Fail_NoItems() {
         // given
+        UUID supplierCompanyId = UUID.randomUUID();
+
         CreateOrderCommand command = new CreateOrderCommand(
+                supplierCompanyId, UUID.randomUUID(),
                 UUID.randomUUID(), UUID.randomUUID(),
-                UUID.randomUUID(), UUID.randomUUID(),
-                "서울시 강남구", "상세주소", LocalDateTime.now().plusDays(1),
+                "배송 주소", "상세 주소",
+                LocalDateTime.now().plusDays(1),
                 "메모", List.of() // 빈 리스트
         );
+
+        when(companyPort.getCompanyById(supplierCompanyId))
+                .thenReturn(new CompanyResponse(supplierCompanyId, UUID.randomUUID(), UUID.randomUUID()));
 
         // when & then
         assertThatThrownBy(() -> orderCommandService.createOrder(command))
@@ -114,9 +125,10 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
+        when(roleCheck.canAcceptOrCancel(any())).thenReturn(true);
 
         // when
-        String resultStatus = orderCommandService.acceptOrder(USER_ID, orderId);
+        String resultStatus = orderCommandService.acceptOrder(orderId);
 
         // then
         assertThat(resultStatus).isEqualTo("ACCEPTED");
@@ -135,9 +147,10 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
+        when(roleCheck.canAcceptOrCancel(any())).thenReturn(true);
 
         // when & then
-        assertThatThrownBy(() -> orderCommandService.acceptOrder(USER_ID, orderId))
+        assertThatThrownBy(() -> orderCommandService.acceptOrder(orderId))
                 .isInstanceOf(OrderException.class)
                 .hasMessage(OrderErrorCode.INVALID_ORDER_STATUS.getMessage());
         verify(orderRepository, never()).save(any(Order.class));
@@ -155,13 +168,37 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
+        when(roleCheck.canAcceptOrCancel(any())).thenReturn(true);
 
         // when & then
-        assertThatThrownBy(() -> orderCommandService.acceptOrder(USER_ID, orderId))
+        assertThatThrownBy(() -> orderCommandService.acceptOrder(orderId))
                 .isInstanceOf(OrderException.class)
                 .hasMessage(OrderErrorCode.ALREADY_ACCEPTED.getMessage());
         verify(orderRepository, never()).save(any(Order.class));
         verify(eventPublisher, never()).publishEvent(any());
+    }
+
+    @Test
+    @DisplayName("실패: 권한이 없는 사용자가 승인 시도 시 예외가 발생한다")
+    void acceptOrder_Fail_Unauthorized() {
+        // given
+        UUID orderId = UUID.randomUUID();
+        Order order = OrderTestBuilder.builder()
+                .id(orderId)
+                .status(OrderStatus.RESERVED)
+                .build();
+
+        when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
+        // 권한 체크 실패 설정
+        when(roleCheck.canAcceptOrCancel(any())).thenReturn(false);
+
+        // when & then
+        assertThatThrownBy(() -> orderCommandService.acceptOrder(orderId))
+                .isInstanceOf(OrderException.class)
+                .hasMessage(OrderErrorCode.UNAUTHORIZED_ACCESS.getMessage());
+
+        verify(orderRepository, never()).save(any(Order.class));
+        verify(eventPublisher, never()).publishEvent(any(OrderCancelledEvent.class));
     }
 
     // --- 주문 승인 거절 테스트 ---
@@ -177,9 +214,10 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
+        when(roleCheck.canAcceptOrCancel(any())).thenReturn(true);
 
         // when
-        String resultStatus = orderCommandService.rejectOrder(USER_ID, orderId);
+        String resultStatus = orderCommandService.rejectOrder(orderId);
 
         // then
         assertThat(resultStatus).isEqualTo("CANCELLED");
@@ -198,9 +236,10 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
+        when(roleCheck.canAcceptOrCancel(any())).thenReturn(true);
 
         // when & then
-        assertThatThrownBy(() -> orderCommandService.rejectOrder(USER_ID, orderId))
+        assertThatThrownBy(() -> orderCommandService.rejectOrder(orderId))
                 .isInstanceOf(OrderException.class)
                 .hasMessage(OrderErrorCode.ALREADY_CANCELLED.getMessage());
         verify(orderRepository, never()).save(any(Order.class));
@@ -220,9 +259,10 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
+        when(roleCheck.canAcceptOrCancel(any())).thenReturn(true);
 
         // when
-        String resultStatus = orderCommandService.cancelOrder(USER_ID, orderId);
+        String resultStatus = orderCommandService.cancelOrder(orderId);
 
         // then
         assertThat(resultStatus).isEqualTo("CANCELLED");
@@ -242,9 +282,10 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
+        when(roleCheck.canRequestCancel(any())).thenReturn(true);
 
         // when
-        String resultStatus = orderCommandService.requestCancel(USER_ID, orderId);
+        String resultStatus = orderCommandService.requestCancel(orderId);
 
         // then
         assertThat(resultStatus).isEqualTo("CANCEL_REQUESTED");
@@ -264,9 +305,10 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
+        when(roleCheck.canAcceptOrCancel(any())).thenReturn(true);
 
         // when
-        String resultStatus = orderCommandService.approveCancelRequest(USER_ID, orderId);
+        String resultStatus = orderCommandService.approveCancelRequest(orderId);
 
         // then
         assertThat(resultStatus).isEqualTo("CANCELLED");
@@ -287,9 +329,10 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
+        when(roleCheck.canAcceptOrCancel(any())).thenReturn(true);
 
         // when
-        String resultStatus = orderCommandService.rejectCancelRequest(USER_ID, orderId);
+        String resultStatus = orderCommandService.rejectCancelRequest(orderId);
 
         // then
         assertThat(resultStatus).isEqualTo("RESERVED");
@@ -308,10 +351,32 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
+        when(roleCheck.canAcceptOrCancel(any())).thenReturn(true);
 
         // when & then
-        assertThatThrownBy(() -> orderCommandService.rejectCancelRequest(USER_ID, orderId))
+        assertThatThrownBy(() -> orderCommandService.rejectCancelRequest(orderId))
                 .isInstanceOf(OrderException.class)
                 .hasMessage(OrderErrorCode.CANNOT_REJECT_CANCEL.getMessage());
+    }
+
+    private CreateOrderCommand createTestCommand(UUID supplierId) {
+        CreateOrderCommand.OrderItemCommand item = new CreateOrderCommand.OrderItemCommand(
+                UUID.randomUUID(), // productId
+                "테스트 상품",      // productName
+                10000L,           // price
+                2                 // quantity
+        );
+
+        return new CreateOrderCommand(
+                supplierId,          // 공급 업체 ID
+                UUID.randomUUID(),   // 공급 업체 매니저 ID
+                UUID.randomUUID(),         // 수령 업체 ID
+                UUID.randomUUID(),   // 수령 업체 매니저 ID
+                "배송 주소",
+                "상세 주소",
+                LocalDateTime.now().plusDays(1), // 배송 희망일
+                "요청 메모", // 요청 메모
+                List.of(item)        // 상품 리스트
+        );
     }
 }

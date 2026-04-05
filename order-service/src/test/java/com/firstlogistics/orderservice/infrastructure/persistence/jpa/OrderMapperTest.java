@@ -46,6 +46,7 @@ class OrderMapperTest {
                 orderId,
                 UUID.randomUUID(), // supplierCompanyId
                 UUID.randomUUID(), // supplierManagerId
+                UUID.randomUUID(), // supplierHubId
                 UUID.randomUUID(), // receiverCompanyId
                 UUID.randomUUID(), // receiverManagerId
                 UUID.randomUUID(), // deliveryId
