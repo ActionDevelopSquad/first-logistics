@@ -15,6 +15,7 @@ public enum OrderErrorCode implements ErrorCode {
     // 주문 생성 & 기본 정보 검증
     SUPPLIER_COMPANY_REQUIRED(HttpStatus.BAD_REQUEST, "ORD002", "공급 업체 ID는 필수 항목입니다."),
     SUPPLIER_MANAGER_REQUIRED(HttpStatus.BAD_REQUEST, "ORD003", "공급 담당자 ID는 필수 항목입니다."),
+    SUPPLIER_HUB_REQUIRED(HttpStatus.BAD_REQUEST, "ORD023", "공급 업체 소속 허브 ID는 필수 항목입니다."),
     RECEIVER_COMPANY_REQUIRED(HttpStatus.BAD_REQUEST, "ORD004", "수신 업체 ID는 필수 항목입니다."),
     RECEIVER_MANAGER_REQUIRED(HttpStatus.BAD_REQUEST, "ORD005", "수신 담당자 ID는 필수 항목입니다."),
     DELIVERY_ADDRESS_REQUIRED(HttpStatus.BAD_REQUEST, "ORD006", "배송 주소는 필수입니다."),
@@ -41,7 +42,12 @@ public enum OrderErrorCode implements ErrorCode {
     DELIVERY_ALREADY_ASSIGNED(HttpStatus.BAD_REQUEST, "ORD021", "이미 배송이 할당된 주문입니다."),
 
     // 동시성 제어
-    ALREADY_PROCESSING(HttpStatus.CONFLICT, "ORD022", "현재 다른 요청이 처리 중입니다. 잠시 후 다시 시도해주세요.");
+    ALREADY_PROCESSING(HttpStatus.CONFLICT, "ORD022", "현재 다른 요청이 처리 중입니다. 잠시 후 다시 시도해주세요."),
+
+    // 외부 서비스 호출 관련
+    COMPANY_NOT_FOUND(HttpStatus.NOT_FOUND, "ORD024", "업체 정보를 찾을 수 없습니다."),
+    EXTERNAL_SERVICE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "ORD025", "외부 서비스 호출 중 오류가 발생했습니다."),
+    UNAUTHORIZED_ACCESS(HttpStatus.UNAUTHORIZED, "ORD026", "해당 주문에 대한 권한이 없습니다.");
 
     private final HttpStatus status;
     private final String code;

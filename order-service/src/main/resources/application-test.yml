@@ -14,3 +14,10 @@ spring:
         default_schema: orders
   kafka:
     bootstrap-servers: localhost:9092
+
+app:
+  services:
+    hub-service:
+      url: http://localhost:8083
+    company-service:
+      url: http://localhost:8084

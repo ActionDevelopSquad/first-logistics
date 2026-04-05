@@ -19,3 +19,14 @@ spring:
         format_sql: true
         default_schema: orders
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+app:
+  services:
+    hub-service:
+      url: http://localhost:8083
+    company-service:
+      url: http://localhost:8084
+
+logging:
+  level:
+    com.firstlogistics.orderservice.infrastructure.client: DEBUG
