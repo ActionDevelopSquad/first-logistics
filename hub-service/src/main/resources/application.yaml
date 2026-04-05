@@ -33,3 +33,14 @@ naver:
 
 company-service:
   url: ${COMPANY_SERVICE_URL:http://localhost:8084}
+
+
+feign:
+  client:
+    config:
+      companyClient:
+        connectTimeout: 3000
+        readTimeout: 5000
+      naverMapClient:
+        connectTimeout: 3000
+        readTimeout: 5000

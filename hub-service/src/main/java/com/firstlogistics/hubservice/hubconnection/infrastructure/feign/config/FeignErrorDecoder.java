@@ -14,6 +14,9 @@ public class FeignErrorDecoder implements ErrorDecoder {
             if (methodKey.startsWith("CompanyClient#")) {
                 return new HubConnectionException(HubConnectionErrorCode.COMPANY_NOT_FOUND);
             }
+            if (methodKey.startsWith("NaverMapClient#")) {
+                return new HubConnectionException(HubConnectionErrorCode.EXTERNAL_SERVICE_ERROR);
+            }
         }
         return new HubConnectionException(HubConnectionErrorCode.EXTERNAL_SERVICE_ERROR);
     }

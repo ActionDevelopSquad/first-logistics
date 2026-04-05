@@ -1,6 +1,6 @@
-package com.firstlogistics.hubservice.hubconnection.infrastructure.external;
+package com.firstlogistics.hubservice.hubconnection.infrastructure.feign;
 
-import com.firstlogistics.hubservice.hubconnection.infrastructure.external.dto.NaverDirectionResponse;
+import com.firstlogistics.hubservice.hubconnection.infrastructure.feign.dto.NaverDirectionResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;

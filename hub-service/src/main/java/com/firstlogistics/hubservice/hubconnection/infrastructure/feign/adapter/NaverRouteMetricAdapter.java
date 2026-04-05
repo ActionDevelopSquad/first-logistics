@@ -1,11 +1,11 @@
-package com.firstlogistics.hubservice.hubconnection.infrastructure.external.adapter;
+package com.firstlogistics.hubservice.hubconnection.infrastructure.feign.adapter;
 
 import com.firstlogistics.hubservice.hubconnection.application.port.RouteMetricPort;
 import com.firstlogistics.hubservice.hubconnection.application.port.dto.RouteMetricResponse;
 import com.firstlogistics.hubservice.hubconnection.domain.exception.HubConnectionErrorCode;
 import com.firstlogistics.hubservice.hubconnection.domain.exception.HubConnectionException;
-import com.firstlogistics.hubservice.hubconnection.infrastructure.external.NaverMapClient;
-import com.firstlogistics.hubservice.hubconnection.infrastructure.external.dto.NaverDirectionResponse;
+import com.firstlogistics.hubservice.hubconnection.infrastructure.feign.NaverMapClient;
+import com.firstlogistics.hubservice.hubconnection.infrastructure.feign.dto.NaverDirectionResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

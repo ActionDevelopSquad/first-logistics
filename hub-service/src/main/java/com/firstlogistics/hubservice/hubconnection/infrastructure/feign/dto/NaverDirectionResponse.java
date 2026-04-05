@@ -1,4 +1,4 @@
-package com.firstlogistics.hubservice.hubconnection.infrastructure.external.dto;
+package com.firstlogistics.hubservice.hubconnection.infrastructure.feign.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
