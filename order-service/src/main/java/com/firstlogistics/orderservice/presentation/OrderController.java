@@ -4,6 +4,7 @@ import com.firstlogistics.orderservice.application.OrderCommandService;
 import com.firstlogistics.orderservice.application.OrderQueryService;
 import com.firstlogistics.orderservice.presentation.dto.request.CreateOrderRequest;
 import com.firstlogistics.orderservice.presentation.dto.request.SearchOrderRequest;
+import com.firstlogistics.orderservice.presentation.dto.response.OrderDetailResponse;
 import com.firstlogistics.orderservice.presentation.dto.response.OrderIdResponse;
 import com.firstlogistics.orderservice.presentation.dto.response.OrderStatusResponse;
 import com.firstlogistics.orderservice.presentation.dto.response.OrderSummaryResponse;
@@ -53,6 +54,15 @@ public class OrderController {
                 .map(OrderSummaryResponse::from);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(OrderSuccessCode.ORDER_OK, response));
+    }
+
+    @GetMapping("/{orderId}")
+    public ResponseEntity<ApiResponse<OrderDetailResponse>> getOrder(
+            @PathVariable UUID orderId
+    ) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(OrderSuccessCode.ORDER_OK,
+                        OrderDetailResponse.from(orderQueryService.getOrder(orderId))));
     }
 
     @PatchMapping("/{orderId}/acceptance")

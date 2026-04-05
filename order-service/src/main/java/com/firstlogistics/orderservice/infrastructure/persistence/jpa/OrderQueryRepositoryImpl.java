@@ -46,6 +46,7 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
                 ))
                 .from(orderJpaEntity)
                 .where(
+                        orderJpaEntity.deletedAt.isNull(),
                         roleFilter(spec),
                         statusEq(spec.status()),
                         dateBetween(spec.startDate(), spec.endDate()),
@@ -60,6 +61,7 @@ public class OrderQueryRepositoryImpl implements OrderQueryRepository {
                 .select(orderJpaEntity.count())
                 .from(orderJpaEntity)
                 .where(
+                        orderJpaEntity.deletedAt.isNull(),
                         roleFilter(spec),
                         statusEq(spec.status()),
                         dateBetween(spec.startDate(), spec.endDate()),

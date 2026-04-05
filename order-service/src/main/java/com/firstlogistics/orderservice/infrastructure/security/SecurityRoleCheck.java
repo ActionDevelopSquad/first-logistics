@@ -1,5 +1,6 @@
 package com.firstlogistics.orderservice.infrastructure.security;
 
+import com.firstlogistics.orderservice.domain.entity.Order;
 import com.firstlogistics.orderservice.domain.repository.OrderRepository;
 import com.firstlogistics.orderservice.domain.service.RoleCheck;
 import com.firstlogistics.orderservice.domain.vo.OrderId;
@@ -32,6 +33,24 @@ public class SecurityRoleCheck implements RoleCheck {
         return isMaster() ||
                 isHubManagerOf(orderId) ||
                 isSupplierOf(orderId);
+    }
+
+    @Override
+    public boolean canView(Order order) {
+        if (isMaster()) return true;
+
+        if (isHubManager()) {
+            UUID hubId = getCurrentUserHubId();
+            return order.getSupplier().hubId().equals(hubId);
+        }
+
+        if (isCompanyManager()) {
+            UUID userId = getCurrentUserId();
+            return order.getSupplier().managerId().equals(userId) ||
+                    order.getReceiver().managerId().equals(userId);
+        }
+
+        return false;
     }
 
     private boolean hasRole(UserRole role) {
