@@ -7,11 +7,16 @@ import com.firstlogistics.aiservice.domain.entity.AILog;
 import com.firstlogistics.aiservice.domain.enums.AILogStatus;
 import com.firstlogistics.aiservice.domain.enums.MessengerType;
 import com.firstlogistics.aiservice.domain.event.NotificationCreatedEvent;
+import com.firstlogistics.aiservice.domain.exception.AILogErrorCode;
+import com.firstlogistics.aiservice.domain.exception.AILogException;
 import com.firstlogistics.aiservice.domain.repository.AILogRepository;
+import com.firstlogistics.aiservice.domain.vo.AILogId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -45,5 +50,15 @@ public class AILogCommandService {
         ));
 
         return aiLogResult;
+    }
+
+    @Transactional
+    public void deleteAILog(UUID aiLogId, UUID userId) {
+        // 1. 삭제할 로그가 있는지 확인 (AILog 도메인 객체로 조회)
+        AILog aiLog = aiLogRepository.findById(AILogId.of(aiLogId))
+                .orElseThrow(() -> new AILogException(AILogErrorCode.AILOG_NOT_FOUND));
+
+        // 2. 삭제 처리 위임
+        aiLogRepository.delete(aiLog, userId);
     }
 }

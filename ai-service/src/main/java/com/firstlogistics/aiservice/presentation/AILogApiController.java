@@ -54,4 +54,14 @@ public class AILogApiController {
         );
         return ResponseEntity.ok(ApiResponse.success(AILogSuccessCode.AILOG_LIST_FOUND, response));
     }
+
+    @DeleteMapping("/{aiLogId}")
+    public ResponseEntity<ApiResponse<Void>> deleteAILog(
+            @PathVariable UUID aiLogId,
+            @RequestHeader("X-User-Id") UUID userId
+    ) {
+        aiLogCommandService.deleteAILog(aiLogId, userId);
+        // 데이터가 없으므로 null을 넘겨줍니다.
+        return ResponseEntity.ok(ApiResponse.success(AILogSuccessCode.AILOG_DELETED, null));
+    }
 }
