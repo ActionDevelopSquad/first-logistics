@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -34,6 +35,9 @@ class AILogCommandServiceTest {
 
     @Mock
     private AIPromptGenerator aiPromptGenerator;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @Test
     @DisplayName("AI 로그 생성 시 AI 응답을 받고 성공 상태로 DB에 저장된다")

@@ -16,4 +16,6 @@ public interface HubRepository {
     List<Hub> findAll();
 
     Hub findById(HubId hubId);
+
+    void delete(Hub hub);
 }
