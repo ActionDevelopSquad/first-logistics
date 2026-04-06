@@ -1,0 +1,55 @@
+spring:
+  application:
+    name: hub-service
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;INIT=CREATE SCHEMA IF NOT EXISTS hub
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        default_schema: hub
+        hibernate:
+          format_sql: false
+
+  cache:
+    type: none
+
+  data:
+    redis:
+      url: redis://localhost:6379
+
+  cloud:
+    openfeign:
+      enabled: false
+
+route:
+  default-policy: HYBRID
+
+naver:
+  map:
+    url: https://maps.apigw.ntruss.com
+    client-id: test
+    client-secret: test
+
+company-service:
+  url: http://localhost:8080
+
+feign:
+  client:
+    config:
+      company-service:
+        connectTimeout: 3000
+        readTimeout: 5000
+      naver-map-client:
+        connectTimeout: 3000
+        readTimeout: 5000
