@@ -21,7 +21,7 @@ public class DeliveryManagerAssignFailedConsumer {
             containerFactory = "deliveryManagerListenerContainerFactory"
     )
     public void consume(DeliveryManagerAssignFailedEvent event, Acknowledgment ack) {
-        log.error("배송 담당자 생성 실패 이벤트 수신. userId={}, organizationId={}", event.userId(), event.organizationId());
+        log.error("배송 담당자 생성 실패 이벤트 수신. userId={}, hubId={}", event.userId(), event.organizationId());
 
         try {
             userCompensationService.rollbackDeliveryManagerAssign(event);

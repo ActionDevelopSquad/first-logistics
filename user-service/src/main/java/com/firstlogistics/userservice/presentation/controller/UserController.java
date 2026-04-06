@@ -1,16 +1,21 @@
-package com.firstlogistics.userservice.presentation;
+package com.firstlogistics.userservice.presentation.controller;
 
 import com.firstlogistics.userservice.application.dto.command.LoginCommand;
 import com.firstlogistics.userservice.application.dto.command.UserCreateCommand;
 import com.firstlogistics.userservice.application.dto.result.TokenResult;
 import com.firstlogistics.userservice.application.dto.result.UserResult;
-import com.firstlogistics.userservice.application.service.UserService;
+import com.firstlogistics.userservice.application.port.UserCommandService;
+import com.firstlogistics.userservice.application.service.UserQueryService;
+import com.firstlogistics.userservice.presentation.UserSuccessCode;
 import com.firstlogistics.userservice.presentation.dto.request.*;
 import com.firstlogistics.userservice.presentation.dto.response.TokenResponse;
 import com.firstlogistics.userservice.presentation.dto.response.UserIdResponse;
 import com.firstlogistics.userservice.presentation.dto.response.UserListResponse;
 import com.firstlogistics.userservice.presentation.dto.response.UserResponse;
 import common.response.ApiResponse;
+import common.security.aop.OnlyMaster;
+import common.security.aop.RequireRole;
+import common.security.entity.enums.UserRole;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,9 +28,10 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
-public class UserController {
+public class UserController implements UserControllerDocs{
 
-    private final UserService userService;
+    private final UserCommandService userCommandService;
+    private final UserQueryService userQueryService;
 
     /**
      * 로그인 시도 -> keyCloak 토큰 발급
@@ -33,7 +39,7 @@ public class UserController {
      */
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<TokenResponse>> login(@Valid @RequestBody LoginRequest request) {
-        TokenResult tokenResult = userService.login(new LoginCommand(request.username().trim(), request.password()));
+        TokenResult tokenResult = userCommandService.login(new LoginCommand(request.username().trim(), request.password()));
 
         TokenResponse tokenResponse = TokenResponse.from(tokenResult);
 
@@ -48,7 +54,7 @@ public class UserController {
      */
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<TokenResponse>> logout(@RequestHeader("X-Refresh-Token") String refreshToken) {
-        userService.logout(refreshToken);
+        userCommandService.logout(refreshToken);
 
         return ResponseEntity
                 .status(UserSuccessCode.LOGOUT_SUCCESS.getStatus())
@@ -61,7 +67,7 @@ public class UserController {
      */
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<TokenResponse>> refresh(@RequestHeader("X-Refresh-Token") String refreshToken) {
-        TokenResult refresh = userService.refresh(refreshToken);
+        TokenResult refresh = userCommandService.refresh(refreshToken);
 
         TokenResponse tokenResponse = TokenResponse.from(refresh);
 
@@ -78,7 +84,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserIdResponse>> signUp(@Valid @RequestBody UserCreateRequest request) {
         UserCreateCommand userCreateCommand = request.toCommand();
 
-        UUID userId = userService.signup(userCreateCommand);
+        UUID userId = userCommandService.signup(userCreateCommand);
 
         return ResponseEntity
                 .status(UserSuccessCode.SIGNUP_SUCCESS.getStatus())
@@ -90,9 +96,10 @@ public class UserController {
      * GET /api/v1/users/{userId}
      * Role : MASTER
      */
+    @OnlyMaster
     @GetMapping("/{userId}")
     public ResponseEntity<ApiResponse<UserResponse>> getUser(@PathVariable("userId") UUID userId) {
-        UserResponse response = UserResponse.from(userService.getUser(userId));
+        UserResponse response = UserResponse.from(userQueryService.getUser(userId));
 
         return ResponseEntity
                 .status(UserSuccessCode.GET_USER.getStatus())
@@ -105,7 +112,7 @@ public class UserController {
      */
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserResponse>> getMyPage(@RequestHeader("X-User-Id") UUID userId) {
-        UserResponse response = UserResponse.from(userService.getMyPage(userId));
+        UserResponse response = UserResponse.from(userQueryService.getMyPage(userId));
 
         return ResponseEntity
                 .status(UserSuccessCode.GET_USER.getStatus())
@@ -117,9 +124,10 @@ public class UserController {
      * GET /api/v1/users
      * Role : MASTER
      */
+    @OnlyMaster
     @GetMapping
     public ResponseEntity<ApiResponse<UserListResponse>> getUsers(@ModelAttribute UsersGetRequest request, Pageable pageable) {
-        Page<UserResult> result = userService.getUsers(request.toQuery(), pageable);
+        Page<UserResult> result = userQueryService.getUsers(request.toQuery(), pageable);
 
         UserListResponse response = UserListResponse.from(result);
 
@@ -133,9 +141,10 @@ public class UserController {
      * PATCH /api/v1/users/{userId}/role
      * Role : MASTER
      */
+    @OnlyMaster
     @PatchMapping("/{userId}/role")
     public ResponseEntity<ApiResponse<UserIdResponse>> updateRole(@PathVariable("userId") UUID userId, @RequestBody UpdateRoleRequest request) {
-        userService.updateRole(userId, request.role());
+        userCommandService.updateRole(userId, request.role());
 
         return ResponseEntity
                 .status(UserSuccessCode.ROLE_UPDATED.getStatus())
@@ -147,6 +156,7 @@ public class UserController {
      * PATCH /api/v1/users/{userId}/status
      * Role : MASTER, HUB_MANAGER
      */
+    @RequireRole({UserRole.MASTER, UserRole.HUB_MANAGER})
     @PatchMapping("/{userId}/status")
     public ResponseEntity<ApiResponse<UserIdResponse>> updateStatus(
             @PathVariable("userId") UUID userId,
@@ -154,7 +164,7 @@ public class UserController {
             @RequestHeader("X-User-Id") UUID loginId
     )
     {
-        userService.updateStatus(userId, request.status(), loginId);
+        userCommandService.updateStatus(userId, request.status(), loginId);
 
         return ResponseEntity
                 .status(UserSuccessCode.STATUS_UPDATED.getStatus())
@@ -166,12 +176,13 @@ public class UserController {
      * PUT /api/v1/users/{userId}
      * Role : MASTER
      */
+    @OnlyMaster
     @PutMapping("/{userId}")
     public ResponseEntity<ApiResponse<UserIdResponse>> update(
             @PathVariable("userId") UUID userId,
             @Valid @RequestBody UserUpdateRequest request
     ) {
-        userService.update(request.toCommand(userId));
+        userCommandService.update(request.toCommand(userId));
 
         return ResponseEntity
                 .status(UserSuccessCode.USER_UPDATED.getStatus())
@@ -183,12 +194,13 @@ public class UserController {
      * DELETE /api/v1/users/{userId}
      * Role : MASTER
      */
+    @OnlyMaster
     @DeleteMapping("/{userId}")
     public ResponseEntity<ApiResponse<Void>> delete(
             @PathVariable("userId") UUID userId,
             @RequestHeader("X-User-Id") UUID deletedUserId
     ) {
-        userService.delete(userId, deletedUserId);
+        userCommandService.delete(userId, deletedUserId);
 
         return ResponseEntity
                 .status(UserSuccessCode.USER_DELETED.getStatus())

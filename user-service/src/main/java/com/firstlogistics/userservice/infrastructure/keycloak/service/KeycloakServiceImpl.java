@@ -6,7 +6,7 @@ import com.firstlogistics.userservice.application.port.KeycloakService;
 import com.firstlogistics.userservice.domain.exception.UserErrorCode;
 import com.firstlogistics.userservice.domain.exception.UserException;
 import com.firstlogistics.userservice.infrastructure.keycloak.KeycloakProperties;
-import common.jpa.entity.enums.UserRole;
+import common.security.entity.enums.UserRole;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;

@@ -16,10 +16,7 @@ public class KafkaUserEventDlqConsumer {
     private final DlqAlert dlqAlert;
 
     @KafkaListener(
-            topics = {
-                    "user.hub.status.changed.dlq",
-                    "user.delivery.status.changed.dlq"
-            },
+            topics = "user.status.changed.dlq",
             groupId = "user-status-dlq-handler",
             containerFactory = "userStatusListenerContainerFactory"
     )

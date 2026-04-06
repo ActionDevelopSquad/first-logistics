@@ -2,7 +2,7 @@ package com.firstlogistics.userservice.application.port;
 
 import com.firstlogistics.userservice.application.dto.command.UserCreateCommand;
 import com.firstlogistics.userservice.application.dto.command.UserUpdateCommand;
-import common.jpa.entity.enums.UserRole;
+import common.security.entity.enums.UserRole;
 
 import java.util.List;
 import java.util.UUID;
