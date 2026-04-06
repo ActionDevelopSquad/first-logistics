@@ -174,8 +174,8 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 15s
       timeout: 5s
-      retries: 10
-      start_period: 40s
+      retries: 15
+      start_period: 90s
     deploy:
       resources:
         limits:
@@ -215,8 +215,8 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 15s
       timeout: 5s
-      retries: 10
-      start_period: 40s
+      retries: 15
+      start_period: 90s
     deploy:
       resources:
         limits:
@@ -249,8 +249,8 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 15s
       timeout: 5s
-      retries: 10
-      start_period: 40s
+      retries: 15
+      start_period: 90s
     deploy:
       resources:
         limits:
@@ -283,8 +283,8 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 15s
       timeout: 5s
-      retries: 10
-      start_period: 40s
+      retries: 15
+      start_period: 90s
     deploy:
       resources:
         limits:
@@ -321,8 +321,8 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 15s
       timeout: 5s
-      retries: 10
-      start_period: 40s
+      retries: 15
+      start_period: 90s
     deploy:
       resources:
         limits:
@@ -358,8 +358,8 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 15s
       timeout: 5s
-      retries: 10
-      start_period: 40s
+      retries: 15
+      start_period: 90s
     deploy:
       resources:
         limits:
@@ -393,8 +393,8 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 15s
       timeout: 5s
-      retries: 10
-      start_period: 40s
+      retries: 15
+      start_period: 90s
     deploy:
       resources:
         limits:
@@ -424,8 +424,8 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 15s
       timeout: 5s
-      retries: 10
-      start_period: 40s
+      retries: 15
+      start_period: 90s
     deploy:
       resources:
         limits:
