@@ -2,7 +2,7 @@ package com.firstlogistics.orderservice.infrastructure.security;
 
 import com.firstlogistics.orderservice.application.port.UserContextPort;
 import common.security.entity.enums.UserRole;
-import common.security.security.util.SecurityUtils;
+import common.security.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
