@@ -43,7 +43,7 @@ public class CacheConfig {
                         .allowIfSubType("com.firstlogistics.hubservice")
                         .allowIfSubType("java.util")
                         .build(),
-                ObjectMapper.DefaultTyping.NON_FINAL,
+                ObjectMapper.DefaultTyping.EVERYTHING,
                 JsonTypeInfo.As.PROPERTY
         );
 

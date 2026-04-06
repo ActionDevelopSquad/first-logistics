@@ -16,6 +16,7 @@ import com.firstlogistics.hubservice.hubconnection.domain.vo.HubConnectionId;
 import com.firstlogistics.hubservice.hubconnection.domain.vo.Time;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
@@ -75,18 +76,18 @@ public class HubConnectionCommandService {
         hubConnectionRepository.delete(connection);
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void deactivateByHub(UUID hubId) {
         hubConnectionRepository.deactivateByHubId(HubId.of(hubId));
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void activateByHub(UUID hubId) {
         hubConnectionRepository.activateByHubId(HubId.of(hubId));
 
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void deleteByHub(UUID hubId) {
         hubConnectionRepository.deleteByHubId(HubId.of(hubId));
     }
