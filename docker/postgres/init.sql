@@ -2,8 +2,8 @@
 -- first-logistics 데이터베이스 + 스키마 초기화
 -- ============================================
 
--- PGVector 확장
-CREATE EXTENSION IF NOT EXISTS vector;
+-- PGVector 확장 (public + ai 스키마)
+CREATE EXTENSION IF NOT EXISTS vector SCHEMA public;
 
 -- Master DB 스키마
 CREATE SCHEMA IF NOT EXISTS delivery;
