@@ -26,6 +26,9 @@ import java.util.UUID;
 public class HubJpaEntity extends BaseAuditEntity {
     @Id
     private UUID id;
+    @Version
+    @Column(nullable = false)
+    private Long version;
 
     @Column(nullable = false, length = 30)
     private String name;
@@ -47,4 +50,24 @@ public class HubJpaEntity extends BaseAuditEntity {
     @Column(nullable = false)
     private HubType type;
 
+    public void changeName(String name) {
+        this.name = name;
+    }
+
+    public void changeAddress(String roadAddress) {
+        this.roadAddress = roadAddress;
+    }
+
+    public void changeLocation(double latitude, double longitude) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
+
+    public void changeType(HubType type) {
+        this.type = type;
+    }
+
+    public void changeStatus(HubStatus status) {
+        this.status = status;
+    }
 }

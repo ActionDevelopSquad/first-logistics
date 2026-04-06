@@ -68,6 +68,9 @@ public class HubConnection {
     public boolean isActive() {
         return this.status == HubConnectionStatus.ACTIVE;
     }
+    public boolean isInActive() {
+        return this.status == HubConnectionStatus.INACTIVE;
+    }
 
     public void changeDistance(Distance distance){
         validateDistance(distance);
