@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 
+import java.util.UUID;
+
 @Repository
 @RequiredArgsConstructor
 public class HubManagerRepositoryImpl implements HubManagerRepository {
@@ -42,8 +44,10 @@ public class HubManagerRepositoryImpl implements HubManagerRepository {
     }
 
     @Override
-    public void delete(HubManager hubManager) {
-        jpaRepository.delete(HubManagerMapper.toJpaEntity(hubManager));
+    public void delete(HubManager hubManager, UUID userId) {
+        HubManagerJpaEntity entity = HubManagerMapper.toJpaEntity(hubManager);
+        entity.softDelete(userId);
+        jpaRepository.saveAndFlush(entity);
     }
 
 

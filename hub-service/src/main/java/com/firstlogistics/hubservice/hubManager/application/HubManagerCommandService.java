@@ -51,9 +51,9 @@ public class HubManagerCommandService {
     }
 
     @Transactional
-    public void deleteHubManager(UUID hubManagerId){
+    public void deleteHubManager(UUID hubManagerId,UUID userId){
         HubManager hubManager = hubManagerRepository.findById(HubManagerId.of(hubManagerId));
-        hubManagerRepository.delete(hubManager);
+        hubManagerRepository.delete(hubManager, userId);
     }
 
     private void validateSameHub(HubManager hubManager, HubId hubId){
