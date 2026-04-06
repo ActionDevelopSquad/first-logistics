@@ -1,7 +1,7 @@
 package com.firstlogistics.productservice.infrastructure.client;
 
 import com.firstlogistics.productservice.infrastructure.client.dto.CompanyClientResponse;
-import common.response.ApiResponse;
+import common.response.FeignApiResponse;
 import java.util.UUID;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,5 +11,5 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface CompanyFeignClient {
 
     @GetMapping("/{companyId}")
-    ApiResponse<CompanyClientResponse> getCompany(@PathVariable UUID companyId);
+    FeignApiResponse<CompanyClientResponse> getCompany(@PathVariable UUID companyId);
 }

@@ -19,10 +19,10 @@ public class HubPortAdapter implements HubPort {
     public UUID getHubId(GeoLocation geoLocation) {
         try {
             var response = hubFeignClient.findNearestHubId(geoLocation.latitude(), geoLocation.longitude());
-            if (response == null || response.getData() == null) {
+            if (response == null || response.data() == null) {
                 throw new CompanyException(CompanyErrorCode.INVALID_HUB_ID);
             }
-            return response.getData();
+            return response.data();
         } catch (FeignException.BadRequest e) {
             throw new CompanyException(CompanyErrorCode.HUB_LOCATION_OUT_OF_RANGE);
         }

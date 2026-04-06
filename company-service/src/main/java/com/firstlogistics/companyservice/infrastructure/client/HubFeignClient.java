@@ -1,6 +1,6 @@
 package com.firstlogistics.companyservice.infrastructure.client;
 
-import common.response.ApiResponse;
+import common.response.FeignApiResponse;
 import java.util.UUID;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface HubFeignClient {
 
     @GetMapping("/nearest")
-    ApiResponse<UUID> findNearestHubId(
+    FeignApiResponse<UUID> findNearestHubId(
             @RequestParam("latitude") double latitude,
             @RequestParam("longitude") double longitude
     );

@@ -6,7 +6,7 @@ import com.firstlogistics.userservice.domain.exception.UserException;
 import com.firstlogistics.userservice.infrastructure.feign.client.CompanyClient;
 import com.firstlogistics.userservice.infrastructure.feign.client.DeliveryClient;
 import com.firstlogistics.userservice.infrastructure.feign.client.HubClient;
-import common.response.ApiResponse;
+import common.response.FeignApiResponse;
 import common.security.entity.enums.UserRole;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
@@ -52,17 +52,17 @@ public class OrganizationValidationServiceImpl implements OrganizationValidation
     }
 
     private boolean existsHub(UUID organizationId) {
-        ApiResponse<?> response = hubClient.existsHub(organizationId);
-        return response != null && response.getData() != null;
+        FeignApiResponse<?> response = hubClient.existsHub(organizationId);
+        return response != null && response.data() != null;
     }
 
     private boolean existsCompany(UUID organizationId) {
-        ApiResponse<?> response = companyClient.existsCompany(organizationId);
-        return response != null && response.getData() != null;
+        FeignApiResponse<?> response = companyClient.existsCompany(organizationId);
+        return response != null && response.data() != null;
     }
 
     private boolean existsDelivery(UUID organizationId) {
-        ApiResponse<?> response = deliveryClient.existsDelivery(organizationId);
-        return response != null && response.getData() != null;
+        FeignApiResponse<?> response = deliveryClient.existsDelivery(organizationId);
+        return response != null && response.data() != null;
     }
 }

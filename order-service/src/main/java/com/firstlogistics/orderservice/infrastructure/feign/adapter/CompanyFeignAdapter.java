@@ -5,7 +5,7 @@ import com.firstlogistics.orderservice.application.port.dto.CompanyResponse;
 import com.firstlogistics.orderservice.domain.exception.OrderErrorCode;
 import com.firstlogistics.orderservice.domain.exception.OrderException;
 import com.firstlogistics.orderservice.infrastructure.feign.CompanyClient;
-import common.response.ApiResponse;
+import common.response.FeignApiResponse;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,10 +23,10 @@ public class CompanyFeignAdapter implements CompanyPort {
     @Override
     public CompanyResponse getCompanyById(UUID companyId) {
         try {
-            ApiResponse<CompanyResponse> response = companyClient.getCompanyById(companyId);
+            FeignApiResponse<CompanyResponse> response = companyClient.getCompanyById(companyId);
 
-            if (response != null && response.getStatus().is2xxSuccessful() && response.getData() != null) {
-                return response.getData();
+            if (response != null && response.data() != null) {
+                return response.data();
             }
 
             throw new OrderException(OrderErrorCode.COMPANY_NOT_FOUND);
