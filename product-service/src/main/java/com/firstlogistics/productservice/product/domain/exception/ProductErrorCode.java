@@ -21,6 +21,7 @@ public enum ProductErrorCode implements ErrorCode {
     UNAUTHORIZED_PRODUCT_UPDATE(HttpStatus.FORBIDDEN, "PRO011", "본인 업체의 상품만 수정할 수 있습니다."),
     PRODUCT_ALREADY_SELLING(HttpStatus.BAD_REQUEST, "PRO012", "이미 판매 중인 상품입니다."),
     UNAUTHORIZED_PRODUCT_STATUS_CHANGE(HttpStatus.FORBIDDEN, "PRO013", "본인 업체의 상품 상태만 변경할 수 있습니다."),
+    INVALID_SORT_FIELD(HttpStatus.BAD_REQUEST, "PRO014", "지원하지 않는 정렬 필드입니다. 허용 필드: createdAt, updatedAt"),
     ;
 
     private final HttpStatus status;

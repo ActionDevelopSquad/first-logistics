@@ -3,6 +3,7 @@ package com.firstlogistics.productservice.product.application;
 import com.firstlogistics.productservice.product.application.dto.command.CreateProductCommand;
 import com.firstlogistics.productservice.product.application.dto.command.ChangeProductStatusCommand;
 import com.firstlogistics.productservice.product.application.dto.command.UpdateProductCommand;
+import com.firstlogistics.productservice.product.application.port.CompanyPort;
 import com.firstlogistics.productservice.product.domain.enums.ProductStatus;
 import com.firstlogistics.productservice.product.application.dto.result.ProductResult;
 import com.firstlogistics.productservice.product.application.port.CompanyPort.CompanyInfo;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProductCommandService {
 
     private final ProductRepository productRepository;
+    private final CompanyPort companyPort;
 
     @Transactional
     public ProductResult register(CreateProductCommand command, CompanyInfo companyInfo) {

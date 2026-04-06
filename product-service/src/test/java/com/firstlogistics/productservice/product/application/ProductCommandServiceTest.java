@@ -4,6 +4,7 @@ import com.firstlogistics.productservice.product.application.dto.command.CreateP
 import com.firstlogistics.productservice.product.application.dto.command.ChangeProductStatusCommand;
 import com.firstlogistics.productservice.product.application.dto.command.UpdateProductCommand;
 import com.firstlogistics.productservice.product.application.dto.result.ProductResult;
+import com.firstlogistics.productservice.product.application.port.CompanyPort;
 import com.firstlogistics.productservice.product.application.port.CompanyPort.CompanyInfo;
 import com.firstlogistics.productservice.product.domain.entity.Product;
 import com.firstlogistics.productservice.product.domain.enums.ProductStatus;
@@ -43,6 +44,9 @@ class ProductCommandServiceTest {
 
     @Mock
     private ApplicationEventPublisher applicationEventPublisher;
+
+    @Mock
+    private CompanyPort companyPort;
 
     @InjectMocks
     private ProductCommandService productCommandService;
