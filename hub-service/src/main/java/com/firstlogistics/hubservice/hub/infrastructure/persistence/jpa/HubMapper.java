@@ -16,7 +16,8 @@ public class HubMapper {
                 hub.getAddress().roadAddress(),
                 hub.getGeoLocation().latitude(),
                 hub.getGeoLocation().longitude(),
-                hub.getStatus()
+                hub.getStatus(),
+                hub.getType()
         );
     }
 
@@ -26,7 +27,8 @@ public class HubMapper {
                 jpaEntity.getName(),
                 HubAddress.of(jpaEntity.getRoadAddress()),
                 GeoLocation.of(jpaEntity.getLatitude(), jpaEntity.getLongitude()),
-                jpaEntity.getStatus()
+                jpaEntity.getStatus(),
+                jpaEntity.getType()
         );
     }
 }

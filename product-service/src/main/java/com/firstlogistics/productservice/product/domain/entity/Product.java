@@ -4,34 +4,57 @@ import com.firstlogistics.productservice.product.domain.enums.ProductStatus;
 import com.firstlogistics.productservice.product.domain.exception.ProductErrorCode;
 import com.firstlogistics.productservice.product.domain.exception.ProductException;
 import com.firstlogistics.productservice.product.domain.vo.Money;
-import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+
+import java.util.UUID;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(onlyExplicitlyIncluded = true)
+@Getter
 public class Product {
+
+    @EqualsAndHashCode.Include
+    @ToString.Include
     private UUID id;
     private UUID companyId;
+    private UUID hubId;
     private String name;
     private Money price;
     private ProductStatus status;
 
-    public static Product create(UUID companyId, String name, Money price) {
-        validate(companyId, name);
+    public static Product create(UUID companyId, UUID hubId, String name, Money price) {
+        validate(companyId, hubId, name);
 
         return new Product(
                 UUID.randomUUID(),
                 companyId,
+                hubId,
                 name,
                 price,
                 ProductStatus.SELLING
         );
     }
 
-    private static void validate(UUID companyId, String name) {
+    public static Product reconstitute(UUID id, UUID companyId, UUID hubId, String name, Money price,
+                                       ProductStatus status) {
+        if (status == null) {
+            throw new ProductException(ProductErrorCode.INVALID_PRODUCT_STATUS);
+        }
+
+        return new Product(id, companyId, hubId, name, price, status);
+    }
+
+    private static void validate(UUID companyId, UUID hubId, String name) {
         if (companyId == null) {
             throw new ProductException(ProductErrorCode.INVALID_COMPANY_ID);
+        }
+        if (hubId == null) {
+            throw new ProductException(ProductErrorCode.INVALID_HUB_ID);
         }
         if (name == null || name.isBlank()) {
             throw new ProductException(ProductErrorCode.INVALID_PRODUCT_NAME);
@@ -43,6 +66,9 @@ public class Product {
     }
 
     public void stopSelling() {
+        if (this.status == ProductStatus.STOPPED) {
+            throw new ProductException(ProductErrorCode.PRODUCT_ALREADY_STOPPED);
+        }
         this.status = ProductStatus.STOPPED;
     }
 

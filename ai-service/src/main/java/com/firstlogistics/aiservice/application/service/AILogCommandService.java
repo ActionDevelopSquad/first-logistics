@@ -8,7 +8,6 @@ import com.firstlogistics.aiservice.domain.enums.AILogStatus;
 import com.firstlogistics.aiservice.domain.enums.MessengerType;
 import com.firstlogistics.aiservice.domain.event.NotificationCreatedEvent;
 import com.firstlogistics.aiservice.domain.repository.AILogRepository;
-import com.firstlogistics.aiservice.domain.vo.MessengerMessageId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
