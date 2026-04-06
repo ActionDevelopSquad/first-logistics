@@ -42,9 +42,6 @@ public class HubConnectionRepositoryImpl implements HubConnectionRepository {
                         return existing;
                     })
                     .orElseGet(() -> mapper.toJpaEntity(hubConnection));
-            if (entity.getId() != null) {
-                mapper.updateJpaEntity(entity, hubConnection);
-            }
             HubConnectionJpaEntity savedEntity = jpaRepository.save(entity);
             evictAllCache();
             return mapper.toDomain(savedEntity);
