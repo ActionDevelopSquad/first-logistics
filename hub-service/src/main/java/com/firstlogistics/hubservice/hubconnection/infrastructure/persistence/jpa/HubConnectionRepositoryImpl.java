@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Repository;
 
 import java.util.Arrays;
@@ -39,6 +40,8 @@ public class HubConnectionRepositoryImpl implements HubConnectionRepository {
             HubConnection savedHubConnection = mapper.toDomain(savedEntity);
             evictAllCache();
             return savedHubConnection;
+        }catch (ObjectOptimisticLockingFailureException e) {
+            throw new HubConnectionException(HubConnectionErrorCode.HUB_CONNECTION_CONFLICT);
         }
         catch (DataIntegrityViolationException e) {
             if(hasConstraintName(e, HubConnectionConstraints.UK_HUB_CONNECTION_HUB_ID))

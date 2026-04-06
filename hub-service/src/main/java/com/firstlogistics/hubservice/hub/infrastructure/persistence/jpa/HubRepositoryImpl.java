@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Repository;
 
 import java.util.Arrays;
@@ -38,6 +39,8 @@ public class HubRepositoryImpl implements HubRepository {
             putHubByIdCache(savedHub);
             evictHubAllCache();
             return savedHub;
+        } catch (ObjectOptimisticLockingFailureException e) {
+            throw new HubException(HubErrorCode.HUB_CONFLICT);
         } catch (DataIntegrityViolationException e) {
             if (hasConstraintName(e, HubConstraints.UK_HUB_NAME)) {
                 throw new HubException(HubErrorCode.DUPLICATE_HUB_NAME);

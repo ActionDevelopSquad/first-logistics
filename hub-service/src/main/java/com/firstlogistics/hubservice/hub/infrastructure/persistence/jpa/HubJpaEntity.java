@@ -26,6 +26,9 @@ import java.util.UUID;
 public class HubJpaEntity extends BaseAuditEntity {
     @Id
     private UUID id;
+    @Version
+    @Column(nullable = false)
+    private Long version;
 
     @Column(nullable = false, length = 30)
     private String name;
