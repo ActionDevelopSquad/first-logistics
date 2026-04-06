@@ -10,7 +10,7 @@ services:
     image: pgvector/pgvector:pg16
     container_name: first-logistics-postgres
     restart: on-failure:3
-    command: postgres -c wal_level=logical -c max_replication_slots=10 -c max_wal_senders=10
+    command: postgres -c wal_level=logical -c max_replication_slots=10 -c max_wal_senders=10 -c max_connections=200
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     environment:

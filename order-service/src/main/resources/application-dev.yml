@@ -10,11 +10,15 @@ spring:
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
     slave:
       url: ${POSTGRES_SLAVE_DB_URL}
       username: ${POSTGRES_USER}
       password: ${POSTGRES_PASSWORD}
       driver-class-name: org.postgresql.Driver
+      hikari:
+        maximum-pool-size: 5
   jpa:
     hibernate:
       ddl-auto: create-drop
