@@ -50,11 +50,15 @@ public class HubConnectionRepositoryImpl implements HubConnectionRepository {
 
     @Override
     public HubConnection findById(HubConnectionId id) {
-        return null;
+        HubConnectionJpaEntity hubConnection = jpaRepository.findById(id.id())
+                .orElseThrow(()-> new HubConnectionException(HubConnectionErrorCode.HUB_CONNECTION_NOT_FOUND));
+
+        return mapper.toDomain(hubConnection);
     }
 
     @Override
     public void delete(HubConnection hubConnection) {
+        jpaRepository.delete(mapper.toJpaEntity(hubConnection));
     }
 
     private boolean hasConstraintName(Throwable throwable, String expectedConstraintName ){
