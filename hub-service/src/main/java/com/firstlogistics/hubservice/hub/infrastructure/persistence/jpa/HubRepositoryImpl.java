@@ -69,16 +69,20 @@ public class HubRepositoryImpl implements HubRepository {
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(cacheNames = HUB_BY_ID_CACHE, key = "#hub.getId().id()"),
+            @CacheEvict(cacheNames = HUB_ALL_CACHE, allEntries = true)
+    })
     public void delete(Hub hub) {
         jpaRepository.delete(mapper.toJpaEntity(hub));
     }
 
-    private boolean hasConstraintName(Throwable throwable, String expectedConstraintName ){
+    private boolean hasConstraintName(Throwable throwable, String expectedConstraintName) {
         Throwable cause = throwable;
-        while(cause!=null){
-            if(cause instanceof  org.hibernate.exception.ConstraintViolationException cve){
+        while (cause != null) {
+            if (cause instanceof org.hibernate.exception.ConstraintViolationException cve) {
                 String constraintName = cve.getConstraintName();
-                if(expectedConstraintName.equalsIgnoreCase(constraintName))
+                if (expectedConstraintName.equalsIgnoreCase(constraintName))
                     return true;
             }
             cause = cause.getCause();
