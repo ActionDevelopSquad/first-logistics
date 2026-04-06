@@ -427,8 +427,8 @@ services:
       SPRING_PROFILES_ACTIVE: dev
       SERVER_PORT: 8080
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
-      POSTGRES_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}?currentSchema=ai&searchpath=ai,public
-      POSTGRES_SLAVE_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}-slave?currentSchema=ai&searchpath=ai,public
+      POSTGRES_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}?search_path=ai,public
+      POSTGRES_SLAVE_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}-slave?search_path=ai,public
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092

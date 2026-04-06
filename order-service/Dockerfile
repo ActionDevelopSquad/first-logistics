@@ -40,6 +40,7 @@ RUN --mount=type=cache,target=/root/.gradle \
 
 # --- 실행 단계 ---
 FROM eclipse-temurin:21-jre-alpine
+RUN apk add --no-cache curl
 WORKDIR /app
 
 # 보안을 위한 비관리자 계정 생성
