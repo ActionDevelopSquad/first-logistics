@@ -55,6 +55,7 @@ public class NotificationCommandService {
         return CreateNotificationResult.from(savedNotification);
     }
 
+    @Transactional
     public void deleteNotification(UUID notificationId, UUID userId) {
         Notification notification = notificationRepository.findById(NotificationId.of(notificationId))
                 .orElseThrow(() -> new NotificationException(NotificationErrorCode.NOTIFICATION_NOT_FOUND));
