@@ -10,6 +10,5 @@ import java.util.UUID;
 public interface HubConnectionJpaRepository extends JpaRepository<HubConnectionJpaEntity, UUID> {
 
     boolean existsBySourceHubIdAndDestinationHubId(UUID sourceId, UUID destinationId);
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
     List<HubConnectionJpaEntity> findAllBySourceHubIdOrDestinationHubId(UUID sourceHubId, UUID destinationHubId);
 }
