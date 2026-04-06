@@ -1,1 +1,2 @@
 common.jpa.config.JpaAuditingConfig
+common.jpa.config.DataSourceRoutingConfig

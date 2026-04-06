@@ -2,40 +2,45 @@
 FROM gradle:9.2.0-jdk21-alpine AS build
 WORKDIR /workspace
 
-# 1. build 파일만 먼저 복사 (의존성 캐시 레이어)
 COPY gradlew .
-RUN sed -i 's/\r$//' gradlew && chmod +x gradlew
 COPY gradle/ gradle/
 COPY settings.gradle .
-COPY gradle.properties .
 COPY build.gradle .
+COPY gradle.properties .
+COPY sample-service/build.gradle sample-service/build.gradle
 COPY common/build.gradle common/build.gradle
 COPY common-jpa/build.gradle common-jpa/build.gradle
+COPY common-event/build.gradle common-event/build.gradle
+COPY common-security/build.gradle common-security/build.gradle
+COPY common-swagger/build.gradle common-swagger/build.gradle
+COPY company-service/build.gradle company-service/build.gradle
+COPY notification-service/build.gradle notification-service/build.gradle
+COPY order-service/build.gradle order-service/build.gradle
 COPY delivery-service/build.gradle delivery-service/build.gradle
+COPY eureka-server/build.gradle eureka-server/build.gradle
+COPY api-gateway/build.gradle api-gateway/build.gradle
+COPY user-service/build.gradle user-service/build.gradle
+COPY hub-service/build.gradle hub-service/build.gradle
+COPY product-service/build.gradle product-service/build.gradle
+COPY ai-service/build.gradle ai-service/build.gradle
 
-# settings.gradle에 포함된 다른 모듈의 빈 디렉토리 생성 (빌드 설정 오류 방지)
-RUN mkdir -p sample-service common-event company-service notification-service \
-    order-service eureka-server api-gateway user-service hub-service product-service
+RUN sed -i 's/\r$//' gradlew && chmod +x gradlew
 
-# 2. 의존성만 다운로드 (build.gradle 변경 없으면 캐시 히트)
 RUN --mount=type=cache,target=/root/.gradle \
     ./gradlew :delivery-service:dependencies --no-daemon
 
-# 3. 소스 복사
 COPY common/src common/src
 COPY common-jpa/src common-jpa/src
+COPY common-event/src common-event/src
+COPY common-security/src common-security/src
 COPY delivery-service/src delivery-service/src
 
-# 4. 빌드 (Gradle 캐시 마운트로 증분 빌드)
 RUN --mount=type=cache,target=/root/.gradle \
     ./gradlew :delivery-service:bootJar --no-daemon -x test
 
 FROM eclipse-temurin:21-jre-alpine
+RUN apk add --no-cache curl
 WORKDIR /app
-
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 COPY --from=build /workspace/delivery-service/build/libs/delivery-service-0.0.1-SNAPSHOT.jar app.jar
-USER appuser
-
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]

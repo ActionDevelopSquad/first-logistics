@@ -1,0 +1,54 @@
+spring:
+  datasource:
+    url: ${POSTGRES_DB_URL}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+    slave:
+      url: ${POSTGRES_SLAVE_DB_URL}
+      username: ${POSTGRES_USER}
+      password: ${POSTGRES_PASSWORD}
+      driver-class-name: org.postgresql.Driver
+      hikari:
+        maximum-pool-size: 5
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        default_schema: hub
+  cache:
+    type: redis
+  data:
+    redis:
+      url: ${REDIS_URL}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+
+feign:
+  client:
+    config:
+      company-service:
+        connectTimeout: 3000
+        readTimeout: 5000
+      naver-map-client:
+        connectTimeout: 3000
+        readTimeout: 5000
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_ENDPOINT:http://zipkin:9411/api/v2/spans}
+
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:19090/eureka/}

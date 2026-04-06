@@ -1,6 +1,6 @@
 package com.firstlogistics.userservice.infrastructure.feign.client;
 
-import common.response.ApiResponse;
+import common.response.FeignApiResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,5 +11,5 @@ import java.util.UUID;
 public interface CompanyClient {
 
     @GetMapping("/api/v1/companies/{companyId}")
-    ApiResponse<UUID> existsCompany(@PathVariable("companyId") UUID companyId);
+    FeignApiResponse<?> existsCompany(@PathVariable("companyId") UUID companyId);
 }

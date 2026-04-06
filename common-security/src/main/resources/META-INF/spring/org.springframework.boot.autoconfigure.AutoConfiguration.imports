@@ -1,4 +1,2 @@
 common.security.config.SecurityContextAuditingConfig
 common.security.config.CommonSecurityAutoConfig
-common.security.config.SecurityConfig
-common.security.config.FeignAuthPropagationConfig

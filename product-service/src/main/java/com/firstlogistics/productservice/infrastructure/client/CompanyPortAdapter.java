@@ -20,10 +20,10 @@ public class CompanyPortAdapter implements CompanyPort {
     public CompanyInfo getCompany(UUID companyId) {
         try {
             var response = companyFeignClient.getCompany(companyId);
-            if (response == null || response.getData() == null) {
+            if (response == null || response.data() == null) {
                 throw new ProductException(ProductErrorCode.COMPANY_NOT_FOUND);
             }
-            CompanyClientResponse data = response.getData();
+            CompanyClientResponse data = response.data();
             return new CompanyInfo(data.id(), data.hubId(), data.managerId());
         } catch (FeignException.NotFound e) {
             throw new ProductException(ProductErrorCode.COMPANY_NOT_FOUND);

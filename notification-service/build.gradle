@@ -11,6 +11,7 @@ dependencies {
     implementation project(':common')
     implementation project(':common-jpa')
     implementation project(':common-event')
+    implementation project(':common-security')
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
@@ -25,10 +26,17 @@ dependencies {
     implementation 'io.micrometer:micrometer-tracing-bridge-brave'
     implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
     implementation 'io.github.openfeign:feign-micrometer'
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.kafka:spring-kafka-test'
     runtimeOnly 'org.postgresql:postgresql'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testRuntimeOnly 'com.h2database:h2'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
 }

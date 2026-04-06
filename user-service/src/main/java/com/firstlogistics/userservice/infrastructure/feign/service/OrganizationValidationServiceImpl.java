@@ -6,14 +6,16 @@ import com.firstlogistics.userservice.domain.exception.UserException;
 import com.firstlogistics.userservice.infrastructure.feign.client.CompanyClient;
 import com.firstlogistics.userservice.infrastructure.feign.client.DeliveryClient;
 import com.firstlogistics.userservice.infrastructure.feign.client.HubClient;
-import common.response.ApiResponse;
+import common.response.FeignApiResponse;
 import common.security.entity.enums.UserRole;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrganizationValidationServiceImpl implements OrganizationValidationService {
@@ -32,6 +34,10 @@ public class OrganizationValidationServiceImpl implements OrganizationValidation
             throw new UserException(UserErrorCode.HUB_ID_NOT_FOUND);
 
         } catch (FeignException e) {
+            log.error("Feign 호출 실패 - status: {}, message: {}", e.status(), e.getMessage());
+            throw new UserException(UserErrorCode.FEIGN_SERVICE_UNAVAILABLE);
+        } catch (Exception e) {
+            log.error("조직 검증 중 예외 발생 - type: {}, message: {}", e.getClass().getSimpleName(), e.getMessage());
             throw new UserException(UserErrorCode.FEIGN_SERVICE_UNAVAILABLE);
         }
     }
@@ -39,24 +45,27 @@ public class OrganizationValidationServiceImpl implements OrganizationValidation
     private boolean existsOrganization(UUID organizationId, UserRole role) {
         return switch (role) {
             case HUB_MANAGER -> existsHub(organizationId);
-            case COMPANY_MANAGER -> existsCompany(organizationId);
-            case DELIVERY_MANAGER -> existsDelivery(organizationId);
+            // TODO: 업체 담당자 회원가입 시 업체가 아직 생성되지 않은 상태이므로 검증 스킵.
+            //  현재 흐름: 업체 담당자 회원가입 → 업체 생성(managerId 연결)
+            //  개선 방향: 회원가입 시 업체를 동기(Feign)로 함께 생성하는 방식 검토 필요
+            case COMPANY_MANAGER -> true;
+            case DELIVERY_MANAGER -> existsHub(organizationId);
             case MASTER -> true;
         };
     }
 
     private boolean existsHub(UUID organizationId) {
-        ApiResponse<UUID> response = hubClient.existsHub(organizationId);
-        return response != null && response.getData() != null;
+        FeignApiResponse<?> response = hubClient.existsHub(organizationId);
+        return response != null && response.data() != null;
     }
 
     private boolean existsCompany(UUID organizationId) {
-        ApiResponse<UUID> response = companyClient.existsCompany(organizationId);
-        return response != null && response.getData() != null;
+        FeignApiResponse<?> response = companyClient.existsCompany(organizationId);
+        return response != null && response.data() != null;
     }
 
     private boolean existsDelivery(UUID organizationId) {
-        ApiResponse<UUID> response = deliveryClient.existsDelivery(organizationId);
-        return response != null && response.getData() != null;
+        FeignApiResponse<?> response = deliveryClient.existsDelivery(organizationId);
+        return response != null && response.data() != null;
     }
 }

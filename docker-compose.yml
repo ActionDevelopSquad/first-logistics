@@ -1,10 +1,16 @@
 version: "3.8"
 
 services:
+
+  # ============================================
+  # 1단계: 인프라 (PostgreSQL, Redis, Kafka, Zipkin)
+  # ============================================
+
   postgres:
-    image: postgres:16
+    image: pgvector/pgvector:pg16
     container_name: first-logistics-postgres
-    restart: unless-stopped
+    restart: on-failure:3
+    command: postgres -c wal_level=logical -c max_replication_slots=10 -c max_wal_senders=10 -c max_connections=200
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     environment:
@@ -18,67 +24,42 @@ services:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 30s
     deploy:
       resources:
         limits:
           memory: 256m
 
-  delivery-service:
-    build:
-      context: .
-      dockerfile: delivery-service/Dockerfile
-    container_name: first-logistics-delivery-service
-    ports:
-      - "${DELIVERY_SERVICE_PORT:-8081}:8080"
-    environment:
-      SPRING_PROFILES_ACTIVE: dev
-      POSTGRES_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}?currentSchema=delivery
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      REDIS_URL: redis://redis:6379
-      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      JAVA_TOOL_OPTIONS: "-Xmx256m -Xms128m"
+  postgres-init:
+    image: pgvector/pgvector:pg16
+    container_name: first-logistics-postgres-init
+    restart: "no"
+    volumes:
+      - ./docker/postgres/setup-replication.sh:/setup-replication.sh
+    entrypoint: ["bash", "/setup-replication.sh"]
     depends_on:
-      postgres:
+      user-service:
         condition: service_healthy
-      redis:
+      hub-service:
         condition: service_healthy
-      kafka:
+      company-service:
         condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          memory: 512m
-
-  order-service:
-    build:
-      context: .
-      dockerfile: order-service/Dockerfile
-    container_name: first-logistics-order-service
-    ports:
-      - "${ORDER_SERVICE_PORT:-8082}:8080"
-    environment:
-      SPRING_PROFILES_ACTIVE: dev
-      POSTGRES_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}?currentSchema=orders
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      JAVA_TOOL_OPTIONS: "-Xmx256m -Xms128m"
-    depends_on:
-      postgres:
+      product-service:
         condition: service_healthy
-      kafka:
+      order-service:
         condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          memory: 512m
+      delivery-service:
+        condition: service_healthy
+      notification-service:
+        condition: service_healthy
+      ai-service:
+        condition: service_healthy
 
   redis:
     image: redis:7.2-alpine
     container_name: first-logistics-redis
-    restart: unless-stopped
+    restart: on-failure:3
     ports:
       - "${REDIS_PORT:-6379}:6379"
     command: redis-server --maxmemory 64mb --maxmemory-policy allkeys-lru
@@ -88,7 +69,8 @@ services:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 15s
     deploy:
       resources:
         limits:
@@ -97,7 +79,7 @@ services:
   kafka:
     image: confluentinc/cp-kafka:7.6.0
     container_name: first-logistics-kafka
-    restart: unless-stopped
+    restart: on-failure:3
     ports:
       - "${KAFKA_PORT:-9092}:9092"
       - "29092:29092"
@@ -112,48 +94,66 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-      KAFKA_HEAP_OPTS: "-Xmx192m -Xms128m"
+      KAFKA_HEAP_OPTS: "-Xmx256m -Xms192m"
       CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
     volumes:
       - kafka-data:/var/lib/kafka/data
     healthcheck:
-      test: [ "CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list" ]
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list"]
       interval: 15s
       timeout: 10s
-      retries: 5
+      retries: 15
+      start_period: 120s
     deploy:
       resources:
         limits:
-          memory: 384m
+          memory: 400m
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: first-logistics-kafka-ui
-    restart: unless-stopped
-    depends_on:
-      - kafka
+    restart: on-failure:3
     ports:
       - "${KAFKA_UI_PORT:-8989}:8080"
     environment:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    depends_on:
+      kafka:
+        condition: service_healthy
     deploy:
       resources:
         limits:
-          memory: 256m
+          memory: 192m
+
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: first-logistics-zipkin
+    restart: on-failure:3
+    ports:
+      - "${ZIPKIN_PORT:-9411}:9411"
+    deploy:
+      resources:
+        limits:
+          memory: 192m
+
+  # ============================================
+  # 2단계: 서비스 디스커버리 (Eureka)
+  # ============================================
 
   eureka-server:
     build:
       context: .
       dockerfile: eureka-server/Dockerfile
     container_name: first-logistics-eureka-server
-    restart: unless-stopped
+    restart: on-failure:3
     ports:
       - "${EUREKA_PORT:-19090}:8080"
     environment:
       SERVER_PORT: 8080
       EUREKA_INSTANCE_HOSTNAME: eureka-server
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
+      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/eureka/apps"]
       interval: 15s
@@ -163,22 +163,348 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512m
+          memory: 300m
+
+  # ============================================
+  # 3단계: 기반 서비스 (User, Hub, Company, Product)
+  # ============================================
+
+  user-service:
+    build:
+      context: .
+      dockerfile: user-service/Dockerfile
+    container_name: first-logistics-user-service
+    restart: on-failure:5
+    ports:
+      - "${USER_SERVICE_PORT:-8080}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SERVER_PORT: 8080
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
+      KEYCLOAK_SERVER_URL: ${KEYCLOAK_SERVER_URL}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}?currentSchema=users
+      SPRING_DATASOURCE_SLAVE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}-slave?currentSchema=users
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      KEYCLOAK_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      ZIPKIN_ENDPOINT: ${ZIPKIN_ENDPOINT}
+      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 15
+      start_period: 120s
+    deploy:
+      resources:
+        limits:
+          memory: 300m
+
+  hub-service:
+    build:
+      context: .
+      dockerfile: hub-service/Dockerfile
+    container_name: first-logistics-hub-service
+    restart: on-failure:5
+    ports:
+      - "${HUB_SERVICE_PORT:-8083}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SERVER_PORT: 8080
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
+      POSTGRES_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}?currentSchema=hub
+      POSTGRES_SLAVE_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}-slave?currentSchema=hub
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      REDIS_URL: redis://redis:6379
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      NAVER_MAP_CLIENT_ID: ${NAVER_MAP_CLIENT_ID}
+      NAVER_MAP_CLIENT_SECRET: ${NAVER_MAP_CLIENT_SECRET}
+      COMPANY_SERVICE_URL: http://company-service:8080
+      ZIPKIN_ENDPOINT: http://zipkin:9411/api/v2/spans
+      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 15
+      start_period: 120s
+    deploy:
+      resources:
+        limits:
+          memory: 300m
+
+  company-service:
+    build:
+      context: .
+      dockerfile: company-service/Dockerfile
+    container_name: first-logistics-company-service
+    restart: on-failure:5
+    ports:
+      - "${COMPANY_SERVICE_PORT:-8084}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SERVER_PORT: 8080
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
+      POSTGRES_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}?currentSchema=company
+      POSTGRES_SLAVE_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}-slave?currentSchema=company
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 15
+      start_period: 120s
+    deploy:
+      resources:
+        limits:
+          memory: 300m
+
+  product-service:
+    build:
+      context: .
+      dockerfile: product-service/Dockerfile
+    container_name: first-logistics-product-service
+    restart: on-failure:5
+    ports:
+      - "${PRODUCT_SERVICE_PORT:-8085}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SERVER_PORT: 8080
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
+      POSTGRES_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}?currentSchema=product
+      POSTGRES_SLAVE_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}-slave?currentSchema=product
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 15
+      start_period: 120s
+    deploy:
+      resources:
+        limits:
+          memory: 300m
+
+  # ============================================
+  # 4단계: 비즈니스 서비스 (Order, Delivery)
+  # ============================================
+
+  order-service:
+    build:
+      context: .
+      dockerfile: order-service/Dockerfile
+    container_name: first-logistics-order-service
+    restart: on-failure:5
+    ports:
+      - "${ORDER_SERVICE_PORT:-8082}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SERVER_PORT: 8080
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
+      POSTGRES_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}?currentSchema=orders
+      POSTGRES_SLAVE_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}-slave?currentSchema=orders
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
+    depends_on:
+      hub-service:
+        condition: service_healthy
+      company-service:
+        condition: service_healthy
+      product-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 15
+      start_period: 120s
+    deploy:
+      resources:
+        limits:
+          memory: 300m
+
+  delivery-service:
+    build:
+      context: .
+      dockerfile: delivery-service/Dockerfile
+    container_name: first-logistics-delivery-service
+    restart: on-failure:5
+    ports:
+      - "${DELIVERY_SERVICE_PORT:-8081}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SERVER_PORT: 8080
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
+      POSTGRES_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}?currentSchema=delivery
+      POSTGRES_SLAVE_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}-slave?currentSchema=delivery
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      REDIS_URL: redis://redis:6379
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
+    depends_on:
+      hub-service:
+        condition: service_healthy
+      company-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 15
+      start_period: 120s
+    deploy:
+      resources:
+        limits:
+          memory: 300m
+
+  # ============================================
+  # 5단계: 후행 서비스 (Notification, AI)
+  # ============================================
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: notification-service/Dockerfile
+    container_name: first-logistics-notification-service
+    restart: on-failure:5
+    ports:
+      - "${NOTIFICATION_SERVICE_PORT:-8086}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SERVER_PORT: 8080
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
+      POSTGRES_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}?currentSchema=notification
+      POSTGRES_SLAVE_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}-slave?currentSchema=notification
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SLACK_BOT_TOKEN: ${SLACK_BOT_TOKEN}
+      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
+    depends_on:
+      delivery-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 15
+      start_period: 120s
+    deploy:
+      resources:
+        limits:
+          memory: 300m
+
+  ai-service:
+    build:
+      context: .
+      dockerfile: ai-service/Dockerfile
+    container_name: first-logistics-ai-service
+    restart: on-failure:5
+    ports:
+      - "${AI_SERVICE_PORT:-8087}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SERVER_PORT: 8080
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
+      POSTGRES_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}?search_path=ai,public
+      POSTGRES_SLAVE_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}-slave?search_path=ai,public
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
+    depends_on:
+      delivery-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 15
+      start_period: 120s
+    deploy:
+      resources:
+        limits:
+          memory: 300m
+
+  # ============================================
+  # 6단계: API Gateway
+  # ============================================
 
   api-gateway:
     build:
       context: .
       dockerfile: api-gateway/Dockerfile
     container_name: first-logistics-api-gateway
-    restart: unless-stopped
+    restart: on-failure:5
     ports:
       - "${API_GATEWAY_PORT:-80}:8080"
     environment:
       SERVER_PORT: 8080
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI: ${KEYCLOAK_ISSUER_URI}
+      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
     depends_on:
-      eureka-server:
+      user-service:
+        condition: service_healthy
+      hub-service:
+        condition: service_healthy
+      company-service:
+        condition: service_healthy
+      product-service:
+        condition: service_healthy
+      order-service:
+        condition: service_healthy
+      delivery-service:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
@@ -189,55 +515,16 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512m
+          memory: 300m
 
-  user-service:
-    build:
-      context: .
-      dockerfile: user-service/Dockerfile
-    container_name: first-logistics-user-service
-    restart: unless-stopped
-    ports:
-      - "${USER_SERVICE_PORT:-8080}:8080"
-    environment:
-      SPRING_PROFILES_ACTIVE: dev
-      SERVER_PORT: 8080
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
-      KEYCLOAK_SERVER_URL: ${KEYCLOAK_SERVER_URL}
-      SPRING_DATASOURCE_URL: ${POSTGRES_DB_URL}
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
-      KEYCLOAK_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME}
-      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
-      ZIPKIN_ENDPOINT: ${ZIPKIN_ENDPOINT}
-    depends_on:
-      postgres:
-        condition: service_healthy
-      eureka-server:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          memory: 512m
-
-  zipkin:
-    image: openzipkin/zipkin
-    container_name: first-logistics-zipkin
-    restart: unless-stopped
-    ports:
-      - "${ZIPKIN_PORT:-9411}:9411"
-    deploy:
-      resources:
-        limits:
-          memory: 256m
+  # ============================================
+  # Keycloak (독립 인프라)
+  # ============================================
 
   postgres-keycloak:
     image: postgres:16
     container_name: postgres-keycloak-1
-    restart: unless-stopped
+    restart: on-failure:3
     environment:
       POSTGRES_DB: keycloak
       POSTGRES_USER: ${KEYCLOAK_DB_USER}
@@ -254,11 +541,15 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 192m
 
   keycloak:
     image: quay.io/keycloak/keycloak
     container_name: keycloak-server
-    restart: unless-stopped
+    restart: on-failure:3
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
@@ -283,6 +574,10 @@ services:
       start_period: 60s
     volumes:
       - ./codefactory-realm.json:/opt/keycloak/data/import/codefactory-realm.json
+    deploy:
+      resources:
+        limits:
+          memory: 384m
     networks:
       - keycloak-net
       - default

@@ -1,3 +1,18 @@
 spring:
   application:
     name: hub-service
+
+route:
+  default-policy: HYBRID
+
+server:
+  port: ${SERVER_PORT:8083}
+
+naver:
+  map:
+    url: https://maps.apigw.ntruss.com
+    client-id: ${NAVER_MAP_CLIENT_ID}
+    client-secret: ${NAVER_MAP_CLIENT_SECRET}
+
+company-service:
+  url: ${COMPANY_SERVICE_URL}

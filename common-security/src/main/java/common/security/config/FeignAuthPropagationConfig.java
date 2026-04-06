@@ -6,20 +6,23 @@ import common.security.util.SecurityUtils;
 import feign.RequestInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
-@AutoConfiguration
+@Configuration
+@ConditionalOnClass(RequestInterceptor.class)
 @Slf4j
 public class FeignAuthPropagationConfig {
 
     @Bean
     public RequestInterceptor userHeaderPropagationInterceptor(@Value("${spring.application.name}") String serviceName) {
+        log.info("FeignAuthPropagationConfig - RequestInterceptor 빈 등록 완료 (serviceName={})", serviceName);
         return template -> {
-            log.debug("Feign interceptor invoked");
+            log.info("Feign interceptor 호출됨 - target: {}", template.url());
             try {
                 CustomUserDetails user = SecurityUtils.currentUser();
 
@@ -39,6 +42,7 @@ public class FeignAuthPropagationConfig {
                 template.header(SecurityHeader.FORWARD_SERVICE, serviceName);
             } catch (AuthException e) {
                 log.debug("인증 컨텍스트가 없어 사용자 헤더 전파를 건너뜁니다.");
+                template.header(SecurityHeader.FORWARD_SERVICE, serviceName);
             } catch (RuntimeException e) {
                 log.error("사용자 헤더 전파 중 예기치 않은 오류", e);
                 throw e;

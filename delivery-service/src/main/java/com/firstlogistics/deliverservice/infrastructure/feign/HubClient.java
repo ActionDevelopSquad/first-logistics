@@ -22,7 +22,7 @@ public interface HubClient {
 	FeignApiResponse<HubRouteResponse> getHubRoute(
 		@RequestParam("sourceHubId") UUID sourceHubId,
 		@RequestParam("destinationHubId") UUID destinationHubId,
-		@RequestParam("receiverCompanyId") UUID receiverCompanyId
+		@RequestParam("destinationCompanyId") UUID receiverCompanyId
 	);
 
 	@GetMapping("/api/v1/hub-managers/users/{userId}")

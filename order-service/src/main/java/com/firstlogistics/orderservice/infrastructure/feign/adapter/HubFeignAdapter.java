@@ -5,7 +5,7 @@ import com.firstlogistics.orderservice.application.port.dto.HubManagerResponse;
 import com.firstlogistics.orderservice.domain.exception.OrderErrorCode;
 import com.firstlogistics.orderservice.domain.exception.OrderException;
 import com.firstlogistics.orderservice.infrastructure.feign.HubClient;
-import common.response.ApiResponse;
+import common.response.FeignApiResponse;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,10 +24,10 @@ public class HubFeignAdapter implements HubPort {
     @Override
     public Optional<HubManagerResponse> getHubManagerByUserId(UUID userId) {
         try {
-            ApiResponse<HubManagerResponse> response = hubClient.getHubManagerInfo(userId);
+            FeignApiResponse<HubManagerResponse> response = hubClient.getHubManagerInfo(userId);
 
-            if (response != null && response.getStatus().is2xxSuccessful() && response.getData() != null) {
-                return Optional.of(response.getData());
+            if (response != null && response.data() != null) {
+                return Optional.of(response.data());
             }
 
             return Optional.empty();

@@ -10,6 +10,15 @@ spring:
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+    slave:
+      url: ${POSTGRES_SLAVE_DB_URL}
+      username: ${POSTGRES_USER}
+      password: ${POSTGRES_PASSWORD}
+      driver-class-name: org.postgresql.Driver
+      hikari:
+        maximum-pool-size: 5
   jpa:
     hibernate:
       ddl-auto: update
@@ -23,9 +32,9 @@ spring:
 app:
   services:
     hub-service:
-      url: http://localhost:8083
+      url: ""
     company-service:
-      url: http://localhost:8084
+      url: ""
 
 logging:
   level:
@@ -39,3 +48,8 @@ management:
   zipkin:
     tracing:
       endpoint: ${ZIPKIN_ENDPOINT:http://zipkin:9411/api/v2/spans}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:19090/eureka/}

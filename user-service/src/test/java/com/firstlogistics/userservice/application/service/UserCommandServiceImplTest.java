@@ -14,6 +14,7 @@ import com.firstlogistics.userservice.domain.event.DomainEvent;
 import com.firstlogistics.userservice.domain.event.UserStatusChangedEvent;
 import com.firstlogistics.userservice.domain.exception.UserErrorCode;
 import com.firstlogistics.userservice.domain.exception.UserException;
+import com.firstlogistics.userservice.application.port.OrganizationValidationService;
 import com.firstlogistics.userservice.domain.repository.UserRepository;
 import common.security.entity.enums.UserRole;
 import org.junit.jupiter.api.*;
@@ -43,6 +44,9 @@ class UserCommandServiceImplTest {
 
     @Mock
     private KeycloakService keycloakService;
+
+    @Mock
+    private OrganizationValidationService organizationValidationService;
 
     @Mock
     private UserRepository userRepository;
@@ -324,14 +328,17 @@ class UserCommandServiceImplTest {
             UUID userId = UUID.randomUUID();
             UUID loginId = UUID.randomUUID();
             User user = pendingUser();
+            User loginUser = approvedMasterUser();
 
             given(userRepository.findByIdNotDeleted(userId)).willReturn(user);
+            given(userRepository.findByIdNotDeleted(loginId)).willReturn(loginUser);
 
             // when
             userCommandServiceImpl.updateStatus(userId, Status.APPROVED, loginId);
 
             // then
             assertThat(user.getStatus()).isEqualTo(Status.APPROVED);
+            then(userRepository).should(times(1)).findByIdNotDeleted(userId);
             then(userRepository).should(times(1)).findByIdNotDeleted(loginId);
             then(userRepository).should(times(1)).update(user);
 
@@ -343,7 +350,6 @@ class UserCommandServiceImplTest {
             assertThat(publishedEvent.hubId()).isEqualTo(user.getHubId());
             assertThat(publishedEvent.userRole()).isEqualTo(user.getUserRole());
             assertThat(publishedEvent.status()).isEqualTo(Status.APPROVED);
-            assertThat(publishedEvent.previousStatus()).isEqualTo(Status.PENDING);
         }
 
         @Test
@@ -354,15 +360,18 @@ class UserCommandServiceImplTest {
             UUID userId = UUID.randomUUID();
             UUID loginId = UUID.randomUUID();
             User user = approvedUser();
+            User loginUser = approvedMasterUser();
 
             given(userRepository.findByIdNotDeleted(userId)).willReturn(user);
+            given(userRepository.findByIdNotDeleted(loginId)).willReturn(loginUser);
 
             // when & then
             assertThatThrownBy(() -> userCommandServiceImpl.updateStatus(userId, Status.APPROVED, loginId))
                     .isInstanceOf(UserException.class)
                     .hasMessageContaining(UserErrorCode.ALREADY_APPROVE.getMessage());
 
-            then(userRepository).should(times(1)).findByIdNotDeleted(any());
+            then(userRepository).should(times(1)).findByIdNotDeleted(userId);
+            then(userRepository).should(times(1)).findByIdNotDeleted(loginId);
             then(userRepository).should(never()).update(any());
             then(event).should(never()).publish(any());
         }
@@ -375,15 +384,18 @@ class UserCommandServiceImplTest {
             UUID userId = UUID.randomUUID();
             UUID loginId = UUID.randomUUID();
             User user = pendingUser();
+            User loginUser = approvedMasterUser();
 
             given(userRepository.findByIdNotDeleted(userId)).willReturn(user);
+            given(userRepository.findByIdNotDeleted(loginId)).willReturn(loginUser);
 
             // when
             userCommandServiceImpl.updateStatus(userId, Status.REJECTED, loginId);
 
             // then
             assertThat(user.getStatus()).isEqualTo(Status.REJECTED);
-            then(userRepository).should().findByIdNotDeleted(userId);
+            then(userRepository).should(times(1)).findByIdNotDeleted(userId);
+            then(userRepository).should(times(1)).findByIdNotDeleted(loginId);
             then(userRepository).should(times(1)).update(user);
 
             ArgumentCaptor<UserStatusChangedEvent> eventCaptor = ArgumentCaptor.forClass(UserStatusChangedEvent.class);
@@ -394,7 +406,6 @@ class UserCommandServiceImplTest {
             assertThat(publishedEvent.hubId()).isEqualTo(user.getHubId());
             assertThat(publishedEvent.userRole()).isEqualTo(user.getUserRole());
             assertThat(publishedEvent.status()).isEqualTo(Status.REJECTED);
-            assertThat(publishedEvent.previousStatus()).isEqualTo(Status.PENDING);
         }
 
         @Test
@@ -405,15 +416,18 @@ class UserCommandServiceImplTest {
             UUID userId = UUID.randomUUID();
             UUID loginId = UUID.randomUUID();
             User user = rejectedUser();
+            User loginUser = approvedMasterUser();
 
             given(userRepository.findByIdNotDeleted(userId)).willReturn(user);
+            given(userRepository.findByIdNotDeleted(loginId)).willReturn(loginUser);
 
             // when & then
             assertThatThrownBy(() -> userCommandServiceImpl.updateStatus(userId, Status.REJECTED, loginId))
                     .isInstanceOf(UserException.class)
                     .hasMessageContaining(UserErrorCode.ALREADY_REJECTED.getMessage());
 
-            then(userRepository).should(times(1)).findByIdNotDeleted(any());
+            then(userRepository).should(times(1)).findByIdNotDeleted(userId);
+            then(userRepository).should(times(1)).findByIdNotDeleted(loginId);
             then(userRepository).should(never()).update(user);
             then(event).should(never()).publish(any());
         }
@@ -587,6 +601,22 @@ class UserCommandServiceImplTest {
             then(userRepository).should(times(1)).delete(userId, deletedUserId);
             then(keycloakService).should(times(1)).deleteUser(userId);
         }
+    }
+
+    private User approvedMasterUser() {
+        return User.reconstitute(
+                UUID.randomUUID(),
+                "masterUser",
+                "마스터유저",
+                "010-0000-0000",
+                "master@google.com",
+                "slack-master",
+                Status.APPROVED,
+                UserRole.MASTER,
+                null,
+                null,
+                null
+        );
     }
 
     private User pendingUser() {

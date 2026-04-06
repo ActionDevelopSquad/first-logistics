@@ -1,0 +1,16 @@
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:3300/realms/codefactory
+          jwk-set-uri: http://localhost:3300/realms/codefactory/protocol/openid-connect/certs
+
+eureka:
+  client:
+    enabled: false

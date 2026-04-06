@@ -5,7 +5,7 @@ import com.firstlogistics.deliverservice.domain.enums.ManagerType;
 import com.firstlogistics.deliverservice.domain.spec.DeliveryManagerSearchSpec;
 import com.firstlogistics.deliverservice.domain.spec.DeliveryScope;
 
-import com.firstlogistics.common.security.entity.enums.UserRole;
+import common.security.entity.enums.UserRole;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 
