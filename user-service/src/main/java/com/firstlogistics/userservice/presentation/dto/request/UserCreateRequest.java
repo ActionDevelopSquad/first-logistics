@@ -2,6 +2,8 @@ package com.firstlogistics.userservice.presentation.dto.request;
 
 import com.firstlogistics.userservice.application.dto.command.UserCreateCommand;
 import com.firstlogistics.userservice.domain.enums.ManagerType;
+import com.firstlogistics.userservice.domain.exception.UserErrorCode;
+import com.firstlogistics.userservice.domain.exception.UserException;
 import com.firstlogistics.userservice.domain.vo.Password;
 import common.security.entity.enums.UserRole;
 import jakarta.validation.constraints.*;
@@ -51,11 +53,11 @@ public record UserCreateRequest(
 {
         public UserCreateRequest {
                 if (userRole == UserRole.DELIVERY_MANAGER && managerType == null) {
-                        throw new IllegalArgumentException("배송 담당자는 managerType을 입력해야 합니다.");
+                        throw new UserException(UserErrorCode.MANAGER_TYPE_REQUIRED);
                 }
 
                 if (userRole != UserRole.DELIVERY_MANAGER && managerType != null) {
-                        throw new IllegalArgumentException("배송 담당자가 아닌 경우 managerType을 입력할 수 없습니다.");
+                        throw new UserException(UserErrorCode.MANAGER_TYPE_NOT_ALLOWED);
                 }
         }
 

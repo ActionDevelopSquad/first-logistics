@@ -26,10 +26,10 @@ public class OrganizationValidationServiceImpl implements OrganizationValidation
     public void validateOrganizationExists(UUID organizationId, UserRole role) {
         try {
             if (!existsOrganization(organizationId, role)) {
-                throw new UserException(UserErrorCode.ORGANIZATION_ID_NOT_FOUND);
+                throw new UserException(UserErrorCode.HUB_ID_NOT_FOUND);
             }
         } catch (FeignException.NotFound e) {
-            throw new UserException(UserErrorCode.ORGANIZATION_ID_NOT_FOUND);
+            throw new UserException(UserErrorCode.HUB_ID_NOT_FOUND);
 
         } catch (FeignException e) {
             throw new UserException(UserErrorCode.FEIGN_SERVICE_UNAVAILABLE);

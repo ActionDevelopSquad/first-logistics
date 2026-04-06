@@ -195,7 +195,7 @@ services:
     volumes:
       - postgres-keycloak-data-1:/var/lib/postgresql/keycloak/data
     ports:
-      - "${KEYCLOAK_DB_PORT}:5432"
+      - "${KEYCLOAK_DB_PORT:-3998}:5432"
     networks:
       - keycloak-net
     healthcheck:
@@ -220,7 +220,7 @@ services:
       - start-dev
       - --import-realm
     ports:
-      - "${KEYCLOAK_PORT}:8080"
+      - "${KEYCLOAK_PORT:-3300}:8080"
     depends_on:
       postgres-keycloak:
         condition: service_healthy
