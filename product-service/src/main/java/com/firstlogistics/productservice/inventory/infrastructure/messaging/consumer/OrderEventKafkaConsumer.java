@@ -78,7 +78,7 @@ public class OrderEventKafkaConsumer {
             groupId = "product-service",
             containerFactory = "orderCancelledListenerContainerFactory"
     )
-    public void handleOrderCancelled(OrderCancelledEvent event, Acknowledgment ack) {
+    public void handleOrderReservationCancelled(OrderCancelledEvent event, Acknowledgment ack) {
         log.info("order.cancelled 이벤트 수신 - orderId: {}", event.orderId());
 
         List<InventoryItem> items = event.orderItems().stream()
@@ -87,7 +87,7 @@ public class OrderEventKafkaConsumer {
 
         try {
             inventoryCommandService.cancel(items);
-            inventoryEventKafkaProducer.publishCancelled(new InventoryCancelledEvent(event.orderId()));
+            inventoryEventKafkaProducer.publishReservationCancelled(new InventoryCancelledEvent(event.orderId()));
         } catch (InventoryException e) {
             log.error("재고 취소 실패 - orderId: {}, reason: {}", event.orderId(), e.getMessage());
         }
@@ -97,12 +97,12 @@ public class OrderEventKafkaConsumer {
 
     // 승인 후 취소: confirm으로 reserved는 이미 0이므로 available만 복원
     @KafkaListener(
-            topics = "order.accepted.cancelled",
+            topics = "order.cancelled",
             groupId = "product-service",
             containerFactory = "orderAcceptedCancelledListenerContainerFactory"
     )
-    public void handleOrderAcceptedCancelled(OrderCancelledEvent event, Acknowledgment ack) {
-        log.info("order.accepted.cancelled 이벤트 수신 - orderId: {}", event.orderId());
+    public void handleOrderCancelled(OrderCancelledEvent event, Acknowledgment ack) {
+        log.info("order.cancelled 이벤트 수신 - orderId: {}", event.orderId());
 
         List<InventoryItem> items = event.orderItems().stream()
                 .map(item -> new InventoryItem(item.productId(), item.quantity()))

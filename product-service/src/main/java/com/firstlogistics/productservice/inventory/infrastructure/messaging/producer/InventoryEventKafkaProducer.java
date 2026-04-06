@@ -17,7 +17,9 @@ public class InventoryEventKafkaProducer {
     private static final String TOPIC_RESERVED = "inventory.reserved";
     private static final String TOPIC_RESERVATION_FAILED = "inventory.reservation.failed";
     private static final String TOPIC_CONFIRMED = "inventory.confirmed";
+    private static final String TOPIC_RESERVATION_CANCELLED = "inventory.reservation.cancelled";
     private static final String TOPIC_CANCELLED = "inventory.cancelled";
+
 
     private final KafkaTemplate<String, Object> inventoryKafkaTemplate;
 
@@ -36,8 +38,13 @@ public class InventoryEventKafkaProducer {
         log.info("이벤트 발행 - topic: {}, orderId: {}", TOPIC_CONFIRMED, event.orderId());
     }
 
+    public void publishReservationCancelled(InventoryCancelledEvent event) {
+        inventoryKafkaTemplate.send(TOPIC_RESERVATION_CANCELLED, event.orderId().toString(), event);
+        log.info("이벤트 발행 - topic: {}, orderId: {}", TOPIC_RESERVATION_CANCELLED, event.orderId());
+    }
+
     public void publishCancelled(InventoryCancelledEvent event) {
         inventoryKafkaTemplate.send(TOPIC_CANCELLED, event.orderId().toString(), event);
-        log.info("이벤트 발행 - topic: {}, orderId: {}", TOPIC_CANCELLED, event.orderId());
+        log.info("이벤트 발행 - topic: {}, orderId: {}", TOPIC_RESERVATION_CANCELLED, event.orderId());
     }
 }
