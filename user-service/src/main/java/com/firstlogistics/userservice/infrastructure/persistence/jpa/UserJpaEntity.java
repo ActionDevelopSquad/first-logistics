@@ -1,9 +1,10 @@
 package com.firstlogistics.userservice.infrastructure.persistence.jpa;
 
 import com.firstlogistics.userservice.domain.entity.User;
+import com.firstlogistics.userservice.domain.enums.ManagerType;
 import com.firstlogistics.userservice.domain.enums.Status;
 import common.jpa.entity.BaseAuditEntity;
-import common.jpa.entity.enums.UserRole;
+import common.security.entity.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -47,8 +48,11 @@ public class UserJpaEntity extends BaseAuditEntity {
     @Column(name = "user_role", nullable = false, length = 30)
     private UserRole userRole;
 
-    @Column(name = "organization_id")
-    private UUID organizationId;
+    @Column(name = "hub_id")
+    private UUID hubId;
+
+    @Column(name = "manager_type")
+    private ManagerType managerType;
 
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;

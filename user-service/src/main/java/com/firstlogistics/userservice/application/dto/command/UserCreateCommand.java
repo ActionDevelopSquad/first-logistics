@@ -1,6 +1,7 @@
 package com.firstlogistics.userservice.application.dto.command;
 
-import common.jpa.entity.enums.UserRole;
+import com.firstlogistics.userservice.domain.enums.ManagerType;
+import common.security.entity.enums.UserRole;
 
 import java.util.UUID;
 
@@ -13,5 +14,6 @@ public record UserCreateCommand(
         String email,
         String slackId,
         UserRole userRole,
-        UUID organizationId
+        UUID hubId,
+        ManagerType managerType
 ) {}

@@ -1,14 +1,16 @@
 package com.firstlogistics.userservice.domain.event;
 
 import com.firstlogistics.userservice.domain.entity.User;
+import com.firstlogistics.userservice.domain.enums.ManagerType;
 import com.firstlogistics.userservice.domain.enums.Status;
-import common.jpa.entity.enums.UserRole;
+import common.security.entity.enums.UserRole;
 
 import java.util.UUID;
 
 public record UserStatusChangedEvent(
         UUID userId,
-        UUID organizationId,
+        UUID hubId,
+        ManagerType managerType,
         UserRole userRole,
         Status status,
         Status previousStatus,
@@ -19,10 +21,11 @@ public record UserStatusChangedEvent(
         String slackId
 ) implements UserEvents
 {
-    public static UserStatusChangedEvent of(User user, UUID organizationId, Status previousStatus) {
+    public static UserStatusChangedEvent of(User user, UUID hubId, Status previousStatus) {
         return new UserStatusChangedEvent(
                 user.getId(),
-                organizationId,
+                hubId,
+                user.getManagerType(),
                 user.getUserRole(),
                 user.getStatus(),
                 previousStatus,

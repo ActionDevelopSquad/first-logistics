@@ -16,13 +16,12 @@ public class UserAssignFailedConsumer {
     private final UserCompensationService userCompensationService;
 
     @KafkaListener(
-            topics = {"hub.manager.assign.failed",
-                      "delivery.manager.assign.failed" },
+            topics = "manager.assign.failed",
             groupId = "user-assign-failed-handler",
             containerFactory = "userAssignListenerContainerFactory"
     )
     public void consume(UserAssignFailedEvent event, Acknowledgment ack) {
-        log.error("담당자 생성 실패 이벤트 수신. userId={}, organizationId={}", event.userId(), event.organizationId());
+        log.error("담당자 생성 실패 이벤트 수신. userId={}, hubId={}", event.userId(), event.organizationId());
 
         try {
             userCompensationService.rollbackUserAssign(event);
