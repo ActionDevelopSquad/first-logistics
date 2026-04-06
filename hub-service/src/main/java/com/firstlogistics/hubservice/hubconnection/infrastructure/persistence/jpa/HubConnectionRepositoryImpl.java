@@ -2,7 +2,6 @@ package com.firstlogistics.hubservice.hubconnection.infrastructure.persistence.j
 
 import com.firstlogistics.hubservice.hub.domain.vo.HubId;
 import com.firstlogistics.hubservice.hubconnection.domain.entity.HubConnection;
-import com.firstlogistics.hubservice.hubconnection.domain.enums.HubConnectionStatus;
 import com.firstlogistics.hubservice.hubconnection.domain.exception.HubConnectionErrorCode;
 import com.firstlogistics.hubservice.hubconnection.domain.exception.HubConnectionException;
 import com.firstlogistics.hubservice.hubconnection.domain.repository.HubConnectionRepository;
@@ -17,6 +16,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
@@ -79,12 +79,12 @@ public class HubConnectionRepositoryImpl implements HubConnectionRepository {
     }
 
     @Override
-    public void delete(HubConnection hubConnection) {
+    public void delete(HubConnection hubConnection, UUID userId) {
         try {
             HubConnectionJpaEntity entity = jpaRepository.findById(hubConnection.getId().id())
                     .orElseThrow(() -> new HubConnectionException(HubConnectionErrorCode.HUB_CONNECTION_NOT_FOUND));
 
-            jpaRepository.delete(entity);
+            entity.softDelete(userId);
             jpaRepository.flush();
             evictAllCache();
         }catch (ObjectOptimisticLockingFailureException e){

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
@@ -92,12 +93,12 @@ public class HubRepositoryImpl implements HubRepository {
     }
 
     @Override
-    public void delete(Hub hub) {
+    public void delete(Hub hub, UUID userId) {
         try {
             HubJpaEntity entity = jpaRepository.findById(hub.getId().id())
                     .orElseThrow(() -> new HubException(HubErrorCode.HUB_NOT_FOUND));
 
-            jpaRepository.delete(entity);
+            entity.softDelete(userId);
             jpaRepository.flush();
             evictHubByIdCache(hub.getId());
             evictHubAllCache();

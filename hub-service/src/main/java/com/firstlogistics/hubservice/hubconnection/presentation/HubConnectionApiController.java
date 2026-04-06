@@ -11,6 +11,9 @@ import com.firstlogistics.hubservice.hubconnection.presentation.dto.response.Hub
 import com.firstlogistics.hubservice.hubconnection.presentation.dto.response.HubConnectionResponse;
 import com.firstlogistics.hubservice.hubconnection.presentation.dto.response.HubRouteResponse;
 import common.response.ApiResponse;
+import common.security.aop.OnlyMaster;
+import common.security.domain.CustomUserDetails;
+import common.security.util.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +32,7 @@ public class HubConnectionApiController {
     private final HubRouteQueryService hubRouteQueryService;
     private final HubConnectionQueryService hubConnectionQueryService;
 
+    @OnlyMaster
     @PostMapping
     public ResponseEntity<ApiResponse<HubConnectionResponse>> create(@Valid @RequestBody CreateHubConnectionRequest request){
         HubConnectionResponse response = HubConnectionResponse.from(commandService.create(request.toCommand()));
@@ -36,6 +40,7 @@ public class HubConnectionApiController {
                 .body(ApiResponse.success(HubConnectionSuccessCode.HUB_CONNECTION_CREATED,response));
     }
 
+    @OnlyMaster
     @GetMapping("/routes")
     public ResponseEntity<ApiResponse<HubRouteResponse>> getRoutes(@RequestParam UUID sourceHubId,
                                                                    @RequestParam UUID destinationHubId,
@@ -63,6 +68,7 @@ public class HubConnectionApiController {
                 .body(ApiResponse.success(HubConnectionSuccessCode.HUB_CONNECTION_LIST_RETRIEVED, response));
     }
 
+    @OnlyMaster
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<HubConnectionResponse>> update(@PathVariable UUID id, @Valid @RequestBody UpdateHubConnectionRequest request) {
         HubConnectionResponse response = HubConnectionResponse.from(commandService.update(id, request.toCommand()));
@@ -73,6 +79,7 @@ public class HubConnectionApiController {
     }
 
 
+    @OnlyMaster
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<HubConnectionResponse>> changeStatus(@PathVariable UUID id, @Valid @RequestBody ChangeHubConnectionStatusRequest request) {
         HubConnectionResponse response = HubConnectionResponse.from(commandService.changeStatus(id, request.toCommand()));
@@ -82,9 +89,11 @@ public class HubConnectionApiController {
 
     }
 
+    @OnlyMaster
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable UUID id){
-        commandService.delete(id);
+        CustomUserDetails user = SecurityUtils.currentUser();
+        commandService.delete(id,user.getUserId());
         return ResponseEntity.status(HubConnectionSuccessCode.HUB_CONNECTION_DELETED.getStatus())
                 .body(ApiResponse.success(HubConnectionSuccessCode.HUB_CONNECTION_DELETED,null));
     }

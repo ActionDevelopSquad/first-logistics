@@ -4,6 +4,7 @@ import com.firstlogistics.hubservice.hub.domain.entity.Hub;
 import com.firstlogistics.hubservice.hub.domain.vo.HubId;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface HubRepository {
 
@@ -17,5 +18,5 @@ public interface HubRepository {
 
     Hub findById(HubId hubId);
 
-    void delete(Hub hub);
+    void delete(Hub hub, UUID userId);
 }

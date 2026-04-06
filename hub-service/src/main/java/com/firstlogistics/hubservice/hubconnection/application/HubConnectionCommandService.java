@@ -72,9 +72,9 @@ public class HubConnectionCommandService {
     }
 
     @Transactional
-    public void delete(UUID hubConnectionId){
+    public void delete(UUID hubConnectionId, UUID userId){
         HubConnection connection = hubConnectionRepository.findById(HubConnectionId.of(hubConnectionId));
-        hubConnectionRepository.delete(connection);
+        hubConnectionRepository.delete(connection, userId);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
