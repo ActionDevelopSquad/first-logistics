@@ -12,7 +12,6 @@ import com.firstlogistics.hubservice.hubconnection.presentation.dto.response.Hub
 import com.firstlogistics.hubservice.hubconnection.presentation.dto.response.HubRouteResponse;
 import common.response.ApiResponse;
 import common.security.aop.OnlyMaster;
-import common.security.domain.CustomUserDetails;
 import common.security.util.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +26,9 @@ import java.util.UUID;
 @RequestMapping("/api/v1/hub-connections")
 @RequiredArgsConstructor
 public class HubConnectionApiController {
+    private static final UUID SYSTEM_UUID =
+            UUID.fromString("00000000-0000-0000-0000-000000000000");
+
 
     private final HubConnectionCommandService commandService;
     private final HubRouteQueryService hubRouteQueryService;
@@ -91,10 +93,20 @@ public class HubConnectionApiController {
 
     @OnlyMaster
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable UUID id){
-        CustomUserDetails user = SecurityUtils.currentUser();
-        commandService.delete(id,user.getUserId());
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable UUID id,  @RequestHeader(value = "X-Forward-Service-Code", required = false) String serviceCode){
+        UUID callerId = resolveCallerId(serviceCode);
+        commandService.delete(id,callerId);
         return ResponseEntity.status(HubConnectionSuccessCode.HUB_CONNECTION_DELETED.getStatus())
                 .body(ApiResponse.success(HubConnectionSuccessCode.HUB_CONNECTION_DELETED,null));
+    }
+
+    private boolean isInternalRequest(String serviceCode) {
+        return serviceCode != null && !serviceCode.isBlank();
+    }
+
+    private UUID resolveCallerId(String serviceCode) {
+        return isInternalRequest(serviceCode)
+                ? SYSTEM_UUID
+                : SecurityUtils.currentUser().getUserId();
     }
 }

@@ -27,6 +27,10 @@ public class HubManagerQueryService {
         validateHubManager(hubManager, userId, userRole);
         return HubManagerResult.from(hubManager);
     }
+    public HubManagerResult getHubManager(UUID hubManagerId){
+        HubManager hubManager = repository.findById(HubManagerId.of(hubManagerId));
+        return HubManagerResult.from(hubManager);
+    }
 
     public Page<HubManagerResult> searchHubManagers(SearchHubManagersQuery query, Pageable pageable){
         Page<HubManager> hubManagers = repository.searchByCondition(query.toSpec(), pageable);

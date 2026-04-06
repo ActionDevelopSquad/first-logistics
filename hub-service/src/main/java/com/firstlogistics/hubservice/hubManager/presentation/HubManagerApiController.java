@@ -25,15 +25,27 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/hub-managers")
 public class HubManagerApiController {
+    private static final UUID SYSTEM_UUID =
+            UUID.fromString("00000000-0000-0000-0000-000000000000");
+
     private final HubManagerQueryService queryService;
     private final HubManagerCommandService commandService;
 
 
     @RequireRole({UserRole.HUB_MANAGER, UserRole.MASTER})
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<HubManagerResponse>> getHubManager(@PathVariable UUID id){
-        CustomUserDetails user = SecurityUtils.currentUser();
-        HubManagerResponse response = HubManagerResponse.from(queryService.getHubManager(id, user.getUserId(), user.getRole()));
+    public ResponseEntity<ApiResponse<HubManagerResponse>> getHubManager(@PathVariable UUID id, @RequestHeader(value = "X-Forward-Service-Code", required = false) String serviceCode){
+        HubManagerResponse response;
+
+        if (isInternalRequest(serviceCode)) {
+            response = HubManagerResponse.from(queryService.getHubManager(id));
+        } else {
+            CustomUserDetails user = SecurityUtils.currentUser();
+            response = HubManagerResponse.from(
+                    queryService.getHubManager(id, user.getUserId(), user.getRole())
+            );
+        }
+
         return ResponseEntity.status(HubManagerSuccessCode.HUB_MANAGER_RETRIEVED.getStatus())
                 .body(ApiResponse.success(HubManagerSuccessCode.HUB_MANAGER_RETRIEVED,response));
     }
@@ -64,11 +76,21 @@ public class HubManagerApiController {
 
     @OnlyMaster
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteHubManager(@PathVariable UUID id){
-        CustomUserDetails user = SecurityUtils.currentUser();
-        commandService.deleteHubManager(id, user.getUserId());
+    public ResponseEntity<ApiResponse<Void>> deleteHubManager(@PathVariable UUID id, @RequestHeader(value = "X-Forward-Service-Code", required = false) String serviceCode){
+        UUID callerId = resolveCallerId(serviceCode);
+        commandService.deleteHubManager(id, callerId);
         return ResponseEntity.status(HubManagerSuccessCode.HUB_MANAGER_DELETED.getStatus())
                 .body(ApiResponse.success(HubManagerSuccessCode.HUB_MANAGER_DELETED,null));
+    }
+
+    private boolean isInternalRequest(String serviceCode) {
+        return serviceCode != null && !serviceCode.isBlank();
+    }
+
+    private UUID resolveCallerId(String serviceCode) {
+        return isInternalRequest(serviceCode)
+                ? SYSTEM_UUID
+                : SecurityUtils.currentUser().getUserId();
     }
 
 }
