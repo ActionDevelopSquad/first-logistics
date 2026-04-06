@@ -15,6 +15,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import common.security.aop.OnlyMaster;
 
 import java.util.UUID;
 
@@ -26,6 +27,7 @@ public class NotificationController {
     private final NotificationQueryService notificationQueryService;
     private final NotificationCommandService notificationCommandService;
 
+    @OnlyMaster
     @GetMapping
     public ResponseEntity<ApiResponse<NotificationPageResponse>> search(
             @Valid @ModelAttribute SearchNotificationRequest request,
@@ -43,6 +45,7 @@ public class NotificationController {
         return ResponseEntity.ok(ApiResponse.success(NotificationSuccessCode.NOTIFICATION_LIST_FOUND, response));
     }
 
+    @OnlyMaster
     @GetMapping("/{notificationId}")
     public ResponseEntity<ApiResponse<NotificationDetailResponse>> getNotification(
             @PathVariable UUID notificationId
@@ -54,6 +57,7 @@ public class NotificationController {
         return ResponseEntity.ok(ApiResponse.success(NotificationSuccessCode.NOTIFICATION_FOUND, result));
     }
 
+    @OnlyMaster
     @DeleteMapping("/{notificationId}")
     public ResponseEntity<ApiResponse<Void>> deleteNotification(
             @PathVariable UUID notificationId,
