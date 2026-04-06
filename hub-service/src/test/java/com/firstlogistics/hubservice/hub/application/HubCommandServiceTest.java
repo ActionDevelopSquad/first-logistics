@@ -215,17 +215,12 @@ public class HubCommandServiceTest {
     @Test
     @DisplayName("실패: 허브 상태가 null이면 상태 변경 불가")
     void changeStatus_fail_invalidStatus() {
-        // given
-        UUID hubUuid = UUID.randomUUID();
-        ChangeHubStatusCommand command = new ChangeHubStatusCommand((HubStatus) null);
-
-        // when & then
-        assertThatThrownBy(() -> hubCommandService.changeStatus(hubUuid, command))
+        assertThatThrownBy(() -> new ChangeHubStatusCommand((HubStatus) null))
                 .isInstanceOf(HubException.class)
                 .extracting("errorCode")
                 .isEqualTo(HubErrorCode.INVALID_HUB_STATUS);
-        verify(hubRepository, never()).findById(any(HubId.class));
     }
+
 
     @Test
     @DisplayName("성공: 허브 삭제 후 삭제 이벤트 발행")
