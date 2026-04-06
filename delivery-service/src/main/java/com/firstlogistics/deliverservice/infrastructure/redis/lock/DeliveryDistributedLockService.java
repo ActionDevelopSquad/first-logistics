@@ -1,8 +1,8 @@
 package com.firstlogistics.deliverservice.infrastructure.redis.lock;
 
 import com.firstlogistics.deliverservice.application.port.DistributedLockPort;
-import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
-import com.firstlogistics.deliverservice.domain.exception.DistributedLockException;
+import com.firstlogistics.deliverservice.infrastructure.exception.DistributedLockException;
+import com.firstlogistics.deliverservice.infrastructure.exception.InfraErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -31,14 +31,14 @@ public class DeliveryDistributedLockService implements DistributedLockPort {
             for (RLock lock : locks) {
                 boolean locked = lock.tryLock(WAIT_TIME_SECONDS, LEASE_TIME_SECONDS, TimeUnit.SECONDS);
                 if (!locked) {
-                    throw new DistributedLockException(DeliveryErrorCode.DELIVERY_MANAGER_ASSIGN_LOCK_ACQUISITION_FAILED);
+                    throw new DistributedLockException(InfraErrorCode.LOCK_ACQUISITION_FAILED);
                 }
             }
 
             return action.get();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new DistributedLockException(DeliveryErrorCode.DELIVERY_MANAGER_ASSIGN_LOCK_ACQUISITION_FAILED);
+            throw new DistributedLockException(InfraErrorCode.LOCK_ACQUISITION_FAILED);
         } finally {
             unlockAll(locks);
         }

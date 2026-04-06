@@ -8,5 +8,5 @@ public interface CompanyPort {
 
 	CompanyResponse getCompany(UUID companyId);
 
-	CompanyResponse getCompanyByUserId(UUID userId);
+	CompanyResponse getCompanyManager(UUID userId);
 }

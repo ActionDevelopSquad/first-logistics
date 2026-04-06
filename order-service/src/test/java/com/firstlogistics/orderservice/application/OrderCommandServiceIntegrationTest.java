@@ -1,8 +1,11 @@
 package com.firstlogistics.orderservice.application;
 
-import com.firstlogistics.orderservice.application.dto.CreateOrderCommand;
+import com.firstlogistics.orderservice.application.dto.command.CreateOrderCommand;
+import com.firstlogistics.orderservice.application.port.CompanyPort;
+import com.firstlogistics.orderservice.application.port.dto.CompanyResponse;
 import com.firstlogistics.orderservice.domain.event.OrderCreatedEvent;
 import com.firstlogistics.orderservice.domain.repository.OrderRepository;
+import com.firstlogistics.orderservice.application.port.OrderAuthorityCheckPort;
 import com.firstlogistics.orderservice.domain.vo.OrderId;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -43,15 +46,27 @@ class OrderCommandServiceIntegrationTest {
     @MockitoBean
     private KafkaTemplate<String, Object> orderKafkaTemplate;
 
+    @MockitoBean
+    private CompanyPort companyPort;
+
+    @MockitoBean
+    private OrderAuthorityCheckPort orderAuthorityCheck;
+
     @Test
     @Rollback(false) // 이벤트핸들러 동작 확인하기 위해 롤백 안함
     @DisplayName("서비스를 통해 주문 생성 시 DB 저장과 이벤트 발행이 연쇄적으로 발생하는지 확인")
     void order_create_service_test() {
+        // given
+        UUID supplierId = UUID.randomUUID();
+        UUID hubId = UUID.randomUUID();
+        CreateOrderCommand command = createTestCommand(supplierId);
+
+
         Mockito.when(orderKafkaTemplate.send(anyString(), any(), any()))
                 .thenReturn(java.util.concurrent.CompletableFuture.completedFuture(null));
 
-        // given
-        CreateOrderCommand command = createTestCommand(); // 테스트 데이터 생성
+        Mockito.when(companyPort.getCompanyById(supplierId))
+                .thenReturn(new CompanyResponse(supplierId, hubId, UUID.randomUUID()));
 
         // when
         UUID createdOrderId = orderCommandService.createOrder(command);
@@ -64,22 +79,19 @@ class OrderCommandServiceIntegrationTest {
         verify(orderKafkaTemplate, times(1)).send(anyString(), any(), any());
     }
 
-    private CreateOrderCommand createTestCommand() {
+    private CreateOrderCommand createTestCommand(UUID supplierId) {
         return new CreateOrderCommand(
-                UUID.randomUUID(),           // supplierCompanyId
-                UUID.randomUUID(),           // supplierManagerId
-                UUID.randomUUID(),           // receiverCompanyId
-                UUID.randomUUID(),           // receiverManagerId
-                "서울시 강남구",           // roadAddress
-                "00빌딩",                // detailAddress
-                LocalDateTime.now().plusDays(1), // dueDate (하루 뒤)
-                "문 앞에 놔주세요",             // requestMemo
-                List.of(                     // 주문 상품 목록
+                supplierId,
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                "배송 주소",
+                "상세 주소",
+                LocalDateTime.now().plusDays(1),
+                "문 앞에 놔주세요",
+                List.of(
                         new CreateOrderCommand.OrderItemCommand(
-                                UUID.randomUUID(),   // productId
-                                "맛있는 사과",         // productName
-                                2000L,               // unitPrice
-                                5                    // quantity
+                                UUID.randomUUID(), "맛있는 사과", 2000L, 5
                         )
                 )
         );

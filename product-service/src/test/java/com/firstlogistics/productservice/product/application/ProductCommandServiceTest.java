@@ -1,16 +1,15 @@
 package com.firstlogistics.productservice.product.application;
 
-import com.firstlogistics.productservice.inventory.domain.entity.Inventory;
-import com.firstlogistics.productservice.inventory.domain.repository.InventoryRepository;
 import com.firstlogistics.productservice.product.application.dto.command.CreateProductCommand;
 import com.firstlogistics.productservice.product.application.dto.result.ProductResult;
-import com.firstlogistics.productservice.product.application.port.CompanyPort;
 import com.firstlogistics.productservice.product.application.port.CompanyPort.CompanyInfo;
 import com.firstlogistics.productservice.product.domain.entity.Product;
 import com.firstlogistics.productservice.product.domain.enums.ProductStatus;
+import com.firstlogistics.productservice.product.domain.event.ProductCreatedEvent;
 import com.firstlogistics.productservice.product.domain.exception.ProductErrorCode;
 import com.firstlogistics.productservice.product.domain.exception.ProductException;
 import com.firstlogistics.productservice.product.domain.repository.ProductRepository;
+import common.event.Events;
 import common.security.entity.enums.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -28,7 +28,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,10 +37,7 @@ class ProductCommandServiceTest {
     private ProductRepository productRepository;
 
     @Mock
-    private InventoryRepository inventoryRepository;
-
-    @Mock
-    private CompanyPort companyPort;
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @InjectMocks
     private ProductCommandService productCommandService;
@@ -50,6 +46,13 @@ class ProductCommandServiceTest {
     private static final UUID HUB_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
     private static final UUID MANAGER_ID = UUID.fromString("00000000-0000-0000-0000-000000000003");
     private static final UUID OTHER_USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000099");
+
+    private static final CompanyInfo COMPANY_INFO = new CompanyInfo(COMPANY_ID, HUB_ID, MANAGER_ID);
+
+    @BeforeEach
+    void initEvents() {
+        new Events().init(applicationEventPublisher);
+    }
 
     @Nested
     @DisplayName("상품 등록 (register)")
@@ -73,22 +76,29 @@ class ProductCommandServiceTest {
         @DisplayName("MASTER 권한으로 상품을 등록하면 저장된 상품 정보를 반환한다")
         void register_master_success() {
             // given
-            given(companyPort.getCompany(COMPANY_ID))
-                    .willReturn(new CompanyInfo(COMPANY_ID, HUB_ID, MANAGER_ID));
-            given(productRepository.save(any()))
-                    .willAnswer(invocation -> invocation.getArgument(0));
-            given(inventoryRepository.save(any()))
-                    .willAnswer(invocation -> invocation.getArgument(0));
+            given(productRepository.save(any())).willAnswer(invocation -> invocation.getArgument(0));
 
             // when
-            ProductResult result = productCommandService.register(masterCommand);
+            ProductResult result = productCommandService.register(masterCommand, COMPANY_INFO);
 
             // then
             assertThat(result.companyId()).isEqualTo(COMPANY_ID);
             assertThat(result.hubId()).isEqualTo(HUB_ID);
             assertThat(result.name()).isEqualTo("마른오징어");
             assertThat(result.status()).isEqualTo(ProductStatus.SELLING.name());
-            verify(inventoryRepository).save(any(Inventory.class));
+        }
+
+        @Test
+        @DisplayName("상품 등록 후 ProductCreatedEvent가 발행된다")
+        void register_publishesProductCreatedEvent() {
+            // given
+            given(productRepository.save(any())).willAnswer(invocation -> invocation.getArgument(0));
+
+            // when
+            productCommandService.register(masterCommand, COMPANY_INFO);
+
+            // then
+            verify(applicationEventPublisher).publishEvent(any(ProductCreatedEvent.class));
         }
 
         @Test
@@ -96,22 +106,13 @@ class ProductCommandServiceTest {
         void register_companyManager_ownCompany_success() {
             // given
             CreateProductCommand command = new CreateProductCommand(
-                    MANAGER_ID,
-                    UserRole.COMPANY_MANAGER.name(),
-                    COMPANY_ID,
-                    "마른오징어",
-                    BigDecimal.valueOf(15000),
-                    100
+                    MANAGER_ID, UserRole.COMPANY_MANAGER.name(), COMPANY_ID,
+                    "마른오징어", BigDecimal.valueOf(15000), 100
             );
-            given(companyPort.getCompany(COMPANY_ID))
-                    .willReturn(new CompanyInfo(COMPANY_ID, HUB_ID, MANAGER_ID));
-            given(productRepository.save(any()))
-                    .willAnswer(invocation -> invocation.getArgument(0));
-            given(inventoryRepository.save(any()))
-                    .willAnswer(invocation -> invocation.getArgument(0));
+            given(productRepository.save(any())).willAnswer(invocation -> invocation.getArgument(0));
 
             // when
-            ProductResult result = productCommandService.register(command);
+            ProductResult result = productCommandService.register(command, COMPANY_INFO);
 
             // then
             assertThat(result.companyId()).isEqualTo(COMPANY_ID);
@@ -122,51 +123,26 @@ class ProductCommandServiceTest {
         void register_companyManager_otherCompany_throwsException() {
             // given
             CreateProductCommand command = new CreateProductCommand(
-                    OTHER_USER_ID,
-                    UserRole.COMPANY_MANAGER.name(),
-                    COMPANY_ID,
-                    "마른오징어",
-                    BigDecimal.valueOf(15000),
-                    100
+                    OTHER_USER_ID, UserRole.COMPANY_MANAGER.name(), COMPANY_ID,
+                    "마른오징어", BigDecimal.valueOf(15000), 100
             );
-            given(companyPort.getCompany(COMPANY_ID))
-                    .willReturn(new CompanyInfo(COMPANY_ID, HUB_ID, MANAGER_ID));
 
             // when & then
-            assertThatThrownBy(() -> productCommandService.register(command))
+            assertThatThrownBy(() -> productCommandService.register(command, COMPANY_INFO))
                     .isInstanceOf(ProductException.class)
                     .hasMessageContaining(ProductErrorCode.UNAUTHORIZED_COMPANY_ACCESS.getMessage());
         }
 
         @Test
-        @DisplayName("업체가 존재하지 않으면 예외가 발생한다")
-        void register_companyNotFound_throwsException() {
+        @DisplayName("상품 등록 시 Product가 저장된다")
+        void register_savesProduct() {
             // given
-            willThrow(new ProductException(ProductErrorCode.COMPANY_NOT_FOUND))
-                    .given(companyPort).getCompany(COMPANY_ID);
-
-            // when & then
-            assertThatThrownBy(() -> productCommandService.register(masterCommand))
-                    .isInstanceOf(ProductException.class)
-                    .hasMessageContaining(ProductErrorCode.COMPANY_NOT_FOUND.getMessage());
-        }
-
-        @Test
-        @DisplayName("상품 등록 시 초기 재고가 함께 생성된다")
-        void register_createsInventoryWithStock() {
-            // given
-            given(companyPort.getCompany(COMPANY_ID))
-                    .willReturn(new CompanyInfo(COMPANY_ID, HUB_ID, MANAGER_ID));
-            given(productRepository.save(any()))
-                    .willAnswer(invocation -> invocation.getArgument(0));
-            given(inventoryRepository.save(any()))
-                    .willAnswer(invocation -> invocation.getArgument(0));
+            given(productRepository.save(any())).willAnswer(invocation -> invocation.getArgument(0));
 
             // when
-            productCommandService.register(masterCommand);
+            productCommandService.register(masterCommand, COMPANY_INFO);
 
             // then
-            verify(inventoryRepository).save(any(Inventory.class));
             verify(productRepository).save(any(Product.class));
         }
     }

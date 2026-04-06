@@ -1,5 +1,6 @@
 package com.firstlogistics.deliverservice.application.dto.command;
 
+import common.security.entity.enums.UserRole;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 
@@ -7,7 +8,7 @@ import java.util.UUID;
 
 public record UpdateDeliveryCommand(
 	UUID deliveryId,
-	String role,
+	UserRole role,
 	UUID userId,
 	UUID receiverId,
 	String receiverSlackId

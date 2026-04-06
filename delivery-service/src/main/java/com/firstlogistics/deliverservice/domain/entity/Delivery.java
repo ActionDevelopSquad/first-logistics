@@ -143,7 +143,8 @@ public class Delivery {
 		this.status = DeliveryStatus.COMPLETED;
 	}
 
-	public void cancelByOrder() {
+	public void cancelDelivery() {
+		validateStatusTransition(Set.of(DeliveryStatus.CREATED));
 		this.status = DeliveryStatus.CANCELLED;
 	}
 

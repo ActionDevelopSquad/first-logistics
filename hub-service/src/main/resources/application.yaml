@@ -1,12 +1,16 @@
 spring:
   application:
     name: hub-service
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+
 
   datasource:
     url: ${POSTGRES_DB_URL}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -15,9 +19,37 @@ spring:
       hibernate:
         format_sql: true
         default_schema: hub
+
+  cache:
+    type: redis
+
   data:
     redis:
       url: ${REDIS_URL}
 
+
+route:
+  default-policy: HYBRID
+
 server:
   port: 8083
+
+naver:
+  map:
+    url: https://maps.apigw.ntruss.com
+    client-id: ${NAVER_MAP_CLIENT_ID}
+    client-secret: ${NAVER_MAP_CLIENT_SECRET}
+
+company-service:
+  url: ${COMPANY_SERVICE_URL}
+
+
+feign:
+  client:
+    config:
+      company-service:
+        connectTimeout: 3000
+        readTimeout: 5000
+      naver-map-client:
+        connectTimeout: 3000
+        readTimeout: 5000

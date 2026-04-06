@@ -1,12 +1,15 @@
 package com.firstlogistics.orderservice.infrastructure.persistence.jpa;
 
 import com.firstlogistics.orderservice.domain.entity.Order;
+import com.firstlogistics.orderservice.domain.exception.OrderErrorCode;
+import com.firstlogistics.orderservice.domain.exception.OrderException;
 import com.firstlogistics.orderservice.domain.repository.OrderRepository;
 import com.firstlogistics.orderservice.domain.vo.OrderId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
@@ -30,6 +33,13 @@ public class OrderRepositoryImpl implements OrderRepository {
     @Override
     public boolean existsById(OrderId id) {
         return jpaRepository.existsById(id.id());
+    }
+
+    @Override
+    public void deleteById(OrderId id, UUID userId) {
+        OrderJpaEntity order = jpaRepository.findById(id.id())
+                .orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));
+        order.softDelete(userId);
     }
 
 }

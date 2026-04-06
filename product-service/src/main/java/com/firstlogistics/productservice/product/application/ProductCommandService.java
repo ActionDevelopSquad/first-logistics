@@ -1,16 +1,15 @@
 package com.firstlogistics.productservice.product.application;
 
-import com.firstlogistics.productservice.inventory.domain.entity.Inventory;
-import com.firstlogistics.productservice.inventory.domain.repository.InventoryRepository;
 import com.firstlogistics.productservice.product.application.dto.command.CreateProductCommand;
 import com.firstlogistics.productservice.product.application.dto.result.ProductResult;
-import com.firstlogistics.productservice.product.application.port.CompanyPort;
 import com.firstlogistics.productservice.product.application.port.CompanyPort.CompanyInfo;
 import com.firstlogistics.productservice.product.domain.entity.Product;
+import com.firstlogistics.productservice.product.domain.event.ProductCreatedEvent;
 import com.firstlogistics.productservice.product.domain.exception.ProductErrorCode;
 import com.firstlogistics.productservice.product.domain.exception.ProductException;
 import com.firstlogistics.productservice.product.domain.repository.ProductRepository;
 import com.firstlogistics.productservice.product.domain.vo.Money;
+import common.event.Events;
 import common.security.entity.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,13 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProductCommandService {
 
     private final ProductRepository productRepository;
-    private final InventoryRepository inventoryRepository;
-    private final CompanyPort companyPort;
 
     @Transactional
-    public ProductResult register(CreateProductCommand command) {
-        CompanyInfo companyInfo = companyPort.getCompany(command.companyId());
-
+    public ProductResult register(CreateProductCommand command, CompanyInfo companyInfo) {
         validateCompanyAccess(command, companyInfo);
 
         Product product = Product.create(
@@ -39,8 +34,7 @@ public class ProductCommandService {
 
         Product saved = productRepository.save(product);
 
-        Inventory inventory = Inventory.create(saved.getId(), command.stock(), 0);
-        inventoryRepository.save(inventory);
+        Events.trigger(new ProductCreatedEvent(saved.getId(), command.stock()));
 
         return ProductResult.from(saved);
     }

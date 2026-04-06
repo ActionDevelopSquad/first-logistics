@@ -6,12 +6,18 @@ import com.firstlogistics.hubservice.hubconnection.domain.exception.HubConnectio
 import com.firstlogistics.hubservice.hubconnection.domain.exception.HubConnectionException;
 import com.firstlogistics.hubservice.hubconnection.domain.repository.HubConnectionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
 public class HubConnectionRepositoryImpl implements HubConnectionRepository {
+    private static final String HUB_CONNECTION_ALL_CACHE = "hubConnection:all";
+
     private final HubConnectionJpaRepository jpaRepository;
     private final HubConnectionMapper mapper;
 
@@ -21,6 +27,7 @@ public class HubConnectionRepositoryImpl implements HubConnectionRepository {
     }
 
     @Override
+    @CacheEvict(cacheNames = HUB_CONNECTION_ALL_CACHE, allEntries = true)
     public HubConnection save(HubConnection hubConnection) {
         try{
             HubConnectionJpaEntity savedEntity =  jpaRepository.save(mapper.toJpaEntity(hubConnection));
@@ -31,6 +38,13 @@ public class HubConnectionRepositoryImpl implements HubConnectionRepository {
                 throw new HubConnectionException(HubConnectionErrorCode.DUPLICATE_HUB_CONNECTION);
             throw e;
         }
+    }
+
+    @Override
+    @Cacheable(cacheNames = HUB_CONNECTION_ALL_CACHE)
+    public List<HubConnection> findAll() {
+        List<HubConnectionJpaEntity> entities = jpaRepository.findAll();
+        return entities.stream().map(mapper::toDomain).toList();
     }
 
     private boolean hasConstraintName(Throwable throwable, String expectedConstraintName ){

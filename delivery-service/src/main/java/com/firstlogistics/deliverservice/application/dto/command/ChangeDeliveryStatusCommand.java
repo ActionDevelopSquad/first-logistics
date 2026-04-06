@@ -6,17 +6,15 @@ import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import java.util.UUID;
 
 public record ChangeDeliveryStatusCommand(
-	UUID deliveryId,
-	String role,
-	UUID userId
+	UUID deliveryId
 ) {
 	public ChangeDeliveryStatusCommand {
-		if (deliveryId == null || role == null || userId == null) {
+		if (deliveryId == null) {
 			throw new DeliveryException(DeliveryErrorCode.INVALID_COMMAND_PARAMS);
 		}
 	}
 
-	public static ChangeDeliveryStatusCommand of(UUID deliveryId, String role, UUID userId) {
-		return new ChangeDeliveryStatusCommand(deliveryId, role, userId);
+	public static ChangeDeliveryStatusCommand of(UUID deliveryId) {
+		return new ChangeDeliveryStatusCommand(deliveryId);
 	}
 }

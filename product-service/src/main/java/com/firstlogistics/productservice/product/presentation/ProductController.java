@@ -2,6 +2,7 @@ package com.firstlogistics.productservice.product.presentation;
 
 import com.firstlogistics.productservice.product.application.ProductCommandService;
 import com.firstlogistics.productservice.product.application.ProductQueryService;
+import com.firstlogistics.productservice.product.application.ProductCommandFacade;
 import com.firstlogistics.productservice.product.presentation.dto.request.CreateProductRequest;
 import com.firstlogistics.productservice.product.presentation.dto.request.GetProductsRequest;
 import com.firstlogistics.productservice.product.presentation.dto.response.CreateProductResponse;
@@ -11,9 +12,9 @@ import com.firstlogistics.productservice.product.presentation.dto.response.Stock
 import common.response.ApiResponse;
 import common.response.CommonSuccessCode;
 import common.security.entity.enums.UserRole;
-import common.security.security.aop.RequireRole;
-import common.security.security.domain.CustomUserDetails;
-import common.security.security.util.SecurityUtils;
+import common.security.aop.RequireRole;
+import common.security.domain.CustomUserDetails;
+import common.security.util.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import java.util.UUID;
@@ -35,17 +36,16 @@ public class ProductController {
 
     private final ProductCommandService productCommandService;
     private final ProductQueryService productQueryService;
+    private final ProductCommandFacade productCommandFacade;
 
     @RequireRole({UserRole.MASTER, UserRole.HUB_MANAGER, UserRole.COMPANY_MANAGER})
     @PostMapping
     public ResponseEntity<ApiResponse<CreateProductResponse>> register(
             @Valid @RequestBody CreateProductRequest request) {
         CustomUserDetails currentUser = SecurityUtils.currentUser();
-        CreateProductResponse response = CreateProductResponse.from(
-                productCommandService.register(
-                        request.toCommand(currentUser.getUserId(), currentUser.getRole().name())));
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(CommonSuccessCode.CREATED, response));
+
+        CreateProductResponse response = CreateProductResponse.from(productCommandFacade.register(request.toCommand(currentUser.getUserId(), currentUser.getRole().name())));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(CommonSuccessCode.CREATED, response));
     }
 
     @GetMapping("/{productId}")

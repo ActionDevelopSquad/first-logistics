@@ -6,9 +6,9 @@ import com.firstlogistics.deliverservice.application.facade.DeliveryCommandFacad
 import com.firstlogistics.deliverservice.infrastructure.feign.CompanyClient;
 import com.firstlogistics.deliverservice.infrastructure.feign.HubClient;
 import com.firstlogistics.deliverservice.infrastructure.feign.UserClient;
-import com.firstlogistics.deliverservice.domain.exception.DeliveryCreationException;
-import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
-import com.firstlogistics.deliverservice.infrastructure.messaging.config.KafkaConsumerConfig;
+import com.firstlogistics.deliverservice.infrastructure.exception.InfraErrorCode;
+import com.firstlogistics.deliverservice.infrastructure.exception.InfraException;
+import common.kafka.config.KafkaConsumerConfig;
 import com.firstlogistics.deliverservice.domain.event.OrderAcceptedEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -42,7 +42,10 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
 
 @Slf4j
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@SpringBootTest(
+	webEnvironment = SpringBootTest.WebEnvironment.NONE,
+	properties = "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration,common.security.config.SecurityConfig,common.security.config.CommonSecurityAutoConfig,common.security.config.FeignAuthPropagationConfig"
+)
 @ActiveProfiles("test")
 @EmbeddedKafka(partitions = 1, topics = {"order.accepted", "delivery.creation.failed", "order.accepted.DLT"},
 		bootstrapServersProperty = "spring.kafka.bootstrap-servers")
@@ -84,7 +87,7 @@ class OrderEventKafkaConsumerTest {
 
 			// then
 			await().atMost(5, TimeUnit.SECONDS).untilAsserted(() ->
-					then(deliveryCommandFacade).should().createDelivery(any(CreateDeliveryCommand.class))
+					then(deliveryCommandFacade).should().createDeliveryBySystem(any(CreateDeliveryCommand.class))
 			);
 		}
 
@@ -105,18 +108,18 @@ class OrderEventKafkaConsumerTest {
 			// createDelivery 호출 여부를 확정하기 전에 단언이 통과하는 레이스 컨디션이 발생한다.
 			await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
 				then(deliveryQueryService).should().existsByOrderId(event.orderId());
-				then(deliveryCommandFacade).should(never()).createDelivery(any());
+				then(deliveryCommandFacade).should(never()).createDeliveryBySystem(any());
 			});
 		}
 
 		@Test
-		@DisplayName("DeliveryCreationException - delivery.creation.failed Saga 보상 발행")
-		void deliveryCreationException_publishesSagaCompensation() {
+		@DisplayName("InfraException - delivery.creation.failed Saga 보상 발행")
+		void infraException_publishesSagaCompensation() {
 			// given
 			OrderAcceptedEvent event = createEvent();
 			given(deliveryQueryService.existsByOrderId(event.orderId())).willReturn(false);
-			given(deliveryCommandFacade.createDelivery(any()))
-					.willThrow(new DeliveryCreationException(DeliveryErrorCode.HUB_NOT_FOUND));
+			given(deliveryCommandFacade.createDeliveryBySystem(any()))
+					.willThrow(new InfraException(InfraErrorCode.HUB_NOT_FOUND));
 
 			// subscribe 대신 assign + seekToBeginning: 그룹 조인 없이 바로 파티션 읽기 (타이밍 문제 방지)
 			try (KafkaConsumer<String, String> sagaConsumer = createTestConsumer("saga-test")) {

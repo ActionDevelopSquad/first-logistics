@@ -7,8 +7,7 @@ public enum DeliveryStatus {
 	HUB_ARRIVED("허브 도착"),
 	FOR_COMPANY_MOVING("업체로 이동중"),
 	COMPLETED("배송 완료"),
-	CANCELLED("배송 취소"),
-	CANCEL_REQUESTED("배송 취소 대기");
+	CANCELLED("배송 취소");
 
 	private final String description;
 

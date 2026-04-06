@@ -8,15 +8,3 @@ spring:
     hibernate:
       ddl-auto: create-drop
     show-sql: false
-  ai:
-    openai:
-      api-key: test-key
-      chat:
-        options:
-          model: gpt-4o-mini
-      embedding:
-        options:
-          model: text-embedding-3-small
-    vectorstore:
-      pgvector:
-        initialize-schema: false

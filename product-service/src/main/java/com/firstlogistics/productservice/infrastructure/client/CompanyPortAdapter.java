@@ -5,9 +5,10 @@ import com.firstlogistics.productservice.product.application.port.CompanyPort;
 import com.firstlogistics.productservice.product.domain.exception.ProductErrorCode;
 import com.firstlogistics.productservice.product.domain.exception.ProductException;
 import feign.FeignException;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -26,6 +27,8 @@ public class CompanyPortAdapter implements CompanyPort {
             return new CompanyInfo(data.id(), data.hubId(), data.managerId());
         } catch (FeignException.NotFound e) {
             throw new ProductException(ProductErrorCode.COMPANY_NOT_FOUND);
+        } catch (FeignException e) {
+            throw new ProductException(ProductErrorCode.COMPANY_SERVICE_UNAVAILABLE);
         }
     }
 }

@@ -45,6 +45,7 @@ public class Order {
     public static Order create(
             UUID supplierCompanyId,
             UUID supplierManagerId,
+            UUID supplierHubId,
             UUID receiverCompanyId,
             UUID receiverManagerId,
             String roadAddress,
@@ -56,7 +57,7 @@ public class Order {
         validateInput(dueDate);
         Order order = new Order(
                 OrderId.of(),
-                Supplier.of(supplierCompanyId, supplierManagerId),
+                Supplier.of(supplierCompanyId, supplierManagerId, supplierHubId),
                 Receiver.of(receiverCompanyId, receiverManagerId),
                 null,
                 Address.of(roadAddress, detailAddress),
@@ -84,6 +85,7 @@ public class Order {
             UUID id,
             UUID supplierCompanyId,
             UUID supplierManagerId,
+            UUID supplierHubId,
             UUID receiverCompanyId,
             UUID receiverManagerId,
             UUID deliveryId,
@@ -101,7 +103,7 @@ public class Order {
     ) {
         return new Order(
                 OrderId.of(id),
-                Supplier.of(supplierCompanyId, supplierManagerId),
+                Supplier.of(supplierCompanyId, supplierManagerId, supplierHubId),
                 Receiver.of(receiverCompanyId, receiverManagerId),
                 deliveryId,
                 Address.of(roadAddress, detailAddress),
@@ -177,8 +179,6 @@ public class Order {
     }
 
     public void accept() {
-        // TODO: 공급 업체 담당자 or 관리자 권한 검증
-
         if (this.status == OrderStatus.ACCEPTED) {
             throw new OrderException(OrderErrorCode.ALREADY_ACCEPTED);
         }
@@ -214,8 +214,6 @@ public class Order {
 
     // 주문 취소 / 거절 / 취소 요청 승인 (나중에 필요하면 분리)
     public void cancel(OrderCancelType cancelType) {
-        // TODO: 허브 관리자, 마스터 관리자, 공급 업체 담당자 권한 검증
-
         if (cancelType == null) {
             throw new OrderException(OrderErrorCode.CANCEL_TYPE_REQUIRED);
         }
@@ -231,8 +229,6 @@ public class Order {
     }
 
     public void requestCancel() {
-        // TODO: 로그인한 사용자가 주문한 사용자와 같은지 확인
-
         // 이미 취소 요청 or 취소 된 상태인 경우
         if (this.status == OrderStatus.CANCEL_REQUESTED || this.status == OrderStatus.CANCELLED) {
             throw new OrderException(OrderErrorCode.ALREADY_CANCEL_REQUESTED);
@@ -243,8 +239,6 @@ public class Order {
     }
 
     public void rejectCancelRequest() {
-        // TODO: 관리자 권한 확인
-
         // 취소 요청 상태에서만 가능
         if (this.status != OrderStatus.CANCEL_REQUESTED || this.previousStatus == null) {
             throw new OrderException(OrderErrorCode.CANNOT_REJECT_CANCEL);
@@ -252,6 +246,11 @@ public class Order {
         this.status.validateNext(this.previousStatus);
         this.status = this.previousStatus; // 이전 상태 복구
         this.previousStatus = null;
+    }
+
+    public boolean isDeletable() {
+        // 주문 완료 or 취소 상태에서만 삭제 가능
+        return this.status == OrderStatus.COMPLETED || this.status == OrderStatus.CANCELLED;
     }
 
 }

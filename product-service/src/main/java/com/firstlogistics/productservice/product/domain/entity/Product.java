@@ -4,12 +4,13 @@ import com.firstlogistics.productservice.product.domain.enums.ProductStatus;
 import com.firstlogistics.productservice.product.domain.exception.ProductErrorCode;
 import com.firstlogistics.productservice.product.domain.exception.ProductException;
 import com.firstlogistics.productservice.product.domain.vo.Money;
-import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+
+import java.util.UUID;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
@@ -41,6 +42,10 @@ public class Product {
 
     public static Product reconstitute(UUID id, UUID companyId, UUID hubId, String name, Money price,
                                        ProductStatus status) {
+        if (status == null) {
+            throw new ProductException(ProductErrorCode.INVALID_PRODUCT_STATUS);
+        }
+
         return new Product(id, companyId, hubId, name, price, status);
     }
 
