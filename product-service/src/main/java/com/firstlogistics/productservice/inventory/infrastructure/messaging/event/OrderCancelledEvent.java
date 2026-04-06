@@ -6,7 +6,8 @@ import java.util.UUID;
 public record OrderCancelledEvent(
         UUID orderId,
         UUID supplierCompanyId,
-        List<OrderItemInfo> orderItems
+        List<OrderItemInfo> orderItems,
+        boolean isConfirmed
 ) {
     public record OrderItemInfo(UUID productId, Integer quantity) {}
 }

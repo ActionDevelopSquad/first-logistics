@@ -61,6 +61,18 @@ public class InventoryCommandService {
         }
     }
 
+    // 승인 후 취소: confirm 시 reserved는 이미 0이므로 available만 복원
+    @Transactional
+    public void release(List<InventoryItem> items) {
+        for (InventoryItem item : items) {
+            withLock(item.productId(), () -> {
+                Inventory inventory = findInventory(item.productId());
+                inventory.increase(item.quantity());
+                inventoryRepository.update(inventory);
+            });
+        }
+    }
+
     private Inventory findInventory(UUID productId) {
         return inventoryRepository.findByProductId(productId)
                 .orElseThrow(() -> new InventoryException(InventoryErrorCode.INVENTORY_NOT_FOUND));

@@ -3,6 +3,8 @@ package com.firstlogistics.productservice.inventory.infrastructure.messaging.con
 import com.firstlogistics.productservice.inventory.application.InventoryCommandService;
 import com.firstlogistics.productservice.inventory.application.InventoryCommandService.InventoryItem;
 import com.firstlogistics.productservice.inventory.domain.exception.InventoryException;
+import com.firstlogistics.productservice.inventory.infrastructure.messaging.event.InventoryCancelledEvent;
+import com.firstlogistics.productservice.inventory.infrastructure.messaging.event.InventoryConfirmedEvent;
 import com.firstlogistics.productservice.inventory.infrastructure.messaging.event.InventoryReservationFailedEvent;
 import com.firstlogistics.productservice.inventory.infrastructure.messaging.event.InventoryReservedEvent;
 import com.firstlogistics.productservice.inventory.infrastructure.messaging.event.OrderAcceptedEvent;
@@ -62,6 +64,7 @@ public class OrderEventKafkaConsumer {
 
         try {
             inventoryCommandService.confirm(items);
+            inventoryEventKafkaProducer.publishConfirmed(new InventoryConfirmedEvent(event.orderId()));
         } catch (InventoryException e) {
             log.error("재고 확정 실패 - orderId: {}, reason: {}", event.orderId(), e.getMessage());
         }
@@ -69,6 +72,7 @@ public class OrderEventKafkaConsumer {
         ack.acknowledge();
     }
 
+    // 미승인 취소: reserved 해제 후 available 복원
     @KafkaListener(
             topics = "order.cancelled",
             groupId = "product-service",
@@ -83,8 +87,32 @@ public class OrderEventKafkaConsumer {
 
         try {
             inventoryCommandService.cancel(items);
+            inventoryEventKafkaProducer.publishCancelled(new InventoryCancelledEvent(event.orderId()));
         } catch (InventoryException e) {
             log.error("재고 취소 실패 - orderId: {}, reason: {}", event.orderId(), e.getMessage());
+        }
+
+        ack.acknowledge();
+    }
+
+    // 승인 후 취소: confirm으로 reserved는 이미 0이므로 available만 복원
+    @KafkaListener(
+            topics = "order.accepted.cancelled",
+            groupId = "product-service",
+            containerFactory = "orderAcceptedCancelledListenerContainerFactory"
+    )
+    public void handleOrderAcceptedCancelled(OrderCancelledEvent event, Acknowledgment ack) {
+        log.info("order.accepted.cancelled 이벤트 수신 - orderId: {}", event.orderId());
+
+        List<InventoryItem> items = event.orderItems().stream()
+                .map(item -> new InventoryItem(item.productId(), item.quantity()))
+                .toList();
+
+        try {
+            inventoryCommandService.release(items);
+            inventoryEventKafkaProducer.publishCancelled(new InventoryCancelledEvent(event.orderId()));
+        } catch (InventoryException e) {
+            log.error("재고 복원 실패 - orderId: {}, reason: {}", event.orderId(), e.getMessage());
         }
 
         ack.acknowledge();
