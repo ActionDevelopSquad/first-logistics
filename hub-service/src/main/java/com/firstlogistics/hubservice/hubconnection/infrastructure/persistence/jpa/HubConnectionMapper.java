@@ -12,12 +12,21 @@ public class HubConnectionMapper {
     public HubConnectionJpaEntity toJpaEntity(HubConnection hubConnection){
         return new HubConnectionJpaEntity(
           hubConnection.getId().id(),
+          null,
           hubConnection.getSourceHubId().id(),
           hubConnection.getDestinationHubId().id(),
           hubConnection.getTime().minutes(),
           hubConnection.getDistance().meters(),
           hubConnection.getStatus()
         );
+    }
+
+    public void updateJpaEntity(HubConnectionJpaEntity jpaEntity, HubConnection hubConnection) {
+        jpaEntity.changeSourceHubId(hubConnection.getSourceHubId().id());
+        jpaEntity.changeDestinationHubId(hubConnection.getDestinationHubId().id());
+        jpaEntity.changeTime(hubConnection.getTime().minutes());
+        jpaEntity.changeDistance(hubConnection.getDistance().meters());
+        jpaEntity.changeStatus(hubConnection.getStatus());
     }
 
 

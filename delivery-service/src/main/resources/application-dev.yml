@@ -32,3 +32,12 @@ hub-service:
   url: ${HUB_SERVICE_URL:http://localhost:8083}
 company-service:
   url: ${COMPANY_SERVICE_URL:http://localhost:8084}
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_ENDPOINT:http://zipkin:9411/api/v2/spans}
