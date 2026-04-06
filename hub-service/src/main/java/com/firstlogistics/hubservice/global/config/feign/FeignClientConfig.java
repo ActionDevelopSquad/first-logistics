@@ -5,7 +5,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@EnableFeignClients
+@EnableFeignClients(basePackages = "com.firstlogistics.hubservice")
 @ConditionalOnProperty(name = "feign.enabled", havingValue = "true", matchIfMissing = true)
 public class FeignClientConfig {
 }

@@ -45,11 +45,4 @@ company-service:
   url: http://localhost:8080
 
 feign:
-  client:
-    config:
-      company-service:
-        connectTimeout: 3000
-        readTimeout: 5000
-      naver-map-client:
-        connectTimeout: 3000
-        readTimeout: 5000
+  enabled: false
