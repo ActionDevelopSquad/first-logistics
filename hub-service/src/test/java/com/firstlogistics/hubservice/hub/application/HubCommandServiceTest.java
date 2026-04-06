@@ -221,6 +221,7 @@ public class HubCommandServiceTest {
                 .isEqualTo(HubErrorCode.INVALID_HUB_STATUS);
     }
 
+
     @Test
     @DisplayName("성공: 허브 삭제 후 삭제 이벤트 발행")
     void deleteHub_success() {
