@@ -6,6 +6,8 @@ import com.firstlogistics.notificationservice.domain.client.NotificationClient;
 import com.firstlogistics.notificationservice.domain.entity.Notification;
 import com.firstlogistics.notificationservice.domain.enums.NotificationStatus;
 import com.firstlogistics.notificationservice.domain.enums.NotificationType;
+import com.firstlogistics.notificationservice.domain.exception.NotificationErrorCode;
+import com.firstlogistics.notificationservice.domain.exception.NotificationException;
 import com.firstlogistics.notificationservice.domain.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +48,8 @@ public class NotificationCommandService {
             savedNotification.updateStatus(NotificationStatus.FAILED);
 
             notificationRepository.save(savedNotification);
+
+            throw new NotificationException(NotificationErrorCode.SLACK_SEND_FAILED);
         }
 
         return CreateNotificationResult.from(savedNotification);
