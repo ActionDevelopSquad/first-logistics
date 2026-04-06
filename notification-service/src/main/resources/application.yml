@@ -6,4 +6,4 @@ slack:
   token: ${SLACK_BOT_TOKEN}
 
 server:
-  port: 8086
+  port: ${SERVER_PORT:8086}

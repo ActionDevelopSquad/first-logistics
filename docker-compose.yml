@@ -191,6 +191,7 @@ services:
       - "${HUB_SERVICE_PORT:-8083}:8080"
     environment:
       SPRING_PROFILES_ACTIVE: dev
+      SERVER_PORT: 8080
       POSTGRES_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}?currentSchema=hub
       POSTGRES_SLAVE_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}-slave?currentSchema=hub
       POSTGRES_USER: ${POSTGRES_USER}
@@ -232,6 +233,7 @@ services:
       - "${COMPANY_SERVICE_PORT:-8084}:8080"
     environment:
       SPRING_PROFILES_ACTIVE: dev
+      SERVER_PORT: 8080
       POSTGRES_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}?currentSchema=company
       POSTGRES_SLAVE_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}-slave?currentSchema=company
       POSTGRES_USER: ${POSTGRES_USER}
@@ -266,6 +268,7 @@ services:
       - "${PRODUCT_SERVICE_PORT:-8085}:8080"
     environment:
       SPRING_PROFILES_ACTIVE: dev
+      SERVER_PORT: 8080
       POSTGRES_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}?currentSchema=product
       POSTGRES_SLAVE_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}-slave?currentSchema=product
       POSTGRES_USER: ${POSTGRES_USER}
@@ -304,6 +307,7 @@ services:
       - "${ORDER_SERVICE_PORT:-8082}:8080"
     environment:
       SPRING_PROFILES_ACTIVE: dev
+      SERVER_PORT: 8080
       POSTGRES_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}?currentSchema=orders
       POSTGRES_SLAVE_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}-slave?currentSchema=orders
       POSTGRES_USER: ${POSTGRES_USER}
@@ -338,6 +342,7 @@ services:
       - "${DELIVERY_SERVICE_PORT:-8081}:8080"
     environment:
       SPRING_PROFILES_ACTIVE: dev
+      SERVER_PORT: 8080
       POSTGRES_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}?currentSchema=delivery
       POSTGRES_SLAVE_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}-slave?currentSchema=delivery
       POSTGRES_USER: ${POSTGRES_USER}
@@ -379,6 +384,7 @@ services:
       - "${NOTIFICATION_SERVICE_PORT:-8086}:8080"
     environment:
       SPRING_PROFILES_ACTIVE: dev
+      SERVER_PORT: 8080
       POSTGRES_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}?currentSchema=notification
       POSTGRES_SLAVE_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}-slave?currentSchema=notification
       POSTGRES_USER: ${POSTGRES_USER}
@@ -410,6 +416,7 @@ services:
       - "${AI_SERVICE_PORT:-8087}:8080"
     environment:
       SPRING_PROFILES_ACTIVE: dev
+      SERVER_PORT: 8080
       POSTGRES_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}?currentSchema=ai&searchpath=ai,public
       POSTGRES_SLAVE_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}-slave?currentSchema=ai&searchpath=ai,public
       POSTGRES_USER: ${POSTGRES_USER}
