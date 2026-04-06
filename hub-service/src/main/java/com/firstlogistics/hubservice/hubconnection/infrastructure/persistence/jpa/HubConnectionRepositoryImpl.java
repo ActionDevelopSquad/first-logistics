@@ -5,6 +5,7 @@ import com.firstlogistics.hubservice.hubconnection.domain.entity.HubConnection;
 import com.firstlogistics.hubservice.hubconnection.domain.exception.HubConnectionErrorCode;
 import com.firstlogistics.hubservice.hubconnection.domain.exception.HubConnectionException;
 import com.firstlogistics.hubservice.hubconnection.domain.repository.HubConnectionRepository;
+import com.firstlogistics.hubservice.hubconnection.domain.vo.HubConnectionId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -45,6 +46,15 @@ public class HubConnectionRepositoryImpl implements HubConnectionRepository {
     public List<HubConnection> findAll() {
         List<HubConnectionJpaEntity> entities = jpaRepository.findAll();
         return entities.stream().map(mapper::toDomain).toList();
+    }
+
+    @Override
+    public HubConnection findById(HubConnectionId id) {
+        return null;
+    }
+
+    @Override
+    public void delete(HubConnection hubConnection) {
     }
 
     private boolean hasConstraintName(Throwable throwable, String expectedConstraintName ){
