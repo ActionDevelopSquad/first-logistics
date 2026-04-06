@@ -12,8 +12,8 @@ import com.firstlogistics.companyservice.presentation.dto.response.CreateCompany
 import common.response.ApiResponse;
 import common.response.CommonSuccessCode;
 import common.security.entity.enums.UserRole;
-import common.security.security.aop.RequireRole;
-import common.security.security.util.SecurityUtils;
+import common.security.aop.RequireRole;
+import common.security.util.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
