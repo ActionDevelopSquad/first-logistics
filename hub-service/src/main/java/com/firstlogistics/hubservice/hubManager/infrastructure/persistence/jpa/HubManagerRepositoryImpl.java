@@ -45,7 +45,8 @@ public class HubManagerRepositoryImpl implements HubManagerRepository {
 
     @Override
     public void delete(HubManager hubManager, UUID userId) {
-        HubManagerJpaEntity entity = HubManagerMapper.toJpaEntity(hubManager);
+        HubManagerJpaEntity entity = jpaRepository.findById(hubManager.getId().id())
+                .orElseThrow(() -> new HubManagerException(HubManagerErrorCode.HUB_MANAGER_NOT_FOUND));
         entity.softDelete(userId);
         jpaRepository.saveAndFlush(entity);
     }
