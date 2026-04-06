@@ -38,7 +38,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       REDIS_URL: redis://redis:6379
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      JAVA_TOOL_OPTIONS: "-Xmx256m -Xms128m"
+      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
     depends_on:
       postgres:
         condition: service_healthy
@@ -49,7 +49,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512m
+          memory: 300m
 
   order-service:
     build:
@@ -64,7 +64,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      JAVA_TOOL_OPTIONS: "-Xmx256m -Xms128m"
+      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
     depends_on:
       postgres:
         condition: service_healthy
@@ -73,7 +73,138 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512m
+          memory: 300m
+
+  hub-service:
+    build:
+      context: .
+      dockerfile: hub-service/Dockerfile
+    container_name: first-logistics-hub-service
+    restart: unless-stopped
+    ports:
+      - "${HUB_SERVICE_PORT:-8083}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      POSTGRES_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}?currentSchema=hub
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      REDIS_URL: redis://redis:6379
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      NAVER_MAP_CLIENT_ID: ${NAVER_MAP_CLIENT_ID}
+      NAVER_MAP_CLIENT_SECRET: ${NAVER_MAP_CLIENT_SECRET}
+      COMPANY_SERVICE_URL: http://company-service:8080
+      ZIPKIN_ENDPOINT: http://zipkin:9411/api/v2/spans
+      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 300m
+
+  company-service:
+    build:
+      context: .
+      dockerfile: company-service/Dockerfile
+    container_name: first-logistics-company-service
+    restart: unless-stopped
+    ports:
+      - "${COMPANY_SERVICE_PORT:-8084}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      POSTGRES_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}?currentSchema=company
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 300m
+
+  product-service:
+    build:
+      context: .
+      dockerfile: product-service/Dockerfile
+    container_name: first-logistics-product-service
+    restart: unless-stopped
+    ports:
+      - "${PRODUCT_SERVICE_PORT:-8085}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      POSTGRES_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}?currentSchema=product
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 300m
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: notification-service/Dockerfile
+    container_name: first-logistics-notification-service
+    restart: unless-stopped
+    ports:
+      - "${NOTIFICATION_SERVICE_PORT:-8086}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      POSTGRES_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}?currentSchema=notification
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SLACK_BOT_TOKEN: ${SLACK_BOT_TOKEN}
+      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 300m
+
+  ai-service:
+    build:
+      context: .
+      dockerfile: ai-service/Dockerfile
+    container_name: first-logistics-ai-service
+    restart: unless-stopped
+    ports:
+      - "${AI_SERVICE_PORT:-8087}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      POSTGRES_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}?currentSchema=ai
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 300m
 
   redis:
     image: redis:7.2-alpine
@@ -112,7 +243,7 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-      KAFKA_HEAP_OPTS: "-Xmx192m -Xms128m"
+      KAFKA_HEAP_OPTS: "-Xmx160m -Xms128m"
       CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
     volumes:
       - kafka-data:/var/lib/kafka/data
@@ -124,7 +255,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 384m
+          memory: 300m
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
@@ -140,7 +271,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256m
+          memory: 192m
 
   eureka-server:
     build:
@@ -154,6 +285,7 @@ services:
       SERVER_PORT: 8080
       EUREKA_INSTANCE_HOSTNAME: eureka-server
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
+      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/eureka/apps"]
       interval: 15s
@@ -163,7 +295,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512m
+          memory: 300m
 
   api-gateway:
     build:
@@ -177,6 +309,7 @@ services:
       SERVER_PORT: 8080
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI: ${KEYCLOAK_ISSUER_URI}
+      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
     depends_on:
       eureka-server:
         condition: service_healthy
@@ -189,7 +322,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512m
+          memory: 300m
 
   user-service:
     build:
@@ -211,6 +344,7 @@ services:
       KEYCLOAK_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       ZIPKIN_ENDPOINT: ${ZIPKIN_ENDPOINT}
+      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
     depends_on:
       postgres:
         condition: service_healthy
@@ -221,7 +355,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512m
+          memory: 300m
 
   zipkin:
     image: openzipkin/zipkin
@@ -232,7 +366,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256m
+          memory: 192m
 
   postgres-keycloak:
     image: postgres:16
@@ -254,6 +388,10 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 192m
 
   keycloak:
     image: quay.io/keycloak/keycloak
@@ -283,6 +421,10 @@ services:
       start_period: 60s
     volumes:
       - ./codefactory-realm.json:/opt/keycloak/data/import/codefactory-realm.json
+    deploy:
+      resources:
+        limits:
+          memory: 384m
     networks:
       - keycloak-net
       - default
