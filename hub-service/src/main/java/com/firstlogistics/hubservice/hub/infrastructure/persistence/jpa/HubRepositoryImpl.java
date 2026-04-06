@@ -32,7 +32,7 @@ public class HubRepositoryImpl implements HubRepository {
     @Override
     @Caching(
             put = {
-                    @CachePut(cacheNames = HUB_BY_ID_CACHE, key = "#result.id().id()")
+                    @CachePut(cacheNames = HUB_BY_ID_CACHE, key = "#result.getId().id()")
             },
             evict = {
                     @CacheEvict(cacheNames = HUB_ALL_CACHE, allEntries = true)
