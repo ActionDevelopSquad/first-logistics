@@ -72,7 +72,8 @@ public class OrderEventKafkaProducer {
                 originalEvent.order().supplierCompanyId(),
                 originalEvent.order().items().stream()
                         .map(item -> new OrderCancelledEvent.OrderItemInfo(item.productId(), item.quantity()))
-                        .toList()
+                        .toList(),
+                true
         );
 
         send(ORDER_CANCELLED, orderId.toString(), cancelEvent, orderId);

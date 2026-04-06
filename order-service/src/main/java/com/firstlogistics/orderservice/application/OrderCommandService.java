@@ -143,7 +143,7 @@ public class OrderCommandService {
 
         order.rejectBySystem();
 
-        Events.trigger(OrderCancelledEvent.from(order));
+        Events.trigger(OrderCancelledEvent.of(order, true));
 
         orderRepository.save(order);
     }
@@ -182,7 +182,7 @@ public class OrderCommandService {
 
         orderRepository.save(order);
 
-        Events.trigger(OrderCancelledEvent.from(order));
+        Events.trigger(OrderCancelledEvent.of(order, false));
 
         return order.getStatus().name();
     }
