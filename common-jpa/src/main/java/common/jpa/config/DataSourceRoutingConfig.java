@@ -3,8 +3,8 @@ package common.jpa.config;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -20,16 +20,28 @@ public class DataSourceRoutingConfig {
 
     @Bean
     @ConfigurationProperties(prefix = "spring.datasource")
+    public DataSourceProperties masterDataSourceProperties() {
+        return new DataSourceProperties();
+    }
+
+    @Bean
     public DataSource masterDataSource() {
-        return DataSourceBuilder.create()
+        return masterDataSourceProperties()
+                .initializeDataSourceBuilder()
                 .type(HikariDataSource.class)
                 .build();
     }
 
     @Bean
     @ConfigurationProperties(prefix = "spring.datasource.slave")
+    public DataSourceProperties slaveDataSourceProperties() {
+        return new DataSourceProperties();
+    }
+
+    @Bean
     public DataSource slaveDataSource() {
-        return DataSourceBuilder.create()
+        return slaveDataSourceProperties()
+                .initializeDataSourceBuilder()
                 .type(HikariDataSource.class)
                 .build();
     }
