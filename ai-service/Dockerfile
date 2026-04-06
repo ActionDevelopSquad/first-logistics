@@ -27,20 +27,19 @@ COPY ai-service/build.gradle ai-service/build.gradle
 RUN sed -i 's/\r$//' gradlew && chmod +x gradlew
 
 RUN --mount=type=cache,target=/root/.gradle \
-    ./gradlew :delivery-service:dependencies --no-daemon
+    ./gradlew :ai-service:dependencies --no-daemon
 
 COPY common/src common/src
 COPY common-jpa/src common-jpa/src
 COPY common-event/src common-event/src
-COPY common-security/src common-security/src
-COPY delivery-service/src delivery-service/src
+COPY ai-service/src ai-service/src
 
 RUN --mount=type=cache,target=/root/.gradle \
-    ./gradlew :delivery-service:bootJar --no-daemon -x test
+    ./gradlew :ai-service:bootJar --no-daemon -x test
 
 FROM eclipse-temurin:21-jre-alpine
 RUN apk add --no-cache curl
 WORKDIR /app
-COPY --from=build /workspace/delivery-service/build/libs/delivery-service-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=build /workspace/ai-service/build/libs/ai-service-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
