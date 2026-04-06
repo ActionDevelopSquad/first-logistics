@@ -14,6 +14,7 @@ COPY common/build.gradle common/
 COPY common-jpa/build.gradle common-jpa/
 COPY common-event/build.gradle common-event/
 COPY common-security/build.gradle common-security/
+COPY common-swagger/build.gradle common-swagger/build.gradle
 COPY company-service/build.gradle company-service/
 COPY notification-service/build.gradle notification-service/
 COPY order-service/build.gradle order-service/

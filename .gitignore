@@ -64,3 +64,6 @@ AGENTS.md
 
 ### QueryDSL Generated
 **/src/main/generated
+
+# Keycloak realm import file
+codefactory-realm.json
