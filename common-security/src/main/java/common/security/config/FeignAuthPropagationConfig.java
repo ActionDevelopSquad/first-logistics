@@ -39,6 +39,7 @@ public class FeignAuthPropagationConfig {
                 template.header(SecurityHeader.FORWARD_SERVICE, serviceName);
             } catch (AuthException e) {
                 log.debug("인증 컨텍스트가 없어 사용자 헤더 전파를 건너뜁니다.");
+                template.header(SecurityHeader.FORWARD_SERVICE, serviceName);
             } catch (RuntimeException e) {
                 log.error("사용자 헤더 전파 중 예기치 않은 오류", e);
                 throw e;
