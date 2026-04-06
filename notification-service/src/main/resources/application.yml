@@ -24,3 +24,6 @@ spring:
 
 slack:
   token: ${SLACK_BOT_TOKEN}
+
+server:
+  port: 8086
