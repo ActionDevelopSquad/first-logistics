@@ -46,17 +46,17 @@ public class OrganizationValidationServiceImpl implements OrganizationValidation
     }
 
     private boolean existsHub(UUID organizationId) {
-        ApiResponse<UUID> response = hubClient.existsHub(organizationId);
+        ApiResponse<?> response = hubClient.existsHub(organizationId);
         return response != null && response.getData() != null;
     }
 
     private boolean existsCompany(UUID organizationId) {
-        ApiResponse<UUID> response = companyClient.existsCompany(organizationId);
+        ApiResponse<?> response = companyClient.existsCompany(organizationId);
         return response != null && response.getData() != null;
     }
 
     private boolean existsDelivery(UUID organizationId) {
-        ApiResponse<UUID> response = deliveryClient.existsDelivery(organizationId);
+        ApiResponse<?> response = deliveryClient.existsDelivery(organizationId);
         return response != null && response.getData() != null;
     }
 }

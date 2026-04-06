@@ -11,5 +11,5 @@ import java.util.UUID;
 public interface DeliveryClient {
 
     @GetMapping("/api/v1/deliveries/{deliveryId}")
-    ApiResponse<UUID> existsDelivery(@PathVariable("deliveryId") UUID deliveryId);
+    ApiResponse<?> existsDelivery(@PathVariable("deliveryId") UUID deliveryId);
 }

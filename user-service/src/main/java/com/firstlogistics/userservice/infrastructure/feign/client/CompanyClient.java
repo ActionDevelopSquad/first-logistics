@@ -11,5 +11,5 @@ import java.util.UUID;
 public interface CompanyClient {
 
     @GetMapping("/api/v1/companies/{companyId}")
-    ApiResponse<UUID> existsCompany(@PathVariable("companyId") UUID companyId);
+    ApiResponse<?> existsCompany(@PathVariable("companyId") UUID companyId);
 }
