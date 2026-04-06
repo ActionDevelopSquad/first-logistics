@@ -26,7 +26,7 @@ public class DeliveryCreatedRecoverer implements ConsumerRecordRecoverer {
         }
 
         if (shouldRollbackOrder(exception)) {
-            orderEventKafkaProducer.handleDeliveryLinkFailed(event);
+            orderEventKafkaProducer.compensateDeliveryLinkFailed(event);
         }
 
         sendToDlt(record);

@@ -31,30 +31,30 @@ public class OrderEventKafkaProducer {
      * 트랜잭션 커밋 이후 발행 — DB 커밋 실패 시 이벤트 유출 방지
      */
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleOrderCreatedEvent(OrderCreatedEvent event) {
+    public void publishOrderCreatedEvent(OrderCreatedEvent event) {
         // 재고 예약
-        sendWithLogging(ORDER_CREATED, event.supplierCompanyId().toString(), event, event.orderId());
+        send(ORDER_CREATED, event.supplierCompanyId().toString(), event, event.orderId());
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleOrderAcceptedEvent(OrderAcceptedEvent event) {
+    public void publishOrderAcceptedEvent(OrderAcceptedEvent event) {
         // 재고 차감 & 배송 생성
         // orderId를 키로 사용
-        sendWithLogging(ORDER_ACCEPTED, event.orderId().toString(), event, event.orderId());
+        send(ORDER_ACCEPTED, event.orderId().toString(), event, event.orderId());
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleOrderCancelledEvent(OrderCancelledEvent event) {
+    public void publishOrderCancelledEvent(OrderCancelledEvent event) {
         // 재고 예약 취소
-        sendWithLogging(ORDER_CANCELLED, event.orderId().toString(), event, event.orderId());
+        send(ORDER_CANCELLED, event.orderId().toString(), event, event.orderId());
     }
 
     public void sendToDeliveryDlt(String key, Object payload) {
         log.warn("[Kafka DLT] Sending failed delivery event to DLT. Key: {}", key);
-        sendWithLogging(DELIVERY_CREATED_DLT, key, payload, null);
+        send(DELIVERY_CREATED_DLT, key, payload, null);
     }
 
-    public void handleDeliveryLinkFailed(DeliveryCreatedEvent originalEvent) {
+    public void compensateDeliveryLinkFailed(DeliveryCreatedEvent originalEvent) {
         UUID orderId = originalEvent.order().orderId();
 
         // 주문 DB 상태를 CANCELLED로 변경 (실패할 수도 있음)
@@ -75,11 +75,11 @@ public class OrderEventKafkaProducer {
                         .toList()
         );
 
-        sendWithLogging(ORDER_CANCELLED, orderId.toString(), cancelEvent, orderId);
+        send(ORDER_CANCELLED, orderId.toString(), cancelEvent, orderId);
     }
 
     // 공통 전송 & 로깅 메서드
-    private void sendWithLogging(String topic, String key, Object event, UUID orderId) {
+    private void send(String topic, String key, Object event, UUID orderId) {
         orderKafkaTemplate.send(topic, key, event)
                 .whenComplete((result, ex) -> {
                     if (ex != null) {
