@@ -2,7 +2,6 @@ package com.firstlogistics.userservice.application.service;
 
 import com.firstlogistics.userservice.application.dto.query.UserGetQuery;
 import com.firstlogistics.userservice.application.dto.result.UserResult;
-import com.firstlogistics.userservice.application.port.UserQueryService;
 import com.firstlogistics.userservice.domain.dto.UsersSpec;
 import com.firstlogistics.userservice.domain.repository.UserQueryRepository;
 import com.firstlogistics.userservice.domain.repository.UserRepository;
@@ -17,7 +16,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class UserQueryServiceImpl implements UserQueryService {
+public class UserQueryService implements com.firstlogistics.userservice.application.port.UserQueryService {
 
     private final UserRepository userRepository;
     private final UserQueryRepository userQueryRepository;

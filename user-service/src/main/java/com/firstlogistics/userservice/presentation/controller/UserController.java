@@ -5,7 +5,7 @@ import com.firstlogistics.userservice.application.dto.command.UserCreateCommand;
 import com.firstlogistics.userservice.application.dto.result.TokenResult;
 import com.firstlogistics.userservice.application.dto.result.UserResult;
 import com.firstlogistics.userservice.application.port.UserCommandService;
-import com.firstlogistics.userservice.application.service.UserQueryServiceImpl;
+import com.firstlogistics.userservice.application.service.UserQueryService;
 import com.firstlogistics.userservice.presentation.UserSuccessCode;
 import com.firstlogistics.userservice.presentation.dto.request.*;
 import com.firstlogistics.userservice.presentation.dto.response.TokenResponse;
@@ -31,7 +31,7 @@ import java.util.UUID;
 public class UserController implements UserControllerDocs{
 
     private final UserCommandService userCommandService;
-    private final UserQueryServiceImpl userQueryService;
+    private final UserQueryService userQueryService;
 
     /**
      * 로그인 시도 -> keyCloak 토큰 발급
