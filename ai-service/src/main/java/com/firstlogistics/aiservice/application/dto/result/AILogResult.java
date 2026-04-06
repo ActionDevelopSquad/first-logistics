@@ -3,7 +3,6 @@ package com.firstlogistics.aiservice.application.dto.result;
 import com.firstlogistics.aiservice.domain.entity.AILog;
 import com.firstlogistics.aiservice.domain.enums.AILogStatus;
 import com.firstlogistics.aiservice.domain.enums.MessengerType;
-import com.firstlogistics.aiservice.domain.vo.MessengerMessageId;
 
 import java.util.UUID;
 
