@@ -25,7 +25,7 @@ public class DeliveryRepositoryImpl implements DeliveryRepository {
 
 	@Override
 	public Optional<Delivery> findById(DeliveryId deliveryId) {
-		return deliveryJpaRepository.findById(deliveryId.id())
+		return deliveryJpaRepository.findByIdWithRoutes(deliveryId.id())
 			.map(deliveryMapper::toDomain);
 	}
 

@@ -2,7 +2,7 @@ package com.firstlogistics.deliverservice.application.permission.strategy;
 
 import com.firstlogistics.deliverservice.application.permission.DeliveryAccessContext;
 
-import com.firstlogistics.deliverservice.domain.enums.UserRole;
+import common.security.entity.enums.UserRole;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryManagerRepository;

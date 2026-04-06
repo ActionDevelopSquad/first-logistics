@@ -6,6 +6,7 @@ import com.firstlogistics.hubservice.hub.application.dto.command.UpdateHubComman
 import com.firstlogistics.hubservice.hub.application.dto.result.HubResult;
 import com.firstlogistics.hubservice.hub.domain.entity.Hub;
 import com.firstlogistics.hubservice.hub.domain.enums.HubStatus;
+import com.firstlogistics.hubservice.hub.domain.enums.HubType;
 import com.firstlogistics.hubservice.hub.domain.event.HubActivatedEvent;
 import com.firstlogistics.hubservice.hub.domain.event.HubDeactivatedEvent;
 import com.firstlogistics.hubservice.hub.domain.event.HubDeletedEvent;
@@ -29,14 +30,15 @@ public class HubCommandService {
     private final HubRepository hubRepository;
 
     @Transactional
-    public HubResult create(CreateHubCommand command) {
-        if (hubRepository.existsByHubName(command.name()))
+    public HubResult create(CreateHubCommand command){
+        if(hubRepository.existsByHubName(command.name()))
             throw new HubException(HubErrorCode.DUPLICATE_HUB_NAME);
 
         Hub hub = Hub.create(
                 command.name(),
                 HubAddress.of(command.roadAddress()),
-                GeoLocation.of(command.latitude(), command.longitude())
+                GeoLocation.of(command.latitude(), command.longitude()),
+                HubType.from(command.type())
         );
 
         hubRepository.save(hub);
@@ -98,3 +100,4 @@ public class HubCommandService {
         return HubResult.from(savedHub);
     }
 }
+

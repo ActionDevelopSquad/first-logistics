@@ -10,6 +10,7 @@ import java.util.UUID;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record OrderCancelledEvent(
-	UUID orderId
+	UUID orderId,
+	UUID deliveryId
 ) {
 }

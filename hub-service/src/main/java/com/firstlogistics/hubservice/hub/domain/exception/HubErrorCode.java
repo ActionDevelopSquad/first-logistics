@@ -22,7 +22,6 @@ public enum HubErrorCode implements ErrorCode {
     INVALID_HUB_SEARCH_COORDINATE(HttpStatus.BAD_REQUEST, "HB_E012", "위도와 경도는 함께 입력되어야 합니다."),
     INVALID_HUB_TYPE(HttpStatus.BAD_REQUEST, "HB_E013", "허브 타입이 유효하지 않습니다."),
     INVALID_HUB_UPDATE_REQUEST(HttpStatus.BAD_REQUEST, "HB_E014", "수정할 값이 하나 이상 필요합니다.");
-
     private final HttpStatus status;
     private final String code;
     private final String message;

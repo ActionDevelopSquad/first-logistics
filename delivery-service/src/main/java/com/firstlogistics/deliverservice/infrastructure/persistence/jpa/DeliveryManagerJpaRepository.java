@@ -14,6 +14,14 @@ import java.util.UUID;
 
 public interface DeliveryManagerJpaRepository extends JpaRepository<DeliveryManagerJpaEntity, UUID> {
 
+	boolean existsByUserIdAndDeletedAtIsNull(UUID userId);
+
+	@Query("SELECT dm FROM DeliveryManagerJpaEntity dm LEFT JOIN FETCH dm.timetables WHERE dm.id = :id AND dm.deletedAt IS NULL")
+	Optional<DeliveryManagerJpaEntity> findByIdWithTimetables(@Param("id") UUID id);
+
+	@Query("SELECT dm FROM DeliveryManagerJpaEntity dm LEFT JOIN FETCH dm.timetables WHERE dm.userId = :userId AND dm.deletedAt IS NULL")
+	Optional<DeliveryManagerJpaEntity> findByUserIdWithTimetables(@Param("userId") UUID userId);
+
 	Optional<DeliveryManagerJpaEntity> findByUserIdAndDeletedAtIsNull(UUID userId);
 
 	@Query("SELECT COALESCE(MAX(ds.deliverySequence), 0) FROM DeliveryManagerJpaEntity ds WHERE ds.deletedAt IS NULL")
