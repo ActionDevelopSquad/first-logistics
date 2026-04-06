@@ -3,6 +3,8 @@ package com.firstlogistics.notificationservice.infrastructure.client;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.firstlogistics.notificationservice.domain.client.NotificationClient;
 import com.firstlogistics.notificationservice.domain.enums.MessengerType;
+import com.firstlogistics.notificationservice.domain.exception.NotificationErrorCode;
+import com.firstlogistics.notificationservice.domain.exception.NotificationException;
 import com.firstlogistics.notificationservice.infrastructure.config.SlackProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -50,14 +52,14 @@ public class SlackNotificationClient implements NotificationClient {
             if (body == null || !body.path("ok").asBoolean()) {
                 String error = (body != null) ? body.path("error").asText() : "응답 바디 없음";
                 log.error("슬랙 메시지 전송 실패: {}", error);
-                throw new RuntimeException("슬랙 전송 에러: " + error);
+                throw new NotificationException(NotificationErrorCode.SLACK_SEND_FAILED);
             }
 
             log.info("슬랙 메시지 전송 성공: {}", slackId);
 
         } catch (Exception e) {
             log.error("슬랙 API 통신 중 예외 발생: {}", e.getMessage());
-            throw new RuntimeException("외부 API 통신 실패", e);
+            throw new NotificationException(NotificationErrorCode.SLACK_API_COMMUNICATION_FAILED);
         }
     }
 
