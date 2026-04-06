@@ -16,10 +16,12 @@ CREATE SCHEMA IF NOT EXISTS notification;
 CREATE SCHEMA IF NOT EXISTS ai;
 CREATE SCHEMA IF NOT EXISTS sample;
 
+-- Master DB Publication (Logical Replication)
+CREATE PUBLICATION master_pub FOR ALL TABLES;
+
 -- Slave DB 생성
 CREATE DATABASE "first-logistics-slave";
 
--- Slave DB 스키마
 \connect "first-logistics-slave";
 
 CREATE EXTENSION IF NOT EXISTS vector;
@@ -33,3 +35,9 @@ CREATE SCHEMA IF NOT EXISTS users;
 CREATE SCHEMA IF NOT EXISTS notification;
 CREATE SCHEMA IF NOT EXISTS ai;
 CREATE SCHEMA IF NOT EXISTS sample;
+
+-- Slave DB Subscription (Master DB 구독)
+CREATE SUBSCRIPTION slave_sub
+    CONNECTION 'host=localhost port=5432 dbname=first-logistics user=postgres'
+    PUBLICATION master_pub
+    WITH (copy_data = true, enabled = true);
