@@ -11,9 +11,8 @@
 # ----------------------------------------------------------------
 #
 # [SECTION 1] 마스터 관리자 설정
-#   Step  1. 마스터 회원가입
-#   Step  2. 마스터 승인
-#   Step  3. 마스터 로그인
+#   Step  1. 마스터 회원가입 (MASTER는 자동 승인)
+#   Step  2. 마스터 로그인
 #
 # [SECTION 2] 허브 인프라 구축
 #   Step  4. 허브 생성 - 서울
@@ -88,6 +87,7 @@
 ###
 
 
+###
 # ================================================================
 # [SECTION 1] 마스터 관리자 설정
 # ================================================================
@@ -104,11 +104,11 @@ Content-Type: application/json
   },
   "firstName": "마스터",
   "lastName": "관리자",
-  "phone": "010-1111-0001",
-  "email": "master01@test.com",
-  "slackId": "U_MASTER01",
+  "phone": "010-1111-9001",
+  "email": "master-int@test.com",
+  "slackId": "U_MASTER_INT",
   "userRole": "MASTER",
-  "organizationId": "00000000-0000-0000-0000-000000000000"
+  "hubId": "00000000-0000-0000-0000-000000000000"
 }
 
 > {%
@@ -117,21 +117,7 @@ Content-Type: application/json
   client.log("[Step 1] masterUserId = " + client.global.get("masterUserId"));
 %}
 
-### Step 2. [마스터] 승인 (자가 승인)
-PATCH {{gatewayUrl}}/api/v1/users/{{masterUserId}}/status
-Content-Type: application/json
-X-User-Id: {{masterUserId}}
-
-{
-  "status": "APPROVED"
-}
-
-> {%
-  if (response.status !== 200) { client.log("FAIL: 마스터 승인 실패"); client.assert(false); }
-  client.log("[Step 2] 마스터 승인 완료");
-%}
-
-### Step 3. [마스터] 로그인
+### Step 2. [마스터] 로그인 (MASTER는 회원가입 시 자동 승인)
 POST {{gatewayUrl}}/api/v1/users/login
 Content-Type: application/json
 
@@ -143,13 +129,15 @@ Content-Type: application/json
 > {%
   if (response.status !== 200) { client.log("FAIL: 마스터 로그인 실패"); client.assert(false); }
   client.global.set("masterToken", response.body.data.accessToken);
-  client.log("[Step 3] masterToken 저장 완료");
+  client.log("[Step 2] masterToken 저장 완료");
 %}
 
 
+###
 # ================================================================
 # [SECTION 2] 허브 인프라 구축
 # ================================================================
+
 
 ### Step 4. 허브 생성 - 서울
 POST {{gatewayUrl}}/api/v1/hubs
@@ -269,6 +257,7 @@ Authorization: Bearer {{masterToken}}
 %}
 
 
+###
 # ================================================================
 # [SECTION 3] 사용자 등록 (허브 관리자, 업체 담당자)
 # ================================================================
@@ -285,11 +274,11 @@ Content-Type: application/json
   },
   "firstName": "허브",
   "lastName": "관리자",
-  "phone": "010-2222-0001",
-  "email": "hubmgr01@test.com",
-  "slackId": "U_HUBMGR01",
+  "phone": "010-2222-9001",
+  "email": "hubmgr-int@test.com",
+  "slackId": "U_HUBMGR_INT",
   "userRole": "HUB_MANAGER",
-  "organizationId": "{{seoulHubId}}"
+  "hubId": "{{seoulHubId}}"
 }
 
 > {%
@@ -340,11 +329,11 @@ Content-Type: application/json
   },
   "firstName": "업체",
   "lastName": "담당자",
-  "phone": "010-3333-0001",
-  "email": "compmgr01@test.com",
-  "slackId": "U_COMPMGR01",
+  "phone": "010-3333-9001",
+  "email": "compmgr-int01@test.com",
+  "slackId": "U_COMPMGR_INT1",
   "userRole": "COMPANY_MANAGER",
-  "organizationId": "{{seoulHubId}}"
+  "hubId": "{{seoulHubId}}"
 }
 
 > {%
@@ -365,11 +354,11 @@ Content-Type: application/json
   },
   "firstName": "수령",
   "lastName": "담당자",
-  "phone": "010-3333-0002",
-  "email": "compmgr02@test.com",
-  "slackId": "U_COMPMGR02",
+  "phone": "010-3333-9002",
+  "email": "compmgr-int02@test.com",
+  "slackId": "U_COMPMGR_INT2",
   "userRole": "COMPANY_MANAGER",
-  "organizationId": "{{busanHubId}}"
+  "hubId": "{{busanHubId}}"
 }
 
 > {%
@@ -409,6 +398,7 @@ X-User-Id: {{masterUserId}}
 %}
 
 
+###
 # ================================================================
 # [SECTION 4] 업체 + 상품 등록
 # ================================================================
@@ -501,6 +491,7 @@ Authorization: Bearer {{masterToken}}
 %}
 
 
+###
 # ================================================================
 # [SECTION 5] 배송 담당자 등록 (Kafka 자동 생성)
 # ================================================================
@@ -518,11 +509,11 @@ Content-Type: application/json
   },
   "firstName": "허브배송",
   "lastName": "담당자",
-  "phone": "010-4444-0001",
-  "email": "hubdm01@test.com",
-  "slackId": "U_HUBDM01",
+  "phone": "010-4444-9001",
+  "email": "hubdm-int@test.com",
+  "slackId": "U_HUBDM_INT",
   "userRole": "DELIVERY_MANAGER",
-  "organizationId": "{{seoulHubId}}"
+  "hubId": "{{seoulHubId}}"
 }
 
 > {%
@@ -543,11 +534,11 @@ Content-Type: application/json
   },
   "firstName": "업체배송",
   "lastName": "담당자",
-  "phone": "010-5555-0001",
-  "email": "compdm01@test.com",
-  "slackId": "U_COMPDM01",
+  "phone": "010-5555-9001",
+  "email": "compdm-int@test.com",
+  "slackId": "U_COMPDM_INT",
   "userRole": "DELIVERY_MANAGER",
-  "organizationId": "{{busanHubId}}"
+  "hubId": "{{busanHubId}}"
 }
 
 > {%
@@ -601,6 +592,7 @@ Authorization: Bearer {{masterToken}}
 %}
 
 
+###
 # ================================================================
 # [SECTION 6] 주문 생성 -> 재고 예약 -> 주문 완료
 # ================================================================
@@ -656,6 +648,7 @@ Authorization: Bearer {{masterToken}}
 %}
 
 
+###
 # ================================================================
 # [SECTION 7] 주문 승인 -> 배송 생성 + 재고 차감
 # ================================================================
@@ -713,6 +706,7 @@ Authorization: Bearer {{masterToken}}
 %}
 
 
+###
 # ================================================================
 # [SECTION 8] 배송 진행 (상태 변경)
 # ================================================================
@@ -776,6 +770,7 @@ Authorization: Bearer {{masterToken}}
 %}
 
 
+###
 # ================================================================
 # [SECTION 9] 최종 검증
 # ================================================================
