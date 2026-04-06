@@ -78,6 +78,9 @@ public class HubConnectionRepositoryImpl implements HubConnectionRepository {
 
     @Override
     public void delete(HubConnection hubConnection, UUID userId) {
+        if (userId == null) {
+            throw new HubConnectionException(HubConnectionErrorCode.INVALID_DELETED_BY);
+        }
         try {
             HubConnectionJpaEntity entity = jpaRepository.findById(hubConnection.getId().id())
                     .orElseThrow(() -> new HubConnectionException(HubConnectionErrorCode.HUB_CONNECTION_NOT_FOUND));

@@ -91,6 +91,9 @@ public class HubRepositoryImpl implements HubRepository {
 
     @Override
     public void delete(Hub hub, UUID userId) {
+        if (userId == null) {
+            throw new HubException(HubErrorCode.INVALID_DELETED_BY);
+        }
         try {
             HubJpaEntity entity = jpaRepository.findById(hub.getId().id())
                     .orElseThrow(() -> new HubException(HubErrorCode.HUB_NOT_FOUND));
