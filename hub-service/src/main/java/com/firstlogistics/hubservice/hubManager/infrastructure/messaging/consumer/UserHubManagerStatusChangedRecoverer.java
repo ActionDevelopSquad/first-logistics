@@ -29,6 +29,11 @@ public class UserHubManagerStatusChangedRecoverer implements ConsumerRecordRecov
             log.info("허브 매니저 이미 존재. userId={}", event.userId());
             return;
         }
+        if (hubManagerException != null
+                && hubManagerException.getErrorCode() == HubManagerErrorCode.HUB_NOT_FOUND) {
+            log.info("허브가 존재하지 않음. userId={}", event.userId());
+            return;
+        }
 
         log.error("허브 매니저 생성 최종 실패. userId={}, organizationId={}",
                 event.userId(), event.organizationId(), e);
