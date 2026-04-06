@@ -32,9 +32,9 @@ spring:
 app:
   services:
     hub-service:
-      url: http://localhost:8083
+      url: ""
     company-service:
-      url: http://localhost:8084
+      url: ""
 
 logging:
   level:

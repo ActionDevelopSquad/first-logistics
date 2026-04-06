@@ -36,11 +36,11 @@ feign:
         readTimeout: 3000
 
 user-service:
-  url: ${USER_SERVICE_URL:http://localhost:8080}
+  url: ${USER_SERVICE_URL:}
 hub-service:
-  url: ${HUB_SERVICE_URL:http://localhost:8083}
+  url: ${HUB_SERVICE_URL:}
 company-service:
-  url: ${COMPANY_SERVICE_URL:http://localhost:8084}
+  url: ${COMPANY_SERVICE_URL:}
 
 management:
   tracing:
