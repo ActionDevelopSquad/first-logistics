@@ -2,8 +2,9 @@
 -- first-logistics 데이터베이스 + 스키마 초기화
 -- ============================================
 
--- PGVector 확장 (public + ai 스키마)
+-- 확장 설치
 CREATE EXTENSION IF NOT EXISTS vector SCHEMA public;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" SCHEMA public;
 
 -- Master DB 스키마
 CREATE SCHEMA IF NOT EXISTS delivery;
@@ -25,6 +26,7 @@ CREATE DATABASE "first-logistics-slave";
 \connect "first-logistics-slave";
 
 CREATE EXTENSION IF NOT EXISTS vector;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE SCHEMA IF NOT EXISTS delivery;
 CREATE SCHEMA IF NOT EXISTS orders;
