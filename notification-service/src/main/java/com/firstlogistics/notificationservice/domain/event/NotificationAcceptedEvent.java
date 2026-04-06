@@ -1,8 +1,11 @@
 package com.firstlogistics.notificationservice.domain.event;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.UUID;
 
 public record NotificationAcceptedEvent(
+        @JsonProperty(required = false)
         UUID userId,
         UUID notificationId,
         String messageId,      // 슬랙 id
