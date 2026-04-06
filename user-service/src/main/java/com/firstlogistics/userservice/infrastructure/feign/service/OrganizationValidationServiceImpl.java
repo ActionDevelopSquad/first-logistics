@@ -45,8 +45,11 @@ public class OrganizationValidationServiceImpl implements OrganizationValidation
     private boolean existsOrganization(UUID organizationId, UserRole role) {
         return switch (role) {
             case HUB_MANAGER -> existsHub(organizationId);
-            case COMPANY_MANAGER -> existsCompany(organizationId);
-            case DELIVERY_MANAGER -> existsDelivery(organizationId);
+            // TODO: 업체 담당자 회원가입 시 업체가 아직 생성되지 않은 상태이므로 검증 스킵.
+            //  현재 흐름: 업체 담당자 회원가입 → 업체 생성(managerId 연결)
+            //  개선 방향: 회원가입 시 업체를 동기(Feign)로 함께 생성하는 방식 검토 필요
+            case COMPANY_MANAGER -> true;
+            case DELIVERY_MANAGER -> existsHub(organizationId);
             case MASTER -> true;
         };
     }
