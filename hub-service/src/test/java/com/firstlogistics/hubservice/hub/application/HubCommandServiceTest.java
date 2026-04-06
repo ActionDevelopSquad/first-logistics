@@ -35,7 +35,8 @@ public class HubCommandServiceTest {
           "서울 허브",
           "서울특별시",
           37.5665,
-          127.9780
+          127.9780,
+                "GENERAL"
         );
         given(hubRepository.existsByHubName(command.name())).willReturn(true);
 
@@ -55,7 +56,8 @@ public class HubCommandServiceTest {
                 "",
                 "서울특별시",
                 37.5665,
-                127.9780
+                127.9780,
+                "GENERAL"
         );
         given(hubRepository.existsByHubName(command.name())).willReturn(false);
         //when
@@ -75,7 +77,8 @@ public class HubCommandServiceTest {
                 "서울",
                 "서울특별시",
                 100.5665,
-                -200.9780
+                -200.9780,
+                "GENERAL"
         );
         given(hubRepository.existsByHubName(command.name())).willReturn(false);
         //when
@@ -95,7 +98,8 @@ public class HubCommandServiceTest {
                 "서울 허브",
                 "서울특별시",
                 37.5665,
-                127.9780
+                127.9780,
+                "GENERAL"
         );
         given(hubRepository.existsByHubName(command.name())).willReturn(false);
         given(hubRepository.save(any(Hub.class))).willAnswer(invocationOnMock -> invocationOnMock.getArgument(0));

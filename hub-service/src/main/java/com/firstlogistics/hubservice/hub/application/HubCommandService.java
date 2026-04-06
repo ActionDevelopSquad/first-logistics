@@ -3,6 +3,7 @@ package com.firstlogistics.hubservice.hub.application;
 import com.firstlogistics.hubservice.hub.application.dto.command.CreateHubCommand;
 import com.firstlogistics.hubservice.hub.application.dto.result.HubResult;
 import com.firstlogistics.hubservice.hub.domain.entity.Hub;
+import com.firstlogistics.hubservice.hub.domain.enums.HubType;
 import com.firstlogistics.hubservice.hub.domain.exception.HubErrorCode;
 import com.firstlogistics.hubservice.hub.domain.exception.HubException;
 import com.firstlogistics.hubservice.hub.domain.repository.HubRepository;
@@ -26,7 +27,8 @@ public class HubCommandService {
         Hub hub = Hub.create(
                 command.name(),
                 HubAddress.of(command.roadAddress()),
-                GeoLocation.of(command.latitude(), command.longitude())
+                GeoLocation.of(command.latitude(), command.longitude()),
+                HubType.from(command.type())
         );
 
         hubRepository.save(hub);
