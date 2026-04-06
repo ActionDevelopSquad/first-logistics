@@ -39,7 +39,21 @@ services:
       - ./docker/postgres/setup-replication.sh:/setup-replication.sh
     entrypoint: ["bash", "/setup-replication.sh"]
     depends_on:
-      postgres:
+      user-service:
+        condition: service_healthy
+      hub-service:
+        condition: service_healthy
+      company-service:
+        condition: service_healthy
+      product-service:
+        condition: service_healthy
+      order-service:
+        condition: service_healthy
+      delivery-service:
+        condition: service_healthy
+      notification-service:
+        condition: service_healthy
+      ai-service:
         condition: service_healthy
 
   redis:
