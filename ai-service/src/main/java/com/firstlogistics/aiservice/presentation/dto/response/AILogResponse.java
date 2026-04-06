@@ -9,13 +9,15 @@ import java.util.UUID;
 public record AILogResponse(
         UUID id,
         AILogStatus status,
-        MessengerType messengerType
+        MessengerType messengerType,
+        String responseContent
 ) {
     public static AILogResponse from(AILogResult result) {
         return new AILogResponse(
                 result.id(),
                 result.status(),
-                result.messengerType()
+                result.messengerType(),
+                result.responseContent()
         );
     }
 }

@@ -6,8 +6,11 @@ import com.firstlogistics.aiservice.application.external.AIPromptGenerator;
 import com.firstlogistics.aiservice.domain.entity.AILog;
 import com.firstlogistics.aiservice.domain.enums.AILogStatus;
 import com.firstlogistics.aiservice.domain.enums.MessengerType;
+import com.firstlogistics.aiservice.domain.event.NotificationCreatedEvent;
 import com.firstlogistics.aiservice.domain.repository.AILogRepository;
+import com.firstlogistics.aiservice.domain.vo.MessengerMessageId;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +20,7 @@ public class AILogCommandService {
 
     private final AILogRepository aiLogRepository;
     private final AIPromptGenerator aiPromptGenerator;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public AILogResult createAILog(CreateAILogCommand command) {
@@ -31,9 +35,16 @@ public class AILogCommandService {
                 AILogStatus.SUCCESS,        // 4. 상태 (성공)
                 MessengerType.SLACK         // 5. 메신저 타입
         );
+        
+        AILogResult aiLogResult = AILogResult.from(aiLogRepository.save(aiLog));
 
-        AILog savedLog = aiLogRepository.save(aiLog);
+        eventPublisher.publishEvent(NotificationCreatedEvent.of(
+                aiLogResult.messageId(),
+                command.hubManagerSlackId(),
+                aiLogResult.responseContent(),
+                aiLogResult.messengerType()
+        ));
 
-        return AILogResult.from(savedLog);
+        return aiLogResult;
     }
 }
