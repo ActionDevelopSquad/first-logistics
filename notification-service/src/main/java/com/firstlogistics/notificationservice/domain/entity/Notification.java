@@ -16,14 +16,15 @@ import java.util.UUID;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Notification {
-    NotificationId id;
-    UUID receiverId;
-    String messageId;
-    String content;
-    NotificationType type;
-    NotificationStatus status;
-    MessengerType messengerType;
-    LocalDateTime readAt;
+    private NotificationId id;
+    private Long version;
+    private UUID receiverId;
+    private String messageId;
+    private String content;
+    private NotificationType type;
+    private NotificationStatus status;
+    private MessengerType messengerType;
+    private LocalDateTime readAt;
 
     public static Notification create(
             UUID notificationId,
@@ -35,6 +36,7 @@ public class Notification {
     ) {
         return new Notification(
                 NotificationId.of(notificationId),
+                null,
                 receiverId,
                 messageId,
                 content,
@@ -47,6 +49,7 @@ public class Notification {
 
     public static Notification reconstitute(
             NotificationId id,
+            Long version,
             UUID receiverId,
             String messageId,
             String content,
@@ -57,6 +60,7 @@ public class Notification {
     ) {
         return new Notification(
                 id,
+                version,
                 receiverId,
                 messageId,
                 content,

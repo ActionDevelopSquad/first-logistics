@@ -10,7 +10,7 @@ public class NotificationMapper {
     public NotificationJpaEntity toEntity(Notification notification) {
         return new NotificationJpaEntity(
                 notification.getId().id(),
-                null,
+                notification.getVersion(),
                 notification.getReceiverId(),
                 notification.getMessageId(),
                 notification.getContent(),
@@ -25,6 +25,7 @@ public class NotificationMapper {
     public Notification toDomain(NotificationJpaEntity entity) {
         return Notification.reconstitute(
                 NotificationId.of(entity.getId()),
+                entity.getVersion(),
                 entity.getReceiverId(),
                 entity.getMessageId(),
                 entity.getContent(),
