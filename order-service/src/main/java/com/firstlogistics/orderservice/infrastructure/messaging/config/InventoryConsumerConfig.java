@@ -2,7 +2,7 @@ package com.firstlogistics.orderservice.infrastructure.messaging.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.firstlogistics.orderservice.infrastructure.messaging.event.InventoryReservationFailedEvent;
-import com.firstlogistics.orderservice.infrastructure.messaging.event.InventoryReservedEvent;
+import com.firstlogistics.orderservice.infrastructure.messaging.event.InventoryResultEvent;
 import common.kafka.config.KafkaConsumerConfig;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -21,24 +21,24 @@ public class InventoryConsumerConfig {
     private final KafkaConsumerConfig kafkaConsumerConfig;
     private final ObjectMapper objectMapper;
 
-    // ----- 재고 예약 성공 ----- //
+    // ----- 재고 이벤트 성공 ----- //
     @Bean
-    public ConsumerFactory<String, InventoryReservedEvent> inventoryReservedConsumerFactory() {
-        return createFactory(InventoryReservedEvent.class);
+    public ConsumerFactory<String, InventoryResultEvent> inventoryResultConsumerFactory() {
+        return createFactory(InventoryResultEvent.class);
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, InventoryReservedEvent> inventoryReservedListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, InventoryReservedEvent> factory =
+    public ConcurrentKafkaListenerContainerFactory<String, InventoryResultEvent> inventoryResultListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, InventoryResultEvent> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
 
-        factory.setConsumerFactory(inventoryReservedConsumerFactory());
+        factory.setConsumerFactory(inventoryResultConsumerFactory());
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
 
         return factory;
     }
 
-    // ----- 재고 예약 성공 ----- //
+    // ----- 재고 예약 실패 ----- //
     @Bean
     public ConsumerFactory<String, InventoryReservationFailedEvent> inventoryReservationFailedConsumerFactory() {
         return createFactory(InventoryReservationFailedEvent.class);
