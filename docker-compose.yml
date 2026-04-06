@@ -31,6 +31,17 @@ services:
         limits:
           memory: 256m
 
+  postgres-init:
+    image: pgvector/pgvector:pg16
+    container_name: first-logistics-postgres-init
+    restart: "no"
+    volumes:
+      - ./docker/postgres/setup-replication.sh:/setup-replication.sh
+    entrypoint: ["bash", "/setup-replication.sh"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   redis:
     image: redis:7.2-alpine
     container_name: first-logistics-redis

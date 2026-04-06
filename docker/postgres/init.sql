@@ -38,8 +38,3 @@ CREATE SCHEMA IF NOT EXISTS notification;
 CREATE SCHEMA IF NOT EXISTS ai;
 CREATE SCHEMA IF NOT EXISTS sample;
 
--- Slave DB Subscription (Master DB 구독)
-CREATE SUBSCRIPTION slave_sub
-    CONNECTION 'host=localhost port=5432 dbname=first-logistics user=postgres'
-    PUBLICATION master_pub
-    WITH (copy_data = true, enabled = true);
