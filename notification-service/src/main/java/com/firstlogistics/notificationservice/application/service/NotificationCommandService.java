@@ -40,14 +40,11 @@ public class NotificationCommandService {
             notificationClient.send(savedNotification.getMessageId(), savedNotification.getContent());
 
             savedNotification.updateStatus(NotificationStatus.SENT);
-
-            notificationRepository.save(savedNotification);
-
+        } catch (NotificationException e) {
+            throw e;
         } catch (Exception e) {
             log.error("슬랙 전송 실패: {}", e.getMessage());
             savedNotification.updateStatus(NotificationStatus.FAILED);
-
-            notificationRepository.save(savedNotification);
 
             throw new NotificationException(NotificationErrorCode.SLACK_SEND_FAILED);
         }
