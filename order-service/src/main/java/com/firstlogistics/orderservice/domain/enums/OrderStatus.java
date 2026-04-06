@@ -24,7 +24,7 @@ public enum OrderStatus {
         try {
             return OrderStatus.valueOf(status.toUpperCase());
         } catch (IllegalArgumentException e) {
-            return null;
+            throw new OrderException(OrderErrorCode.INVALID_ORDER_STATUS);
         }
     }
 

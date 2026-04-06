@@ -2,6 +2,8 @@ package com.firstlogistics.orderservice.application;
 
 import com.firstlogistics.orderservice.application.dto.command.CreateOrderCommand;
 import com.firstlogistics.orderservice.application.port.CompanyPort;
+import com.firstlogistics.orderservice.application.port.HubPort;
+import com.firstlogistics.orderservice.application.port.UserContextPort;
 import com.firstlogistics.orderservice.application.port.dto.CompanyResponse;
 import com.firstlogistics.orderservice.domain.entity.Order;
 import com.firstlogistics.orderservice.domain.entity.OrderTestBuilder;
@@ -13,7 +15,7 @@ import com.firstlogistics.orderservice.domain.event.OrderCreatedEvent;
 import com.firstlogistics.orderservice.domain.repository.OrderRepository;
 import com.firstlogistics.orderservice.domain.exception.OrderException;
 import com.firstlogistics.orderservice.domain.exception.OrderErrorCode;
-import com.firstlogistics.orderservice.domain.service.RoleCheck;
+import com.firstlogistics.orderservice.application.port.OrderAuthorityCheckPort;
 import com.firstlogistics.orderservice.domain.vo.OrderId;
 import common.event.Events;
 import org.junit.jupiter.api.AfterEach;
@@ -52,7 +54,13 @@ class OrderCommandServiceTest {
     private CompanyPort companyPort;
 
     @Mock
-    private RoleCheck roleCheck;
+    private OrderAuthorityCheckPort authorityCheck;
+
+    @Mock
+    private HubPort hubPort;
+
+    @Mock
+    private UserContextPort userContext;
 
     @BeforeEach
     void setUp() {
@@ -125,7 +133,7 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
-        when(roleCheck.canAcceptOrCancel(any())).thenReturn(true);
+        when(authorityCheck.canAcceptOrCancel(any(), any(), any())).thenReturn(true);
 
         // when
         String resultStatus = orderCommandService.acceptOrder(orderId);
@@ -147,7 +155,7 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
-        when(roleCheck.canAcceptOrCancel(any())).thenReturn(true);
+        when(authorityCheck.canAcceptOrCancel(any(), any(), any())).thenReturn(true);
 
         // when & then
         assertThatThrownBy(() -> orderCommandService.acceptOrder(orderId))
@@ -168,7 +176,7 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
-        when(roleCheck.canAcceptOrCancel(any())).thenReturn(true);
+        when(authorityCheck.canAcceptOrCancel(any(), any(), any())).thenReturn(true);
 
         // when & then
         assertThatThrownBy(() -> orderCommandService.acceptOrder(orderId))
@@ -190,7 +198,7 @@ class OrderCommandServiceTest {
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
         // 권한 체크 실패 설정
-        when(roleCheck.canAcceptOrCancel(any())).thenReturn(false);
+        when(authorityCheck.canAcceptOrCancel(any(), any(), any())).thenReturn(false);
 
         // when & then
         assertThatThrownBy(() -> orderCommandService.acceptOrder(orderId))
@@ -214,7 +222,7 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
-        when(roleCheck.canAcceptOrCancel(any())).thenReturn(true);
+        when(authorityCheck.canAcceptOrCancel(any(), any(), any())).thenReturn(true);
 
         // when
         String resultStatus = orderCommandService.rejectOrder(orderId);
@@ -236,7 +244,7 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
-        when(roleCheck.canAcceptOrCancel(any())).thenReturn(true);
+        when(authorityCheck.canAcceptOrCancel(any(), any(), any())).thenReturn(true);
 
         // when & then
         assertThatThrownBy(() -> orderCommandService.rejectOrder(orderId))
@@ -259,7 +267,7 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
-        when(roleCheck.canAcceptOrCancel(any())).thenReturn(true);
+        when(authorityCheck.canAcceptOrCancel(any(), any(), any())).thenReturn(true);
 
         // when
         String resultStatus = orderCommandService.cancelOrder(orderId);
@@ -282,7 +290,7 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
-        when(roleCheck.canRequestCancel(any())).thenReturn(true);
+        when(authorityCheck.canRequestCancel(any())).thenReturn(true);
 
         // when
         String resultStatus = orderCommandService.requestCancel(orderId);
@@ -305,7 +313,7 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
-        when(roleCheck.canAcceptOrCancel(any())).thenReturn(true);
+        when(authorityCheck.canAcceptOrCancel(any(), any(), any())).thenReturn(true);
 
         // when
         String resultStatus = orderCommandService.approveCancelRequest(orderId);
@@ -329,7 +337,7 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
-        when(roleCheck.canAcceptOrCancel(any())).thenReturn(true);
+        when(authorityCheck.canAcceptOrCancel(any(), any(), any())).thenReturn(true);
 
         // when
         String resultStatus = orderCommandService.rejectCancelRequest(orderId);
@@ -351,7 +359,7 @@ class OrderCommandServiceTest {
                 .build();
 
         when(orderRepository.findById(OrderId.of(orderId))).thenReturn(Optional.of(order));
-        when(roleCheck.canAcceptOrCancel(any())).thenReturn(true);
+        when(authorityCheck.canAcceptOrCancel(any(), any(), any())).thenReturn(true);
 
         // when & then
         assertThatThrownBy(() -> orderCommandService.rejectCancelRequest(orderId))

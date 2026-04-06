@@ -4,14 +4,12 @@ import com.firstlogistics.orderservice.domain.enums.OrderCancelType;
 import com.firstlogistics.orderservice.domain.enums.OrderStatus;
 import com.firstlogistics.orderservice.domain.exception.OrderErrorCode;
 import com.firstlogistics.orderservice.domain.exception.OrderException;
-import com.firstlogistics.orderservice.domain.service.RoleCheck;
 import com.firstlogistics.orderservice.domain.vo.Address;
 import com.firstlogistics.orderservice.domain.vo.Money;
 import com.firstlogistics.orderservice.domain.vo.OrderId;
 import com.firstlogistics.orderservice.domain.vo.OrderItemInput;
 import com.firstlogistics.orderservice.domain.vo.Receiver;
 import com.firstlogistics.orderservice.domain.vo.Supplier;
-import common.security.entity.enums.UserRole;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -180,11 +178,7 @@ public class Order {
         this.status = resultStatus;
     }
 
-    public void accept(RoleCheck roleCheck) {
-        if (!roleCheck.canAcceptOrCancel(this.id)) {
-            throw new OrderException(OrderErrorCode.UNAUTHORIZED_ACCESS);
-        }
-
+    public void accept() {
         if (this.status == OrderStatus.ACCEPTED) {
             throw new OrderException(OrderErrorCode.ALREADY_ACCEPTED);
         }
@@ -219,11 +213,7 @@ public class Order {
     }
 
     // 주문 취소 / 거절 / 취소 요청 승인 (나중에 필요하면 분리)
-    public void cancel(OrderCancelType cancelType, RoleCheck roleCheck) {
-        if (!roleCheck.canAcceptOrCancel(this.id)) {
-            throw new OrderException(OrderErrorCode.UNAUTHORIZED_ACCESS);
-        }
-
+    public void cancel(OrderCancelType cancelType) {
         if (cancelType == null) {
             throw new OrderException(OrderErrorCode.CANCEL_TYPE_REQUIRED);
         }
@@ -238,11 +228,7 @@ public class Order {
         this.cancelType = cancelType;
     }
 
-    public void requestCancel(RoleCheck roleCheck) {
-        if (!roleCheck.canRequestCancel(this.id)) {
-            throw new OrderException(OrderErrorCode.UNAUTHORIZED_ACCESS);
-        }
-
+    public void requestCancel() {
         // 이미 취소 요청 or 취소 된 상태인 경우
         if (this.status == OrderStatus.CANCEL_REQUESTED || this.status == OrderStatus.CANCELLED) {
             throw new OrderException(OrderErrorCode.ALREADY_CANCEL_REQUESTED);
@@ -252,11 +238,7 @@ public class Order {
         this.status = OrderStatus.CANCEL_REQUESTED;
     }
 
-    public void rejectCancelRequest(RoleCheck roleCheck) {
-        if (!roleCheck.canAcceptOrCancel(this.id)) {
-            throw new OrderException(OrderErrorCode.UNAUTHORIZED_ACCESS);
-        }
-
+    public void rejectCancelRequest() {
         // 취소 요청 상태에서만 가능
         if (this.status != OrderStatus.CANCEL_REQUESTED || this.previousStatus == null) {
             throw new OrderException(OrderErrorCode.CANNOT_REJECT_CANCEL);
@@ -264,6 +246,11 @@ public class Order {
         this.status.validateNext(this.previousStatus);
         this.status = this.previousStatus; // 이전 상태 복구
         this.previousStatus = null;
+    }
+
+    public boolean isDeletable() {
+        // 주문 완료 or 취소 상태에서만 삭제 가능
+        return this.status == OrderStatus.COMPLETED || this.status == OrderStatus.CANCELLED;
     }
 
 }
