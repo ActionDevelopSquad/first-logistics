@@ -1,6 +1,5 @@
 package com.firstlogistics.notificationservice.domain.repository;
 
-import aj.org.objectweb.asm.commons.Remapper;
 import com.firstlogistics.notificationservice.application.dto.query.NotificationSearchQuery;
 import com.firstlogistics.notificationservice.domain.entity.Notification;
 import com.firstlogistics.notificationservice.domain.projection.NotificationDetailProjection;
