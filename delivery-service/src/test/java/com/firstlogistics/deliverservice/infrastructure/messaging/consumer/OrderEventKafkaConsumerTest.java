@@ -113,8 +113,8 @@ class OrderEventKafkaConsumerTest {
 		}
 
 		@Test
-		@DisplayName("DeliveryException - delivery.creation.failed Saga 보상 발행")
-		void deliveryException_publishesSagaCompensation() {
+		@DisplayName("InfraException - delivery.creation.failed Saga 보상 발행")
+		void infraException_publishesSagaCompensation() {
 			// given
 			OrderAcceptedEvent event = createEvent();
 			given(deliveryQueryService.existsByOrderId(event.orderId())).willReturn(false);

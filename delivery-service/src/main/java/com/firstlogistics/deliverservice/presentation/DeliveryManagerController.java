@@ -2,9 +2,8 @@ package com.firstlogistics.deliverservice.presentation;
 
 import com.firstlogistics.deliverservice.application.DeliveryManagerCommandService;
 import com.firstlogistics.deliverservice.application.DeliveryManagerQueryService;
-import com.firstlogistics.deliverservice.application.dto.query.DeliveryManagerListQuery;
-import com.firstlogistics.deliverservice.domain.enums.ManagerType;
 import com.firstlogistics.deliverservice.presentation.dto.request.CreateDeliveryManagerRequest;
+import com.firstlogistics.deliverservice.presentation.dto.request.DeliveryManagerListRequest;
 import com.firstlogistics.deliverservice.presentation.dto.request.UpdateDeliveryManagerRequest;
 import com.firstlogistics.deliverservice.presentation.dto.response.CreateDeliveryManagerResponse;
 import com.firstlogistics.deliverservice.presentation.dto.response.DeliveryManagerDetailResponse;
@@ -20,15 +19,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @RestController
@@ -55,21 +53,11 @@ public class DeliveryManagerController {
 	@RequireRole({UserRole.MASTER, UserRole.HUB_MANAGER, UserRole.DELIVERY_MANAGER})
 	@GetMapping
 	public ResponseEntity<ApiResponse<DeliveryManagerListResponse>> getDeliveryManagers(
-		@RequestParam(required = false) ManagerType managerType,
-		@RequestParam(required = false) UUID hubId,
-		@RequestParam(required = false) String managerName,
-		@RequestParam(required = false) String phoneNumber,
-		@RequestParam(required = false) UUID cursorId,
-		@RequestParam(required = false) LocalDateTime cursorCreatedAt,
-		@RequestParam(defaultValue = "10") int size
+		@ModelAttribute DeliveryManagerListRequest request
 	) {
 		CustomUserDetails user = SecurityUtils.currentUser();
-		DeliveryManagerListQuery query = new DeliveryManagerListQuery(
-			user.getRole().name(), user.getUserId(), managerType, hubId, managerName, phoneNumber,
-			cursorId, cursorCreatedAt, size
-		);
 		return ResponseEntity.ok(ApiResponse.success(DeliveryManagerSuccessCode.DELIVERY_MANAGER_LIST_FOUND,
-			DeliveryManagerListResponse.from(deliveryManagerQueryService.getDeliveryManagers(query))
+			DeliveryManagerListResponse.from(deliveryManagerQueryService.getDeliveryManagers(request.toQuery(user.getRole().name(), user.getUserId())))
 		));
 	}
 

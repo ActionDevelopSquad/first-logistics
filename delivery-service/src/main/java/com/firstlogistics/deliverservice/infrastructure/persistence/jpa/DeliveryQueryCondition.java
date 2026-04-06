@@ -1,5 +1,7 @@
 package com.firstlogistics.deliverservice.infrastructure.persistence.jpa;
 
+import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.spec.DeliverySearchSpec;
 import com.querydsl.core.types.dsl.BooleanExpression;
 
@@ -13,10 +15,11 @@ public class DeliveryQueryCondition {
 
 	public static BooleanExpression scopeCondition(DeliverySearchSpec spec) {
 		return switch (spec.scope().role()) {
+			case MASTER -> null;
 			case HUB_MANAGER -> scopeForHubManager(spec.scope().scopeId());
 			case DELIVERY_MANAGER -> scopeForDeliveryManager(spec.scope().scopeId());
 			case COMPANY_MANAGER -> scopeForCompanyManager(spec.scope().scopeId());
-			default -> null;
+			default -> throw new DeliveryException(DeliveryErrorCode.INVALID_ROLE_SCOPE);
 		};
 	}
 

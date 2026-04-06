@@ -1,6 +1,7 @@
 package com.firstlogistics.deliverservice.infrastructure.persistence.jpa;
 
-import common.security.entity.enums.UserRole;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
+import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.projection.DeliveryManagerSummaryProjection;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryManagerQueryRepository;
 import com.firstlogistics.deliverservice.domain.spec.DeliveryManagerSearchSpec;
@@ -55,9 +56,10 @@ public class DeliveryManagerQueryRepositoryImpl implements DeliveryManagerQueryR
 			return null;
 		}
 		return switch (scope.role()) {
+			case MASTER -> null;
 			case HUB_MANAGER -> manager.hubId.eq(scope.scopeId());
 			case DELIVERY_MANAGER -> manager.id.eq(scope.scopeId());
-			default -> null;
+			default -> throw new DeliveryException(DeliveryErrorCode.INVALID_ROLE_SCOPE);
 		};
 	}
 
