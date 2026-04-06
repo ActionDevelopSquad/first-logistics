@@ -149,6 +149,15 @@ public class OrderCommandService {
     }
 
     @Transactional
+    public void reserve(UUID orderId, boolean isSuccess) {
+        Order order = getOrder(orderId);
+
+        order.reserve(isSuccess);
+
+        orderRepository.save(order);
+    }
+
+    @Transactional
     public void startShipping(UUID orderId) {
         Order order = getOrder(orderId);
 
