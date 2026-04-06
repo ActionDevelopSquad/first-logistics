@@ -2,6 +2,9 @@
 -- first-logistics 데이터베이스 + 스키마 초기화
 -- ============================================
 
+-- PGVector 확장
+CREATE EXTENSION IF NOT EXISTS vector;
+
 -- Master DB 스키마
 CREATE SCHEMA IF NOT EXISTS delivery;
 CREATE SCHEMA IF NOT EXISTS orders;
@@ -18,6 +21,8 @@ CREATE DATABASE "first-logistics-slave";
 
 -- Slave DB 스키마
 \connect "first-logistics-slave";
+
+CREATE EXTENSION IF NOT EXISTS vector;
 
 CREATE SCHEMA IF NOT EXISTS delivery;
 CREATE SCHEMA IF NOT EXISTS orders;
