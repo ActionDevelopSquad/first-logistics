@@ -20,8 +20,8 @@ import java.util.UUID;
  * UUID 체계는 모든 서비스 DataInitRunner와 공유합니다.
  */
 @Slf4j
-@Component
-@Profile("dev")
+//@Component  // TODO: 통합테스트 시 러너 데이터 충돌 방지 - 필요 시 주석 해제
+//@Profile("dev")
 @RequiredArgsConstructor
 public class DeliveryDataInitRunner implements ApplicationRunner {
 
