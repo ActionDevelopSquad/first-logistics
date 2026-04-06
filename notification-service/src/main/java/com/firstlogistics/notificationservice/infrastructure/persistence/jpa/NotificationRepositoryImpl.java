@@ -61,6 +61,7 @@ public class NotificationRepositoryImpl implements NotificationRepository {
     @Override
     public Page<NotificationSummaryProjection> searchByCondition(NotificationSearchQuery query, Pageable pageable) {
         BooleanBuilder builder = new BooleanBuilder();
+        builder.and(notification.deletedAt.isNull());
 
         if (query != null) {
             if (query.receiverId() != null) {
@@ -130,13 +131,13 @@ public class NotificationRepositoryImpl implements NotificationRepository {
     public Optional<Notification> findById(NotificationId id) {
         return notificationJpaRepository.findById(id.id())
                 .filter(entity -> entity.getDeletedAt() == null) // 삭제된 건 제외
-                .map(NotificationMapper::toDomain);
+                .map(notificationMapper::toDomain);
     }
 
     @Override
     public void delete(Notification domainNotification, UUID userId) {
         NotificationJpaEntity entity = notificationJpaRepository.findById(domainNotification.getId().id())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 알림입니다."));
+                .orElseThrow(() -> new NotificationException(NotificationErrorCode.NOTIFICATION_NOT_FOUND));
 
         entity.softDelete(userId);
     }

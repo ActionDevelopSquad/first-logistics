@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class NotificationMapper {
 
-    public static NotificationJpaEntity toEntity(Notification notification) {
+    public NotificationJpaEntity toEntity(Notification notification) {
         return new NotificationJpaEntity(
                 notification.getId().id(),
                 notification.getVersion(),
@@ -22,7 +22,7 @@ public class NotificationMapper {
     }
 
 
-    public static Notification toDomain(NotificationJpaEntity entity) {
+    public Notification toDomain(NotificationJpaEntity entity) {
         return Notification.reconstitute(
                 NotificationId.of(entity.getId()),
                 entity.getVersion(),
