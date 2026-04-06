@@ -17,9 +17,10 @@ public enum UserErrorCode implements ErrorCode {
     ALREADY_REJECTED(HttpStatus.BAD_REQUEST, "USER_400_005", "이미 거부된 사용자입니다."),
     ALREADY_DELETED(HttpStatus.BAD_REQUEST, "USER_400_006", "탈퇴 회원 정보는 수정이 불가능합니다."),
     SAME_ROLE_SELECTED(HttpStatus.BAD_REQUEST, "USER_400_007", "현재 권한과 수정된 권한이 동일합니다."),
-    REFRESH_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_400_008", "refresh token이 없습니다."),
+    MANAGER_TYPE_REQUIRED(HttpStatus.BAD_REQUEST, "USER_400_008", "배송 담당자는 managerType을 입력해야 합니다."),
+    MANAGER_TYPE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "USER_400_009", "배송 담당자가 아닌 경우 managerType을 입력할 수 없습니다."),
 
-    // 401 UNAUTHORIZED
+    // 401 UNAUTHORIZED,
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "USER_401_001", "인증이 필요합니다."),
 
     // 403 FORBIDDEN
@@ -28,7 +29,8 @@ public enum UserErrorCode implements ErrorCode {
     // 404 NOT FOUND,
     ID_PASSWORD_NOT_MATCH(HttpStatus.NOT_FOUND, "USER_404_001", "아이디 또는 비밀번호가 올바르지 않습니다."),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_404_002", "존재하지 않는 회원입니다."),
-    ORGANIZATION_ID_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_404_003", "존재하지 않는 소속 ID 입니다."),
+    HUB_ID_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_404_003", "존재하지 않는 허브 ID 입니다."),
+    REFRESH_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_404_004", "refresh token이 없습니다."),
 
     // 5xx SERVER ERROR
     AUTH_SERVER_REQUEST_ERROR(HttpStatus.BAD_GATEWAY, "AUTH_502_001", "인증 서버 요청 중 오류가 발생했습니다."),

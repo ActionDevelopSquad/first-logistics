@@ -1,7 +1,7 @@
 package com.firstlogistics.userservice.presentation.dto.response;
 
 import com.firstlogistics.userservice.application.dto.result.UserResult;
-import common.jpa.entity.enums.UserRole;
+import common.security.entity.enums.UserRole;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

@@ -1,9 +1,10 @@
 package com.firstlogistics.userservice.domain.entity;
 
+import com.firstlogistics.userservice.domain.enums.ManagerType;
 import com.firstlogistics.userservice.domain.enums.Status;
 import com.firstlogistics.userservice.domain.exception.UserErrorCode;
 import com.firstlogistics.userservice.domain.exception.UserException;
-import common.jpa.entity.enums.UserRole;
+import common.security.entity.enums.UserRole;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -126,6 +127,163 @@ class UserTest {
         }
     }
 
+    @Nested
+    @DisplayName("canManage")
+    class CanManageTest {
+
+        @Test
+        @DisplayName("MASTER는 모든 사용자를 관리할 수 있다")
+        void masterCanManageAnyone() {
+            // given
+            User master = createUser(UserRole.MASTER, UUID.randomUUID(), Status.APPROVED);
+            User target = createUser(UserRole.COMPANY_MANAGER, UUID.randomUUID(), Status.APPROVED);
+
+            // when
+            boolean result = master.canManage(target);
+
+            // then
+            assertThat(result).isTrue();
+        }
+
+        @Test
+        @DisplayName("HUB_MANAGER는 같은 허브의 COMPANY_MANAGER를 관리할 수 있다")
+        void hubManagerCanManageCompanyManagerInSameHub() {
+            // given
+            UUID hubId = UUID.randomUUID();
+            User hubManager = createUser(UserRole.HUB_MANAGER, hubId, Status.APPROVED);
+            User target = createUser(UserRole.COMPANY_MANAGER, hubId, Status.APPROVED);
+
+            // when
+            boolean result = hubManager.canManage(target);
+
+            // then
+            assertThat(result).isTrue();
+        }
+
+        @Test
+        @DisplayName("HUB_MANAGER는 같은 허브의 DELIVERY_MANAGER를 관리할 수 있다")
+        void hubManagerCanManageDeliveryManagerInSameHub() {
+            // given
+            UUID hubId = UUID.randomUUID();
+            User hubManager = createUser(UserRole.HUB_MANAGER, hubId, Status.APPROVED);
+            User target = createUser(UserRole.DELIVERY_MANAGER, hubId, Status.APPROVED);
+
+            // when
+            boolean result = hubManager.canManage(target);
+
+            // then
+            assertThat(result).isTrue();
+        }
+
+        @Test
+        @DisplayName("HUB_MANAGER는 허브가 다르면 관리할 수 없다")
+        void hubManagerCannotManageUserInDifferentHub() {
+            // given
+            User hubManager = createUser(UserRole.HUB_MANAGER, UUID.randomUUID(), Status.APPROVED);
+            User target = createUser(UserRole.COMPANY_MANAGER, UUID.randomUUID(), Status.APPROVED);
+
+            // when
+            boolean result = hubManager.canManage(target);
+
+            // then
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        @DisplayName("HUB_MANAGER는 같은 허브여도 MASTER는 관리할 수 없다")
+        void hubManagerCannotManageMasterEvenInSameHub() {
+            // given
+            UUID hubId = UUID.randomUUID();
+            User hubManager = createUser(UserRole.HUB_MANAGER, hubId, Status.APPROVED);
+            User target = createUser(UserRole.MASTER, hubId, Status.APPROVED);
+
+            // when
+            boolean result = hubManager.canManage(target);
+
+            // then
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        @DisplayName("HUB_MANAGER는 같은 허브여도 HUB_MANAGER는 관리할 수 없다")
+        void hubManagerCannotManageAnotherHubManagerEvenInSameHub() {
+            // given
+            UUID hubId = UUID.randomUUID();
+            User hubManager = createUser(UserRole.HUB_MANAGER, hubId, Status.APPROVED);
+            User target = createUser(UserRole.HUB_MANAGER, hubId, Status.APPROVED);
+
+            // when
+            boolean result = hubManager.canManage(target);
+
+            // then
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        @DisplayName("COMPANY_MANAGER는 다른 사용자를 관리할 수 없다")
+        void companyManagerCannotManageAnyone() {
+            // given
+            User companyManager = createUser(UserRole.COMPANY_MANAGER, UUID.randomUUID(), Status.APPROVED);
+            User target = createUser(UserRole.DELIVERY_MANAGER, UUID.randomUUID(), Status.APPROVED);
+
+            // when
+            boolean result = companyManager.canManage(target);
+
+            // then
+            assertThat(result).isFalse();
+        }
+
+        @Test
+        @DisplayName("DELIVERY_MANAGER는 다른 사용자를 관리할 수 없다")
+        void deliveryManagerCannotManageAnyone() {
+            // given
+            User deliveryManager = createUser(UserRole.DELIVERY_MANAGER, UUID.randomUUID(), Status.APPROVED);
+            User target = createUser(UserRole.COMPANY_MANAGER, UUID.randomUUID(), Status.APPROVED);
+
+            // when
+            boolean result = deliveryManager.canManage(target);
+
+            // then
+            assertThat(result).isFalse();
+        }
+    }
+
+    @Nested
+    @DisplayName("rollbackStatus")
+    class RollbackStatusTest {
+
+        @Test
+        @DisplayName("상태를 PENDING으로 되돌린다")
+        void rollbackStatusToPending() {
+            // given
+            User user = reconstituteUser(Status.APPROVED);
+
+            // when
+            user.rollbackStatus();
+
+            // then
+            assertThat(user.getStatus()).isEqualTo(Status.PENDING);
+        }
+    }
+
+    @Nested
+    @DisplayName("deliveryManagerOver")
+    class DeliveryManagerOverTest {
+
+        @Test
+        @DisplayName("상태를 REJECTED로 변경한다")
+        void changeStatusToRejected() {
+            // given
+            User user = reconstituteUser(Status.APPROVED);
+
+            // when
+            user.deliveryManagerOver();
+
+            // then
+            assertThat(user.getStatus()).isEqualTo(Status.REJECTED);
+        }
+    }
+
     private User reconstituteUser(Status status) {
         return User.reconstitute(
                 UUID.randomUUID(),
@@ -137,6 +295,23 @@ class UserTest {
                 status,
                 UserRole.COMPANY_MANAGER,
                 UUID.randomUUID(),
+                ManagerType.HUB_DELIVERY,
+                null
+        );
+    }
+
+    private User createUser(UserRole userRole, UUID hubId, Status status) {
+        return User.reconstitute(
+                UUID.randomUUID(),
+                "username",
+                "홍길동",
+                "test@test.com",
+                "01012345678",
+                "slack-id",
+                status,
+                userRole,
+                hubId,
+                ManagerType.HUB_DELIVERY,
                 null
         );
     }

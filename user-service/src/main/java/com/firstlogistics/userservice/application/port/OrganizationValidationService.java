@@ -1,6 +1,6 @@
 package com.firstlogistics.userservice.application.port;
 
-import common.jpa.entity.enums.UserRole;
+import common.security.entity.enums.UserRole;
 
 import java.util.UUID;
 

@@ -8,13 +8,14 @@ import com.firstlogistics.userservice.application.dto.result.TokenResult;
 import com.firstlogistics.userservice.application.port.KeycloakService;
 import com.firstlogistics.userservice.application.port.KeycloakTokenService;
 import com.firstlogistics.userservice.domain.entity.User;
+import com.firstlogistics.userservice.domain.enums.ManagerType;
 import com.firstlogistics.userservice.domain.enums.Status;
 import com.firstlogistics.userservice.domain.event.DomainEvent;
 import com.firstlogistics.userservice.domain.event.UserStatusChangedEvent;
 import com.firstlogistics.userservice.domain.exception.UserErrorCode;
 import com.firstlogistics.userservice.domain.exception.UserException;
 import com.firstlogistics.userservice.domain.repository.UserRepository;
-import common.jpa.entity.enums.UserRole;
+import common.security.entity.enums.UserRole;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -35,7 +36,7 @@ import static org.mockito.BDDMockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("UserService 단위 테스트")
-class UserServiceTest {
+class UserCommandServiceImplTest {
 
     @Mock
     private KeycloakTokenService tokenService;
@@ -50,7 +51,7 @@ class UserServiceTest {
     private DomainEvent event;
 
     @InjectMocks
-    private UserService userService;
+    private UserCommandServiceImpl userCommandServiceImpl;
 
     @Nested
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -79,7 +80,7 @@ class UserServiceTest {
             LocalDateTime beforeLogin = LocalDateTime.now();
 
             // when
-            TokenResult result = userService.login(command);
+            TokenResult result = userCommandServiceImpl.login(command);
 
             // then
             assertEquals(tokenInfo.accessToken(), result.accessToken());
@@ -109,7 +110,7 @@ class UserServiceTest {
             given(userRepository.findByUsernameNotDeleted(command.username())).willReturn(pendingUser);
 
             // when & then
-            assertThatThrownBy(() -> userService.login(command))
+            assertThatThrownBy(() -> userCommandServiceImpl.login(command))
                     .isInstanceOf(UserException.class)
                     .hasMessageContaining(UserErrorCode.CAN_LOGIN_ONLY_APPROVE.getMessage());
 
@@ -129,7 +130,7 @@ class UserServiceTest {
             given(userRepository.findByUsernameNotDeleted(command.username())).willReturn(rejectedUser);
 
             // when & then
-            assertThatThrownBy(() -> userService.login(command))
+            assertThatThrownBy(() -> userCommandServiceImpl.login(command))
                     .isInstanceOf(UserException.class)
                     .hasMessageContaining(UserErrorCode.CAN_LOGIN_ONLY_APPROVE.getMessage());
 
@@ -151,7 +152,7 @@ class UserServiceTest {
             String refreshToken = "refresh-token";
 
             // when
-            userService.logout(refreshToken);
+            userCommandServiceImpl.logout(refreshToken);
 
             // then
             then(tokenService).should(times(1)).logout(refreshToken);
@@ -162,7 +163,7 @@ class UserServiceTest {
         @DisplayName("refresh token이 null이면 로그아웃 실패")
         void logout_fail_when_refresh_token_is_null() {
             // when & then
-            assertThatThrownBy(() -> userService.logout(null))
+            assertThatThrownBy(() -> userCommandServiceImpl.logout(null))
                     .isInstanceOf(UserException.class)
                     .hasMessageContaining(UserErrorCode.REFRESH_TOKEN_NOT_FOUND.getMessage());
 
@@ -174,7 +175,7 @@ class UserServiceTest {
         @DisplayName("refresh token이 blank면 로그아웃 실패")
         void logout_fail_when_refresh_token_is_blank() {
             // when & then
-            assertThatThrownBy(() -> userService.logout("   "))
+            assertThatThrownBy(() -> userCommandServiceImpl.logout("   "))
                     .isInstanceOf(UserException.class)
                     .hasMessageContaining(UserErrorCode.REFRESH_TOKEN_NOT_FOUND.getMessage());
 
@@ -203,13 +204,14 @@ class UserServiceTest {
                     "test@google.com",
                     "slack-123",
                     UserRole.COMPANY_MANAGER,
-                    UUID.randomUUID()
+                    UUID.randomUUID(),
+                    ManagerType.HUB_DELIVERY
             );
 
             given(keycloakService.signup(command)).willReturn(userId);
 
             // when
-            UUID result = userService.signup(command);
+            UUID result = userCommandServiceImpl.signup(command);
 
             // then
             assertThat(result).isEqualTo(userId);
@@ -242,14 +244,15 @@ class UserServiceTest {
                     "test@google.com",
                     "slack-123",
                     UserRole.COMPANY_MANAGER,
-                    UUID.randomUUID()
+                    UUID.randomUUID(),
+                    ManagerType.HUB_DELIVERY
             );
 
             given(keycloakService.signup(command))
                     .willThrow(new UserException(UserErrorCode.DUPLICATED_USERNAME));
 
             // when & then
-            assertThatThrownBy(() -> userService.signup(command))
+            assertThatThrownBy(() -> userCommandServiceImpl.signup(command))
                     .isInstanceOf(UserException.class)
                     .extracting("errorCode")
                     .isEqualTo(UserErrorCode.DUPLICATED_USERNAME);
@@ -277,7 +280,7 @@ class UserServiceTest {
             given(userRepository.findByIdNotDeleted(userId)).willReturn(user);
 
             // when
-            userService.updateRole(userId, role);
+            userCommandServiceImpl.updateRole(userId, role);
 
             // then
             then(userRepository).should(times(1)).findByIdNotDeleted(userId);
@@ -297,7 +300,7 @@ class UserServiceTest {
             given(userRepository.findByIdNotDeleted(userId)).willReturn(user);
 
             // when
-            assertThatThrownBy(() -> userService.updateRole(userId, user.getUserRole()))
+            assertThatThrownBy(() -> userCommandServiceImpl.updateRole(userId, user.getUserRole()))
                     .isInstanceOf(UserException.class)
                     .hasMessageContaining("현재 권한과 수정된 권한이 동일합니다.");
 
@@ -325,7 +328,7 @@ class UserServiceTest {
             given(userRepository.findByIdNotDeleted(userId)).willReturn(user);
 
             // when
-            userService.updateStatus(userId, Status.APPROVED, loginId);
+            userCommandServiceImpl.updateStatus(userId, Status.APPROVED, loginId);
 
             // then
             assertThat(user.getStatus()).isEqualTo(Status.APPROVED);
@@ -337,7 +340,7 @@ class UserServiceTest {
 
             UserStatusChangedEvent publishedEvent = eventCaptor.getValue();
             assertThat(publishedEvent.userId()).isEqualTo(user.getId());
-            assertThat(publishedEvent.organizationId()).isEqualTo(user.getOrganizationId());
+            assertThat(publishedEvent.hubId()).isEqualTo(user.getHubId());
             assertThat(publishedEvent.userRole()).isEqualTo(user.getUserRole());
             assertThat(publishedEvent.status()).isEqualTo(Status.APPROVED);
             assertThat(publishedEvent.previousStatus()).isEqualTo(Status.PENDING);
@@ -355,7 +358,7 @@ class UserServiceTest {
             given(userRepository.findByIdNotDeleted(userId)).willReturn(user);
 
             // when & then
-            assertThatThrownBy(() -> userService.updateStatus(userId, Status.APPROVED, loginId))
+            assertThatThrownBy(() -> userCommandServiceImpl.updateStatus(userId, Status.APPROVED, loginId))
                     .isInstanceOf(UserException.class)
                     .hasMessageContaining(UserErrorCode.ALREADY_APPROVE.getMessage());
 
@@ -376,7 +379,7 @@ class UserServiceTest {
             given(userRepository.findByIdNotDeleted(userId)).willReturn(user);
 
             // when
-            userService.updateStatus(userId, Status.REJECTED, loginId);
+            userCommandServiceImpl.updateStatus(userId, Status.REJECTED, loginId);
 
             // then
             assertThat(user.getStatus()).isEqualTo(Status.REJECTED);
@@ -388,7 +391,7 @@ class UserServiceTest {
 
             UserStatusChangedEvent publishedEvent = eventCaptor.getValue();
             assertThat(publishedEvent.userId()).isEqualTo(user.getId());
-            assertThat(publishedEvent.organizationId()).isEqualTo(user.getOrganizationId());
+            assertThat(publishedEvent.hubId()).isEqualTo(user.getHubId());
             assertThat(publishedEvent.userRole()).isEqualTo(user.getUserRole());
             assertThat(publishedEvent.status()).isEqualTo(Status.REJECTED);
             assertThat(publishedEvent.previousStatus()).isEqualTo(Status.PENDING);
@@ -406,7 +409,7 @@ class UserServiceTest {
             given(userRepository.findByIdNotDeleted(userId)).willReturn(user);
 
             // when & then
-            assertThatThrownBy(() -> userService.updateStatus(userId, Status.REJECTED, loginId))
+            assertThatThrownBy(() -> userCommandServiceImpl.updateStatus(userId, Status.REJECTED, loginId))
                     .isInstanceOf(UserException.class)
                     .hasMessageContaining(UserErrorCode.ALREADY_REJECTED.getMessage());
 
@@ -441,7 +444,7 @@ class UserServiceTest {
             given(userRepository.findByIdNotDeleted(userId)).willReturn(user);
 
             // when
-            userService.update(command);
+            userCommandServiceImpl.update(command);
 
             // then
             then(userRepository).should(times(1)).findByIdNotDeleted(userId);
@@ -474,7 +477,7 @@ class UserServiceTest {
                     .willThrow(new UserException(UserErrorCode.USER_NOT_FOUND));
 
             // when & then
-            assertThatThrownBy(() -> userService.update(command))
+            assertThatThrownBy(() -> userCommandServiceImpl.update(command))
                     .isInstanceOf(UserException.class)
                     .hasMessageContaining(UserErrorCode.USER_NOT_FOUND.getMessage());
 
@@ -507,7 +510,7 @@ class UserServiceTest {
                     .given(keycloakService).updateUser(command);
 
             // when & then
-            assertThatThrownBy(() -> userService.update(command))
+            assertThatThrownBy(() -> userCommandServiceImpl.update(command))
                     .isInstanceOf(UserException.class)
                     .hasMessageContaining(UserErrorCode.AUTH_SERVER_INTERNAL_ERROR.getMessage());
 
@@ -533,7 +536,7 @@ class UserServiceTest {
             willDoNothing().given(userRepository).delete(userId, deletedUserId);
 
             // when
-            userService.delete(userId, deletedUserId);
+            userCommandServiceImpl.delete(userId, deletedUserId);
 
             // then
             then(userRepository).should(times(1)).delete(userId, deletedUserId);
@@ -556,7 +559,7 @@ class UserServiceTest {
                     .given(userRepository).delete(userId, deletedUserId);
 
             // when & then
-            assertThatThrownBy(() -> userService.delete(userId, deletedUserId))
+            assertThatThrownBy(() -> userCommandServiceImpl.delete(userId, deletedUserId))
                     .isInstanceOf(RuntimeException.class)
                     .hasMessage("DB 삭제 실패");
 
@@ -577,7 +580,7 @@ class UserServiceTest {
                     .given(keycloakService).deleteUser(userId);
 
             // when & then
-            assertThatThrownBy(() -> userService.delete(userId, deletedUserId))
+            assertThatThrownBy(() -> userCommandServiceImpl.delete(userId, deletedUserId))
                     .isInstanceOf(RuntimeException.class)
                     .hasMessage("Keycloak 삭제 실패");
 
@@ -595,8 +598,9 @@ class UserServiceTest {
                 "test@google.com",
                 "slack-123",
                 Status.PENDING,
-                UserRole.COMPANY_MANAGER,
+                UserRole.DELIVERY_MANAGER,
                 UUID.randomUUID(),
+                ManagerType.HUB_DELIVERY,
                 null
         );
     }
@@ -610,8 +614,9 @@ class UserServiceTest {
                 "test@google.com",
                 "slack-123",
                 Status.APPROVED,
-                UserRole.COMPANY_MANAGER,
+                UserRole.DELIVERY_MANAGER,
                 UUID.randomUUID(),
+                ManagerType.HUB_DELIVERY,
                 null
         );
     }
@@ -625,8 +630,9 @@ class UserServiceTest {
                 "test@google.com",
                 "slack-123",
                 Status.REJECTED,
-                UserRole.COMPANY_MANAGER,
+                UserRole.DELIVERY_MANAGER,
                 UUID.randomUUID(),
+                ManagerType.HUB_DELIVERY,
                 null
         );
     }

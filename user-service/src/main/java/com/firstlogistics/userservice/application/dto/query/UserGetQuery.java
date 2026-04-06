@@ -1,7 +1,7 @@
 package com.firstlogistics.userservice.application.dto.query;
 
 import com.firstlogistics.userservice.domain.enums.Status;
-import common.jpa.entity.enums.UserRole;
+import common.security.entity.enums.UserRole;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -13,7 +13,7 @@ public record UserGetQuery(
         UserRole userRole,
         Status status,
         String slackId,
-        UUID organizationId,
+        UUID hubId,
         LocalDateTime lastLoginAt
 )
 {
@@ -25,7 +25,7 @@ public record UserGetQuery(
                 userRole,
                 status,
                 slackId,
-                organizationId,
+                hubId,
                 lastLoginAt
         );
     }

@@ -6,8 +6,8 @@ import com.firstlogistics.userservice.domain.exception.UserException;
 import com.firstlogistics.userservice.infrastructure.feign.client.CompanyClient;
 import com.firstlogistics.userservice.infrastructure.feign.client.DeliveryClient;
 import com.firstlogistics.userservice.infrastructure.feign.client.HubClient;
-import common.jpa.entity.enums.UserRole;
 import common.response.ApiResponse;
+import common.security.entity.enums.UserRole;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,10 +26,10 @@ public class OrganizationValidationServiceImpl implements OrganizationValidation
     public void validateOrganizationExists(UUID organizationId, UserRole role) {
         try {
             if (!existsOrganization(organizationId, role)) {
-                throw new UserException(UserErrorCode.ORGANIZATION_ID_NOT_FOUND);
+                throw new UserException(UserErrorCode.HUB_ID_NOT_FOUND);
             }
         } catch (FeignException.NotFound e) {
-            throw new UserException(UserErrorCode.ORGANIZATION_ID_NOT_FOUND);
+            throw new UserException(UserErrorCode.HUB_ID_NOT_FOUND);
 
         } catch (FeignException e) {
             throw new UserException(UserErrorCode.FEIGN_SERVICE_UNAVAILABLE);

@@ -2,21 +2,19 @@ package com.firstlogistics.userservice.infrastructure.persistence.jpa;
 
 import com.firstlogistics.userservice.application.dto.query.UserGetQuery;
 import com.firstlogistics.userservice.domain.dto.UsersSpec;
-import com.firstlogistics.userservice.domain.enums.Status;
 import com.firstlogistics.userservice.domain.repository.UserQueryRepository;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import common.jpa.entity.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 import static com.firstlogistics.userservice.infrastructure.persistence.jpa.QUserJpaEntity.userJpaEntity;
 
@@ -28,6 +26,8 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
 
     @Override
     public Page<UsersSpec> getUsers(UserGetQuery spec, Pageable pageable) {
+        BooleanBuilder builder = UserPredicateBuilder.from(spec);
+
         List<UsersSpec> content = queryFactory
                 .select(Projections.constructor(
                         UsersSpec.class,
@@ -37,71 +37,64 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
                         userJpaEntity.userRole,
                         userJpaEntity.status,
                         userJpaEntity.slackId,
-                        userJpaEntity.organizationId,
+                        userJpaEntity.hubId,
                         userJpaEntity.lastLoginAt
                 ))
                 .from(userJpaEntity)
-                .where(
-                        usernameContains(spec.username()),
-                        nameContains(spec.name()),
-                        phoneContains(spec.phone()),
-                        roleEq(spec.userRole()),
-                        statusEq(spec.status()),
-                        slackIdContains(spec.slackId()),
-                        organizationEq(spec.organizationId()),
-                        lastLoginAfter(spec.lastLoginAt())
-                )
+                .where(builder)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .orderBy(userJpaEntity.createdAt.desc())
+                .orderBy(getOrderSpecifiers(pageable.getSort()))
                 .fetch();
 
         Long total = queryFactory
                 .select(userJpaEntity.count())
                 .from(userJpaEntity)
-                .where(
-                        usernameContains(spec.username()),
-                        nameContains(spec.name()),
-                        phoneContains(spec.phone()),
-                        roleEq(spec.userRole()),
-                        statusEq(spec.status()),
-                        slackIdContains(spec.slackId()),
-                        organizationEq(spec.organizationId()),
-                        lastLoginAfter(spec.lastLoginAt()))
+                .where(builder)
                 .fetchOne();
 
         return new PageImpl<>(content, pageable, total);
     }
 
-    private BooleanExpression usernameContains(String username) {
-        return username != null ? userJpaEntity.username.containsIgnoreCase(username) : null;
-    }
+    private OrderSpecifier<?>[] getOrderSpecifiers(Sort sort) {
 
-    private BooleanExpression nameContains(String name) {
-        return name != null ? userJpaEntity.name.containsIgnoreCase(name) : null;
-    }
+        if (sort == null || sort.isUnsorted()) {
+            return new OrderSpecifier[]{userJpaEntity.createdAt.desc(), userJpaEntity.updatedAt.desc()};
+        }
 
-    private BooleanExpression phoneContains(String phone) {
-        return phone != null ? userJpaEntity.phone.contains(phone) : null;
-    }
+        return sort.stream()
+                .map(order -> {
+                    boolean asc = order.isAscending();
 
-    private BooleanExpression roleEq(UserRole role) {
-        return role != null ? userJpaEntity.userRole.eq(role) : null;
-    }
+                    return switch (order.getProperty()) {
+                        case "createdAt" ->
+                                asc ? userJpaEntity.createdAt.asc()
+                                        : userJpaEntity.createdAt.desc();
 
-    private BooleanExpression statusEq(Status status) {
-        return status != null ? userJpaEntity.status.eq(status) : null;
-    }
+                        case "updatedAt" ->
+                                asc ? userJpaEntity.updatedAt.asc()
+                                        : userJpaEntity.updatedAt.desc();
 
-    private BooleanExpression slackIdContains(String slackId) {
-        return slackId != null ? userJpaEntity.slackId.contains(slackId) : null;
-    }
+                        case "username" ->
+                                asc ? userJpaEntity.username.asc()
+                                        : userJpaEntity.username.desc();
 
-    private BooleanExpression organizationEq(UUID organizationId) {
-        return organizationId != null ? userJpaEntity.organizationId.eq(organizationId) : null;
-    }
+                        case "name" ->
+                                asc ? userJpaEntity.name.asc()
+                                        : userJpaEntity.name.desc();
 
-    private BooleanExpression lastLoginAfter(LocalDateTime lastLoginAt) {
-        return lastLoginAt != null ? userJpaEntity.lastLoginAt.goe(lastLoginAt) : null;
+                        case "phone" ->
+                                asc ? userJpaEntity.phone.asc()
+                                        : userJpaEntity.phone.desc();
+
+                        case "lastLoginAt" ->
+                                asc ? userJpaEntity.lastLoginAt.asc()
+                                        : userJpaEntity.lastLoginAt.desc();
+
+                        default ->
+                                userJpaEntity.createdAt.desc();
+                    };
+                })
+                .toArray(OrderSpecifier[]::new);
     }
 }
