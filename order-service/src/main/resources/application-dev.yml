@@ -30,3 +30,12 @@ app:
 logging:
   level:
     com.firstlogistics.orderservice.infrastructure.client: DEBUG
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_ENDPOINT:http://zipkin:9411/api/v2/spans}
