@@ -3,6 +3,7 @@ package com.firstlogistics.orderservice.infrastructure.messaging.consumer;
 import com.firstlogistics.orderservice.application.OrderCommandService;
 import com.firstlogistics.orderservice.infrastructure.messaging.event.DeliveryCreatedEvent;
 import com.firstlogistics.orderservice.infrastructure.messaging.event.DeliveryCreationFailedEvent;
+import com.firstlogistics.orderservice.infrastructure.messaging.event.DeliveryStatusChangedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -16,7 +17,7 @@ public class DeliveryEventConsumer {
 
     private static final String DELIVERY_CREATED = "delivery.created";
     private static final String DELIVERY_CREATION_FAILED = "delivery.creation.failed";
-//    private static final String DELIVERY_STATUS_CHANGED = "delivery.status.changed";
+    private static final String DELIVERY_STATUS_CHANGED = "delivery.status.changed";
 
     private final OrderCommandService orderCommandService;
 
@@ -41,6 +42,24 @@ public class DeliveryEventConsumer {
     public void onDeliveryCreationFailed(DeliveryCreationFailedEvent event, Acknowledgment ack) {
         log.info("[Kafka] Received: topic={}, orderId={}, reason={}", DELIVERY_CREATION_FAILED, event.orderId(), event.reason());
         orderCommandService.cancelByDeliveryFailure(event.orderId());
+        ack.acknowledge();
+    }
+
+    // 배송 상태 변경 시
+    @KafkaListener(
+            topics = DELIVERY_STATUS_CHANGED,
+            groupId = "order-service",
+            containerFactory = "deliveryStatusChangedListenerContainerFactory"
+    )
+    public void onDeliveryStatusChanged(DeliveryStatusChangedEvent event, Acknowledgment ack) {
+        log.info("[Kafka] Received: topic={}, orderId={}, status={}", DELIVERY_STATUS_CHANGED, event.orderId(), event.status().name());
+
+        if (event.status() == DeliveryStatusChangedEvent.DeliveryStatus.HUB_WAITING) {
+            orderCommandService.startShipping(event.orderId());
+        } else if (event.status() == DeliveryStatusChangedEvent.DeliveryStatus.COMPLETED) {
+            orderCommandService.complete(event.orderId());
+        }
+
         ack.acknowledge();
     }
 }

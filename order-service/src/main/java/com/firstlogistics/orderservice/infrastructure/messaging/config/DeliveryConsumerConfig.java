@@ -5,6 +5,7 @@ import com.firstlogistics.orderservice.domain.exception.OrderException;
 import com.firstlogistics.orderservice.infrastructure.messaging.consumer.DeliveryCreatedRecoverer;
 import com.firstlogistics.orderservice.infrastructure.messaging.event.DeliveryCreatedEvent;
 import com.firstlogistics.orderservice.infrastructure.messaging.event.DeliveryCreationFailedEvent;
+import com.firstlogistics.orderservice.infrastructure.messaging.event.DeliveryStatusChangedEvent;
 import common.kafka.config.KafkaConsumerConfig;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -71,6 +72,24 @@ public class DeliveryConsumerConfig {
                 new ConcurrentKafkaListenerContainerFactory<>();
 
         factory.setConsumerFactory(deliveryFailedConsumerFactory());
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
+
+        return factory;
+    }
+
+
+    // ----- 배송 상태 변경 ----- //
+    @Bean
+    public ConsumerFactory<String, DeliveryStatusChangedEvent> deliveryStatusChangedConsumerFactory() {
+        return createFactory(DeliveryStatusChangedEvent.class);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, DeliveryStatusChangedEvent> deliveryStatusChangedListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, DeliveryStatusChangedEvent> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+
+        factory.setConsumerFactory(deliveryStatusChangedConsumerFactory());
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
 
         return factory;

@@ -148,6 +148,24 @@ public class OrderCommandService {
         orderRepository.save(order);
     }
 
+    @Transactional
+    public void startShipping(UUID orderId) {
+        Order order = getOrder(orderId);
+
+        order.startShipping();
+
+        orderRepository.save(order);
+    }
+
+    @Transactional
+    public void complete(UUID orderId) {
+        Order order = getOrder(orderId);
+
+        order.complete();
+
+        orderRepository.save(order);
+    }
+
     private String processCancellation(UUID orderId, OrderCancelType cancelType) {
         Order order  = getOrderWithAuthorityCheck(orderId, AuthorityAction.ACCEPT_OR_CANCEL);
 
