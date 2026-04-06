@@ -88,22 +88,12 @@ public class HubConnectionRepositoryImpl implements HubConnectionRepository {
     }
 
     @Override
-    public void deactivateByHubId(HubId id) {
-        jpaRepository.updateStatusByHubId(id.id(), HubConnectionStatus.INACTIVE);
-        evictAllCache();
+    public List<HubConnection> findAllByHubId(HubId id) {
+        return jpaRepository.findAllBySourceHubIdOrDestinationHubId(id.id(), id.id()).stream()
+                .map(mapper::toDomain)
+                .toList();
     }
 
-    @Override
-    public void activateByHubId(HubId id) {
-        jpaRepository.updateStatusByHubId(id.id(), HubConnectionStatus.ACTIVE);
-        evictAllCache();
-    }
-
-    @Override
-    public void deleteByHubId(HubId id) {
-        jpaRepository.deleteByHubId(id.id());
-        evictAllCache();
-    }
 
     private HubConnectionCacheDto[] getHubConnectionAllCache() {
         Cache cache = cacheManager.getCache(HUB_CONNECTION_ALL_CACHE);

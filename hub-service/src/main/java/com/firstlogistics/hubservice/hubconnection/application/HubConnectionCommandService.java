@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -78,19 +79,35 @@ public class HubConnectionCommandService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void deactivateByHub(UUID hubId) {
-        hubConnectionRepository.deactivateByHubId(HubId.of(hubId));
-    }
+        List<HubConnection> hubConnections = hubConnectionRepository.findAllByHubId(HubId.of(hubId));
+
+        for (HubConnection hubConnection : hubConnections) {
+            if (hubConnection.isActive()) {
+                hubConnection.deactivate();
+                hubConnectionRepository.save(hubConnection);
+            }
+        }    }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void activateByHub(UUID hubId) {
-        hubConnectionRepository.activateByHubId(HubId.of(hubId));
+        List<HubConnection> hubConnections = hubConnectionRepository.findAllByHubId(HubId.of(hubId));
+
+        for (HubConnection hubConnection : hubConnections) {
+            if (hubConnection.isInActive()) {
+                hubConnection.activate();
+                hubConnectionRepository.save(hubConnection);
+            }
+        }
 
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void deleteByHub(UUID hubId) {
-        hubConnectionRepository.deleteByHubId(HubId.of(hubId));
-    }
+        List<HubConnection> hubConnections = hubConnectionRepository.findAllByHubId(HubId.of(hubId));
+
+        for (HubConnection hubConnection : hubConnections) {
+            hubConnectionRepository.delete(hubConnection);
+        }    }
 
     private HubConnectionResult activate(UUID hubConnectionId) {
         HubConnection connection = hubConnectionRepository.findById(HubConnectionId.of(hubConnectionId));
