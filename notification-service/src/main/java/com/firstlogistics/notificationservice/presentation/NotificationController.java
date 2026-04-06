@@ -1,6 +1,7 @@
 package com.firstlogistics.notificationservice.presentation;
 
 import com.firstlogistics.notificationservice.application.dto.result.NotificationSummaryResult;
+import com.firstlogistics.notificationservice.application.service.NotificationCommandService;
 import com.firstlogistics.notificationservice.application.service.NotificationQueryService;
 import com.firstlogistics.notificationservice.presentation.dto.request.SearchNotificationRequest;
 import com.firstlogistics.notificationservice.presentation.dto.response.NotificationDetailResponse;
@@ -23,6 +24,7 @@ import java.util.UUID;
 public class NotificationController {
 
     private final NotificationQueryService notificationQueryService;
+    private final NotificationCommandService notificationCommandService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<NotificationPageResponse>> search(
@@ -50,5 +52,14 @@ public class NotificationController {
         );
 
         return ResponseEntity.ok(ApiResponse.success(NotificationSuccessCode.NOTIFICATION_FOUND, result));
+    }
+
+    @DeleteMapping("/{notificationId}")
+    public ResponseEntity<ApiResponse<Void>> deleteNotification(
+            @PathVariable UUID notificationId,
+            @RequestHeader("X-User-Id") UUID userId
+    ) {
+        notificationCommandService.deleteNotification(notificationId, userId);
+        return ResponseEntity.ok(ApiResponse.success(NotificationSuccessCode.NOTIFICATION_DELETED, null));
     }
 }

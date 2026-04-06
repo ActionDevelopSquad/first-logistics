@@ -7,6 +7,7 @@ import com.firstlogistics.notificationservice.domain.exception.NotificationExcep
 import com.firstlogistics.notificationservice.domain.projection.NotificationDetailProjection;
 import com.firstlogistics.notificationservice.domain.projection.NotificationSummaryProjection;
 import com.firstlogistics.notificationservice.domain.repository.NotificationRepository;
+import com.firstlogistics.notificationservice.domain.vo.NotificationId;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -123,5 +124,20 @@ public class NotificationRepositoryImpl implements NotificationRepository {
                 .fetchOne();
 
         return Optional.ofNullable(result);
+    }
+
+    @Override
+    public Optional<Notification> findById(NotificationId id) {
+        return notificationJpaRepository.findById(id.id())
+                .filter(entity -> entity.getDeletedAt() == null) // 삭제된 건 제외
+                .map(NotificationMapper::toDomain);
+    }
+
+    @Override
+    public void delete(Notification domainNotification, UUID userId) {
+        NotificationJpaEntity entity = notificationJpaRepository.findById(domainNotification.getId().id())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 알림입니다."));
+
+        entity.softDelete(userId);
     }
 }

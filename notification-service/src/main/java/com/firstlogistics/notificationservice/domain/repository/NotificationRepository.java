@@ -5,6 +5,7 @@ import com.firstlogistics.notificationservice.application.dto.query.Notification
 import com.firstlogistics.notificationservice.domain.entity.Notification;
 import com.firstlogistics.notificationservice.domain.projection.NotificationDetailProjection;
 import com.firstlogistics.notificationservice.domain.projection.NotificationSummaryProjection;
+import com.firstlogistics.notificationservice.domain.vo.NotificationId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -18,4 +19,7 @@ public interface NotificationRepository {
 
     Optional<NotificationDetailProjection> findDetailById(UUID notificationId);
 
+    Optional<Notification> findById(NotificationId id);
+
+    void delete(Notification domainNotification, UUID userId);
 }
