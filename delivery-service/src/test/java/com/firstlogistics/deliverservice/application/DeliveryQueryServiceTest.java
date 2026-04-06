@@ -10,7 +10,7 @@ import com.firstlogistics.deliverservice.application.dto.result.DeliveryListResu
 import com.firstlogistics.deliverservice.application.permission.DeliveryPermissionValidator;
 import com.firstlogistics.deliverservice.domain.entity.DeliveryManager;
 import com.firstlogistics.deliverservice.domain.enums.ManagerType;
-import com.firstlogistics.deliverservice.domain.enums.UserRole;
+import common.security.entity.enums.UserRole;
 import com.firstlogistics.deliverservice.application.port.CompanyPort;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryManagerRepository;
 import com.firstlogistics.deliverservice.domain.repository.DeliveryQueryRepository;
@@ -155,7 +155,6 @@ class DeliveryQueryServiceTest {
 			// given
 			DeliveryListQuery query = stubQueryWithReceiver(null, null, "없는사람", null);
 
-			given(deliveryPermissionValidator.parseUserRole(UserRole.MASTER.name())).willReturn(UserRole.MASTER);
 			given(userPort.findByNameOrPhone("없는사람", null)).willReturn(List.of());
 			given(deliveryQueryRepository.findDeliveries(any(DeliverySearchSpec.class))).willReturn(List.of());
 
@@ -177,7 +176,6 @@ class DeliveryQueryServiceTest {
 			// given
 			DeliveryListQuery query = stubQueryForMaster(null, null);
 
-			given(deliveryPermissionValidator.parseUserRole(UserRole.MASTER.name())).willReturn(UserRole.MASTER);
 			given(deliveryQueryRepository.findDeliveries(any(DeliverySearchSpec.class))).willReturn(List.of(stubSummary()));
 
 			// when
@@ -195,7 +193,6 @@ class DeliveryQueryServiceTest {
 			UUID hubId = UUID.randomUUID();
 			DeliveryListQuery query = stubQueryForRole(UserRole.HUB_MANAGER, managerId);
 
-			given(deliveryPermissionValidator.parseUserRole(UserRole.HUB_MANAGER.name())).willReturn(UserRole.HUB_MANAGER);
 			given(hubManagerPort.getHubManager(managerId)).willReturn(new HubManagerResponse(managerId, hubId));
 			given(deliveryQueryRepository.findDeliveries(any(DeliverySearchSpec.class))).willReturn(List.of(stubSummary()));
 
@@ -214,7 +211,6 @@ class DeliveryQueryServiceTest {
 			DeliveryListQuery query = stubQueryForRole(UserRole.DELIVERY_MANAGER, userId);
 			DeliveryManager manager = DeliveryManager.create(userId, "담당자", "010-0000-0000", UUID.randomUUID(), "slack", ManagerType.HUB_DELIVERY, 0);
 
-			given(deliveryPermissionValidator.parseUserRole(UserRole.DELIVERY_MANAGER.name())).willReturn(UserRole.DELIVERY_MANAGER);
 			given(deliveryManagerRepository.findByUserId(userId)).willReturn(Optional.of(manager));
 			given(deliveryQueryRepository.findDeliveries(any(DeliverySearchSpec.class))).willReturn(List.of(stubSummary()));
 
@@ -233,8 +229,7 @@ class DeliveryQueryServiceTest {
 			UUID companyId = UUID.randomUUID();
 			DeliveryListQuery query = stubQueryForRole(UserRole.COMPANY_MANAGER, managerId);
 
-			given(deliveryPermissionValidator.parseUserRole(UserRole.COMPANY_MANAGER.name())).willReturn(UserRole.COMPANY_MANAGER);
-			given(companyPort.getCompanyByUserId(managerId)).willReturn(new CompanyResponse(companyId, UUID.randomUUID(), "테스트업체", "서울시 강남구 테헤란로 123", "101동 202호"));
+			given(companyPort.getCompanyManager(managerId)).willReturn(new CompanyResponse(companyId, UUID.randomUUID(), "테스트업체", "서울시 강남구 테헤란로 123", "101동 202호"));
 			given(deliveryQueryRepository.findDeliveries(any(DeliverySearchSpec.class))).willReturn(List.of(stubSummary()));
 
 			// when
@@ -251,7 +246,6 @@ class DeliveryQueryServiceTest {
 			UUID receiverId = UUID.randomUUID();
 			DeliveryListQuery query = stubQueryWithReceiver(null, null, "홍길동", null);
 
-			given(deliveryPermissionValidator.parseUserRole(UserRole.MASTER.name())).willReturn(UserRole.MASTER);
 			given(userPort.findByNameOrPhone("홍길동", null))
 				.willReturn(List.of(new UserResponse(receiverId, "홍길동", "010-1234-5678", "slack-123", "hong@test.com")));
 			given(deliveryQueryRepository.findDeliveries(any(DeliverySearchSpec.class))).willReturn(List.of(stubSummary()));
@@ -277,7 +271,6 @@ class DeliveryQueryServiceTest {
 				null, null, null, null, null, null, null,
 				startDate, endDate, null, null, 10
 			);
-			given(deliveryPermissionValidator.parseUserRole(UserRole.MASTER.name())).willReturn(UserRole.MASTER);
 			given(deliveryQueryRepository.findDeliveries(any(DeliverySearchSpec.class))).willReturn(List.of(stubSummary(), stubSummary()));
 
 			// when
@@ -298,7 +291,6 @@ class DeliveryQueryServiceTest {
 				null, null, null, null, null, null, null, null, null, null, null,
 				null, null, cursorId, cursorCreatedAt, 10
 			);
-			given(deliveryPermissionValidator.parseUserRole(UserRole.MASTER.name())).willReturn(UserRole.MASTER);
 			List<DeliverySummaryProjection> elevenResults = java.util.stream.IntStream.range(0, 11)
 				.mapToObj(i -> stubSummary())
 				.toList();
@@ -323,7 +315,6 @@ class DeliveryQueryServiceTest {
 				null, null, null, null, null, null, null, null, null, null, null,
 				null, null, cursorId, cursorCreatedAt, 10
 			);
-			given(deliveryPermissionValidator.parseUserRole(UserRole.MASTER.name())).willReturn(UserRole.MASTER);
 			given(deliveryQueryRepository.findDeliveries(any(DeliverySearchSpec.class)))
 				.willReturn(List.of(stubSummary()));
 
@@ -348,7 +339,7 @@ class DeliveryQueryServiceTest {
 
 			// when
 			Throwable throwable = catchThrowable(() ->
-				deliveryQueryService.getDelivery(deliveryId, UserRole.MASTER.name(), null));
+				deliveryQueryService.getDelivery(deliveryId, UserRole.MASTER, null));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -367,11 +358,11 @@ class DeliveryQueryServiceTest {
 			given(deliveryQueryRepository.findById(deliveryId)).willReturn(Optional.of(projection));
 			given(deliveryQueryRepository.findRoutesByDeliveryId(deliveryId)).willReturn(List.of());
 			willThrow(new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED))
-				.given(deliveryPermissionValidator).validate(any(), eq(UserRole.HUB_MANAGER.name()), eq(managerId), any());
+				.given(deliveryPermissionValidator).validate(any(), eq(UserRole.HUB_MANAGER), eq(managerId));
 
 			// when
 			Throwable throwable = catchThrowable(() ->
-				deliveryQueryService.getDelivery(deliveryId, UserRole.HUB_MANAGER.name(), managerId));
+				deliveryQueryService.getDelivery(deliveryId, UserRole.HUB_MANAGER, managerId));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -390,11 +381,11 @@ class DeliveryQueryServiceTest {
 			given(deliveryQueryRepository.findById(deliveryId)).willReturn(Optional.of(projection));
 			given(deliveryQueryRepository.findRoutesByDeliveryId(deliveryId)).willReturn(stubRoutes(2));
 			willThrow(new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED))
-				.given(deliveryPermissionValidator).validate(any(), eq(UserRole.DELIVERY_MANAGER.name()), eq(otherUserId), any());
+				.given(deliveryPermissionValidator).validate(any(), eq(UserRole.DELIVERY_MANAGER), eq(otherUserId));
 
 			// when
 			Throwable throwable = catchThrowable(() ->
-				deliveryQueryService.getDelivery(deliveryId, UserRole.DELIVERY_MANAGER.name(), otherUserId));
+				deliveryQueryService.getDelivery(deliveryId, UserRole.DELIVERY_MANAGER, otherUserId));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -413,11 +404,11 @@ class DeliveryQueryServiceTest {
 			given(deliveryQueryRepository.findById(deliveryId)).willReturn(Optional.of(projection));
 			given(deliveryQueryRepository.findRoutesByDeliveryId(deliveryId)).willReturn(List.of());
 			willThrow(new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED))
-				.given(deliveryPermissionValidator).validate(any(), eq(UserRole.COMPANY_MANAGER.name()), eq(managerId), any());
+				.given(deliveryPermissionValidator).validate(any(), eq(UserRole.COMPANY_MANAGER), eq(managerId));
 
 			// when
 			Throwable throwable = catchThrowable(() ->
-				deliveryQueryService.getDelivery(deliveryId, UserRole.COMPANY_MANAGER.name(), managerId));
+				deliveryQueryService.getDelivery(deliveryId, UserRole.COMPANY_MANAGER, managerId));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -448,7 +439,7 @@ class DeliveryQueryServiceTest {
 			given(companyPort.getCompany(receiverCompanyId)).willReturn(new CompanyResponse(receiverCompanyId, UUID.randomUUID(), "테스트업체", "서울시 강남구 테헤란로 123", "101동 202호"));
 
 			// when
-			DeliveryDetailResult result = deliveryQueryService.getDelivery(deliveryId, UserRole.MASTER.name(), null);
+			DeliveryDetailResult result = deliveryQueryService.getDelivery(deliveryId, UserRole.MASTER, null);
 
 			// then
 			assertThat(result.deliveryId()).isEqualTo(deliveryId);
@@ -474,7 +465,7 @@ class DeliveryQueryServiceTest {
 			given(companyPort.getCompany(projection.receiverCompanyId())).willReturn(new CompanyResponse(projection.receiverCompanyId(), UUID.randomUUID(), "테스트업체", "서울시 강남구 테헤란로 123", "101동 202호"));
 
 			// when
-			DeliveryDetailResult result = deliveryQueryService.getDelivery(deliveryId, UserRole.HUB_MANAGER.name(), managerId);
+			DeliveryDetailResult result = deliveryQueryService.getDelivery(deliveryId, UserRole.HUB_MANAGER, managerId);
 
 			// then
 			assertThat(result.deliveryId()).isEqualTo(deliveryId);
@@ -496,7 +487,7 @@ class DeliveryQueryServiceTest {
 			given(companyPort.getCompany(projection.receiverCompanyId())).willReturn(new CompanyResponse(projection.receiverCompanyId(), UUID.randomUUID(), "테스트업체", "서울시 강남구 테헤란로 123", "101동 202호"));
 
 			// when
-			DeliveryDetailResult result = deliveryQueryService.getDelivery(deliveryId, UserRole.DELIVERY_MANAGER.name(), userId);
+			DeliveryDetailResult result = deliveryQueryService.getDelivery(deliveryId, UserRole.DELIVERY_MANAGER, userId);
 
 			// then
 			assertThat(result.deliveryId()).isEqualTo(deliveryId);
@@ -518,7 +509,7 @@ class DeliveryQueryServiceTest {
 			given(companyPort.getCompany(projection.receiverCompanyId())).willReturn(new CompanyResponse(projection.receiverCompanyId(), UUID.randomUUID(), "테스트업체", "서울시 강남구 테헤란로 123", "101동 202호"));
 
 			// when
-			DeliveryDetailResult result = deliveryQueryService.getDelivery(deliveryId, UserRole.COMPANY_MANAGER.name(), managerId);
+			DeliveryDetailResult result = deliveryQueryService.getDelivery(deliveryId, UserRole.COMPANY_MANAGER, managerId);
 
 			// then
 			assertThat(result.deliveryId()).isEqualTo(deliveryId);

@@ -1,9 +1,8 @@
 package com.firstlogistics.deliverservice.infrastructure.messaging.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.firstlogistics.deliverservice.domain.exception.DeliveryCreationException;
-import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
-import com.firstlogistics.deliverservice.domain.exception.DistributedLockException;
+import common.kafka.config.KafkaConsumerConfig;
+import com.firstlogistics.deliverservice.infrastructure.exception.DistributedLockException;
 import com.firstlogistics.deliverservice.infrastructure.messaging.consumer.OrderAcceptedRecoverer;
 import com.firstlogistics.deliverservice.domain.event.OrderAcceptedEvent;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +35,7 @@ public class OrderAcceptedConsumerConfig {
 	@Bean
 	public DefaultErrorHandler orderAcceptedErrorHandler(OrderAcceptedRecoverer recoverer) {
 		DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, new FixedBackOff(1000L, 3L));
-		errorHandler.addNotRetryableExceptions(DeliveryCreationException.class, DeliveryException.class, DistributedLockException.class);
+		errorHandler.addNotRetryableExceptions(DistributedLockException.class);
 		return errorHandler;
 	}
 

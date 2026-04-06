@@ -2,7 +2,7 @@ package com.firstlogistics.deliverservice.application.dto.query;
 
 import com.firstlogistics.deliverservice.application.policy.PaginationPolicy;
 import com.firstlogistics.deliverservice.domain.enums.DeliveryStatus;
-import com.firstlogistics.deliverservice.domain.enums.UserRole;
+import common.security.entity.enums.UserRole;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 import com.firstlogistics.deliverservice.domain.spec.DeliveryScope;
@@ -37,7 +37,9 @@ public record DeliveryListQuery(
 	int size
 ) {
 	public DeliveryListQuery {
-		if (!UserRole.isValid(role)) {
+		try {
+			UserRole.valueOf(role);
+		} catch (IllegalArgumentException | NullPointerException e) {
 			throw new DeliveryException(DeliveryErrorCode.INVALID_QUERY_PARAMS);
 		}
 		if (startDate != null && endDate != null && endDate.isBefore(startDate)) {
