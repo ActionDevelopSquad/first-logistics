@@ -5,22 +5,25 @@ import com.firstlogistics.hubservice.hub.domain.exception.HubErrorCode;
 import com.firstlogistics.hubservice.hub.domain.exception.HubException;
 import com.firstlogistics.hubservice.hub.domain.repository.HubRepository;
 import com.firstlogistics.hubservice.hub.domain.vo.HubId;
+import com.firstlogistics.hubservice.hub.infrastructure.cache.dto.HubCacheDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Repository;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
 public class HubRepositoryImpl implements HubRepository {
     private static final String HUB_ALL_CACHE = "hub:all";
+    private static final String HUB_ALL_KEY = "all";
     private static final String HUB_BY_ID_CACHE = "hub:byId";
 
+    private final CacheManager cacheManager;
     private final HubJpaRepository jpaRepository;
     private final HubMapper mapper;
 
@@ -30,21 +33,25 @@ public class HubRepositoryImpl implements HubRepository {
     }
 
     @Override
-    @Caching(
-            put = {
-                    @CachePut(cacheNames = HUB_BY_ID_CACHE, key = "#result.getId().id()")
-            },
-            evict = {
-                    @CacheEvict(cacheNames = HUB_ALL_CACHE, allEntries = true)
-            }
-    )
     public Hub save(Hub hub) {
         try {
-            HubJpaEntity savedEntity = jpaRepository.save(mapper.toJpaEntity(hub));
-            return mapper.toDomain(savedEntity);
+            HubJpaEntity entity = jpaRepository.findById(hub.getId().id())
+                    .map(existing -> {
+                        mapper.updateJpaEntity(existing, hub);
+                        return existing;
+                    })
+                    .orElseGet(() -> mapper.toJpaEntity(hub));
+
+            Hub savedHub = mapper.toDomain(jpaRepository.saveAndFlush(entity));
+            putHubByIdCache(savedHub);
+            evictHubAllCache();
+            return savedHub;
+        } catch (ObjectOptimisticLockingFailureException e) {
+            throw new HubException(HubErrorCode.HUB_CONFLICT);
         } catch (DataIntegrityViolationException e) {
-            if (hasConstraintName(e, HubConstraints.UK_HUB_NAME))
+            if (hasConstraintName(e, HubConstraints.UK_HUB_NAME)) {
                 throw new HubException(HubErrorCode.DUPLICATE_HUB_NAME);
+            }
             throw e;
         }
     }
@@ -55,26 +62,86 @@ public class HubRepositoryImpl implements HubRepository {
     }
 
     @Override
-    @Cacheable(cacheNames = HUB_ALL_CACHE)
     public List<Hub> findAll() {
-        return jpaRepository.findAll().stream().map(mapper::toDomain).toList();
+        HubCacheDto[] cached = getHubAllCache();
+        if (cached != null) {
+            return Arrays.stream(cached)
+                    .map(HubCacheDto::toDomain)
+                    .toList();
+        }
+
+        List<Hub> hubs = jpaRepository.findAll().stream()
+                .map(mapper::toDomain)
+                .toList();
+        putHubAllCache(hubs);
+        return hubs;
     }
 
     @Override
-    @Cacheable(cacheNames = HUB_BY_ID_CACHE, key = "#hubId.id()")
     public Hub findById(HubId hubId) {
-        HubJpaEntity entity = jpaRepository.findById(hubId.id())
+        HubCacheDto cached = getHubByIdCache(hubId);
+        if (cached != null) {
+            return cached.toDomain();
+        }
+
+        Hub hub = jpaRepository.findById(hubId.id())
+                .map(mapper::toDomain)
                 .orElseThrow(() -> new HubException(HubErrorCode.HUB_NOT_FOUND));
-        return mapper.toDomain(entity);
+        putHubByIdCache(hub);
+        return hub;
     }
 
     @Override
-    @Caching(evict = {
-            @CacheEvict(cacheNames = HUB_BY_ID_CACHE, key = "#hub.getId().id()"),
-            @CacheEvict(cacheNames = HUB_ALL_CACHE, allEntries = true)
-    })
     public void delete(Hub hub) {
-        jpaRepository.delete(mapper.toJpaEntity(hub));
+        try {
+            HubJpaEntity entity = jpaRepository.findById(hub.getId().id())
+                    .orElseThrow(() -> new HubException(HubErrorCode.HUB_NOT_FOUND));
+
+            jpaRepository.delete(entity);
+            jpaRepository.flush();
+            evictHubByIdCache(hub.getId());
+            evictHubAllCache();
+        } catch (ObjectOptimisticLockingFailureException e) {
+            throw new HubException(HubErrorCode.HUB_CONFLICT);
+        }
+    }
+
+    private HubCacheDto getHubByIdCache(HubId hubId) {
+        Cache cache = cacheManager.getCache(HUB_BY_ID_CACHE);
+        return cache != null ? cache.get(hubId.id(), HubCacheDto.class) : null;
+    }
+
+    private HubCacheDto[] getHubAllCache() {
+        Cache cache = cacheManager.getCache(HUB_ALL_CACHE);
+        return cache != null ? cache.get(HUB_ALL_KEY, HubCacheDto[].class) : null;
+    }
+
+    private void putHubByIdCache(Hub hub) {
+        Cache cache = cacheManager.getCache(HUB_BY_ID_CACHE);
+        if (cache != null) {
+            cache.put(hub.getId().id(), HubCacheDto.from(hub));
+        }
+    }
+
+    private void putHubAllCache(List<Hub> hubs) {
+        Cache cache = cacheManager.getCache(HUB_ALL_CACHE);
+        if (cache != null) {
+            cache.put(HUB_ALL_KEY, hubs.stream().map(HubCacheDto::from).toArray(HubCacheDto[]::new));
+        }
+    }
+
+    private void evictHubByIdCache(HubId hubId) {
+        Cache cache = cacheManager.getCache(HUB_BY_ID_CACHE);
+        if (cache != null) {
+            cache.evict(hubId.id());
+        }
+    }
+
+    private void evictHubAllCache() {
+        Cache cache = cacheManager.getCache(HUB_ALL_CACHE);
+        if (cache != null) {
+            cache.evict(HUB_ALL_KEY);
+        }
     }
 
     private boolean hasConstraintName(Throwable throwable, String expectedConstraintName) {
@@ -82,12 +149,12 @@ public class HubRepositoryImpl implements HubRepository {
         while (cause != null) {
             if (cause instanceof org.hibernate.exception.ConstraintViolationException cve) {
                 String constraintName = cve.getConstraintName();
-                if (expectedConstraintName.equalsIgnoreCase(constraintName))
+                if (expectedConstraintName.equalsIgnoreCase(constraintName)) {
                     return true;
+                }
             }
             cause = cause.getCause();
         }
         return false;
     }
 }
-
