@@ -42,7 +42,7 @@ public class HubRepositoryImpl implements HubRepository {
                     })
                     .orElseGet(() -> mapper.toJpaEntity(hub));
 
-            Hub savedHub = mapper.toDomain(jpaRepository.save(entity));
+            Hub savedHub = mapper.toDomain(jpaRepository.saveAndFlush(entity));
             putHubByIdCache(savedHub);
             evictHubAllCache();
             return savedHub;
@@ -98,6 +98,7 @@ public class HubRepositoryImpl implements HubRepository {
                     .orElseThrow(() -> new HubException(HubErrorCode.HUB_NOT_FOUND));
 
             jpaRepository.delete(entity);
+            jpaRepository.flush();
             evictHubByIdCache(hub.getId());
             evictHubAllCache();
         } catch (ObjectOptimisticLockingFailureException e) {

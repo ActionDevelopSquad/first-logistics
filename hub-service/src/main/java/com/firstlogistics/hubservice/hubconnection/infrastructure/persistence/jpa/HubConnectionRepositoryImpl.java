@@ -42,7 +42,7 @@ public class HubConnectionRepositoryImpl implements HubConnectionRepository {
                         return existing;
                     })
                     .orElseGet(() -> mapper.toJpaEntity(hubConnection));
-            HubConnectionJpaEntity savedEntity = jpaRepository.save(entity);
+            HubConnectionJpaEntity savedEntity = jpaRepository.saveAndFlush(entity);
             evictAllCache();
             return mapper.toDomain(savedEntity);
         }catch (ObjectOptimisticLockingFailureException e) {
@@ -85,6 +85,7 @@ public class HubConnectionRepositoryImpl implements HubConnectionRepository {
                     .orElseThrow(() -> new HubConnectionException(HubConnectionErrorCode.HUB_CONNECTION_NOT_FOUND));
 
             jpaRepository.delete(entity);
+            jpaRepository.flush();
             evictAllCache();
         }catch (ObjectOptimisticLockingFailureException e){
             throw new HubConnectionException(HubConnectionErrorCode.HUB_CONNECTION_CONFLICT);
