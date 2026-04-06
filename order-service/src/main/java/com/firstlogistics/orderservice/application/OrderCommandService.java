@@ -128,6 +128,24 @@ public class OrderCommandService {
         orderRepository.deleteById(order.getId(), userContext.getCurrentUserId());
     }
 
+    @Transactional
+    public void assignDelivery(UUID orderId, UUID deliveryId) {
+        Order order = getOrder(orderId);
+
+        order.assignDelivery(deliveryId);
+
+        orderRepository.save(order);
+    }
+
+    @Transactional
+    public void cancelByDeliveryFailure(UUID orderId) {
+        Order order = getOrder(orderId);
+
+        order.rejectBySystem();
+
+        Events.trigger(OrderCancelledEvent.from(order));
+    }
+
     private String processCancellation(UUID orderId, OrderCancelType cancelType) {
         Order order  = getOrderWithAuthorityCheck(orderId, AuthorityAction.ACCEPT_OR_CANCEL);
 
@@ -138,6 +156,11 @@ public class OrderCommandService {
         Events.trigger(OrderCancelledEvent.from(order));
 
         return order.getStatus().name();
+    }
+
+    private Order getOrder(UUID orderId) {
+        return orderRepository.findById(OrderId.of(orderId))
+                .orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));
     }
 
     // 권한 체크용 공통 메서드

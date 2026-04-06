@@ -1,9 +1,11 @@
 package com.firstlogistics.orderservice.infrastructure.messaging.producer;
 
+import com.firstlogistics.orderservice.application.OrderCommandService;
 import com.firstlogistics.orderservice.application.port.OrderEventProducer;
 import com.firstlogistics.orderservice.domain.event.OrderAcceptedEvent;
 import com.firstlogistics.orderservice.domain.event.OrderCancelledEvent;
 import com.firstlogistics.orderservice.domain.event.OrderCreatedEvent;
+import com.firstlogistics.orderservice.infrastructure.messaging.event.DeliveryCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -18,12 +20,13 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OrderEventKafkaProducer implements OrderEventProducer {
 
-    private static final String TOPIC_CREATED = "order.created";
-    private static final String TOPIC_ACCEPTED = "order.accepted";
-    private static final String TOPIC_CANCELLED = "order.cancelled";
-    private static final String TOPIC_CREATED_DLT = "order.created.DLT";
+    private static final String ORDER_CREATED = "order.created";
+    private static final String ORDER_ACCEPTED = "order.accepted";
+    private static final String ORDER_CANCELLED = "order.cancelled";
+    private static final String DELIVERY_CREATED_DLT = "delivery.created.DLT";
 
     private final KafkaTemplate<String, Object> orderKafkaTemplate;
+    private final OrderCommandService orderCommandService;
 
     /**
      * 트랜잭션 커밋 이후 발행 — DB 커밋 실패 시 이벤트 유출 방지
@@ -32,7 +35,7 @@ public class OrderEventKafkaProducer implements OrderEventProducer {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOrderCreatedEvent(OrderCreatedEvent event) {
         // 재고 예약
-        sendWithLogging(TOPIC_CREATED, event.supplierCompanyId().toString(), event, event.orderId());
+        sendWithLogging(ORDER_CREATED, event.supplierCompanyId().toString(), event, event.orderId());
     }
 
     @Override
@@ -40,16 +43,44 @@ public class OrderEventKafkaProducer implements OrderEventProducer {
     public void handleOrderAcceptedEvent(OrderAcceptedEvent event) {
         // 재고 차감 & 배송 생성
         // orderId를 키로 사용
-        sendWithLogging(TOPIC_ACCEPTED, event.orderId().toString(), event, event.orderId());
+        sendWithLogging(ORDER_ACCEPTED, event.orderId().toString(), event, event.orderId());
     }
 
     @Override
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOrderCancelledEvent(OrderCancelledEvent event) {
         // 재고 예약 취소
-        sendWithLogging(TOPIC_CANCELLED, event.orderId().toString(), event, event.orderId());
+        sendWithLogging(ORDER_CANCELLED, event.orderId().toString(), event, event.orderId());
     }
 
+    public void sendToDeliveryDlt(String key, Object payload) {
+        log.warn("[Kafka DLT] Sending failed delivery event to DLT. Key: {}", key);
+        sendWithLogging(DELIVERY_CREATED_DLT, key, payload, null);
+    }
+
+    public void handleDeliveryLinkFailed(DeliveryCreatedEvent originalEvent) {
+        UUID orderId = originalEvent.order().orderId();
+
+        // 주문 DB 상태를 CANCELLED로 변경 (실패할 수도 있음)
+        try {
+            orderCommandService.cancelByDeliveryFailure(orderId);
+            log.info("[Saga] 주문 DB 상태 취소 완료: {}", orderId);
+        } catch (Exception e) {
+            // DB가 죽어서 에러가 나더라도 죽지 않게 함
+            log.error("[Critical] DB 상태 변경 실패! 재고 복구는 진행합니다: {}", orderId);
+        }
+
+        // 재고 복구 이벤트 발행
+        OrderCancelledEvent cancelEvent = new OrderCancelledEvent(
+                orderId,
+                originalEvent.order().supplierCompanyId(),
+                originalEvent.order().items().stream()
+                        .map(item -> new OrderCancelledEvent.OrderItemInfo(item.productId(), item.quantity()))
+                        .toList()
+        );
+
+        sendWithLogging(ORDER_CANCELLED, orderId.toString(), cancelEvent, orderId);
+    }
 
     // 공통 전송 & 로깅 메서드
     private void sendWithLogging(String topic, String key, Object event, UUID orderId) {
