@@ -5,10 +5,10 @@ spring:
   application:
     name: user-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/postgres}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
     driver-class-name: org.postgresql.Driver
-    username: postgres
-    password:
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -25,7 +25,7 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:19090/eureka/
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:19090/eureka/}
 #      defaultZone: http://eureka-server:8080/eureka/
     register-with-eureka: true
     fetch-registry: true
@@ -34,10 +34,10 @@ eureka:
     instance-id: ${spring.application.name}:${server.port}
 
 keycloak:
-  server-url: http://localhost:3300
+  server-url: ${KEYCLOAK_SERVER_URL:http://localhost:3300}
 #  server-url: http://keycloak:8080
-  realm: codefactory
-  client-id: spring-app
-  client-secret:
-  admin-username:
-  admin-password:
+  realm: ${KEYCLOAK_REALM}
+  client-id: ${KEYCLOAK_CLIENT_ID}
+  client-secret: ${KEYCLOAK_CLIENT_SECRET}
+  admin-username: ${KEYCLOAK_ADMIN_USERNAME:}
+  admin-password: ${KEYCLOAK_ADMIN_PASSWORD:}
