@@ -98,7 +98,7 @@ public class HubApiController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delte(@PathVariable UUID id){
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable UUID id){
         hubCommandService.delete(id);
         return ResponseEntity.status(HubSuccessCode.HUB_DELETED.getStatus())
                 .body(ApiResponse.success(HubSuccessCode.HUB_DELETED,null));
