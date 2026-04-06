@@ -51,6 +51,30 @@ services:
         limits:
           memory: 512m
 
+  order-service:
+    build:
+      context: .
+      dockerfile: order-service/Dockerfile
+    container_name: first-logistics-order-service
+    ports:
+      - "${ORDER_SERVICE_PORT:-8082}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      POSTGRES_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}?currentSchema=orders
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      JAVA_TOOL_OPTIONS: "-Xmx256m -Xms128m"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+
   redis:
     image: redis:7.2-alpine
     container_name: first-logistics-redis
