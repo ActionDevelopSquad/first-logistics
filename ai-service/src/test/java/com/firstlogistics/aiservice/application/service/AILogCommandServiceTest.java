@@ -6,6 +6,8 @@ import com.firstlogistics.aiservice.application.external.AIPromptGenerator;
 import com.firstlogistics.aiservice.domain.entity.AILog;
 import com.firstlogistics.aiservice.domain.enums.AILogStatus;
 import com.firstlogistics.aiservice.domain.enums.MessengerType;
+import com.firstlogistics.aiservice.domain.exception.AILogErrorCode;
+import com.firstlogistics.aiservice.domain.exception.AILogException;
 import com.firstlogistics.aiservice.domain.repository.AILogRepository;
 import com.firstlogistics.aiservice.domain.vo.AILogId;
 import com.firstlogistics.aiservice.domain.vo.MessengerMessageId;
@@ -22,6 +24,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
@@ -120,5 +123,21 @@ class AILogCommandServiceTest {
 
         // then
         verify(aiLogRepository).delete(mockAILog, userId);
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 AI 로그 삭제 시 예외 발생")
+    void deleteAILog_NotFound_ThrowsException() {
+        // given
+        UUID aiLogId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        given(aiLogRepository.findById(any(AILogId.class)))
+                .willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> aiLogCommandService.deleteAILog(aiLogId, userId))
+                .isInstanceOf(AILogException.class)
+                .hasFieldOrPropertyWithValue("errorCode", AILogErrorCode.AILOG_NOT_FOUND);
     }
 }
