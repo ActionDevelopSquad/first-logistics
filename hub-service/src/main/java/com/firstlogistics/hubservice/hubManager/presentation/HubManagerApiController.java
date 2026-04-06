@@ -32,7 +32,8 @@ public class HubManagerApiController {
     @RequireRole({UserRole.HUB_MANAGER, UserRole.MASTER})
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<HubManagerResponse>> getHubManager(@PathVariable UUID id){
-        HubManagerResponse response = HubManagerResponse.from(queryService.getHubManager(id));
+        CustomUserDetails user = SecurityUtils.currentUser();
+        HubManagerResponse response = HubManagerResponse.from(queryService.getHubManager(id, user.getUserId(), user.getRole()));
         return ResponseEntity.status(HubManagerSuccessCode.HUB_MANAGER_RETRIEVED.getStatus())
                 .body(ApiResponse.success(HubManagerSuccessCode.HUB_MANAGER_RETRIEVED,response));
     }
