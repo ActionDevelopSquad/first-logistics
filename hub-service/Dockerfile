@@ -32,6 +32,7 @@ RUN --mount=type=cache,target=/root/.gradle \
 COPY common/src common/src
 COPY common-jpa/src common-jpa/src
 COPY common-event/src common-event/src
+COPY common-security/src common-security/src
 COPY hub-service/src hub-service/src
 
 RUN --mount=type=cache,target=/root/.gradle \
