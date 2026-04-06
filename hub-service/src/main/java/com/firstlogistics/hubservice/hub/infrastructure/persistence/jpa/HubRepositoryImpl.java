@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
@@ -49,10 +50,7 @@ public class HubRepositoryImpl implements HubRepository {
         } catch (ObjectOptimisticLockingFailureException e) {
             throw new HubException(HubErrorCode.HUB_CONFLICT);
         } catch (DataIntegrityViolationException e) {
-            if (hasConstraintName(e, HubConstraints.UK_HUB_NAME)) {
                 throw new HubException(HubErrorCode.DUPLICATE_HUB_NAME);
-            }
-            throw e;
         }
     }
 
@@ -92,12 +90,15 @@ public class HubRepositoryImpl implements HubRepository {
     }
 
     @Override
-    public void delete(Hub hub) {
+    public void delete(Hub hub, UUID userId) {
+        if (userId == null) {
+            throw new HubException(HubErrorCode.INVALID_DELETED_BY);
+        }
         try {
             HubJpaEntity entity = jpaRepository.findById(hub.getId().id())
                     .orElseThrow(() -> new HubException(HubErrorCode.HUB_NOT_FOUND));
 
-            jpaRepository.delete(entity);
+            entity.softDelete(userId);
             jpaRepository.flush();
             evictHubByIdCache(hub.getId());
             evictHubAllCache();
@@ -144,17 +145,4 @@ public class HubRepositoryImpl implements HubRepository {
         }
     }
 
-    private boolean hasConstraintName(Throwable throwable, String expectedConstraintName) {
-        Throwable cause = throwable;
-        while (cause != null) {
-            if (cause instanceof org.hibernate.exception.ConstraintViolationException cve) {
-                String constraintName = cve.getConstraintName();
-                if (expectedConstraintName.equalsIgnoreCase(constraintName)) {
-                    return true;
-                }
-            }
-            cause = cause.getCause();
-        }
-        return false;
-    }
 }

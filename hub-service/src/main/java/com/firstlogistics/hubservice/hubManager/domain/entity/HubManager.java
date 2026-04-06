@@ -44,4 +44,8 @@ public class HubManager {
         if(hubId == null)
             throw new HubManagerException(HubManagerErrorCode.INVALID_HUB_ID);
     }
+    public void changeHub(HubId hubId){
+        validateHubId(hubId);
+        this.hubId = hubId;
+    }
 }

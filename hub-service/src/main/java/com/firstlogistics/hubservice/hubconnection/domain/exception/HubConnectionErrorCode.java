@@ -29,7 +29,8 @@ public enum HubConnectionErrorCode implements ErrorCode {
     ROUTE_METRIC_UNAVAILABLE(HttpStatus.INTERNAL_SERVER_ERROR, "HBC_E019", "네이버 지도 경로 메트릭 정보를 조회할 수 없습니다."),
     INVALID_HUB_CONNECTION_SORT(HttpStatus.BAD_REQUEST, "HBC_E020", "허브 연결 정보 정렬 형식이 유효하지 않습니다."),
     INVALID_HUB_CONNECTION_UPDATE_REQUEST(HttpStatus.BAD_REQUEST, "HBC_E021", "허브 연결 정보 수정 입력 형식이 올바르지 않습니다."),
-    HUB_CONNECTION_CONFLICT(HttpStatus.CONFLICT, "HBC_E022", "허브 연결 정보가 다른 요청에 의해 이미 변경되었습니다. 다시 시도해주세요.");
+    HUB_CONNECTION_CONFLICT(HttpStatus.CONFLICT, "HBC_E022", "허브 연결 정보가 다른 요청에 의해 이미 변경되었습니다. 다시 시도해주세요."),
+    INVALID_DELETED_BY(HttpStatus.BAD_REQUEST,"HBC_E023", "삭제자 정보가 유효하지 않습니다.");
 
     private final HttpStatus status;
     private final String code;

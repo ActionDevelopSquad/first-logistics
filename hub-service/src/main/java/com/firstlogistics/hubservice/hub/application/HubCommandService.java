@@ -76,10 +76,10 @@ public class HubCommandService {
     }
 
     @Transactional
-    public void delete(UUID hubId) {
+    public void delete(UUID hubId, UUID userId) {
         Hub hub = hubRepository.findById(HubId.of(hubId));
-        hubRepository.delete(hub);
-        Events.trigger(HubDeletedEvent.from(hub));
+        hubRepository.delete(hub, userId);
+        Events.trigger(HubDeletedEvent.from(hub, userId));
     }
 
     private HubResult activate(UUID hubId) {

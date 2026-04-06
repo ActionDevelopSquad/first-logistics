@@ -2,7 +2,6 @@ package com.firstlogistics.hubservice.hubconnection.infrastructure.persistence.j
 
 import com.firstlogistics.hubservice.hub.domain.vo.HubId;
 import com.firstlogistics.hubservice.hubconnection.domain.entity.HubConnection;
-import com.firstlogistics.hubservice.hubconnection.domain.enums.HubConnectionStatus;
 import com.firstlogistics.hubservice.hubconnection.domain.exception.HubConnectionErrorCode;
 import com.firstlogistics.hubservice.hubconnection.domain.exception.HubConnectionException;
 import com.firstlogistics.hubservice.hubconnection.domain.repository.HubConnectionRepository;
@@ -17,6 +16,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
@@ -49,9 +49,7 @@ public class HubConnectionRepositoryImpl implements HubConnectionRepository {
             throw new HubConnectionException(HubConnectionErrorCode.HUB_CONNECTION_CONFLICT);
         }
         catch (DataIntegrityViolationException e) {
-            if(hasConstraintName(e, HubConnectionConstraints.UK_HUB_CONNECTION_HUB_ID))
                 throw new HubConnectionException(HubConnectionErrorCode.DUPLICATE_HUB_CONNECTION);
-            throw e;
         }
     }
 
@@ -79,12 +77,15 @@ public class HubConnectionRepositoryImpl implements HubConnectionRepository {
     }
 
     @Override
-    public void delete(HubConnection hubConnection) {
+    public void delete(HubConnection hubConnection, UUID userId) {
+        if (userId == null) {
+            throw new HubConnectionException(HubConnectionErrorCode.INVALID_DELETED_BY);
+        }
         try {
             HubConnectionJpaEntity entity = jpaRepository.findById(hubConnection.getId().id())
                     .orElseThrow(() -> new HubConnectionException(HubConnectionErrorCode.HUB_CONNECTION_NOT_FOUND));
 
-            jpaRepository.delete(entity);
+            entity.softDelete(userId);
             jpaRepository.flush();
             evictAllCache();
         }catch (ObjectOptimisticLockingFailureException e){
@@ -122,19 +123,5 @@ public class HubConnectionRepositoryImpl implements HubConnectionRepository {
         if (cache != null) {
             cache.evict(HUB_CONNECTION_ALL_KEY);
         }
-    }
-
-    private boolean hasConstraintName(Throwable throwable, String expectedConstraintName ){
-        Throwable cause = throwable;
-        while(cause!=null){
-            if(cause instanceof  org.hibernate.exception.ConstraintViolationException cve){
-                String constraintName = cve.getConstraintName();
-                if(expectedConstraintName.equalsIgnoreCase(constraintName)){
-                    return true;
-                }
-            }
-            cause = cause.getCause();
-        }
-        return false;
     }
 }

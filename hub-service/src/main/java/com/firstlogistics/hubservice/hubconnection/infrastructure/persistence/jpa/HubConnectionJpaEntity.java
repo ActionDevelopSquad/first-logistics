@@ -13,12 +13,7 @@ import java.util.UUID;
 
 @Getter
 @Entity
-@Table(
-        name = "p_hub_connection",
-        uniqueConstraints = {
-            @UniqueConstraint(name = HubConnectionConstraints.UK_HUB_CONNECTION_HUB_ID, columnNames = {"source_hub_id", "destination_hub_id"})
-        }
-)
+@Table(name = "p_hub_connection")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 @SQLRestriction("deleted_at IS NULL")

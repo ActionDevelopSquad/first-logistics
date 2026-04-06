@@ -14,12 +14,7 @@ import java.util.UUID;
 
 @Getter
 @Entity
-@Table(
-        name = "p_hub",
-        uniqueConstraints = {
-                @UniqueConstraint(name = HubConstraints.UK_HUB_NAME ,columnNames = "name")
-        }
-)
+@Table(name = "p_hub")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 @SQLRestriction("deleted_at IS NULL")
