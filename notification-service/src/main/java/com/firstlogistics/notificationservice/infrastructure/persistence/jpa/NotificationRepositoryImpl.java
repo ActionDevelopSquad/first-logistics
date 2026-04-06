@@ -4,6 +4,7 @@ import com.firstlogistics.notificationservice.application.dto.query.Notification
 import com.firstlogistics.notificationservice.domain.entity.Notification;
 import com.firstlogistics.notificationservice.domain.exception.NotificationErrorCode;
 import com.firstlogistics.notificationservice.domain.exception.NotificationException;
+import com.firstlogistics.notificationservice.domain.projection.NotificationDetailProjection;
 import com.firstlogistics.notificationservice.domain.projection.NotificationSummaryProjection;
 import com.firstlogistics.notificationservice.domain.repository.NotificationRepository;
 import com.querydsl.core.BooleanBuilder;
@@ -19,6 +20,8 @@ import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static com.firstlogistics.notificationservice.infrastructure.persistence.jpa.QNotificationJpaEntity.notificationJpaEntity;
 
@@ -30,6 +33,8 @@ public class NotificationRepositoryImpl implements NotificationRepository {
     private final NotificationJpaRepository notificationJpaRepository;
     private final NotificationMapper notificationMapper;
     private final JPAQueryFactory queryFactory;
+
+    private static final QNotificationJpaEntity notification = notificationJpaEntity;
 
     @Override
     public Notification save(Notification notification) {
@@ -58,41 +63,65 @@ public class NotificationRepositoryImpl implements NotificationRepository {
 
         if (query != null) {
             if (query.receiverId() != null) {
-                builder.and(notificationJpaEntity.receiverId.eq(query.receiverId()));
+                builder.and(notification.receiverId.eq(query.receiverId()));
             }
             if (query.type() != null) {
-                builder.and(notificationJpaEntity.type.eq(query.type()));
+                builder.and(notification.type.eq(query.type()));
             }
             if (query.status() != null) {
-                builder.and(notificationJpaEntity.status.eq(query.status()));
+                builder.and(notification.status.eq(query.status()));
             }
             if (query.messengerType() != null) {
-                builder.and(notificationJpaEntity.messengerType.eq(query.messengerType()));
+                builder.and(notification.messengerType.eq(query.messengerType()));
             }
         }
 
         List<NotificationSummaryProjection> content = queryFactory
                 .select(Projections.constructor(
                         NotificationSummaryProjection.class,
-                        notificationJpaEntity.id,
-                        notificationJpaEntity.receiverId,
-                        notificationJpaEntity.content,
-                        notificationJpaEntity.type,
-                        notificationJpaEntity.status,
-                        notificationJpaEntity.createdAt
+                        notification.id,
+                        notification.receiverId,
+                        notification.content,
+                        notification.type,
+                        notification.status,
+                        notification.createdAt
                 ))
-                .from(notificationJpaEntity)
+                .from(notification)
                 .where(builder)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .orderBy(notificationJpaEntity.createdAt.desc())
+                .orderBy(notification.createdAt.desc())
                 .fetch();
 
         JPAQuery<Long> countQuery = queryFactory
-                .select(notificationJpaEntity.count())
-                .from(notificationJpaEntity)
+                .select(notification.count())
+                .from(notification)
                 .where(builder);
 
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
+    @Override
+    public Optional<NotificationDetailProjection> findDetailById(UUID id) {
+        NotificationDetailProjection result = queryFactory
+                .select(Projections.constructor(NotificationDetailProjection.class,
+                        notification.id,
+                        notification.receiverId,
+                        notification.messageId,
+                        notification.content,
+                        notification.type,
+                        notification.status,
+                        notification.messengerType,
+                        notification.readAt,
+                        notification.createdAt
+                ))
+                .from(notification)
+                .where(
+                        notification.id.eq(id),
+                        notification.deletedAt.isNull()
+                )
+                .fetchOne();
+
+        return Optional.ofNullable(result);
     }
 }
