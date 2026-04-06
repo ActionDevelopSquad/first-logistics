@@ -3,8 +3,10 @@ package com.firstlogistics.hubservice.hubconnection.presentation;
 import com.firstlogistics.hubservice.hubconnection.application.HubConnectionCommandService;
 import com.firstlogistics.hubservice.hubconnection.application.HubConnectionQueryService;
 import com.firstlogistics.hubservice.hubconnection.application.HubRouteQueryService;
+import com.firstlogistics.hubservice.hubconnection.presentation.dto.request.ChangeHubConnectionStatusRequest;
 import com.firstlogistics.hubservice.hubconnection.presentation.dto.request.CreateHubConnectionRequest;
 import com.firstlogistics.hubservice.hubconnection.presentation.dto.request.SearchHubConnectionRequest;
+import com.firstlogistics.hubservice.hubconnection.presentation.dto.request.UpdateHubConnectionRequest;
 import com.firstlogistics.hubservice.hubconnection.presentation.dto.response.HubConnectionPageResponse;
 import com.firstlogistics.hubservice.hubconnection.presentation.dto.response.HubConnectionResponse;
 import com.firstlogistics.hubservice.hubconnection.presentation.dto.response.HubRouteResponse;
@@ -59,5 +61,31 @@ public class HubConnectionApiController {
         HubConnectionPageResponse response = HubConnectionPageResponse.from(hubConnectionQueryService.searchHubConnection(request.toQuery(),pageable));
         return ResponseEntity.status(HubConnectionSuccessCode.HUB_CONNECTION_LIST_RETRIEVED.getStatus())
                 .body(ApiResponse.success(HubConnectionSuccessCode.HUB_CONNECTION_LIST_RETRIEVED, response));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<ApiResponse<HubConnectionResponse>> update(@PathVariable UUID id, @Valid @RequestBody UpdateHubConnectionRequest request) {
+        HubConnectionResponse response = HubConnectionResponse.from(commandService.update(id, request.toCommand()));
+        return ResponseEntity.status(HubConnectionSuccessCode.HUB_CONNECTION_UPDATED.getStatus())
+                .body(ApiResponse.success(
+                        HubConnectionSuccessCode.HUB_CONNECTION_UPDATED, response));
+
+    }
+
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ApiResponse<HubConnectionResponse>> changeStatus(@PathVariable UUID id, @Valid @RequestBody ChangeHubConnectionStatusRequest request) {
+        HubConnectionResponse response = HubConnectionResponse.from(commandService.changeStatus(id, request.toCommand()));
+        return ResponseEntity.status(HubConnectionSuccessCode.HUB_CONNECTION_UPDATED.getStatus())
+                .body(ApiResponse.success(
+                        HubConnectionSuccessCode.HUB_CONNECTION_UPDATED, response));
+
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable UUID id){
+        commandService.delete(id);
+        return ResponseEntity.status(HubConnectionSuccessCode.HUB_CONNECTION_DELETED.getStatus())
+                .body(ApiResponse.success(HubConnectionSuccessCode.HUB_CONNECTION_DELETED,null));
     }
 }
