@@ -19,7 +19,7 @@ spring:
       hibernate:
         format_sql: true
   kafka:
-    bootstrap-servers: localhost:29092
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
 #    bootstrap-servers: kafka:9092
 
 eureka:
@@ -39,5 +39,5 @@ keycloak:
   realm: ${KEYCLOAK_REALM}
   client-id: ${KEYCLOAK_CLIENT_ID}
   client-secret: ${KEYCLOAK_CLIENT_SECRET}
-  admin-username: ${KEYCLOAK_ADMIN_USERNAME:}
-  admin-password: ${KEYCLOAK_ADMIN_PASSWORD:}
+  admin-username: ${KEYCLOAK_ADMIN_USERNAME}
+  admin-password: ${KEYCLOAK_ADMIN_PASSWORD}
