@@ -9,7 +9,8 @@ import java.util.UUID;
 public record OrderCancelledEvent(
         UUID orderId,
         UUID supplierCompanyId,
-        List<OrderCancelledEvent.OrderItemInfo> orderItems
+        List<OrderCancelledEvent.OrderItemInfo> orderItems,
+        boolean isConfirmed
 ) {
     public record OrderItemInfo(
             UUID productId,
@@ -23,13 +24,14 @@ public record OrderCancelledEvent(
         }
     }
 
-    public static OrderCancelledEvent from(Order order) {
+    public static OrderCancelledEvent of(Order order, boolean isConfirmed) {
         return new OrderCancelledEvent(
                 order.getId().id(),
                 order.getSupplier().companyId(),
                 order.getOrderItems().stream()
                         .map(OrderCancelledEvent.OrderItemInfo::from)
-                        .toList()
+                        .toList(),
+                isConfirmed
         );
     }
 }
