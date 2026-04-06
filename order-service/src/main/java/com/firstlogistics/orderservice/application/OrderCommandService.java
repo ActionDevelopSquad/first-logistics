@@ -128,6 +128,53 @@ public class OrderCommandService {
         orderRepository.deleteById(order.getId(), userContext.getCurrentUserId());
     }
 
+    @Transactional
+    public void assignDelivery(UUID orderId, UUID deliveryId) {
+        Order order = getOrder(orderId);
+
+        order.assignDelivery(deliveryId);
+
+        orderRepository.save(order);
+    }
+
+    @Transactional
+    public void cancelByDeliveryFailure(UUID orderId) {
+        Order order = getOrder(orderId);
+
+        order.rejectBySystem();
+
+        Events.trigger(OrderCancelledEvent.from(order));
+
+        orderRepository.save(order);
+    }
+
+    @Transactional
+    public void reserve(UUID orderId, boolean isSuccess) {
+        Order order = getOrder(orderId);
+
+        order.reserve(isSuccess);
+
+        orderRepository.save(order);
+    }
+
+    @Transactional
+    public void startShipping(UUID orderId) {
+        Order order = getOrder(orderId);
+
+        order.startShipping();
+
+        orderRepository.save(order);
+    }
+
+    @Transactional
+    public void complete(UUID orderId) {
+        Order order = getOrder(orderId);
+
+        order.complete();
+
+        orderRepository.save(order);
+    }
+
     private String processCancellation(UUID orderId, OrderCancelType cancelType) {
         Order order  = getOrderWithAuthorityCheck(orderId, AuthorityAction.ACCEPT_OR_CANCEL);
 
@@ -138,6 +185,11 @@ public class OrderCommandService {
         Events.trigger(OrderCancelledEvent.from(order));
 
         return order.getStatus().name();
+    }
+
+    private Order getOrder(UUID orderId) {
+        return orderRepository.findById(OrderId.of(orderId))
+                .orElseThrow(() -> new OrderException(OrderErrorCode.ORDER_NOT_FOUND));
     }
 
     // 권한 체크용 공통 메서드

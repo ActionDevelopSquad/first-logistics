@@ -253,4 +253,18 @@ public class Order {
         return this.status == OrderStatus.COMPLETED || this.status == OrderStatus.CANCELLED;
     }
 
+    public void rejectBySystem() {
+        if (this.status == OrderStatus.CANCELLED) {
+            return;
+        }
+
+        // 배송 실패는 ACCEPTED 상태에서도 취소 가능
+        if (this.status != OrderStatus.ACCEPTED) {
+            throw new OrderException(OrderErrorCode.INVALID_ORDER_STATUS_CHANGE);
+        }
+
+        this.status = OrderStatus.CANCELLED;
+        this.cancelType = OrderCancelType.SYSTEM_ERROR;
+    }
+
 }
