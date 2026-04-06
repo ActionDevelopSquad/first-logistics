@@ -93,12 +93,16 @@ public class HubRepositoryImpl implements HubRepository {
 
     @Override
     public void delete(Hub hub) {
-        HubJpaEntity entity = jpaRepository.findById(hub.getId().id())
-                .orElseThrow(() -> new HubException(HubErrorCode.HUB_NOT_FOUND));
+        try {
+            HubJpaEntity entity = jpaRepository.findById(hub.getId().id())
+                    .orElseThrow(() -> new HubException(HubErrorCode.HUB_NOT_FOUND));
 
-        jpaRepository.delete(entity);
-        evictHubByIdCache(hub.getId());
-        evictHubAllCache();
+            jpaRepository.delete(entity);
+            evictHubByIdCache(hub.getId());
+            evictHubAllCache();
+        } catch (ObjectOptimisticLockingFailureException e) {
+            throw new HubException(HubErrorCode.HUB_CONFLICT);
+        }
     }
 
     private HubCacheDto getHubByIdCache(HubId hubId) {

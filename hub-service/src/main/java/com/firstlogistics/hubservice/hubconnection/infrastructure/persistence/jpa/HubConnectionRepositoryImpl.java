@@ -80,11 +80,15 @@ public class HubConnectionRepositoryImpl implements HubConnectionRepository {
 
     @Override
     public void delete(HubConnection hubConnection) {
-        HubConnectionJpaEntity entity = jpaRepository.findById(hubConnection.getId().id())
-                .orElseThrow(() -> new HubConnectionException(HubConnectionErrorCode.HUB_CONNECTION_NOT_FOUND));
+        try {
+            HubConnectionJpaEntity entity = jpaRepository.findById(hubConnection.getId().id())
+                    .orElseThrow(() -> new HubConnectionException(HubConnectionErrorCode.HUB_CONNECTION_NOT_FOUND));
 
-        jpaRepository.delete(entity);
-        evictAllCache();
+            jpaRepository.delete(entity);
+            evictAllCache();
+        }catch (ObjectOptimisticLockingFailureException e){
+            throw new HubConnectionException(HubConnectionErrorCode.HUB_CONNECTION_CONFLICT);
+        }
     }
 
     @Override
