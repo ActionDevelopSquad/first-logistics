@@ -3,12 +3,16 @@ package com.firstlogistics.aiservice.presentation;
 import com.firstlogistics.aiservice.application.service.AILogCommandService;
 import com.firstlogistics.aiservice.application.service.AILogQueryService;
 import com.firstlogistics.aiservice.presentation.dto.request.AILogCreateRequest;
+import com.firstlogistics.aiservice.presentation.dto.request.SearchAILogsRequest;
 import com.firstlogistics.aiservice.presentation.dto.response.AILogDetailResponse;
+import com.firstlogistics.aiservice.presentation.dto.response.AILogPageResponse;
 import com.firstlogistics.aiservice.presentation.dto.response.AILogResponse;
 import common.response.ApiResponse;
-//import common.security.security.aop.OnlyMaster;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,7 +34,6 @@ public class AILogApiController {
                 .body(ApiResponse.success(AILogSuccessCode.AILOG_CREATED, result));
     }
 
-//    @OnlyMaster
     @GetMapping("/{aiLogId}")
     public ResponseEntity<ApiResponse<AILogDetailResponse>> getAILog(
             @PathVariable UUID aiLogId
@@ -39,5 +42,26 @@ public class AILogApiController {
         AILogDetailResponse result = AILogDetailResponse.from(aiLogQueryService.getAILog(aiLogId));
 
         return ResponseEntity.ok(ApiResponse.success(AILogSuccessCode.AILOG_FOUND, result));
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<AILogPageResponse>> search(
+            @Valid @ModelAttribute SearchAILogsRequest request,
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        AILogPageResponse response = AILogPageResponse.from(
+                aiLogQueryService.searchAILogs(request.toQuery(), pageable)
+        );
+        return ResponseEntity.ok(ApiResponse.success(AILogSuccessCode.AILOG_LIST_FOUND, response));
+    }
+
+    @DeleteMapping("/{aiLogId}")
+    public ResponseEntity<ApiResponse<Void>> deleteAILog(
+            @PathVariable UUID aiLogId,
+            @RequestHeader("X-User-Id") UUID userId
+    ) {
+        aiLogCommandService.deleteAILog(aiLogId, userId);
+        // 데이터가 없으므로 null을 넘겨줍니다.
+        return ResponseEntity.ok(ApiResponse.success(AILogSuccessCode.AILOG_DELETED, null));
     }
 }

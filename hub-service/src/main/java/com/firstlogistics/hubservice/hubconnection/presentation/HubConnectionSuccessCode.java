@@ -15,6 +15,8 @@ public enum HubConnectionSuccessCode implements SuccessCode {
     HUB_CONNECTION_RETRIEVED(HttpStatus.OK, "HBC_S004", "허브 연결 정보 조회가 완료되었습니다."),
     HUB_CONNECTION_UPDATED(HttpStatus.OK, "HBC_S005", "허브 연결 정보 수정이 완료되었습니다."),
     HUB_CONNECTION_DELETED(HttpStatus.OK, "HBC_S006", "허브 연결 정보 삭제가 완료되었습니다.");
+
+
     private final HttpStatus status;
     private final String code;
     private final String message;

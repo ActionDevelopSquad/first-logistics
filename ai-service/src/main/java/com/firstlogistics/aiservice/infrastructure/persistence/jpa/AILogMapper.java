@@ -11,7 +11,7 @@ import java.util.Optional;
 public class AILogMapper {
 
     // Domain → Entity 변환
-    public AILogJpaEntity toEntity(AILog aiLog) {
+    public static AILogJpaEntity toEntity(AILog aiLog) {
         return new AILogJpaEntity(
                 aiLog.getId().id(),
                 Optional.ofNullable(aiLog.getMessageId())  // messageId가 나중에 대입됨
@@ -26,7 +26,7 @@ public class AILogMapper {
     }
 
     // Entity → Domain 변환
-    public AILog toDomain(AILogJpaEntity entity) {
+    public static AILog toDomain(AILogJpaEntity entity) {
         return AILog.reconstitute(
                 AILogId.of(entity.getId()),
                 Optional.ofNullable(entity.getMessageId())  // messageId가 나중에 대입됨

@@ -37,7 +37,7 @@ public class HubEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleHubDeletedEvent(HubDeletedEvent event) {
         try {
-            commandService.deleteByHub(event.hubId());
+            commandService.deleteByHub(event.hubId(), event.deleterId());
         } catch (Exception e) {
             log.error("Failed to delete hub connections for hubId: {}", event.hubId(), e);
         }

@@ -5,6 +5,8 @@ import com.firstlogistics.hubservice.hub.application.HubQueryService;
 import com.firstlogistics.hubservice.hub.presentation.dto.request.*;
 import com.firstlogistics.hubservice.hub.presentation.dto.response.*;
 import common.response.ApiResponse;
+import common.security.aop.OnlyMaster;
+import common.security.util.SecurityUtils;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
@@ -22,10 +24,13 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Validated
 public class HubApiController {
+    private static final UUID SYSTEM_UUID =
+            UUID.fromString("00000000-0000-0000-0000-000000000000");
 
     private final HubCommandService hubCommandService;
     private final HubQueryService hubQueryService;
 
+    @OnlyMaster
     @PostMapping
     public ResponseEntity<ApiResponse<HubResponse>> create(@Valid @RequestBody CreateHubRequest request){
         HubResponse response = HubResponse.from(hubCommandService.create(request.toCommand()));
@@ -34,6 +39,7 @@ public class HubApiController {
                         HubSuccessCode.HUB_CREATED, response
                 ));
     }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<HubDetailResponse>> get(@PathVariable UUID id){
@@ -78,6 +84,7 @@ public class HubApiController {
                 .body(ApiResponse.success(HubSuccessCode.HUB_RETRIEVED, new NearestHubResponse(response)));
     }
 
+    @OnlyMaster
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<HubResponse>> update(@PathVariable UUID id, @Valid @RequestBody UpdateHubRequest request) {
         HubResponse response = HubResponse.from(hubCommandService.update(id, request.toCommand()));
@@ -88,6 +95,7 @@ public class HubApiController {
     }
 
 
+    @OnlyMaster
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<HubResponse>> changeStatus(@PathVariable UUID id, @Valid @RequestBody ChangeHubStatusRequest request) {
         HubResponse response = HubResponse.from(hubCommandService.changeStatus(id, request.toCommand()));
@@ -97,10 +105,22 @@ public class HubApiController {
 
     }
 
+    @OnlyMaster
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable UUID id){
-        hubCommandService.delete(id);
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable UUID id,  @RequestHeader(value = "X-Forward-Service-Code", required = false) String serviceCode){
+        UUID callerId = resolveCallerId(serviceCode);
+        hubCommandService.delete(id,callerId);
         return ResponseEntity.status(HubSuccessCode.HUB_DELETED.getStatus())
                 .body(ApiResponse.success(HubSuccessCode.HUB_DELETED,null));
+    }
+
+    private boolean isInternalRequest(String serviceCode) {
+        return serviceCode != null && !serviceCode.isBlank();
+    }
+
+    private UUID resolveCallerId(String serviceCode) {
+        return isInternalRequest(serviceCode)
+                ? SYSTEM_UUID
+                : SecurityUtils.currentUser().getUserId();
     }
 }

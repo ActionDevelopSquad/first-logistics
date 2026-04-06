@@ -9,10 +9,13 @@ import com.firstlogistics.notificationservice.domain.enums.NotificationType;
 import com.firstlogistics.notificationservice.domain.exception.NotificationErrorCode;
 import com.firstlogistics.notificationservice.domain.exception.NotificationException;
 import com.firstlogistics.notificationservice.domain.repository.NotificationRepository;
+import com.firstlogistics.notificationservice.domain.vo.NotificationId;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -50,5 +53,13 @@ public class NotificationCommandService {
         }
 
         return CreateNotificationResult.from(savedNotification);
+    }
+
+    @Transactional
+    public void deleteNotification(UUID notificationId, UUID userId) {
+        Notification notification = notificationRepository.findById(NotificationId.of(notificationId))
+                .orElseThrow(() -> new NotificationException(NotificationErrorCode.NOTIFICATION_NOT_FOUND));
+
+        notificationRepository.delete(notification, userId);
     }
 }

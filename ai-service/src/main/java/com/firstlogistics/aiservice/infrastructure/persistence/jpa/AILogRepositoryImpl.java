@@ -4,10 +4,14 @@ import com.firstlogistics.aiservice.domain.entity.AILog;
 import com.firstlogistics.aiservice.domain.exception.AILogErrorCode;
 import com.firstlogistics.aiservice.domain.exception.AILogException;
 import com.firstlogistics.aiservice.domain.repository.AILogRepository;
+import com.firstlogistics.aiservice.domain.vo.AILogId;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
@@ -26,5 +30,22 @@ public class AILogRepositoryImpl implements AILogRepository {
 
             throw new AILogException(AILogErrorCode.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @Override
+    public Optional<AILog> findById(AILogId id) {
+        return aiLogJpaRepository.findById(id.id())
+                .filter(entity -> entity.getDeletedAt() == null) // 삭제된 로그는 무시
+                .map(AILogMapper::toDomain);
+    }
+
+    @Override
+    public void delete(AILog domainAILog, UUID userId) {
+        // JPA 엔티티 조회
+        AILogJpaEntity entity = aiLogJpaRepository.findById(domainAILog.getId().id())
+                .orElseThrow(() -> new AILogException(AILogErrorCode.AILOG_NOT_FOUND));
+
+        // BaseAuditEntity의 softDelete 메서드 호출
+        entity.softDelete(userId);
     }
 }
