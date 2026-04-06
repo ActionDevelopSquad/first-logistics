@@ -12,8 +12,8 @@ public record AILogSummaryResponse(
         MessengerType messengerType,
         String responseContent
 ) {
-    public static AILogResponse from(AILogSummaryResult result) {
-        return new AILogResponse(
+    public static AILogSummaryResponse from(AILogSummaryResult result) {
+        return new AILogSummaryResponse(
                 result.id(),
                 result.status(),
                 result.messengerType(),

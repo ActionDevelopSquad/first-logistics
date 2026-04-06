@@ -58,10 +58,13 @@ public class AILogQueryRepositoryImpl implements AILogQueryRepository {
         if (condition != null) {
             if (condition.messageId() != null) {
                 // messageId가 UUID나 객체라면 eq를 사용해야 합니다.
-                builder.and(aiLog.messageId.eq(UUID.fromString(String.valueOf(condition.messageId()))));
+                builder.and(aiLog.messageId.eq(condition.messageId()));
             }
             if (condition.status() != null) {
                 builder.and(aiLog.status.eq(condition.status()));
+            }
+            if (condition.messengerType() != null) {
+                builder.and(aiLog.messengerType.eq(condition.messengerType()));
             }
             if (condition.startDate() != null && condition.endDate() != null) {
                 builder.and(aiLog.createdAt.between(condition.startDate(), condition.endDate()));

@@ -1,10 +1,7 @@
 package com.firstlogistics.aiservice.application.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import com.firstlogistics.aiservice.application.dto.query.SearchAILogsQuery;
 import com.firstlogistics.aiservice.application.dto.result.AILogDetailResult;
-import com.firstlogistics.aiservice.application.dto.result.AILogResult;
 import com.firstlogistics.aiservice.application.dto.result.AILogSummaryResult;
 import com.firstlogistics.aiservice.domain.enums.AILogStatus;
 import com.firstlogistics.aiservice.domain.enums.MessengerType;
