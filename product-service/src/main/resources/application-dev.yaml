@@ -4,20 +4,19 @@ spring:
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
-
   jpa:
     hibernate:
       ddl-auto: create-drop
-
-eureka:
-  client:
-    enabled: false
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        default_schema: product
 
 management:
   tracing:
     sampling:
       probability: 1.0
-
   zipkin:
     tracing:
       endpoint: ${ZIPKIN_ENDPOINT:http://zipkin:9411/api/v2/spans}
