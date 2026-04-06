@@ -97,6 +97,10 @@ public class UserCommandServiceImpl implements UserCommandService {
                     command.managerType()
             );
 
+            if (command.userRole() == UserRole.MASTER) {
+                user.approve();
+            }
+
             userRepository.save(user);
 
             return userId;
