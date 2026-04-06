@@ -2,6 +2,7 @@ package com.firstlogistics.hubservice.hubconnection.infrastructure.persistence.j
 
 import com.firstlogistics.hubservice.hub.domain.vo.HubId;
 import com.firstlogistics.hubservice.hubconnection.domain.entity.HubConnection;
+import com.firstlogistics.hubservice.hubconnection.domain.enums.HubConnectionStatus;
 import com.firstlogistics.hubservice.hubconnection.domain.exception.HubConnectionErrorCode;
 import com.firstlogistics.hubservice.hubconnection.domain.exception.HubConnectionException;
 import com.firstlogistics.hubservice.hubconnection.domain.repository.HubConnectionRepository;
@@ -60,6 +61,24 @@ public class HubConnectionRepositoryImpl implements HubConnectionRepository {
     @CacheEvict(cacheNames = HUB_CONNECTION_ALL_CACHE, allEntries = true)
     public void delete(HubConnection hubConnection) {
         jpaRepository.delete(mapper.toJpaEntity(hubConnection));
+    }
+
+    @Override
+    @CacheEvict(cacheNames = HUB_CONNECTION_ALL_CACHE, allEntries = true)
+    public void deactivateByHubId(HubId id) {
+        jpaRepository.updateStatusByHubId(id.id(), HubConnectionStatus.INACTIVE);
+    }
+
+    @Override
+    @CacheEvict(cacheNames = HUB_CONNECTION_ALL_CACHE, allEntries = true)
+    public void activateByHubId(HubId id) {
+        jpaRepository.updateStatusByHubId(id.id(), HubConnectionStatus.ACTIVE);
+    }
+
+    @Override
+    @CacheEvict(cacheNames = HUB_CONNECTION_ALL_CACHE, allEntries = true)
+    public void deleteByHubId(HubId id) {
+        jpaRepository.deleteByHubId(id.id());
     }
 
     private boolean hasConstraintName(Throwable throwable, String expectedConstraintName ){

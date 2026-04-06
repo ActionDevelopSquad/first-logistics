@@ -75,6 +75,22 @@ public class HubConnectionCommandService {
         hubConnectionRepository.delete(connection);
     }
 
+    @Transactional
+    public void deactivateByHub(UUID hubId) {
+        hubConnectionRepository.deactivateByHubId(HubId.of(hubId));
+    }
+
+    @Transactional
+    public void activateByHub(UUID hubId) {
+        hubConnectionRepository.activateByHubId(HubId.of(hubId));
+
+    }
+
+    @Transactional
+    public void deleteByHub(UUID hubId) {
+        hubConnectionRepository.deleteByHubId(HubId.of(hubId));
+    }
+
     private HubConnectionResult activate(UUID hubConnectionId) {
         HubConnection connection = hubConnectionRepository.findById(HubConnectionId.of(hubConnectionId));
         connection.activate();

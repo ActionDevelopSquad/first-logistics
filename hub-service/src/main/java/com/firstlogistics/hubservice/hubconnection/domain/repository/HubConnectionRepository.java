@@ -12,4 +12,7 @@ public interface HubConnectionRepository {
     List<HubConnection> findAll();
     HubConnection findById(HubConnectionId id);
     void delete(HubConnection hubConnection);
+    void deactivateByHubId(HubId id);
+    void activateByHubId(HubId id);
+    void deleteByHubId(HubId id);
 }
