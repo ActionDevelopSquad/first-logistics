@@ -35,6 +35,7 @@ dependencies {
     implementation 'io.micrometer:micrometer-tracing-bridge-brave'
     implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
     implementation 'io.github.openfeign:feign-micrometer'
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 
     runtimeOnly 'org.postgresql:postgresql'
     runtimeOnly 'com.h2database:h2' // 초기 빌드용
