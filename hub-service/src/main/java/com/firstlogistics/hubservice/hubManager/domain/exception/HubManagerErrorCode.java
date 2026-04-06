@@ -14,7 +14,8 @@ public enum HubManagerErrorCode implements ErrorCode {
     INVALID_HUB_ID(HttpStatus.BAD_REQUEST, "HBM_E004", "허브 아이디가 유효하지 않습니다."),
     INVALID_HUB_MANAGER_SORT(HttpStatus.BAD_REQUEST, "HBM_E005", "정렬 형식이 유효하지 않습니다."),
     DUPLICATE_HUB_MANAGER(HttpStatus.CONFLICT, "HBM_E006", "이미 존재하는 허브 매니저입니다."),
-    HUB_NOT_FOUND(HttpStatus.NOT_FOUND, "HBM_E007", "해당 허브가 존재하지 않습니다.");
+    HUB_NOT_FOUND(HttpStatus.NOT_FOUND, "HBM_E007", "해당 허브가 존재하지 않습니다."),
+    SAME_HUB_MANAGER_HUB(HttpStatus.BAD_REQUEST,"HBM_E008",  "현재와 동일한 허브로는 변경할 수 없습니다.");
 
 
 
