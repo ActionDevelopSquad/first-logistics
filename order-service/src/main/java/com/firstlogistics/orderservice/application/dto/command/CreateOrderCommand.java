@@ -1,4 +1,4 @@
-package com.firstlogistics.orderservice.application.dto;
+package com.firstlogistics.orderservice.application.dto.command;
 
 import com.firstlogistics.orderservice.domain.vo.OrderItemInput;
 
