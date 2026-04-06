@@ -19,7 +19,7 @@ spring:
         - id: delivery-service
           uri: lb://delivery-service
           predicates:
-            - Path=/api/v1/deliveries/**, /api/v1/delivery-staffs/**
+            - Path=/api/v1/deliveries/**, /api/v1/delivery-managers/**
         - id: order-service
           uri: lb://order-service
           predicates:
