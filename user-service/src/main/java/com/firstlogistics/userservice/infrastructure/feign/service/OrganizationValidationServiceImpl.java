@@ -10,10 +10,12 @@ import common.response.ApiResponse;
 import common.security.entity.enums.UserRole;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrganizationValidationServiceImpl implements OrganizationValidationService {
@@ -32,6 +34,10 @@ public class OrganizationValidationServiceImpl implements OrganizationValidation
             throw new UserException(UserErrorCode.HUB_ID_NOT_FOUND);
 
         } catch (FeignException e) {
+            log.error("Feign 호출 실패 - status: {}, message: {}", e.status(), e.getMessage());
+            throw new UserException(UserErrorCode.FEIGN_SERVICE_UNAVAILABLE);
+        } catch (Exception e) {
+            log.error("조직 검증 중 예외 발생 - type: {}, message: {}", e.getClass().getSimpleName(), e.getMessage());
             throw new UserException(UserErrorCode.FEIGN_SERVICE_UNAVAILABLE);
         }
     }
