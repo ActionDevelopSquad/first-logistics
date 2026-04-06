@@ -144,6 +144,8 @@ public class OrderCommandService {
         order.rejectBySystem();
 
         Events.trigger(OrderCancelledEvent.from(order));
+
+        orderRepository.save(order);
     }
 
     private String processCancellation(UUID orderId, OrderCancelType cancelType) {

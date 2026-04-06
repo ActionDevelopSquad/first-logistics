@@ -1,7 +1,6 @@
 package com.firstlogistics.orderservice.infrastructure.messaging.producer;
 
 import com.firstlogistics.orderservice.application.OrderCommandService;
-import com.firstlogistics.orderservice.application.port.OrderEventProducer;
 import com.firstlogistics.orderservice.domain.event.OrderAcceptedEvent;
 import com.firstlogistics.orderservice.domain.event.OrderCancelledEvent;
 import com.firstlogistics.orderservice.domain.event.OrderCreatedEvent;
@@ -18,7 +17,7 @@ import java.util.UUID;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class OrderEventKafkaProducer implements OrderEventProducer {
+public class OrderEventKafkaProducer {
 
     private static final String ORDER_CREATED = "order.created";
     private static final String ORDER_ACCEPTED = "order.accepted";
@@ -31,14 +30,12 @@ public class OrderEventKafkaProducer implements OrderEventProducer {
     /**
      * 트랜잭션 커밋 이후 발행 — DB 커밋 실패 시 이벤트 유출 방지
      */
-    @Override
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOrderCreatedEvent(OrderCreatedEvent event) {
         // 재고 예약
         sendWithLogging(ORDER_CREATED, event.supplierCompanyId().toString(), event, event.orderId());
     }
 
-    @Override
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOrderAcceptedEvent(OrderAcceptedEvent event) {
         // 재고 차감 & 배송 생성
@@ -46,7 +43,6 @@ public class OrderEventKafkaProducer implements OrderEventProducer {
         sendWithLogging(ORDER_ACCEPTED, event.orderId().toString(), event, event.orderId());
     }
 
-    @Override
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOrderCancelledEvent(OrderCancelledEvent event) {
         // 재고 예약 취소
