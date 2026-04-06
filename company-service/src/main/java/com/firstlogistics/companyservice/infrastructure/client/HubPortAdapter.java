@@ -22,7 +22,7 @@ public class HubPortAdapter implements HubPort {
             if (response == null || response.data() == null) {
                 throw new CompanyException(CompanyErrorCode.INVALID_HUB_ID);
             }
-            return response.data();
+            return response.data().hubId();
         } catch (FeignException.BadRequest e) {
             throw new CompanyException(CompanyErrorCode.HUB_LOCATION_OUT_OF_RANGE);
         }
