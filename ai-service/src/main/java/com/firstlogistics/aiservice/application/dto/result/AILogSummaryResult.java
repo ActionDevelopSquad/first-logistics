@@ -2,7 +2,7 @@ package com.firstlogistics.aiservice.application.dto.result;
 
 import com.firstlogistics.aiservice.domain.enums.AILogStatus;
 import com.firstlogistics.aiservice.domain.enums.MessengerType;
-import com.firstlogistics.aiservice.domain.repository.dto.AILogSummaryDto;
+import com.firstlogistics.aiservice.domain.projection.AILogSummaryProjection;
 
 import java.util.UUID;
 
@@ -13,7 +13,7 @@ public record AILogSummaryResult (
         MessengerType messengerType,
         String responseContent
 ) {
-    public static AILogSummaryResult fromSummary(AILogSummaryDto dto) {
+    public static AILogSummaryResult fromSummary(AILogSummaryProjection dto) {
         return new AILogSummaryResult(
                 dto.aiLogId().id(),
                 dto.messageId().id(),

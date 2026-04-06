@@ -9,8 +9,8 @@ import com.firstlogistics.aiservice.domain.exception.AILogErrorCode;
 import com.firstlogistics.aiservice.domain.exception.AILogException;
 import com.firstlogistics.aiservice.domain.projection.AILogDetailProjection;
 import com.firstlogistics.aiservice.domain.repository.AILogQueryRepository;
-import com.firstlogistics.aiservice.domain.repository.dto.AILogSearchDto;
-import com.firstlogistics.aiservice.domain.repository.dto.AILogSummaryDto;
+import com.firstlogistics.aiservice.domain.projection.AILogSearchProjection;
+import com.firstlogistics.aiservice.domain.projection.AILogSummaryProjection;
 import com.firstlogistics.aiservice.domain.vo.AILogId;
 import com.firstlogistics.aiservice.domain.vo.MessengerMessageId;
 import org.junit.jupiter.api.DisplayName;
@@ -109,7 +109,7 @@ class AILogQueryServiceTest {
         Pageable pageable = PageRequest.of(0, 10, Sort.by("createdAt").descending());
 
         // Repository가 반환할 Mock 데이터(SummaryDto) 생성
-        AILogSummaryDto summaryDto = new AILogSummaryDto(
+        AILogSummaryProjection summaryDto = new AILogSummaryProjection(
                 AILogId.of(UUID.randomUUID()),
                 MessengerMessageId.of(UUID.randomUUID()),
                 AILogStatus.SUCCESS,
@@ -117,10 +117,10 @@ class AILogQueryServiceTest {
                 "응답 내용 요약"
         );
 
-        Page<AILogSummaryDto> mockPage = new PageImpl<>(List.of(summaryDto), pageable, 1);
+        Page<AILogSummaryProjection> mockPage = new PageImpl<>(List.of(summaryDto), pageable, 1);
 
         // Repository 행위 정의
-        given(aiLogQueryRepository.searchByCondition(any(AILogSearchDto.class), any(Pageable.class)))
+        given(aiLogQueryRepository.searchByCondition(any(AILogSearchProjection.class), any(Pageable.class)))
                 .willReturn(mockPage);
 
         // 2. When: 서비스 메서드 실행

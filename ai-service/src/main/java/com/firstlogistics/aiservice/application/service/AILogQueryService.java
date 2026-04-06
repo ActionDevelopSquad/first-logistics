@@ -2,13 +2,12 @@ package com.firstlogistics.aiservice.application.service;
 
 import com.firstlogistics.aiservice.application.dto.query.SearchAILogsQuery;
 import com.firstlogistics.aiservice.application.dto.result.AILogDetailResult;
-import com.firstlogistics.aiservice.application.dto.result.AILogResult;
 import com.firstlogistics.aiservice.application.dto.result.AILogSummaryResult;
 import com.firstlogistics.aiservice.domain.exception.AILogErrorCode;
 import com.firstlogistics.aiservice.domain.exception.AILogException;
 import com.firstlogistics.aiservice.domain.projection.AILogDetailProjection;
 import com.firstlogistics.aiservice.domain.repository.AILogQueryRepository;
-import com.firstlogistics.aiservice.domain.repository.dto.AILogSummaryDto;
+import com.firstlogistics.aiservice.domain.projection.AILogSummaryProjection;
 import com.firstlogistics.aiservice.domain.vo.AILogId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -32,7 +31,7 @@ public class AILogQueryService {
     }
 
     public Page<AILogSummaryResult> searchAILogs(SearchAILogsQuery query, Pageable pageable) {
-        Page<AILogSummaryDto> logs = aiLogQueryRepository.searchByCondition(query.toDto(), pageable);
+        Page<AILogSummaryProjection> logs = aiLogQueryRepository.searchByCondition(query.toDto(), pageable);
         return logs.map(AILogSummaryResult::fromSummary);
     }
 }

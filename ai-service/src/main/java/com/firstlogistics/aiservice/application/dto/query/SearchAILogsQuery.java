@@ -2,7 +2,7 @@ package com.firstlogistics.aiservice.application.dto.query;
 
 import com.firstlogistics.aiservice.domain.enums.AILogStatus;
 import com.firstlogistics.aiservice.domain.enums.MessengerType;
-import com.firstlogistics.aiservice.domain.repository.dto.AILogSearchDto;
+import com.firstlogistics.aiservice.domain.projection.AILogSearchProjection;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -18,8 +18,8 @@ public record SearchAILogsQuery(
         this(messageId, parseStatus(status), parseMessenger(messengerType), startDate, endDate);
     }
 
-    public AILogSearchDto toDto() {
-        return new AILogSearchDto(messageId, status, messengerType, startDate, endDate);
+    public AILogSearchProjection toDto() {
+        return new AILogSearchProjection(messageId, status, messengerType, startDate, endDate);
     }
 
     private static AILogStatus parseStatus(String status) {

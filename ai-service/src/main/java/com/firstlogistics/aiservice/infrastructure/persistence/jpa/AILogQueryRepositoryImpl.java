@@ -2,8 +2,8 @@ package com.firstlogistics.aiservice.infrastructure.persistence.jpa;
 
 import com.firstlogistics.aiservice.domain.projection.AILogDetailProjection;
 import com.firstlogistics.aiservice.domain.repository.AILogQueryRepository;
-import com.firstlogistics.aiservice.domain.repository.dto.AILogSearchDto;
-import com.firstlogistics.aiservice.domain.repository.dto.AILogSummaryDto;
+import com.firstlogistics.aiservice.domain.projection.AILogSearchProjection;
+import com.firstlogistics.aiservice.domain.projection.AILogSummaryProjection;
 import com.firstlogistics.aiservice.domain.vo.AILogId;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
@@ -17,7 +17,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
@@ -50,7 +49,7 @@ public class AILogQueryRepositoryImpl implements AILogQueryRepository {
     }
 
     @Override
-    public Page<AILogSummaryDto> searchByCondition(AILogSearchDto condition, Pageable pageable) {
+    public Page<AILogSummaryProjection> searchByCondition(AILogSearchProjection condition, Pageable pageable) {
         BooleanBuilder builder = new BooleanBuilder();
 
         builder.and(aiLog.deletedAt.isNull());
@@ -72,9 +71,9 @@ public class AILogQueryRepositoryImpl implements AILogQueryRepository {
         }
 
         // 3. 데이터 조회 쿼리
-        List<AILogSummaryDto> content = queryFactory
+        List<AILogSummaryProjection> content = queryFactory
                 .select(Projections.constructor(
-                        AILogSummaryDto.class,
+                        AILogSummaryProjection.class,
                         aiLog.id,
                         aiLog.messageId,
                         aiLog.status,
