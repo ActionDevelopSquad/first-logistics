@@ -9,6 +9,7 @@ import com.firstlogistics.hubservice.hubconnection.domain.vo.HubConnectionId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 
@@ -57,6 +58,7 @@ public class HubConnectionRepositoryImpl implements HubConnectionRepository {
     }
 
     @Override
+    @CacheEvict(cacheNames = HUB_CONNECTION_ALL_CACHE, allEntries = true)
     public void delete(HubConnection hubConnection) {
         jpaRepository.delete(mapper.toJpaEntity(hubConnection));
     }
