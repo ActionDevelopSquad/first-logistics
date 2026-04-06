@@ -9,7 +9,8 @@ public class NotificationMapper {
 
     public NotificationJpaEntity toEntity(Notification notification) {
         return new NotificationJpaEntity(
-                notification.getId().id(), // NotificationId VO에서 UUID 추출
+                notification.getId().id(),
+                null,
                 notification.getReceiverId(),
                 notification.getMessageId(),
                 notification.getContent(),
@@ -25,7 +26,7 @@ public class NotificationMapper {
         return Notification.reconstitute(
                 NotificationId.of(entity.getId()),
                 entity.getReceiverId(),
-                entity.getSlackId(),
+                entity.getMessageId(),
                 entity.getContent(),
                 entity.getType(),
                 entity.getStatus(),

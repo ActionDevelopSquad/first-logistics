@@ -48,7 +48,7 @@ public class Notification {
     public static Notification reconstitute(
             NotificationId id,
             UUID receiverId,
-            String slackId,
+            String messageId,
             String content,
             NotificationType type,
             NotificationStatus status,
@@ -58,7 +58,7 @@ public class Notification {
         return new Notification(
                 id,
                 receiverId,
-                slackId,
+                messageId,
                 content,
                 type,
                 status,
@@ -74,4 +74,5 @@ public class Notification {
         this.status = status;
 
     }
+
 }

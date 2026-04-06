@@ -22,11 +22,14 @@ public class NotificationJpaEntity extends BaseAuditEntity {
     @Id
     private UUID id;
 
+    @Version
+    private Long version;
+
     @Column(nullable = false)
     private UUID receiverId;
 
     @Column(nullable = false)
-    private String slackId;
+    private String messageId;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
