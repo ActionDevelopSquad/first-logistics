@@ -67,3 +67,5 @@ AGENTS.md
 
 # Keycloak realm import file
 codefactory-realm.json
+
+http/http-client.env.json
