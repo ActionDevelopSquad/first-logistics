@@ -35,7 +35,14 @@ public class HubRepositoryImpl implements HubRepository {
     @Override
     public Hub save(Hub hub) {
         try {
-            Hub savedHub = mapper.toDomain(jpaRepository.save(mapper.toJpaEntity(hub)));
+            HubJpaEntity entity = jpaRepository.findById(hub.getId().id())
+                    .map(existing -> {
+                        mapper.updateJpaEntity(existing, hub);
+                        return existing;
+                    })
+                    .orElseGet(() -> mapper.toJpaEntity(hub));
+
+            Hub savedHub = mapper.toDomain(jpaRepository.save(entity));
             putHubByIdCache(savedHub);
             evictHubAllCache();
             return savedHub;
@@ -86,7 +93,10 @@ public class HubRepositoryImpl implements HubRepository {
 
     @Override
     public void delete(Hub hub) {
-        jpaRepository.delete(mapper.toJpaEntity(hub));
+        HubJpaEntity entity = jpaRepository.findById(hub.getId().id())
+                .orElseThrow(() -> new HubException(HubErrorCode.HUB_NOT_FOUND));
+
+        jpaRepository.delete(entity);
         evictHubByIdCache(hub.getId());
         evictHubAllCache();
     }

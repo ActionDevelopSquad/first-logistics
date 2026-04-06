@@ -36,10 +36,18 @@ public class HubConnectionRepositoryImpl implements HubConnectionRepository {
     @Override
     public HubConnection save(HubConnection hubConnection) {
         try{
-            HubConnectionJpaEntity savedEntity =  jpaRepository.save(mapper.toJpaEntity(hubConnection));
-            HubConnection savedHubConnection = mapper.toDomain(savedEntity);
+            HubConnectionJpaEntity entity = jpaRepository.findById(hubConnection.getId().id())
+                    .map(existing->{
+                        mapper.updateJpaEntity(existing, hubConnection);
+                        return existing;
+                    })
+                    .orElseGet(() -> mapper.toJpaEntity(hubConnection));
+            if (entity.getId() != null) {
+                mapper.updateJpaEntity(entity, hubConnection);
+            }
+            HubConnectionJpaEntity savedEntity = jpaRepository.save(entity);
             evictAllCache();
-            return savedHubConnection;
+            return mapper.toDomain(savedEntity);
         }catch (ObjectOptimisticLockingFailureException e) {
             throw new HubConnectionException(HubConnectionErrorCode.HUB_CONNECTION_CONFLICT);
         }
@@ -75,7 +83,10 @@ public class HubConnectionRepositoryImpl implements HubConnectionRepository {
 
     @Override
     public void delete(HubConnection hubConnection) {
-        jpaRepository.delete(mapper.toJpaEntity(hubConnection));
+        HubConnectionJpaEntity entity = jpaRepository.findById(hubConnection.getId().id())
+                .orElseThrow(() -> new HubConnectionException(HubConnectionErrorCode.HUB_CONNECTION_NOT_FOUND));
+
+        jpaRepository.delete(entity);
         evictAllCache();
     }
 

@@ -44,4 +44,25 @@ public class HubConnectionJpaEntity extends BaseAuditEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private HubConnectionStatus status;
+
+    public void changeSourceHubId(UUID sourceHubId) {
+        this.sourceHubId = sourceHubId;
+    }
+
+    public void changeDestinationHubId(UUID destinationHubId) {
+        this.destinationHubId = destinationHubId;
+    }
+
+    public void changeTime(Integer minutes) {
+        this.minutes = minutes;
+    }
+
+    public void changeDistance(Integer meters) {
+        this.meters = meters;
+    }
+
+    public void changeStatus(HubConnectionStatus status) {
+        this.status = status;
+    }
+
 }
