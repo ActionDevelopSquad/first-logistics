@@ -50,10 +50,7 @@ public class HubRepositoryImpl implements HubRepository {
         } catch (ObjectOptimisticLockingFailureException e) {
             throw new HubException(HubErrorCode.HUB_CONFLICT);
         } catch (DataIntegrityViolationException e) {
-            if (hasConstraintName(e, HubConstraints.UK_HUB_NAME)) {
                 throw new HubException(HubErrorCode.DUPLICATE_HUB_NAME);
-            }
-            throw e;
         }
     }
 
@@ -145,17 +142,4 @@ public class HubRepositoryImpl implements HubRepository {
         }
     }
 
-    private boolean hasConstraintName(Throwable throwable, String expectedConstraintName) {
-        Throwable cause = throwable;
-        while (cause != null) {
-            if (cause instanceof org.hibernate.exception.ConstraintViolationException cve) {
-                String constraintName = cve.getConstraintName();
-                if (expectedConstraintName.equalsIgnoreCase(constraintName)) {
-                    return true;
-                }
-            }
-            cause = cause.getCause();
-        }
-        return false;
-    }
 }

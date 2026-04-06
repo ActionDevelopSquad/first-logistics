@@ -29,9 +29,7 @@ public class HubManagerRepositoryImpl implements HubManagerRepository {
             HubManagerJpaEntity savedEntity = jpaRepository.saveAndFlush(HubManagerMapper.toJpaEntity(hubManager));
             return HubManagerMapper.toDomain(savedEntity);
         } catch (DataIntegrityViolationException e) {
-            if (hasConstraintName(e, HubManagerConstraints.UK_HUB_MANAGER_USER_HUB)|| hasConstraintName(e, HubManagerConstraints.UK_HUB_MANAGER_USER))
                 throw new HubManagerException(HubManagerErrorCode.DUPLICATE_HUB_MANAGER);
-            throw e;
         }
     }
 
@@ -49,20 +47,5 @@ public class HubManagerRepositoryImpl implements HubManagerRepository {
                 .orElseThrow(() -> new HubManagerException(HubManagerErrorCode.HUB_MANAGER_NOT_FOUND));
         entity.softDelete(userId);
         jpaRepository.saveAndFlush(entity);
-    }
-
-
-    private boolean hasConstraintName(Throwable throwable, String expectedConstraintName) {
-        Throwable cause = throwable;
-        while (cause != null) {
-            if (cause instanceof org.hibernate.exception.ConstraintViolationException cve) {
-                String constraintName = cve.getConstraintName();
-                if (expectedConstraintName.equalsIgnoreCase(constraintName)) {
-                    return true;
-                }
-            }
-            cause = cause.getCause();
-        }
-        return false;
     }
 }

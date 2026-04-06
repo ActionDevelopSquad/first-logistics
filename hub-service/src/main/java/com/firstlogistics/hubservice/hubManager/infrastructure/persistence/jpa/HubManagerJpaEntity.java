@@ -11,13 +11,7 @@ import org.hibernate.annotations.SQLRestriction;
 import java.util.UUID;
 @Getter
 @Entity
-@Table(
-        name = "p_hub_manager",
-        uniqueConstraints = {
-                @UniqueConstraint(name = HubManagerConstraints.UK_HUB_MANAGER_USER_HUB ,columnNames = {"user_id","hub_id"}),
-                @UniqueConstraint(name = HubManagerConstraints.UK_HUB_MANAGER_USER ,columnNames = {"user_id"})
-        }
-)
+@Table(name = "p_hub_manager")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 @SQLRestriction("deleted_at IS NULL")
