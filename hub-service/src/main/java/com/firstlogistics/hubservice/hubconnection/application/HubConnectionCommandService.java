@@ -102,11 +102,11 @@ public class HubConnectionCommandService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void deleteByHub(UUID hubId) {
+    public void deleteByHub(UUID hubId, UUID userId) {
         List<HubConnection> hubConnections = hubConnectionRepository.findAllByHubId(HubId.of(hubId));
 
         for (HubConnection hubConnection : hubConnections) {
-            hubConnectionRepository.delete(hubConnection);
+            hubConnectionRepository.delete(hubConnection, userId);
         }    }
 
     private HubConnectionResult activate(UUID hubConnectionId) {

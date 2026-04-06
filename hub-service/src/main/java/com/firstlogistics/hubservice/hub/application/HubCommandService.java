@@ -79,7 +79,7 @@ public class HubCommandService {
     public void delete(UUID hubId, UUID userId) {
         Hub hub = hubRepository.findById(HubId.of(hubId));
         hubRepository.delete(hub, userId);
-        Events.trigger(HubDeletedEvent.from(hub));
+        Events.trigger(HubDeletedEvent.from(hub, userId));
     }
 
     private HubResult activate(UUID hubId) {

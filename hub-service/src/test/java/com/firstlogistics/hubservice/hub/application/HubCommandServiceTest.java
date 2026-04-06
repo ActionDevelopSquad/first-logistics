@@ -227,17 +227,18 @@ public class HubCommandServiceTest {
     void deleteHub_success() {
         // given
         UUID hubUuid = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
         Hub hub = createHub(hubUuid, "서울 허브", "서울특별시", HubStatus.ACTIVE);
 
         given(hubRepository.findById(HubId.of(hubUuid))).willReturn(hub);
 
         // when
         try (MockedStatic<Events> events = mockStatic(Events.class)) {
-            hubCommandService.delete(hubUuid);
+            hubCommandService.delete(hubUuid,userId);
 
             // then
-            verify(hubRepository, times(1)).delete(hub);
-            events.verify(() -> Events.trigger(new HubDeletedEvent(hubUuid)));
+            verify(hubRepository, times(1)).delete(hub,userId);
+            events.verify(() -> Events.trigger(new HubDeletedEvent(hubUuid,userId)));
         }
     }
 
