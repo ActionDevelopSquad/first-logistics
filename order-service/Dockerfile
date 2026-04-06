@@ -15,6 +15,7 @@ COPY common/build.gradle common/build.gradle
 COPY common-jpa/build.gradle common-jpa/build.gradle
 COPY common-event/build.gradle common-event/build.gradle
 COPY common-security/build.gradle common-security/build.gradle
+COPY common-swagger/build.gradle common-swagger/build.gradle
 COPY order-service/build.gradle order-service/build.gradle
 
 # settings.gradle에 포함된 다른 서비스들의 디렉토리 구조만 생성 (빌드 오류 방지)
@@ -30,6 +31,7 @@ COPY common/src common/src
 COPY common-jpa/src common-jpa/src
 COPY common-event/src common-event/src
 COPY common-security/src common-security/src
+COPY common-swagger/src common-swagger/src
 COPY order-service/src order-service/src
 
 # 4. jar 파일 빌드
