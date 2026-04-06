@@ -46,7 +46,7 @@ psql -h $PG_HOST -U $PG_USER -d $SLAVE_DB -c "
   CREATE SUBSCRIPTION slave_sub
     CONNECTION 'host=$PG_HOST port=5432 dbname=$MASTER_DB user=$PG_USER'
     PUBLICATION master_pub
-    WITH (copy_data = true, enabled = true);
+    WITH (copy_data = false, enabled = true);
 "
 
 echo "=== Logical Replication 설정 완료 ==="
