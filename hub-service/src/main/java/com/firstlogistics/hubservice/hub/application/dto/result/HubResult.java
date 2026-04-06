@@ -2,6 +2,7 @@ package com.firstlogistics.hubservice.hub.application.dto.result;
 
 import com.firstlogistics.hubservice.hub.domain.entity.Hub;
 import com.firstlogistics.hubservice.hub.domain.enums.HubStatus;
+import com.firstlogistics.hubservice.hub.domain.enums.HubType;
 
 import java.util.UUID;
 
@@ -11,7 +12,8 @@ public record HubResult(
         String roadAddress,
         double latitude,
         double longitude,
-        HubStatus status
+        HubStatus status,
+        HubType type
 ) {
     public static HubResult from(Hub hub){
         return new HubResult(
@@ -20,7 +22,8 @@ public record HubResult(
                 hub.getAddress().roadAddress(),
                 hub.getGeoLocation().latitude(),
                 hub.getGeoLocation().longitude(),
-                hub.getStatus()
+                hub.getStatus(),
+                hub.getType()
         );
     }
 }

@@ -1,6 +1,7 @@
 package com.firstlogistics.hubservice.hub.infrastructure.persistence.jpa;
 
 import com.firstlogistics.hubservice.hub.domain.enums.HubStatus;
+import com.firstlogistics.hubservice.hub.domain.enums.HubType;
 import common.jpa.entity.BaseAuditEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -41,4 +42,9 @@ public class HubJpaEntity extends BaseAuditEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private HubStatus status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private HubType type;
+
 }

@@ -16,16 +16,14 @@ public class AIMessageFacade {
     private final AILogCommandService aiLogCommandService;
 
     public void processAiNotification(DeliveryAcceptedEvent event) {
-        if (event.currentHubId() == null) {
-            throw new AILogException(AILogErrorCode.INTERNAL_SERVER_ERROR);
-        }
-
         // 현재 허브 담당자 슬랙 id 추출
-        String currentHubManagerSlackId = event.delivery().deliveryRoutes().stream()
+        DeliveryAcceptedEvent.DeliveryRouteInfo currentRoute = event.delivery().deliveryRoutes().stream()
                 .filter(route -> route.sourceHubId().equals(event.currentHubId()))
-                .map(DeliveryAcceptedEvent.DeliveryRouteInfo::hubDeliveryManagerSlackId)
                 .findFirst()
-                .orElseThrow(() -> new AILogException(AILogErrorCode.INTERNAL_SERVER_ERROR));
+                .orElseThrow(() -> new AILogException(AILogErrorCode.CURRENT_HUB_ROUTE_NOT_FOUND));
+
+        String currentHubManagerSlackId = currentRoute.hubDeliveryManagerSlackId();
+        String currentHubName = currentRoute.sourceHubName();
 
         // 경유지 정보 조립 (예: 대전 센터, 부산 센터)
         String hubs = event.delivery().deliveryRoutes().stream()
@@ -47,7 +45,7 @@ public class AIMessageFacade {
                 event.order().orderDueDate(),
                 productInfo,
                 event.order().orderRequestNote(),
-                event.delivery().deliveryRoutes().getFirst().sourceHubName(), // 첫 출발지
+                currentHubName,
                 hubs,
                 event.delivery().receiverRoadAddress() + " " + event.delivery().receiverDetailAddress(),
                 event.delivery().companyDeliveryManagerName(),

@@ -4,6 +4,7 @@ public record CreateHubCommand(
         String name,
         String roadAddress,
         double latitude,
-        double longitude
+        double longitude,
+        String type
 ) {
 }

@@ -1,6 +1,7 @@
 package com.firstlogistics.hubservice.hub.domain.repository.dto;
 
 import com.firstlogistics.hubservice.hub.domain.enums.HubStatus;
+import com.firstlogistics.hubservice.hub.domain.enums.HubType;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -12,6 +13,7 @@ public record HubDetailsDto(
         double latitude,
         double longitude,
         HubStatus status,
+        HubType type,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {

@@ -4,7 +4,7 @@ package com.firstlogistics.deliverservice.infrastructure.messaging.producer;
 import com.firstlogistics.deliverservice.infrastructure.feign.CompanyClient;
 import com.firstlogistics.deliverservice.infrastructure.feign.HubClient;
 import com.firstlogistics.deliverservice.infrastructure.feign.UserClient;
-import com.firstlogistics.deliverservice.infrastructure.messaging.config.KafkaConsumerConfig;
+import common.kafka.config.KafkaConsumerConfig;
 import com.firstlogistics.deliverservice.domain.event.DeliveryCreatedEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -35,7 +35,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
 @Slf4j
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@SpringBootTest(
+	webEnvironment = SpringBootTest.WebEnvironment.NONE,
+	properties = "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration,common.security.config.SecurityConfig,common.security.config.CommonSecurityAutoConfig,common.security.config.FeignAuthPropagationConfig"
+)
 @ActiveProfiles("test")
 @EmbeddedKafka(
     partitions = 1,

@@ -11,10 +11,4 @@ public interface OrderJpaRepository extends JpaRepository<OrderJpaEntity, UUID> 
     @Override
     @EntityGraph(attributePaths = {"orderItems"})
     Optional<OrderJpaEntity> findById(UUID id);
-
-    boolean existsByIdAndSupplierManagerId(UUID id, UUID supplierManagerId);
-
-    boolean existsByIdAndReceiverManagerId(UUID id, UUID receiverManagerId);
-
-    boolean existsByIdAndSupplierHubId(UUID id, UUID hubId);
 }

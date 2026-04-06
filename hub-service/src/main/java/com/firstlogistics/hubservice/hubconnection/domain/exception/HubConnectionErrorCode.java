@@ -20,8 +20,14 @@ public enum HubConnectionErrorCode implements ErrorCode {
     INVALID_HUB_CONNECTION_STATUS(HttpStatus.BAD_REQUEST, "HBC_E010", "허브 연결 정보 상태가 유효하지 않습니다."),
     INVALID_HUB_ID(HttpStatus.BAD_REQUEST, "HBC_E011", "허브 ID가 유효하지 않습니다."),
     SAME_SOURCE_AND_DESTINATION_HUB(HttpStatus.BAD_REQUEST, "HBC_E012", "출발 허브와 도착 허브가 같습니다."),
-    HUB_NOT_FOUND(HttpStatus.NOT_FOUND, "HBC_E013", "해당 허브 정보를 찾을 수 없습니다.");
-
+    HUB_NOT_FOUND(HttpStatus.NOT_FOUND, "HBC_E013", "해당 허브 정보를 찾을 수 없습니다."),
+    INVALID_HUB_ROUTE_POLICY(HttpStatus.BAD_REQUEST, "HBC_E014", "허브 연결 라우트 정책이 유효하지 않습니다."),
+    EXTERNAL_SERVICE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "HBC_E015", "서버 내부에서 에러가 발생했습니다."),
+    COMPANY_NOT_FOUND(HttpStatus.NOT_FOUND, "HBC_E016", "해당 업체 정보를 찾을 수 없습니다."),
+    HUB_ROUTE_PENDING(HttpStatus.INTERNAL_SERVER_ERROR, "HBC_E017", "배송 경로를 확정할 수 없어 배송을 보류 상태로 전환합니다."),
+    INVALID_COMPANY_ID(HttpStatus.BAD_REQUEST, "HBC_E018", "업체 ID가 유효하지 않습니다."),
+    ROUTE_METRIC_UNAVAILABLE(HttpStatus.INTERNAL_SERVER_ERROR, "HBC_E019", "네이버 지도 경로 메트릭 정보를 조회할 수 없습니다."),
+    INVALID_HUB_CONNECTION_SORT(HttpStatus.BAD_REQUEST, "HBC_E020", "허브 연결 정보 정렬 형식이 유효하지 않습니다.");
 
     private final HttpStatus status;
     private final String code;
