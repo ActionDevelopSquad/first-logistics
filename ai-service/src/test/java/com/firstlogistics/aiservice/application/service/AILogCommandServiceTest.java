@@ -7,6 +7,8 @@ import com.firstlogistics.aiservice.domain.entity.AILog;
 import com.firstlogistics.aiservice.domain.enums.AILogStatus;
 import com.firstlogistics.aiservice.domain.enums.MessengerType;
 import com.firstlogistics.aiservice.domain.repository.AILogRepository;
+import com.firstlogistics.aiservice.domain.vo.AILogId;
+import com.firstlogistics.aiservice.domain.vo.MessengerMessageId;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -89,5 +92,33 @@ class AILogCommandServiceTest {
         // 의존성 호출 횟수 검증
         verify(aiPromptGenerator, times(1)).generateDeliveryGuide(any());
         verify(aiLogRepository, times(1)).save(any());
+    }
+
+    @Test
+    @DisplayName("AI 로그 삭제 성공 테스트")
+    void deleteAILog_Success() {
+        // given
+        UUID aiLogId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        UUID messageId = UUID.randomUUID();
+
+        AILog mockAILog = AILog.reconstitute(
+                AILogId.of(aiLogId),
+                MessengerMessageId.of(messageId),
+                "적어도 수요일 오전까지 보내주세요.",
+                "최종 발송 시한은 화요일 오후 2시입니다.",
+                "당신은 일등물류의 AI이다.",
+                AILogStatus.SUCCESS,
+                MessengerType.SLACK
+        );
+
+        given(aiLogRepository.findById(any(AILogId.class)))
+                .willReturn(Optional.of(mockAILog));
+
+        // when
+        aiLogCommandService.deleteAILog(aiLogId, userId);
+
+        // then
+        verify(aiLogRepository).delete(mockAILog, userId);
     }
 }
