@@ -1,6 +1,8 @@
 package com.firstlogistics.deliverservice.infrastructure.messaging.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import common.kafka.ConsistentHashPartitioner;
+import common.kafka.config.KafkaProducerConfig;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -23,8 +25,7 @@ public class DeliveryProducerConfig {
 	@Bean
 	public ProducerFactory<String, Object> deliveryProducerFactory() {
 		Map<String, Object> props = kafkaProducerConfig.commonProducerProps();
-		props.put(ProducerConfig.PARTITIONER_CLASS_CONFIG,
-			ConsistentHashPartitioner.class);
+		props.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, ConsistentHashPartitioner.class);
 		return new DefaultKafkaProducerFactory<>(props, new StringSerializer(), new JsonSerializer<>(objectMapper));
 	}
 

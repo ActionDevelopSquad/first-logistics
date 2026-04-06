@@ -10,28 +10,19 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation project(':common')
     implementation project(':common-jpa')
+    implementation project(':common-event')
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
-    implementation 'org.springframework.ai:spring-ai-advisors-vector-store'
-    implementation 'org.springframework.ai:spring-ai-starter-model-openai'
-    implementation 'org.springframework.ai:spring-ai-starter-vector-store-pgvector'
-
-    // 이 세가지는 필요할지 모르겠음
-    implementation 'org.springframework.ai:spring-ai-pdf-document-reader'
-    implementation 'org.springframework.ai:spring-ai-tika-document-reader'
-    implementation 'org.springframework.ai:spring-ai-jsoup-document-reader'
-
-    implementation 'org.springframework.ai:spring-ai-rag'
+    implementation 'org.springframework.kafka:spring-kafka'
+    implementation "com.querydsl:querydsl-jpa:5.0.0:jakarta"
+    annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
     runtimeOnly 'org.postgresql:postgresql'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testRuntimeOnly 'com.h2database:h2'
-}
-
-dependencyManagement {
-    imports {
-        mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
-    }
 }

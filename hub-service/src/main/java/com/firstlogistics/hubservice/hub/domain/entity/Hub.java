@@ -1,6 +1,7 @@
 package com.firstlogistics.hubservice.hub.domain.entity;
 
 import com.firstlogistics.hubservice.hub.domain.enums.HubStatus;
+import com.firstlogistics.hubservice.hub.domain.enums.HubType;
 import com.firstlogistics.hubservice.hub.domain.exception.HubErrorCode;
 import com.firstlogistics.hubservice.hub.domain.exception.HubException;
 import com.firstlogistics.hubservice.hub.domain.vo.GeoLocation;
@@ -20,18 +21,21 @@ public class Hub {
     private HubAddress address;
     private GeoLocation geoLocation;
     private HubStatus status;
+    private HubType type;
 
 
     public static Hub create(
             String name,
             HubAddress address,
-            GeoLocation geoLocation
+            GeoLocation geoLocation,
+            HubType hubType
     ) {
+        validateType(hubType);
         validateName(name);
         validateAddress(address);
         validateGeoLocation(geoLocation);
 
-        return new Hub(HubId.generate(), name, address, geoLocation, HubStatus.ACTIVE);
+        return new Hub(HubId.generate(), name, address, geoLocation, HubStatus.ACTIVE,hubType);
     }
 
     public static Hub reconstitute(
@@ -39,15 +43,17 @@ public class Hub {
             String name,
             HubAddress address,
             GeoLocation geoLocation,
-            HubStatus status
+            HubStatus status,
+            HubType hubType
     ) {
+        validateType(hubType);
         validateId(id);
         validateStatus(status);
         validateName(name);
         validateAddress(address);
         validateGeoLocation(geoLocation);
 
-        return new Hub(id, name, address, geoLocation, status);
+        return new Hub(id, name, address, geoLocation, status, hubType);
     }
 
     public void activate() {
@@ -107,5 +113,9 @@ public class Hub {
         if (geoLocation == null) {
             throw new HubException(HubErrorCode.INVALID_HUB_GEOLOCATION);
         }
+    }
+    private static void validateType(HubType hubType){
+        if(hubType == null)
+            throw new HubException(HubErrorCode.INVALID_HUB_TYPE);
     }
 }

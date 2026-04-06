@@ -1,6 +1,6 @@
 package com.firstlogistics.deliverservice.domain.spec;
 
-import com.firstlogistics.deliverservice.domain.enums.UserRole;
+import common.security.entity.enums.UserRole;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
 
@@ -12,7 +12,7 @@ public record DeliveryScope(UserRole role, UUID scopeId) {
 		if (role == null) {
 			throw new DeliveryException(DeliveryErrorCode.INVALID_ROLE_SCOPE);
 		}
-		if (role.isRequiresScope() && scopeId == null) {
+		if (role != UserRole.MASTER && scopeId == null) {
 			throw new DeliveryException(DeliveryErrorCode.INVALID_ROLE_SCOPE);
 		}
 	}

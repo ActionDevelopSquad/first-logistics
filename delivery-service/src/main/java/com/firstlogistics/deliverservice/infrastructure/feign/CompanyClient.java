@@ -2,11 +2,10 @@ package com.firstlogistics.deliverservice.infrastructure.feign;
 
 import com.firstlogistics.deliverservice.application.port.dto.CompanyResponse;
 import com.firstlogistics.deliverservice.infrastructure.feign.config.FeignErrorDecoder;
-import com.firstlogistics.deliverservice.infrastructure.feign.dto.FeignResponse;
+import com.firstlogistics.deliverservice.infrastructure.feign.dto.FeignApiResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.UUID;
 
@@ -14,8 +13,8 @@ import java.util.UUID;
 public interface CompanyClient {
 
 	@GetMapping("/api/v1/companies/{companyId}")
-	FeignResponse<CompanyResponse> getCompany(@PathVariable("companyId") UUID companyId);
+	FeignApiResponse<CompanyResponse> getCompany(@PathVariable("companyId") UUID companyId);
 
-	@GetMapping("/api/v1/companies")
-	FeignResponse<CompanyResponse> getCompanyByManagerId(@RequestParam("managerId") UUID managerId);
+	@GetMapping("/api/v1/companies/manager/{managerId}")
+	FeignApiResponse<CompanyResponse> getCompanyManager(@PathVariable("managerId") UUID managerId);
 }

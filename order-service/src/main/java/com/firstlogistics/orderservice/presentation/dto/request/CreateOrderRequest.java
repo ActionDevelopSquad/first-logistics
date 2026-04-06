@@ -1,6 +1,6 @@
 package com.firstlogistics.orderservice.presentation.dto.request;
 
-import com.firstlogistics.orderservice.application.dto.CreateOrderCommand;
+import com.firstlogistics.orderservice.application.dto.command.CreateOrderCommand;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Min;

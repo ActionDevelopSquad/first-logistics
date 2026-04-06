@@ -32,7 +32,7 @@ public class OrderEventKafkaProducer implements OrderEventProducer {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOrderCreatedEvent(OrderCreatedEvent event) {
         // 재고 예약
-        sendWithLogging(TOPIC_CREATED, event.orderId().toString(), event, event.orderId());
+        sendWithLogging(TOPIC_CREATED, event.supplierCompanyId().toString(), event, event.orderId());
     }
 
     @Override
@@ -47,7 +47,7 @@ public class OrderEventKafkaProducer implements OrderEventProducer {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOrderCancelledEvent(OrderCancelledEvent event) {
         // 재고 예약 취소
-        sendWithLogging(TOPIC_CANCELLED, event.supplierCompanyId().toString(), event, event.orderId());
+        sendWithLogging(TOPIC_CANCELLED, event.orderId().toString(), event, event.orderId());
     }
 
 

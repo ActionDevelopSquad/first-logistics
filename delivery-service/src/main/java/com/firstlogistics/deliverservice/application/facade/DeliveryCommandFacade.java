@@ -26,13 +26,21 @@ public class DeliveryCommandFacade {
     private final DistributedLockPort distributedLockPort;
 
     public CreateDeliveryResult createDelivery(CreateDeliveryCommand command) {
+        return executeCreateDelivery(command);
+    }
+
+    public CreateDeliveryResult createDeliveryBySystem(CreateDeliveryCommand command) {
+        return executeCreateDelivery(command);
+    }
+
+    private CreateDeliveryResult executeCreateDelivery(CreateDeliveryCommand command) {
         CompanyResponse supplierCompany = companyPort.getCompany(command.supplierCompanyId());
         CompanyResponse receiverCompany = companyPort.getCompany(command.receiverCompanyId());
 
         UUID sourceHubId = supplierCompany.hubId();
         UUID destinationHubId = receiverCompany.hubId();
 
-        HubRouteResponse hubRoute = hubPort.getHubRoute(sourceHubId, destinationHubId);
+        HubRouteResponse hubRoute = hubPort.getHubRoute(sourceHubId, destinationHubId, command.receiverCompanyId());
 
         List<String> lockKeys = generateLockKeys(hubRoute);
 

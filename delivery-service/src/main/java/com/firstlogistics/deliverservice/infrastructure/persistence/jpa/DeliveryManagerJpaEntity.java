@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -51,8 +52,12 @@ public class DeliveryManagerJpaEntity extends BaseAuditEntity {
 	@Column(name = "manager_type", nullable = false)
 	private ManagerType managerType;
 
-	@Column(name = "delivery_sequence", nullable = false)
+	@Column(name = "delivery_sequence", nullable = false, unique = true)
 	private int deliverySequence;
+
+	@Version
+	@Column(name = "version")
+	private Long version;
 
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	@JoinColumn(name = "delivery_manager_id", nullable = false)
@@ -71,7 +76,7 @@ public class DeliveryManagerJpaEntity extends BaseAuditEntity {
 		return new DeliveryManagerJpaEntity(
 			id, userId, managerName, phoneNumber,
 			hubId, slackId, managerType,
-			deliverySequence, new ArrayList<>()
+			deliverySequence, null, new ArrayList<>()
 		);
 	}
 

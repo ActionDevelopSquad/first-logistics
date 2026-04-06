@@ -1,14 +1,24 @@
 package com.firstlogistics.orderservice.presentation;
 
 import com.firstlogistics.orderservice.application.OrderCommandService;
+import com.firstlogistics.orderservice.application.OrderQueryService;
 import com.firstlogistics.orderservice.presentation.dto.request.CreateOrderRequest;
+import com.firstlogistics.orderservice.presentation.dto.request.SearchOrderRequest;
+import com.firstlogistics.orderservice.presentation.dto.response.OrderDetailResponse;
 import com.firstlogistics.orderservice.presentation.dto.response.OrderIdResponse;
 import com.firstlogistics.orderservice.presentation.dto.response.OrderStatusResponse;
+import com.firstlogistics.orderservice.presentation.dto.response.OrderSummaryResponse;
 import common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,10 +35,10 @@ import java.util.UUID;
 public class OrderController {
 
     private final OrderCommandService orderCommandService;
+    private final OrderQueryService orderQueryService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<OrderIdResponse>> createOrder(
-            @RequestHeader("X-User-Id") UUID userId,
             @RequestBody @Valid CreateOrderRequest request
     ) {
         UUID id = orderCommandService.createOrder(request.toCommand());
@@ -36,12 +46,31 @@ public class OrderController {
                 .body(ApiResponse.success(OrderSuccessCode.ORDER_CREATED, OrderIdResponse.from(id)));
     }
 
-    @PatchMapping("/{orderId}/acceptance")
-    public ResponseEntity<ApiResponse<OrderStatusResponse>> acceptOrder(
-            @RequestHeader("X-User-Id") UUID userId,
+    @GetMapping
+    public ResponseEntity<ApiResponse<Page<OrderSummaryResponse>>> getOrders(
+            @ModelAttribute @Valid SearchOrderRequest request,
+            @PageableDefault(size = 10) Pageable pageable
+    ) {
+        Page<OrderSummaryResponse> response = orderQueryService.getOrders(request.toQuery(), pageable)
+                .map(OrderSummaryResponse::from);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(OrderSuccessCode.ORDER_OK, response));
+    }
+
+    @GetMapping("/{orderId}")
+    public ResponseEntity<ApiResponse<OrderDetailResponse>> getOrder(
             @PathVariable UUID orderId
     ) {
-        String status = orderCommandService.acceptOrder(userId, orderId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(OrderSuccessCode.ORDER_OK,
+                        OrderDetailResponse.from(orderQueryService.getOrder(orderId))));
+    }
+
+    @PatchMapping("/{orderId}/acceptance")
+    public ResponseEntity<ApiResponse<OrderStatusResponse>> acceptOrder(
+            @PathVariable UUID orderId
+    ) {
+        String status = orderCommandService.acceptOrder(orderId);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(OrderSuccessCode.ORDER_STATUS_UPDATED,
                         OrderStatusResponse.of(orderId, status)));
@@ -52,7 +81,7 @@ public class OrderController {
             @RequestHeader("X-User-Id") UUID userId,
             @PathVariable UUID orderId
     ) {
-        String status = orderCommandService.rejectOrder(userId, orderId);
+        String status = orderCommandService.rejectOrder(orderId);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(OrderSuccessCode.ORDER_STATUS_UPDATED,
                         OrderStatusResponse.of(orderId, status)));
@@ -60,10 +89,9 @@ public class OrderController {
 
     @PatchMapping("/{orderId}/cancellation")
     public ResponseEntity<ApiResponse<OrderStatusResponse>> cancelOrder(
-            @RequestHeader("X-User-Id") UUID userId,
             @PathVariable UUID orderId
     ) {
-        String status = orderCommandService.cancelOrder(userId, orderId);
+        String status = orderCommandService.cancelOrder(orderId);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(OrderSuccessCode.ORDER_STATUS_UPDATED,
                         OrderStatusResponse.of(orderId, status)));
@@ -71,10 +99,9 @@ public class OrderController {
 
     @PatchMapping("/{orderId}/cancellation-request")
     public ResponseEntity<ApiResponse<OrderStatusResponse>> requestCancel(
-            @RequestHeader("X-User-Id") UUID userId,
             @PathVariable UUID orderId
     ) {
-        String status = orderCommandService.requestCancel(userId, orderId);
+        String status = orderCommandService.requestCancel(orderId);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(OrderSuccessCode.ORDER_STATUS_UPDATED,
                         OrderStatusResponse.of(orderId, status)));
@@ -82,10 +109,9 @@ public class OrderController {
 
     @PatchMapping("/{orderId}/cancellation-request/approval")
     public ResponseEntity<ApiResponse<OrderStatusResponse>> approveCancelRequest(
-            @RequestHeader("X-User-Id") UUID userId,
             @PathVariable UUID orderId
     ) {
-        String status = orderCommandService.approveCancelRequest(userId, orderId);
+        String status = orderCommandService.approveCancelRequest(orderId);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(OrderSuccessCode.ORDER_STATUS_UPDATED,
                         OrderStatusResponse.of(orderId, status)));
@@ -93,13 +119,22 @@ public class OrderController {
 
     @PatchMapping("/{orderId}/cancellation-request/rejection")
     public ResponseEntity<ApiResponse<OrderStatusResponse>> rejectCancelRequest(
-            @RequestHeader("X-User-Id") UUID userId,
             @PathVariable UUID orderId
     ) {
-        String status = orderCommandService.rejectCancelRequest(userId, orderId);
+        String status = orderCommandService.rejectCancelRequest(orderId);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiResponse.success(OrderSuccessCode.ORDER_STATUS_UPDATED,
                         OrderStatusResponse.of(orderId, status)));
+    }
+
+    @DeleteMapping("/{orderId}")
+    public ResponseEntity<ApiResponse<OrderIdResponse>> deleteOrder(
+            @PathVariable UUID orderId
+    ) {
+        orderCommandService.deleteOrder(orderId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.success(OrderSuccessCode.ORDER_DELETED,
+                        OrderIdResponse.from(orderId)));
     }
 
 }

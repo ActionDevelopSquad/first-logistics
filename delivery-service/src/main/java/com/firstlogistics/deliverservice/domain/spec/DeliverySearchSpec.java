@@ -39,6 +39,9 @@ public record DeliverySearchSpec(
 		if (startDate != null && endDate != null && endDate.isBefore(startDate)) {
 			throw new DeliveryException(DeliveryErrorCode.INVALID_SEARCH_SPEC);
 		}
+		if ((cursorId == null) != (cursorCreatedAt == null)) {
+			throw new DeliveryException(DeliveryErrorCode.INVALID_SEARCH_SPEC);
+		}
 	}
 
 	public static DeliverySearchSpec of(

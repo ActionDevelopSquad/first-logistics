@@ -7,7 +7,8 @@ import java.util.UUID;
 
 public record Supplier(
         UUID companyId,
-        UUID managerId
+        UUID managerId,
+        UUID hubId
 ) {
     public Supplier {
         if (companyId == null) {
@@ -16,9 +17,12 @@ public record Supplier(
         if (managerId == null) {
             throw new OrderException(OrderErrorCode.SUPPLIER_MANAGER_REQUIRED);
         }
+        if (hubId == null) {
+            throw new OrderException(OrderErrorCode.SUPPLIER_HUB_REQUIRED);
+        }
     }
 
-    public static Supplier of(UUID companyId, UUID managerId) {
-        return new Supplier(companyId, managerId);
+    public static Supplier of(UUID companyId, UUID managerId, UUID hubId) {
+        return new Supplier(companyId, managerId, hubId);
     }
 }

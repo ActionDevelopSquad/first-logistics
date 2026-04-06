@@ -1,7 +1,9 @@
 package com.firstlogistics.deliverservice.application;
 
+import com.firstlogistics.deliverservice.application.dto.command.ChangeDeliveryStatusCommand;
 import com.firstlogistics.deliverservice.application.dto.command.CreateDeliveryCommand;
 import com.firstlogistics.deliverservice.application.dto.command.UpdateDeliveryCommand;
+import com.firstlogistics.deliverservice.application.dto.result.ChangeDeliveryStatusResult;
 import com.firstlogistics.deliverservice.application.dto.result.UpdateDeliveryResult;
 import com.firstlogistics.deliverservice.application.publisher.DeliveryEventPublisher;
 import com.firstlogistics.deliverservice.domain.entity.Delivery;
@@ -10,6 +12,8 @@ import com.firstlogistics.deliverservice.domain.entity.DeliveryRoute;
 import com.firstlogistics.deliverservice.domain.enums.DeliveryStatus;
 import com.firstlogistics.deliverservice.domain.enums.ManagerType;
 import com.firstlogistics.deliverservice.domain.enums.TimetableStatus;
+import com.firstlogistics.deliverservice.domain.enums.RouteStatus;
+import com.firstlogistics.deliverservice.domain.event.DeliveryStatusChangedEvent;
 import com.firstlogistics.deliverservice.domain.event.DeliveryUpdatedEvent;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryErrorCode;
 import com.firstlogistics.deliverservice.domain.exception.DeliveryException;
@@ -18,6 +22,9 @@ import com.firstlogistics.deliverservice.domain.repository.DeliveryManagerReposi
 import com.firstlogistics.deliverservice.domain.vo.Address;
 import com.firstlogistics.deliverservice.domain.vo.DeliveryId;
 import com.firstlogistics.deliverservice.domain.vo.DeliveryManagerId;
+import com.firstlogistics.deliverservice.domain.vo.DeliveryRouteId;
+import com.firstlogistics.deliverservice.domain.vo.Distance;
+import com.firstlogistics.deliverservice.domain.vo.Time;
 import com.firstlogistics.deliverservice.application.permission.DeliveryPermissionValidator;
 import com.firstlogistics.deliverservice.application.port.HubPort;
 import com.firstlogistics.deliverservice.application.port.UserPort;
@@ -26,6 +33,9 @@ import com.firstlogistics.deliverservice.application.port.dto.HubResponse;
 import com.firstlogistics.deliverservice.application.port.dto.HubRouteResponse;
 import com.firstlogistics.deliverservice.application.port.dto.HubRouteStepResponse;
 import com.firstlogistics.deliverservice.application.port.dto.UserResponse;
+import com.firstlogistics.deliverservice.infrastructure.exception.InfraErrorCode;
+import com.firstlogistics.deliverservice.infrastructure.exception.InfraException;
+import common.security.entity.enums.UserRole;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -193,7 +203,7 @@ class DeliveryCommandServiceTest {
 			given(deliveryManagerRepository.findNextCompanyDeliveryManager(eq(destinationHubId), any(LocalDateTime.class), any(LocalDateTime.class)))
 				.willReturn(Optional.of(stubCompanyManager(destinationHubId)));
 			given(userPort.getUser(receiverManagerId))
-				.willThrow(new DeliveryException(DeliveryErrorCode.USER_NOT_FOUND));
+				.willThrow(new InfraException(InfraErrorCode.USER_NOT_FOUND));
 
 			// when
 			Throwable throwable = catchThrowable(() ->
@@ -202,8 +212,8 @@ class DeliveryCommandServiceTest {
 
 			// then
 			assertThat(throwable)
-				.isInstanceOf(DeliveryException.class)
-				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.USER_NOT_FOUND);
+				.isInstanceOf(InfraException.class)
+				.hasFieldOrPropertyWithValue("errorCode", InfraErrorCode.USER_NOT_FOUND);
 		}
 	}
 
@@ -327,7 +337,7 @@ class DeliveryCommandServiceTest {
 			UUID userId = UUID.randomUUID();
 
 			// when
-			Throwable throwable = catchThrowable(() -> new UpdateDeliveryCommand(deliveryId, "MASTER", userId, null, null));
+			Throwable throwable = catchThrowable(() -> new UpdateDeliveryCommand(deliveryId, UserRole.MASTER, userId, null, null));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -344,7 +354,7 @@ class DeliveryCommandServiceTest {
 			UUID userId = UUID.randomUUID();
 
 			// when
-			Throwable throwable = catchThrowable(() -> new UpdateDeliveryCommand(deliveryId, "MASTER", userId, null, "   "));
+			Throwable throwable = catchThrowable(() -> new UpdateDeliveryCommand(deliveryId, UserRole.MASTER, userId, null, "   "));
 			log.info("throwable = {}", throwable.getMessage());
 
 			// then
@@ -359,7 +369,7 @@ class DeliveryCommandServiceTest {
 			// given
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
-			UpdateDeliveryCommand command = new UpdateDeliveryCommand(deliveryId, "MASTER", userId, UUID.randomUUID(), null);
+			UpdateDeliveryCommand command = new UpdateDeliveryCommand(deliveryId, UserRole.MASTER, userId, UUID.randomUUID(), null);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.empty());
 
@@ -380,11 +390,11 @@ class DeliveryCommandServiceTest {
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
 			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
-			UpdateDeliveryCommand command = new UpdateDeliveryCommand(deliveryId, "COMPANY_MANAGER", userId, UUID.randomUUID(), null);
+			UpdateDeliveryCommand command = new UpdateDeliveryCommand(deliveryId, UserRole.COMPANY_MANAGER, userId, UUID.randomUUID(), null);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
 			willThrow(new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED))
-				.given(deliveryPermissionValidator).validate(any(), eq("COMPANY_MANAGER"), eq(userId), any());
+				.given(deliveryPermissionValidator).validate(any(), eq(UserRole.COMPANY_MANAGER), eq(userId));
 
 			// when
 			Throwable throwable = catchThrowable(() -> deliveryCommandService.updateDelivery(command));
@@ -402,8 +412,8 @@ class DeliveryCommandServiceTest {
 			// given
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
-			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.HUB_MOVING);
-			UpdateDeliveryCommand command = new UpdateDeliveryCommand(deliveryId, "MASTER", userId, UUID.randomUUID(), null);
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.FOR_HUB_MOVING);
+			UpdateDeliveryCommand command = new UpdateDeliveryCommand(deliveryId, UserRole.MASTER, userId, UUID.randomUUID(), null);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
 
@@ -424,7 +434,7 @@ class DeliveryCommandServiceTest {
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
 			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.COMPLETED);
-			UpdateDeliveryCommand command = new UpdateDeliveryCommand(deliveryId, "MASTER", userId, UUID.randomUUID(), null);
+			UpdateDeliveryCommand command = new UpdateDeliveryCommand(deliveryId, UserRole.MASTER, userId, UUID.randomUUID(), null);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
 
@@ -445,7 +455,7 @@ class DeliveryCommandServiceTest {
 			UUID deliveryId = UUID.randomUUID();
 			UUID userId = UUID.randomUUID();
 			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CANCELLED);
-			UpdateDeliveryCommand command = new UpdateDeliveryCommand(deliveryId, "MASTER", userId, UUID.randomUUID(), null);
+			UpdateDeliveryCommand command = new UpdateDeliveryCommand(deliveryId, UserRole.MASTER, userId, UUID.randomUUID(), null);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
 
@@ -472,7 +482,7 @@ class DeliveryCommandServiceTest {
 			UUID userId = UUID.randomUUID();
 			UUID newReceiverId = UUID.randomUUID();
 			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
-			UpdateDeliveryCommand command = new UpdateDeliveryCommand(deliveryId, "MASTER", userId, newReceiverId, null);
+			UpdateDeliveryCommand command = new UpdateDeliveryCommand(deliveryId, UserRole.MASTER, userId, newReceiverId, null);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
 			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
@@ -495,7 +505,7 @@ class DeliveryCommandServiceTest {
 			UUID userId = UUID.randomUUID();
 			String newSlackId = "new-slack-id";
 			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
-			UpdateDeliveryCommand command = new UpdateDeliveryCommand(deliveryId, "MASTER", userId, null, newSlackId);
+			UpdateDeliveryCommand command = new UpdateDeliveryCommand(deliveryId, UserRole.MASTER, userId, null, newSlackId);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
 			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
@@ -519,7 +529,7 @@ class DeliveryCommandServiceTest {
 			UUID newReceiverId = UUID.randomUUID();
 			String newSlackId = "new-slack-id";
 			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
-			UpdateDeliveryCommand command = new UpdateDeliveryCommand(deliveryId, "MASTER", userId, newReceiverId, newSlackId);
+			UpdateDeliveryCommand command = new UpdateDeliveryCommand(deliveryId, UserRole.MASTER, userId, newReceiverId, newSlackId);
 
 			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
 			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
@@ -538,9 +548,680 @@ class DeliveryCommandServiceTest {
 		}
 	}
 
+	// ===== 배송 상태 변경 테스트 =====
+
+	@Nested
+	@DisplayName("허브 배송 시작 실패")
+	class StartHubDeliveryFail {
+
+		@Test
+		@DisplayName("존재하지 않는 배송")
+		void startHubDelivery_fail_deliveryNotFound() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.empty());
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.startHubDelivery(command, UserRole.MASTER, userId));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.DELIVERY_NOT_FOUND);
+		}
+
+		@Test
+		@DisplayName("권한 없음 (COMPANY_MANAGER)")
+		void startHubDelivery_fail_accessDenied() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			UserRole role = UserRole.COMPANY_MANAGER;
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+			willThrow(new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED))
+				.given(deliveryPermissionValidator).validate(any(), eq(role), eq(userId));
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.startHubDelivery(command, role, userId));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
+		}
+
+		@Test
+		@DisplayName("잘못된 상태 (FOR_HUB_MOVING)")
+		void startHubDelivery_fail_invalidStatus() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.FOR_HUB_MOVING);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.startHubDelivery(command, UserRole.MASTER, userId));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.INVALID_STATUS_TRANSITION);
+		}
+	}
+
+	@Nested
+	@DisplayName("허브 배송 시작 성공")
+	class StartHubDeliverySuccess {
+
+		@Test
+		@DisplayName("CREATED 상태에서 시작")
+		void startHubDelivery_success_fromCreated() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
+
+			// when
+			ChangeDeliveryStatusResult result = deliveryCommandService.startHubDelivery(command, UserRole.MASTER, userId);
+
+			// then
+			assertThat(result.deliveryId()).isEqualTo(deliveryId);
+			ArgumentCaptor<Delivery> captor = ArgumentCaptor.forClass(Delivery.class);
+			then(deliveryRepository).should().save(captor.capture());
+			assertThat(captor.getValue().getStatus()).isEqualTo(DeliveryStatus.FOR_HUB_MOVING);
+		}
+
+		@Test
+		@DisplayName("HUB_WAITING 상태에서 시작 (경유지 출발)")
+		void startHubDelivery_success_fromHubWaiting() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithMultipleRoutes(deliveryId, DeliveryStatus.HUB_WAITING);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
+
+			// when
+			ChangeDeliveryStatusResult result = deliveryCommandService.startHubDelivery(command, UserRole.MASTER, userId);
+
+			// then
+			assertThat(result.deliveryId()).isEqualTo(deliveryId);
+			ArgumentCaptor<Delivery> captor = ArgumentCaptor.forClass(Delivery.class);
+			then(deliveryRepository).should().save(captor.capture());
+			assertThat(captor.getValue().getStatus()).isEqualTo(DeliveryStatus.FOR_HUB_MOVING);
+		}
+
+		@Test
+		@DisplayName("시작 시 경로 상태 변경 및 이벤트 발행")
+		void startHubDelivery_success_routeStatusAndEvent() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
+
+			// when
+			deliveryCommandService.startHubDelivery(command, UserRole.MASTER, userId);
+
+			// then
+			assertThat(delivery.getRoutes().get(0).getStatus()).isEqualTo(RouteStatus.MOVING);
+			ArgumentCaptor<DeliveryStatusChangedEvent> eventCaptor = ArgumentCaptor.forClass(DeliveryStatusChangedEvent.class);
+			then(deliveryEventPublisher).should().publishDeliveryStatusChanged(eventCaptor.capture());
+			DeliveryStatusChangedEvent captured = eventCaptor.getValue();
+			assertThat(captured.status()).isEqualTo("FOR_HUB_MOVING");
+			assertThat(captured.deliveryId()).isEqualTo(deliveryId);
+			assertThat(captured.sourceHubId()).isEqualTo(STUB_SOURCE_HUB_ID);
+			assertThat(captured.destinationHubId()).isEqualTo(STUB_DESTINATION_HUB_ID);
+			assertThat(captured.routes()).hasSize(1);
+		}
+	}
+
+	@Nested
+	@DisplayName("허브 도착 실패")
+	class ArriveHubFail {
+
+		@Test
+		@DisplayName("존재하지 않는 배송")
+		void arriveHub_fail_deliveryNotFound() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.empty());
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.arriveHub(command, UserRole.MASTER, userId));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.DELIVERY_NOT_FOUND);
+		}
+
+		@Test
+		@DisplayName("잘못된 상태 (HUB_WAITING)")
+		void arriveHub_fail_invalidStatus() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.HUB_WAITING);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.arriveHub(command, UserRole.MASTER, userId));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.INVALID_STATUS_TRANSITION);
+		}
+	}
+
+	@Nested
+	@DisplayName("허브 도착 성공")
+	class ArriveHubSuccess {
+
+		@Test
+		@DisplayName("중간 허브 도착 → HUB_ARRIVED + currentHubId 업데이트")
+		void arriveHub_success_intermediateHub() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubMovingDeliveryWithMultipleRoutes(deliveryId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
+
+			// when
+			ChangeDeliveryStatusResult result = deliveryCommandService.arriveHub(command, UserRole.MASTER, userId);
+
+			// then
+			assertThat(result.deliveryId()).isEqualTo(deliveryId);
+			ArgumentCaptor<Delivery> captor = ArgumentCaptor.forClass(Delivery.class);
+			then(deliveryRepository).should().save(captor.capture());
+			Delivery saved = captor.getValue();
+			assertThat(saved.getStatus()).isEqualTo(DeliveryStatus.HUB_ARRIVED);
+			assertThat(saved.getCurrentHubId()).isEqualTo(STUB_MIDDLE_HUB_ID);
+		}
+
+		@Test
+		@DisplayName("최종 허브 도착 → HUB_ARRIVED + currentHubId 업데이트")
+		void arriveHub_success_finalHub() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubMovingDeliveryLastRoute(deliveryId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
+
+			// when
+			ChangeDeliveryStatusResult result = deliveryCommandService.arriveHub(command, UserRole.MASTER, userId);
+
+			// then
+			assertThat(result.deliveryId()).isEqualTo(deliveryId);
+			ArgumentCaptor<Delivery> captor = ArgumentCaptor.forClass(Delivery.class);
+			then(deliveryRepository).should().save(captor.capture());
+			Delivery saved = captor.getValue();
+			assertThat(saved.getStatus()).isEqualTo(DeliveryStatus.HUB_ARRIVED);
+			assertThat(saved.getCurrentHubId()).isEqualTo(STUB_DESTINATION_HUB_ID);
+		}
+
+		@Test
+		@DisplayName("허브 도착 시 이벤트 발행")
+		void arriveHub_success_eventPublished() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubMovingDeliveryLastRoute(deliveryId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
+
+			// when
+			deliveryCommandService.arriveHub(command, UserRole.MASTER, userId);
+
+			// then
+			ArgumentCaptor<DeliveryStatusChangedEvent> eventCaptor = ArgumentCaptor.forClass(DeliveryStatusChangedEvent.class);
+			then(deliveryEventPublisher).should().publishDeliveryStatusChanged(eventCaptor.capture());
+			DeliveryStatusChangedEvent captured = eventCaptor.getValue();
+			assertThat(captured.status()).isEqualTo("HUB_ARRIVED");
+			assertThat(captured.deliveryId()).isEqualTo(deliveryId);
+			assertThat(captured.routes()).hasSize(2);
+		}
+	}
+
+	@Nested
+	@DisplayName("입고 완료 실패")
+	class ReceiveAtHubFail {
+
+		@Test
+		@DisplayName("잘못된 상태 (HUB_WAITING)")
+		void receiveAtHub_fail_invalidStatus() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.HUB_WAITING);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.receiveAtHub(command, UserRole.MASTER, userId));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.INVALID_STATUS_TRANSITION);
+		}
+	}
+
+	@Nested
+	@DisplayName("입고 완료 성공")
+	class ReceiveAtHubSuccess {
+
+		@Test
+		@DisplayName("HUB_ARRIVED → HUB_WAITING")
+		void receiveAtHub_success() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.HUB_ARRIVED);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
+
+			// when
+			ChangeDeliveryStatusResult result = deliveryCommandService.receiveAtHub(command, UserRole.MASTER, userId);
+
+			// then
+			assertThat(result.deliveryId()).isEqualTo(deliveryId);
+			ArgumentCaptor<Delivery> captor = ArgumentCaptor.forClass(Delivery.class);
+			then(deliveryRepository).should().save(captor.capture());
+			assertThat(captor.getValue().getStatus()).isEqualTo(DeliveryStatus.HUB_WAITING);
+		}
+
+		@Test
+		@DisplayName("입고 완료 시 이벤트 발행")
+		void receiveAtHub_success_eventPublished() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.HUB_ARRIVED);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
+
+			// when
+			deliveryCommandService.receiveAtHub(command, UserRole.MASTER, userId);
+
+			// then
+			ArgumentCaptor<DeliveryStatusChangedEvent> eventCaptor = ArgumentCaptor.forClass(DeliveryStatusChangedEvent.class);
+			then(deliveryEventPublisher).should().publishDeliveryStatusChanged(eventCaptor.capture());
+			DeliveryStatusChangedEvent captured = eventCaptor.getValue();
+			assertThat(captured.status()).isEqualTo("HUB_WAITING");
+			assertThat(captured.deliveryId()).isEqualTo(deliveryId);
+		}
+
+	}
+
+	@Nested
+	@DisplayName("업체 배송 시작 실패")
+	class StartCompanyDeliveryFail {
+
+		@Test
+		@DisplayName("존재하지 않는 배송")
+		void startCompanyDelivery_fail_deliveryNotFound() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.empty());
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.startCompanyDelivery(command, UserRole.MASTER, userId));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.DELIVERY_NOT_FOUND);
+		}
+
+		@Test
+		@DisplayName("권한 없음 (COMPANY_MANAGER)")
+		void startCompanyDelivery_fail_accessDenied() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			UserRole role = UserRole.COMPANY_MANAGER;
+			Delivery delivery = stubDeliveryAtFinalHub(deliveryId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+			willThrow(new DeliveryException(DeliveryErrorCode.DELIVERY_ACCESS_DENIED))
+				.given(deliveryPermissionValidator).validate(any(), eq(role), eq(userId));
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.startCompanyDelivery(command, role, userId));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.DELIVERY_ACCESS_DENIED);
+		}
+
+		@Test
+		@DisplayName("잘못된 상태 (CREATED)")
+		void startCompanyDelivery_fail_invalidStatus() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.startCompanyDelivery(command, UserRole.MASTER, userId));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.INVALID_STATUS_TRANSITION);
+		}
+
+		@Test
+		@DisplayName("마지막 허브가 아닌데 업체 배송 시작 시도")
+		void startCompanyDelivery_fail_notAtFinalHub() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithMultipleRoutes(deliveryId, DeliveryStatus.HUB_WAITING);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.startCompanyDelivery(command, UserRole.MASTER, userId));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.NOT_COMPANY_DELIVERY_PHASE);
+		}
+	}
+
+	@Nested
+	@DisplayName("업체 배송 시작 성공")
+	class StartCompanyDeliverySuccess {
+
+		@Test
+		@DisplayName("HUB_WAITING + 마지막 허브 → FOR_COMPANY_MOVING")
+		void startCompanyDelivery_success() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryAtFinalHub(deliveryId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
+
+			// when
+			ChangeDeliveryStatusResult result = deliveryCommandService.startCompanyDelivery(command, UserRole.MASTER, userId);
+
+			// then
+			assertThat(result.deliveryId()).isEqualTo(deliveryId);
+			ArgumentCaptor<Delivery> captor = ArgumentCaptor.forClass(Delivery.class);
+			then(deliveryRepository).should().save(captor.capture());
+			assertThat(captor.getValue().getStatus()).isEqualTo(DeliveryStatus.FOR_COMPANY_MOVING);
+		}
+
+		@Test
+		@DisplayName("업체 배송 시작 시 이벤트 발행")
+		void startCompanyDelivery_success_eventPublished() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryAtFinalHub(deliveryId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
+
+			// when
+			deliveryCommandService.startCompanyDelivery(command, UserRole.MASTER, userId);
+
+			// then
+			ArgumentCaptor<DeliveryStatusChangedEvent> eventCaptor = ArgumentCaptor.forClass(DeliveryStatusChangedEvent.class);
+			then(deliveryEventPublisher).should().publishDeliveryStatusChanged(eventCaptor.capture());
+			DeliveryStatusChangedEvent captured = eventCaptor.getValue();
+			assertThat(captured.status()).isEqualTo("FOR_COMPANY_MOVING");
+			assertThat(captured.deliveryId()).isEqualTo(deliveryId);
+		}
+	}
+
+	@Nested
+	@DisplayName("배송 완료 실패")
+	class CompleteDeliveryFail {
+
+		@Test
+		@DisplayName("잘못된 상태 (HUB_ARRIVED)")
+		void completeDelivery_fail_invalidStatus() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.HUB_ARRIVED);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.completeDelivery(command, UserRole.MASTER, userId));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.INVALID_STATUS_TRANSITION);
+		}
+	}
+
+	@Nested
+	@DisplayName("배송 완료 성공")
+	class CompleteDeliverySuccess {
+
+		@Test
+		@DisplayName("FOR_COMPANY_MOVING → COMPLETED")
+		void completeDelivery_success() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubCompanyMovingDelivery(deliveryId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
+
+			// when
+			ChangeDeliveryStatusResult result = deliveryCommandService.completeDelivery(command, UserRole.MASTER, userId);
+
+			// then
+			assertThat(result.deliveryId()).isEqualTo(deliveryId);
+			ArgumentCaptor<Delivery> captor = ArgumentCaptor.forClass(Delivery.class);
+			then(deliveryRepository).should().save(captor.capture());
+			assertThat(captor.getValue().getStatus()).isEqualTo(DeliveryStatus.COMPLETED);
+		}
+
+		@Test
+		@DisplayName("배송 완료 시 이벤트 발행")
+		void completeDelivery_success_eventPublished() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			Delivery delivery = stubCompanyMovingDelivery(deliveryId);
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId))).willReturn(Optional.of(delivery));
+			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
+
+			// when
+			deliveryCommandService.completeDelivery(command, UserRole.MASTER, userId);
+
+			// then
+			ArgumentCaptor<DeliveryStatusChangedEvent> eventCaptor = ArgumentCaptor.forClass(DeliveryStatusChangedEvent.class);
+			then(deliveryEventPublisher).should().publishDeliveryStatusChanged(eventCaptor.capture());
+			DeliveryStatusChangedEvent captured = eventCaptor.getValue();
+			assertThat(captured.status()).isEqualTo("COMPLETED");
+			assertThat(captured.deliveryId()).isEqualTo(deliveryId);
+		}
+	}
+
+	// ===== 배송 취소 테스트 =====
+
+	@Nested
+	@DisplayName("배송 취소 실패")
+	class CancelDeliveryFail {
+
+		@Test
+		@DisplayName("배송 미존재")
+		void cancelDelivery_fail_deliveryNotFound() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			UserRole role = UserRole.MASTER;
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId)))
+				.willReturn(Optional.empty());
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.cancelDelivery(command, role, userId));
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.DELIVERY_NOT_FOUND);
+		}
+
+		@Test
+		@DisplayName("CREATED 아닌 상태 (FOR_HUB_MOVING)")
+		void cancelDelivery_fail_invalidStatus() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			UserRole role = UserRole.MASTER;
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.FOR_HUB_MOVING);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId)))
+				.willReturn(Optional.of(delivery));
+
+			// when
+			Throwable throwable = catchThrowable(() -> deliveryCommandService.cancelDelivery(command, role, userId));
+			log.info("throwable = {}", throwable.getMessage());
+
+			// then
+			assertThat(throwable)
+				.isInstanceOf(DeliveryException.class)
+				.hasFieldOrPropertyWithValue("errorCode", DeliveryErrorCode.INVALID_STATUS_TRANSITION);
+		}
+	}
+
+	@Nested
+	@DisplayName("배송 취소 성공")
+	class CancelDeliverySuccess {
+
+		@Test
+		@DisplayName("CREATED → CANCELLED")
+		void cancelDelivery_success() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			UserRole role = UserRole.MASTER;
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId)))
+				.willReturn(Optional.of(delivery));
+			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
+
+			// when
+			ChangeDeliveryStatusResult result = deliveryCommandService.cancelDelivery(command, role, userId);
+
+			// then
+			assertThat(result.deliveryId()).isEqualTo(deliveryId);
+			ArgumentCaptor<Delivery> captor = ArgumentCaptor.forClass(Delivery.class);
+			then(deliveryRepository).should().save(captor.capture());
+			assertThat(captor.getValue().getStatus()).isEqualTo(DeliveryStatus.CANCELLED);
+		}
+
+		@Test
+		@DisplayName("취소 시 이벤트 발행")
+		void cancelDelivery_success_eventPublished() {
+			// given
+			UUID deliveryId = UUID.randomUUID();
+			UUID userId = UUID.randomUUID();
+			UserRole role = UserRole.MASTER;
+			ChangeDeliveryStatusCommand command = ChangeDeliveryStatusCommand.of(deliveryId);
+			Delivery delivery = stubDeliveryWithRoutes(deliveryId, DeliveryStatus.CREATED);
+
+			given(deliveryRepository.findById(DeliveryId.of(deliveryId)))
+				.willReturn(Optional.of(delivery));
+			given(deliveryRepository.save(any(Delivery.class))).willAnswer(inv -> inv.getArgument(0));
+
+			// when
+			deliveryCommandService.cancelDelivery(command, role, userId);
+
+			// then
+			ArgumentCaptor<DeliveryStatusChangedEvent> eventCaptor = ArgumentCaptor.forClass(DeliveryStatusChangedEvent.class);
+			then(deliveryEventPublisher).should().publishDeliveryStatusChanged(eventCaptor.capture());
+			DeliveryStatusChangedEvent captured = eventCaptor.getValue();
+			assertThat(captured.status()).isEqualTo("CANCELLED");
+			assertThat(captured.deliveryId()).isEqualTo(deliveryId);
+		}
+	}
+
 	// --- 배송 수정 테스트 픽스처 ---
 
 	private static final UUID STUB_SOURCE_HUB_ID = UUID.randomUUID();
+	private static final UUID STUB_MIDDLE_HUB_ID = UUID.randomUUID();
 	private static final UUID STUB_DESTINATION_HUB_ID = UUID.randomUUID();
 	private static final DeliveryManagerId STUB_ROUTE_MANAGER_ID = DeliveryManagerId.generate();
 
@@ -556,6 +1237,113 @@ class DeliveryCommandServiceTest {
 			UUID.randomUUID(), "slack-receiver", UUID.randomUUID(),
 			DeliveryManagerId.generate(), STUB_SOURCE_HUB_ID,
 			List.of(route)
+		);
+	}
+
+	private Delivery stubDeliveryWithMultipleRoutes(UUID deliveryId, DeliveryStatus status) {
+		DeliveryId id = DeliveryId.of(deliveryId);
+		DeliveryRoute route1 = DeliveryRoute.reconstitute(
+			DeliveryRouteId.generate(), id, 0,
+			STUB_SOURCE_HUB_ID, STUB_MIDDLE_HUB_ID,
+			Distance.of(10000), Time.of(30), null, null, null, null,
+			RouteStatus.ARRIVED, STUB_ROUTE_MANAGER_ID
+		);
+		DeliveryRoute route2 = DeliveryRoute.create(id, 1, STUB_MIDDLE_HUB_ID, STUB_DESTINATION_HUB_ID, 8000, 25);
+		route2.assignManager(STUB_ROUTE_MANAGER_ID);
+		return Delivery.reconstitute(
+			id, UUID.randomUUID(), status,
+			STUB_SOURCE_HUB_ID, STUB_DESTINATION_HUB_ID,
+			Address.of("서울시 강남구 테헤란로 123", "101호"),
+			null,
+			UUID.randomUUID(), "slack-receiver", UUID.randomUUID(),
+			DeliveryManagerId.generate(), STUB_MIDDLE_HUB_ID,
+			List.of(route1, route2)
+		);
+	}
+
+	private Delivery stubMovingDeliveryWithMultipleRoutes(UUID deliveryId) {
+		DeliveryId id = DeliveryId.of(deliveryId);
+		DeliveryRoute route1 = DeliveryRoute.reconstitute(
+			DeliveryRouteId.generate(), id, 0,
+			STUB_SOURCE_HUB_ID, STUB_MIDDLE_HUB_ID,
+			Distance.of(10000), Time.of(30), null, null, null, null,
+			RouteStatus.MOVING, STUB_ROUTE_MANAGER_ID
+		);
+		DeliveryRoute route2 = DeliveryRoute.create(id, 1, STUB_MIDDLE_HUB_ID, STUB_DESTINATION_HUB_ID, 8000, 25);
+		route2.assignManager(STUB_ROUTE_MANAGER_ID);
+		return Delivery.reconstitute(
+			id, UUID.randomUUID(), DeliveryStatus.FOR_HUB_MOVING,
+			STUB_SOURCE_HUB_ID, STUB_DESTINATION_HUB_ID,
+			Address.of("서울시 강남구 테헤란로 123", "101호"),
+			null,
+			UUID.randomUUID(), "slack-receiver", UUID.randomUUID(),
+			DeliveryManagerId.generate(), STUB_SOURCE_HUB_ID,
+			List.of(route1, route2)
+		);
+	}
+
+	private Delivery stubMovingDeliveryLastRoute(UUID deliveryId) {
+		DeliveryId id = DeliveryId.of(deliveryId);
+		DeliveryRoute route1 = DeliveryRoute.reconstitute(
+			DeliveryRouteId.generate(), id, 0,
+			STUB_SOURCE_HUB_ID, STUB_MIDDLE_HUB_ID,
+			Distance.of(10000), Time.of(30), null, null, null, null,
+			RouteStatus.ARRIVED, STUB_ROUTE_MANAGER_ID
+		);
+		DeliveryRoute route2 = DeliveryRoute.reconstitute(
+			DeliveryRouteId.generate(), id, 1,
+			STUB_MIDDLE_HUB_ID, STUB_DESTINATION_HUB_ID,
+			Distance.of(8000), Time.of(25), null, null, null, null,
+			RouteStatus.MOVING, STUB_ROUTE_MANAGER_ID
+		);
+		return Delivery.reconstitute(
+			id, UUID.randomUUID(), DeliveryStatus.FOR_HUB_MOVING,
+			STUB_SOURCE_HUB_ID, STUB_DESTINATION_HUB_ID,
+			Address.of("서울시 강남구 테헤란로 123", "101호"),
+			null,
+			UUID.randomUUID(), "slack-receiver", UUID.randomUUID(),
+			DeliveryManagerId.generate(), STUB_MIDDLE_HUB_ID,
+			List.of(route1, route2)
+		);
+	}
+
+	private Delivery stubCompanyMovingDelivery(UUID deliveryId) {
+		DeliveryId id = DeliveryId.of(deliveryId);
+		DeliveryRoute route = DeliveryRoute.reconstitute(
+			DeliveryRouteId.generate(), id, 0,
+			STUB_SOURCE_HUB_ID, STUB_DESTINATION_HUB_ID,
+			Distance.of(10000), Time.of(30), null, null, null, null,
+			RouteStatus.MOVING, STUB_ROUTE_MANAGER_ID
+		);
+		return Delivery.reconstitute(
+			id, UUID.randomUUID(), DeliveryStatus.FOR_COMPANY_MOVING,
+			STUB_SOURCE_HUB_ID, STUB_DESTINATION_HUB_ID,
+			Address.of("서울시 강남구 테헤란로 123", "101호"),
+			null,
+			UUID.randomUUID(), "slack-receiver", UUID.randomUUID(),
+			DeliveryManagerId.generate(), STUB_DESTINATION_HUB_ID,
+			List.of(route)
+		);
+	}
+
+	private Delivery stubDeliveryAtFinalHub(UUID deliveryId) {
+		DeliveryId id = DeliveryId.of(deliveryId);
+		DeliveryRoute hubRoute = DeliveryRoute.reconstitute(
+			DeliveryRouteId.generate(), id, 0,
+			STUB_SOURCE_HUB_ID, STUB_DESTINATION_HUB_ID,
+			Distance.of(10000), Time.of(30), null, null, null, null,
+			RouteStatus.ARRIVED, STUB_ROUTE_MANAGER_ID
+		);
+		DeliveryRoute companyRoute = DeliveryRoute.create(id, 1, STUB_DESTINATION_HUB_ID, UUID.randomUUID(), 5000, 20);
+		companyRoute.assignManager(STUB_ROUTE_MANAGER_ID);
+		return Delivery.reconstitute(
+			id, UUID.randomUUID(), DeliveryStatus.HUB_WAITING,
+			STUB_SOURCE_HUB_ID, STUB_DESTINATION_HUB_ID,
+			Address.of("서울시 강남구 테헤란로 123", "101호"),
+			null,
+			UUID.randomUUID(), "slack-receiver", UUID.randomUUID(),
+			DeliveryManagerId.generate(), STUB_DESTINATION_HUB_ID,
+			List.of(hubRoute, companyRoute)
 		);
 	}
 

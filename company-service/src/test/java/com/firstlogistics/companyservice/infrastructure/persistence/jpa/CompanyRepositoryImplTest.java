@@ -73,7 +73,7 @@ class CompanyRepositoryImplTest {
         @DisplayName("존재하는 ID로 조회하면 도메인 엔티티를 반환한다")
         void findById_success() {
             // given
-            given(companyJpaRepository.findByIdAndDeletedAtIsNull(COMPANY_ID))
+            given(companyJpaRepository.findById(COMPANY_ID))
                     .willReturn(Optional.of(jpaEntity));
 
             // when
@@ -90,7 +90,7 @@ class CompanyRepositoryImplTest {
         @DisplayName("존재하지 않는 ID로 조회하면 빈 Optional을 반환한다")
         void findById_notFound_returnsEmpty() {
             // given
-            given(companyJpaRepository.findByIdAndDeletedAtIsNull(COMPANY_ID))
+            given(companyJpaRepository.findById(COMPANY_ID))
                     .willReturn(Optional.empty());
 
             // when
@@ -109,7 +109,7 @@ class CompanyRepositoryImplTest {
         @DisplayName("존재하는 managerId로 조회하면 도메인 엔티티를 반환한다")
         void findByManagerId_success() {
             // given
-            given(companyJpaRepository.findByManagerIdAndDeletedAtIsNull(MANAGER_ID))
+            given(companyJpaRepository.findByManagerId(MANAGER_ID))
                     .willReturn(Optional.of(jpaEntity));
 
             // when
@@ -126,7 +126,7 @@ class CompanyRepositoryImplTest {
         @DisplayName("존재하지 않는 managerId로 조회하면 빈 Optional을 반환한다")
         void findByManagerId_notFound_returnsEmpty() {
             // given
-            given(companyJpaRepository.findByManagerIdAndDeletedAtIsNull(MANAGER_ID))
+            given(companyJpaRepository.findByManagerId(MANAGER_ID))
                     .willReturn(Optional.empty());
 
             // when
@@ -138,6 +138,30 @@ class CompanyRepositoryImplTest {
     }
 
     @Nested
+    @DisplayName("업체 소프트 삭제 (delete)")
+    class Delete {
+
+        private static final UUID DELETED_BY = UUID.fromString("00000000-0000-0000-0000-000000000010");
+
+        @Test
+        @DisplayName("존재하는 업체를 삭제하면 deletedAt, deletedBy가 설정되고 저장된다")
+        void delete_success() {
+            // given
+            given(companyJpaRepository.findById(COMPANY_ID))
+                    .willReturn(Optional.of(jpaEntity));
+            given(companyJpaRepository.save(any())).willReturn(jpaEntity);
+
+            // when
+            companyRepositoryImpl.delete(COMPANY_ID, DELETED_BY);
+
+            // then
+            verify(companyJpaRepository).save(jpaEntity);
+            assertThat(jpaEntity.getDeletedAt()).isNotNull();
+            assertThat(jpaEntity.getDeletedBy()).isEqualTo(DELETED_BY);
+        }
+    }
+
+    @Nested
     @DisplayName("담당자 ID 존재 여부 확인 (existsByManagerId)")
     class ExistsByManagerId {
 
@@ -145,7 +169,7 @@ class CompanyRepositoryImplTest {
         @DisplayName("해당 managerId를 가진 활성 업체가 존재하면 true를 반환한다")
         void existsByManagerId_exists_returnsTrue() {
             // given
-            given(companyJpaRepository.existsByManagerIdAndDeletedAtIsNull(MANAGER_ID))
+            given(companyJpaRepository.existsByManagerId(MANAGER_ID))
                     .willReturn(true);
 
             // when
@@ -159,7 +183,7 @@ class CompanyRepositoryImplTest {
         @DisplayName("해당 managerId를 가진 활성 업체가 없으면 false를 반환한다")
         void existsByManagerId_notExists_returnsFalse() {
             // given
-            given(companyJpaRepository.existsByManagerIdAndDeletedAtIsNull(MANAGER_ID))
+            given(companyJpaRepository.existsByManagerId(MANAGER_ID))
                     .willReturn(false);
 
             // when

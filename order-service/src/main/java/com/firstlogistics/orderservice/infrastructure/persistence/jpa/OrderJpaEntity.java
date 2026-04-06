@@ -42,6 +42,9 @@ public class OrderJpaEntity extends BaseAuditEntity {
     private UUID supplierManagerId;
 
     @Column(nullable = false)
+    private UUID supplierHubId;
+
+    @Column(nullable = false)
     private UUID receiverCompanyId;
 
     @Column(nullable = false)

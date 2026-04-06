@@ -1,7 +1,7 @@
 package com.firstlogistics.deliverservice.infrastructure.feign;
 
 import com.firstlogistics.deliverservice.infrastructure.feign.config.FeignErrorDecoder;
-import com.firstlogistics.deliverservice.infrastructure.feign.dto.FeignResponse;
+import com.firstlogistics.deliverservice.infrastructure.feign.dto.FeignApiResponse;
 import com.firstlogistics.deliverservice.application.port.dto.UserResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,10 +15,10 @@ import java.util.UUID;
 public interface UserClient {
 
 	@GetMapping("/api/v1/users/{userId}")
-	FeignResponse<UserResponse> getUser(@PathVariable("userId") UUID userId);
+	FeignApiResponse<UserResponse> getUser(@PathVariable("userId") UUID userId);
 
 	@GetMapping("/api/v1/users")
-	FeignResponse<List<UserResponse>> findByNameOrPhone(
+	FeignApiResponse<List<UserResponse>> findByNameOrPhone(
 		@RequestParam(value = "name", required = false) String name,
 		@RequestParam(value = "phone", required = false) String phone
 	);

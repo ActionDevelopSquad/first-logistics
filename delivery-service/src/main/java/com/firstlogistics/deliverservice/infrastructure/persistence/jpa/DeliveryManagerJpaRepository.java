@@ -1,6 +1,7 @@
 package com.firstlogistics.deliverservice.infrastructure.persistence.jpa;
 
 import com.firstlogistics.deliverservice.domain.enums.ManagerType;
+import com.firstlogistics.deliverservice.domain.enums.TimetableStatus;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,6 +13,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface DeliveryManagerJpaRepository extends JpaRepository<DeliveryManagerJpaEntity, UUID> {
+
+	boolean existsByUserIdAndDeletedAtIsNull(UUID userId);
+
+	@Query("SELECT dm FROM DeliveryManagerJpaEntity dm LEFT JOIN FETCH dm.timetables WHERE dm.id = :id AND dm.deletedAt IS NULL")
+	Optional<DeliveryManagerJpaEntity> findByIdWithTimetables(@Param("id") UUID id);
+
+	@Query("SELECT dm FROM DeliveryManagerJpaEntity dm LEFT JOIN FETCH dm.timetables WHERE dm.userId = :userId AND dm.deletedAt IS NULL")
+	Optional<DeliveryManagerJpaEntity> findByUserIdWithTimetables(@Param("userId") UUID userId);
 
 	Optional<DeliveryManagerJpaEntity> findByUserIdAndDeletedAtIsNull(UUID userId);
 
@@ -32,7 +41,7 @@ public interface DeliveryManagerJpaRepository extends JpaRepository<DeliveryMana
 		  AND NOT EXISTS (
 		      SELECT 1 FROM ManagerTimetableJpaEntity st2
 		      WHERE st2.deliveryManagerId = ds.id
-		        AND st2.status IN ('CREATED', 'HUB_MOVING')
+		        AND st2.status IN :activeStatuses
 		        AND st2.expectedStartAt < :assignmentEnd
 		        AND st2.expectedEndAt > :assignmentStart
 		  )
@@ -42,6 +51,7 @@ public interface DeliveryManagerJpaRepository extends JpaRepository<DeliveryMana
 	List<DeliveryManagerJpaEntity> findNextAvailableManager(
 		@Param("hubId") UUID hubId,
 		@Param("managerType") ManagerType managerType,
+		@Param("activeStatuses") List<TimetableStatus> activeStatuses,
 		@Param("assignmentStart") LocalDateTime assignmentStart,
 		@Param("assignmentEnd") LocalDateTime assignmentEnd,
 		Pageable pageable

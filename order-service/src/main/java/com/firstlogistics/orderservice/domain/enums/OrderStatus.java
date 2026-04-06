@@ -16,6 +16,18 @@ public enum OrderStatus {
     CANCEL_REQUESTED,   // 주문 취소 요청
     CANCELLED;          // 주문 취소
 
+    public static OrderStatus from(String status) {
+        if (status == null || status.isBlank()) {
+            return null;
+        }
+
+        try {
+            return OrderStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new OrderException(OrderErrorCode.INVALID_ORDER_STATUS);
+        }
+    }
+
     // 상태 전이 Map
     private static final Map<OrderStatus, Set<OrderStatus>> transitions = Map.of(
             PENDING, Set.of(RESERVED, CANCEL_REQUESTED, CANCELLED),
@@ -31,7 +43,7 @@ public enum OrderStatus {
     public void validateNext(OrderStatus next) {
         if (this == next) return;
         if (!transitions.getOrDefault(this, Set.of()).contains(next)) {
-            throw new OrderException(OrderErrorCode.INVALID_ORDER_STATUS);
+            throw new OrderException(OrderErrorCode.INVALID_ORDER_STATUS_CHANGE);
         }
     }
 }

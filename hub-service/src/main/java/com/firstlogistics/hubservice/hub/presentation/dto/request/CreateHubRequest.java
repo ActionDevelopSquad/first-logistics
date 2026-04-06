@@ -22,14 +22,18 @@ public record CreateHubRequest(
         @NotNull
         @DecimalMin(value = "-180.0")
         @DecimalMax(value = "180.0")
-        Double longitude
+        Double longitude,
+
+        @NotBlank
+        String type
 ) {
-    public CreateHubCommand toCommand(){
+    public CreateHubCommand toCommand() {
         return new CreateHubCommand(
-          name,
-          roadAddress,
-          latitude,
-          longitude
+                name,
+                roadAddress,
+                latitude,
+                longitude,
+                type
         );
     }
 }
