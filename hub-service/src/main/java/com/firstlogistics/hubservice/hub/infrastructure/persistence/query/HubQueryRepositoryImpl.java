@@ -46,6 +46,7 @@ public class HubQueryRepositoryImpl implements HubQueryRepository {
                         hub.latitude,
                         hub.longitude,
                         hub.status,
+                        hub.type,
                         hub.createdAt,
                         hub.updatedAt
                 )).from(hub)
