@@ -6,6 +6,7 @@ import common.security.util.SecurityUtils;
 import feign.RequestInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -13,13 +14,14 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 @Configuration
+@ConditionalOnClass(RequestInterceptor.class)
 @Slf4j
 public class FeignAuthPropagationConfig {
 
     @Bean
     public RequestInterceptor userHeaderPropagationInterceptor(@Value("${spring.application.name}") String serviceName) {
+        log.info("FeignAuthPropagationConfig - RequestInterceptor 빈 등록 완료 (serviceName={})", serviceName);
         return template -> {
-            log.debug("Feign interceptor invoked");
             try {
                 CustomUserDetails user = SecurityUtils.currentUser();
 
