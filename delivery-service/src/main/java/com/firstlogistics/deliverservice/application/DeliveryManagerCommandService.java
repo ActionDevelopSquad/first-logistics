@@ -36,6 +36,7 @@ public class DeliveryManagerCommandService {
 	public CreateDeliveryManagerResult createDeliveryManager(
 		CreateDeliveryManagerCommand command, UserRole role, UUID requestUserId
 	) {
+		log.info("[배송담당자 생성] 시작 - targetUserId: {}, hubId: {}, type: {}", command.userId(), command.hubId(), command.managerType());
 		if (role == UserRole.HUB_MANAGER) {
 			HubManagerResponse hubManager = hubManagerPort.getHubManager(requestUserId);
 			if (!hubManager.hubId().equals(command.hubId())) {
@@ -64,6 +65,7 @@ public class DeliveryManagerCommandService {
 	public UpdateDeliveryManagerResult updateDeliveryManager(
 		UpdateDeliveryManagerCommand command, UserRole role, UUID requestUserId
 	) {
+		log.info("[배송담당자 수정] 시작 - managerId: {}", command.managerId());
 		DeliveryManager manager = deliveryManagerRepository.findById(DeliveryManagerId.of(command.managerId()))
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_MANAGER_NOT_FOUND));
 
@@ -80,6 +82,7 @@ public class DeliveryManagerCommandService {
 	}
 
 	public void deleteDeliveryManager(UUID managerId, UserRole role, UUID requestUserId) {
+		log.info("[배송담당자 삭제] 시작 - managerId: {}", managerId);
 		DeliveryManager manager = deliveryManagerRepository.findById(DeliveryManagerId.of(managerId))
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_MANAGER_NOT_FOUND));
 

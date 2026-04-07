@@ -20,11 +20,13 @@ import common.security.entity.enums.UserRole;
 import common.security.util.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/deliveries")
@@ -39,6 +41,7 @@ public class DeliveryController {
 	public ResponseEntity<ApiResponse<CreateDeliveryResponse>> createDelivery(
 		@RequestBody @Valid CreateDeliveryRequest request
 	) {
+		log.info("[배송 생성] 요청 - orderId: {}", request.orderId());
 		return ResponseEntity.status(DeliverySuccessCode.DELIVERY_CREATED.getStatus())
 			.body(ApiResponse.success(DeliverySuccessCode.DELIVERY_CREATED,
 					CreateDeliveryResponse.from(deliveryCommandFacade.createDelivery(request.toCommand()))
@@ -51,6 +54,7 @@ public class DeliveryController {
 		@ModelAttribute DeliveryListRequest request
 	) {
 		CustomUserDetails user = SecurityUtils.currentUser();
+		log.info("[배송 목록 조회] 요청 - role: {}, userId: {}", user.getRole(), user.getUserId());
 		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_LIST_FOUND,
 				DeliveryListResponse.from(deliveryQueryService.getDeliveries(request.toQuery(user.getRole().name(), user.getUserId()))))
 		);
@@ -62,6 +66,7 @@ public class DeliveryController {
 		@PathVariable UUID deliveryId
 	) {
 		CustomUserDetails user = SecurityUtils.currentUser();
+		log.info("[배송 상세 조회] 요청 - deliveryId: {}, role: {}, userId: {}", deliveryId, user.getRole(), user.getUserId());
 		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_DETAIL_FOUND,
 				DeliveryDetailResponse.from(deliveryQueryService.getDelivery(deliveryId, user.getRole(), user.getUserId())))
 		);
@@ -74,6 +79,7 @@ public class DeliveryController {
 		@RequestBody UpdateDeliveryRequest request
 	) {
 		CustomUserDetails user = SecurityUtils.currentUser();
+		log.info("[배송 수정] 요청 - deliveryId: {}, role: {}, userId: {}", deliveryId, user.getRole(), user.getUserId());
 		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_UPDATED,
 				UpdateDeliveryResponse.from(deliveryCommandService.updateDelivery(request.toCommand(deliveryId, user.getRole(), user.getUserId())))
 		));
@@ -85,6 +91,7 @@ public class DeliveryController {
 		@PathVariable UUID deliveryId
 	) {
 		CustomUserDetails user = SecurityUtils.currentUser();
+		log.info("[배송 허브 출발] 요청 - deliveryId: {}, role: {}, userId: {}", deliveryId, user.getRole(), user.getUserId());
 		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_STARTED,
 				ChangeDeliveryStatusResponse.from(deliveryCommandService.startHubDelivery(ChangeDeliveryStatusCommand.of(deliveryId), user.getRole(), user.getUserId()))
 		));
@@ -96,6 +103,7 @@ public class DeliveryController {
 		@PathVariable UUID deliveryId
 	) {
 		CustomUserDetails user = SecurityUtils.currentUser();
+		log.info("[배송 허브 도착] 요청 - deliveryId: {}, role: {}, userId: {}", deliveryId, user.getRole(), user.getUserId());
 		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_HUB_ARRIVED,
 				ChangeDeliveryStatusResponse.from(deliveryCommandService.arriveHub(ChangeDeliveryStatusCommand.of(deliveryId), user.getRole(), user.getUserId()))
 		));
@@ -107,6 +115,7 @@ public class DeliveryController {
 		@PathVariable UUID deliveryId
 	) {
 		CustomUserDetails user = SecurityUtils.currentUser();
+		log.info("[배송 허브 입고] 요청 - deliveryId: {}, role: {}, userId: {}", deliveryId, user.getRole(), user.getUserId());
 		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_RECEIVED,
 				ChangeDeliveryStatusResponse.from(deliveryCommandService.receiveAtHub(ChangeDeliveryStatusCommand.of(deliveryId), user.getRole(), user.getUserId()))
 		));
@@ -118,6 +127,7 @@ public class DeliveryController {
 		@PathVariable UUID deliveryId
 	) {
 		CustomUserDetails user = SecurityUtils.currentUser();
+		log.info("[배송 업체 출발] 요청 - deliveryId: {}, role: {}, userId: {}", deliveryId, user.getRole(), user.getUserId());
 		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_COMPANY_STARTED,
 				ChangeDeliveryStatusResponse.from(deliveryCommandService.startCompanyDelivery(ChangeDeliveryStatusCommand.of(deliveryId), user.getRole(), user.getUserId()))
 		));
@@ -129,6 +139,7 @@ public class DeliveryController {
 		@PathVariable UUID deliveryId
 	) {
 		CustomUserDetails user = SecurityUtils.currentUser();
+		log.info("[배송 완료] 요청 - deliveryId: {}, role: {}, userId: {}", deliveryId, user.getRole(), user.getUserId());
 		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_COMPLETED,
 				ChangeDeliveryStatusResponse.from(deliveryCommandService.completeDelivery(ChangeDeliveryStatusCommand.of(deliveryId), user.getRole(), user.getUserId()))
 		));
@@ -140,6 +151,7 @@ public class DeliveryController {
 		@PathVariable UUID deliveryId
 	) {
 		CustomUserDetails user = SecurityUtils.currentUser();
+		log.info("[배송 취소] 요청 - deliveryId: {}, role: {}, userId: {}", deliveryId, user.getRole(), user.getUserId());
 		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_CANCELLED,
 				ChangeDeliveryStatusResponse.from(deliveryCommandService.cancelDelivery(ChangeDeliveryStatusCommand.of(deliveryId), user.getRole(), user.getUserId()))
 		));
@@ -151,6 +163,7 @@ public class DeliveryController {
 		@PathVariable UUID deliveryId
 	) {
 		CustomUserDetails user = SecurityUtils.currentUser();
+		log.info("[배송 삭제] 요청 - deliveryId: {}, role: {}, userId: {}", deliveryId, user.getRole(), user.getUserId());
 		deliveryCommandService.deleteDelivery(deliveryId, user.getRole(), user.getUserId());
 		return ResponseEntity.ok(ApiResponse.success(DeliverySuccessCode.DELIVERY_DELETED, null));
 	}

@@ -30,6 +30,7 @@ import com.firstlogistics.deliverservice.application.port.dto.HubRouteResponse;
 import com.firstlogistics.deliverservice.application.port.dto.HubRouteStepResponse;
 import com.firstlogistics.deliverservice.application.port.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +43,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -59,6 +61,7 @@ public class DeliveryCommandService {
 			CompanyResponse supplierCompany,
 			CompanyResponse receiverCompany,
 			HubRouteResponse hubRoute) {
+		log.info("[배송 생성] 시작 - orderId: {}, sourceHub: {}, destHub: {}", command.orderId(), supplierCompany.hubId(), receiverCompany.hubId());
 		if (deliveryRepository.existsByOrderId(command.orderId())) {
 			throw new DeliveryException(DeliveryErrorCode.DELIVERY_ALREADY_EXISTS);
 		}
@@ -167,10 +170,12 @@ public class DeliveryCommandService {
 		);
 		deliveryEventPublisher.publishedDeliveryCreated(deliveryCreatedEvent);
 
+		log.info("[배송 생성] 완료 - deliveryId: {}, orderId: {}", savedDelivery.getId().id(), command.orderId());
 		return CreateDeliveryResult.from(savedDelivery);
 	}
 
 	public UpdateDeliveryResult updateDelivery(UpdateDeliveryCommand command) {
+		log.info("[배송 수정] 시작 - deliveryId: {}", command.deliveryId());
 		Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
 
@@ -189,6 +194,7 @@ public class DeliveryCommandService {
 	}
 
 	public ChangeDeliveryStatusResult startHubDelivery(ChangeDeliveryStatusCommand command, UserRole role, UUID userId) {
+		log.info("[배송 허브 출발] 시작 - deliveryId: {}", command.deliveryId());
 		Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
 
@@ -205,6 +211,7 @@ public class DeliveryCommandService {
 	}
 
 	public ChangeDeliveryStatusResult startCompanyDelivery(ChangeDeliveryStatusCommand command, UserRole role, UUID userId) {
+		log.info("[배송 업체 출발] 시작 - deliveryId: {}", command.deliveryId());
 		Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
 
@@ -221,6 +228,7 @@ public class DeliveryCommandService {
 	}
 
 	public ChangeDeliveryStatusResult arriveHub(ChangeDeliveryStatusCommand command, UserRole role, UUID userId) {
+		log.info("[배송 허브 도착] 시작 - deliveryId: {}", command.deliveryId());
 		Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
 
@@ -237,6 +245,7 @@ public class DeliveryCommandService {
 	}
 
 	public ChangeDeliveryStatusResult receiveAtHub(ChangeDeliveryStatusCommand command, UserRole role, UUID userId) {
+		log.info("[배송 허브 입고] 시작 - deliveryId: {}", command.deliveryId());
 		Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
 
@@ -253,6 +262,7 @@ public class DeliveryCommandService {
 	}
 
 	public ChangeDeliveryStatusResult completeDelivery(ChangeDeliveryStatusCommand command, UserRole role, UUID userId) {
+		log.info("[배송 완료] 시작 - deliveryId: {}", command.deliveryId());
 		Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
 
@@ -269,6 +279,7 @@ public class DeliveryCommandService {
 	}
 
 	public ChangeDeliveryStatusResult cancelDelivery(ChangeDeliveryStatusCommand command, UserRole role, UUID userId) {
+		log.info("[배송 취소] 시작 - deliveryId: {}", command.deliveryId());
 		Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
 
@@ -285,6 +296,7 @@ public class DeliveryCommandService {
 	}
 
 	public void cancelDeliveryBySystem(ChangeDeliveryStatusCommand command) {
+		log.info("[배송 시스템 취소] 시작 - deliveryId: {}", command.deliveryId());
 		Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
 
@@ -300,6 +312,7 @@ public class DeliveryCommandService {
 	}
 
 	public void deleteDelivery(UUID deliveryId, UserRole role, UUID userId) {
+		log.info("[배송 삭제] 시작 - deliveryId: {}", deliveryId);
 		Delivery delivery = deliveryRepository.findById(DeliveryId.of(deliveryId))
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
 

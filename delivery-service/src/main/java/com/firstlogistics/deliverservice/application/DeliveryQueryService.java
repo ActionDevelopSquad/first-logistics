@@ -23,6 +23,7 @@ import com.firstlogistics.deliverservice.domain.repository.DeliveryRepository;
 import com.firstlogistics.deliverservice.domain.spec.DeliveryScope;
 import com.firstlogistics.deliverservice.domain.spec.DeliverySearchSpec;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +33,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -51,6 +53,7 @@ public class DeliveryQueryService {
 	}
 
 	public DeliveryListResult getDeliveries(DeliveryListQuery query) {
+		log.info("[배송 목록 조회] 시작 - role: {}, userId: {}", query.role(), query.userId());
 		UserRole userRole = UserRole.valueOf(query.role());
 
 		UUID hubId =
@@ -87,6 +90,7 @@ public class DeliveryQueryService {
 	}
 
 	public DeliveryDetailResult getDelivery(UUID deliveryId, UserRole role, UUID userId) {
+		log.info("[배송 상세 조회] 시작 - deliveryId: {}", deliveryId);
 		DeliveryDetailProjection deliveryDetail = deliveryQueryRepository.findById(deliveryId)
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
 

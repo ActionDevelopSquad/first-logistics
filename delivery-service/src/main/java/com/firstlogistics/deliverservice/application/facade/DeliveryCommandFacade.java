@@ -11,11 +11,13 @@ import com.firstlogistics.deliverservice.application.port.dto.HubRouteStepRespon
 import com.firstlogistics.deliverservice.application.port.DistributedLockPort;
 import com.firstlogistics.deliverservice.application.support.DeliveryLockKeyGenerator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class DeliveryCommandFacade {
@@ -34,13 +36,16 @@ public class DeliveryCommandFacade {
     }
 
     private CreateDeliveryResult executeCreateDelivery(CreateDeliveryCommand command) {
+        log.info("[Facade 배송 생성] Feign 호출 시작 - supplierCompanyId: {}, receiverCompanyId: {}", command.supplierCompanyId(), command.receiverCompanyId());
         CompanyResponse supplierCompany = companyPort.getCompany(command.supplierCompanyId());
         CompanyResponse receiverCompany = companyPort.getCompany(command.receiverCompanyId());
 
         UUID sourceHubId = supplierCompany.hubId();
         UUID destinationHubId = receiverCompany.hubId();
+        log.info("[Facade 배송 생성] 허브 경로 조회 - sourceHubId: {}, destHubId: {}", sourceHubId, destinationHubId);
 
         HubRouteResponse hubRoute = hubPort.getHubRoute(sourceHubId, destinationHubId, command.receiverCompanyId());
+        log.info("[Facade 배송 생성] 허브 경로 {}개 수신, 분산락 획득 시작", hubRoute.routes().size());
 
         List<String> lockKeys = generateLockKeys(hubRoute);
 
