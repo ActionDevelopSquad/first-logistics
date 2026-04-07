@@ -71,7 +71,17 @@ public class DeliveryManagerRepositoryImpl implements DeliveryManagerRepository 
 
 	@Override
 	public DeliveryManager save(DeliveryManager deliveryManager) {
-		DeliveryManagerJpaEntity jpaEntity = deliveryManagerMapper.toJpaEntity(deliveryManager);
+		UUID id = deliveryManager.getId().id();
+		Optional<DeliveryManagerJpaEntity> existing = deliveryManagerJpaRepository.findByIdWithTimetables(id);
+
+		DeliveryManagerJpaEntity jpaEntity;
+		if (existing.isPresent()) {
+			jpaEntity = existing.get();
+			jpaEntity.update(deliveryManager, deliveryManagerMapper);
+		} else {
+			jpaEntity = deliveryManagerMapper.toJpaEntity(deliveryManager);
+		}
+
 		DeliveryManagerJpaEntity savedEntity = deliveryManagerJpaRepository.save(jpaEntity);
 		return deliveryManagerMapper.toDomain(savedEntity);
 	}

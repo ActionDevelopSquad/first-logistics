@@ -83,4 +83,17 @@ public class DeliveryManagerJpaEntity extends BaseAuditEntity {
 	public void addTimetable(ManagerTimetableJpaEntity timetable) {
 		this.timetables.add(timetable);
 	}
+
+	public void update(com.firstlogistics.deliverservice.domain.entity.DeliveryManager domain, DeliveryManagerMapper mapper) {
+		this.hubId = domain.getHubId();
+		this.managerType = domain.getManagerType();
+
+		for (com.firstlogistics.deliverservice.domain.entity.ManagerTimetable timetable : domain.getTimetables()) {
+			boolean exists = this.timetables.stream()
+				.anyMatch(existing -> existing.getId().equals(timetable.getId().id()));
+			if (!exists) {
+				this.timetables.add(mapper.toTimetableJpaEntity(timetable));
+			}
+		}
+	}
 }
