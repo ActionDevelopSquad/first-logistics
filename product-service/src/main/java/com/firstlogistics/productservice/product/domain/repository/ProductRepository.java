@@ -14,4 +14,6 @@ public interface ProductRepository {
     Optional<Product> findById(UUID productId);
 
     Page<Product> findAll(ProductSearchSpec spec, Pageable pageable);
+
+    void delete(UUID productId, UUID deletedBy);
 }

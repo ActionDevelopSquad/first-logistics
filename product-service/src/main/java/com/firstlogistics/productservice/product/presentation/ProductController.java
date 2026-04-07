@@ -25,6 +25,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -73,6 +74,15 @@ public class ProductController {
                 productCommandService.changeStatus(
                         request.toCommand(currentUser.getUserId(), currentUser.getRole().name(), productId)));
         return ResponseEntity.ok(ApiResponse.success(CommonSuccessCode.OK, response));
+    }
+
+    @RequireRole({UserRole.MASTER, UserRole.HUB_MANAGER, UserRole.COMPANY_MANAGER})
+    @DeleteMapping("/{productId}")
+    public ResponseEntity<ApiResponse<Void>> deleteProduct(
+            @PathVariable UUID productId) {
+        CustomUserDetails currentUser = SecurityUtils.currentUser();
+        productCommandService.delete(productId, currentUser.getUserId(), currentUser.getRole().name());
+        return ResponseEntity.ok(ApiResponse.success(CommonSuccessCode.OK, null));
     }
 
     @GetMapping("/{productId}")

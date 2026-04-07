@@ -15,6 +15,7 @@ import com.firstlogistics.productservice.product.domain.repository.ProductReposi
 import com.firstlogistics.productservice.product.domain.vo.Money;
 import common.event.Events;
 import common.security.entity.enums.UserRole;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -86,6 +87,21 @@ public class ProductCommandService {
         }
 
         return ProductResult.from(productRepository.save(product));
+    }
+
+    @Transactional
+    public void delete(UUID productId, UUID requesterId, String requesterRole) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ProductException(ProductErrorCode.PRODUCT_NOT_FOUND));
+
+        if (UserRole.COMPANY_MANAGER.name().equals(requesterRole)) {
+            CompanyInfo companyInfo = companyPort.getCompany(product.getCompanyId());
+            if (!requesterId.equals(companyInfo.managerId())) {
+                throw new ProductException(ProductErrorCode.UNAUTHORIZED_PRODUCT_DELETE);
+            }
+        }
+
+        productRepository.delete(productId, requesterId);
     }
 
     private ProductStatus resolveProductStatus(String status) {
