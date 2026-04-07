@@ -41,6 +41,68 @@ spring:
           predicates:
             - Path=/api/v1/slack/**, /api/v1/ai-logs/**
 
+        # Swagger api-docs 라우트
+        - id: user-service-docs
+          uri: lb://user-service
+          predicates:
+            - Path=/v3/api-docs/user-service
+          filters:
+            - RewritePath=/v3/api-docs/user-service, /v3/api-docs
+        - id: delivery-service-docs
+          uri: lb://delivery-service
+          predicates:
+            - Path=/v3/api-docs/delivery-service
+          filters:
+            - RewritePath=/v3/api-docs/delivery-service, /v3/api-docs
+        - id: order-service-docs
+          uri: lb://order-service
+          predicates:
+            - Path=/v3/api-docs/order-service
+          filters:
+            - RewritePath=/v3/api-docs/order-service, /v3/api-docs
+        - id: hub-service-docs
+          uri: lb://hub-service
+          predicates:
+            - Path=/v3/api-docs/hub-service
+          filters:
+            - RewritePath=/v3/api-docs/hub-service, /v3/api-docs
+        - id: company-service-docs
+          uri: lb://company-service
+          predicates:
+            - Path=/v3/api-docs/company-service
+          filters:
+            - RewritePath=/v3/api-docs/company-service, /v3/api-docs
+        - id: product-service-docs
+          uri: lb://product-service
+          predicates:
+            - Path=/v3/api-docs/product-service
+          filters:
+            - RewritePath=/v3/api-docs/product-service, /v3/api-docs
+        - id: notification-service-docs
+          uri: lb://notification-service
+          predicates:
+            - Path=/v3/api-docs/notification-service
+          filters:
+            - RewritePath=/v3/api-docs/notification-service, /v3/api-docs
+
+springdoc:
+  swagger-ui:
+    urls:
+      - name: user-service
+        url: /v3/api-docs/user-service
+      - name: delivery-service
+        url: /v3/api-docs/delivery-service
+      - name: order-service
+        url: /v3/api-docs/order-service
+      - name: hub-service
+        url: /v3/api-docs/hub-service
+      - name: company-service
+        url: /v3/api-docs/company-service
+      - name: product-service
+        url: /v3/api-docs/product-service
+      - name: notification-service
+        url: /v3/api-docs/notification-service
+
 eureka:
   client:
     service-url:

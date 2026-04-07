@@ -22,6 +22,7 @@ dependencies {
     implementation project(':common-jpa')
     annotationProcessor project(':common-jpa')
     implementation project(':common-security')
+    implementation project(':common-swagger')
 
     // zipkin
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
