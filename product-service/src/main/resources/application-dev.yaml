@@ -15,6 +15,9 @@ spring:
         maximum-pool-size: 5
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+  data:
+    redis:
+      url: ${REDIS_URL}
   jpa:
     hibernate:
       ddl-auto: update
@@ -23,11 +26,6 @@ spring:
       hibernate:
         format_sql: true
         default_schema: product
-
-spring:
-  data:
-    redis:
-      url: ${REDIS_URL}
 
 management:
   tracing:
