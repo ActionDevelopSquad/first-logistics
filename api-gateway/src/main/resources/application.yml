@@ -39,7 +39,7 @@ spring:
         - id: notification-service
           uri: lb://notification-service
           predicates:
-            - Path=/api/v1/slack/**, /api/v1/ai-logs/**
+            - Path=/api/v1/slack/**, /api/v1/ai-logs/**, /api/v1/notifications/**
 
 eureka:
   client:
