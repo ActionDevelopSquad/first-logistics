@@ -18,6 +18,7 @@ public class OrderAcceptedRecoverer implements ConsumerRecordRecoverer {
 
 	@Override
 	public void accept(ConsumerRecord<?, ?> record, Exception exception) {
+		log.error("[배송 생성 실패] orderId: {}, 원인: {}", record.key(), exception.getMessage(), exception);
 		if (!(record.value() instanceof OrderAcceptedEvent event)) {
 			log.error("orderId 추출 실패 - record value 타입: {}",
 				record.value() == null ? "null" : record.value().getClass().getName());
