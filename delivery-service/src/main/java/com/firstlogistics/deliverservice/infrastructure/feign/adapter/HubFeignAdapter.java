@@ -28,6 +28,6 @@ public class HubFeignAdapter implements HubPort {
 	@Override
 	public List<HubResponse> getHubs(List<UUID> hubIds) {
 		log.info("[Feign] hub-service 허브 목록 조회 - hubIds: {}", hubIds);
-		return hubClient.getHubs(Map.of("ids", hubIds)).data();
+		return hubClient.getHubs(Map.of("ids", hubIds)).data().hubList();
 	}
 }
