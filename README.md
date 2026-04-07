@@ -64,7 +64,7 @@
 일등 물류는 전국 17개 허브를 기반으로 한 **B2B 물류 배송 플랫폼**입니다.
 
 - **주문 기반 배송 자동 생성**: 주문 승인 시 Kafka 이벤트를 통해 배송이 자동으로 생성되고, 허브 간 최적 경로가 계산됩니다.
-- **배송 담당자 자동 배정**: 허브별 배송 담당자가 순번 기반으로 자동 배정되며, 분산락으로 동시성��� 제어합니다.
+- **배송 담당자 자동 배정**: 허브별 배송 담당자가 순번 기반으로 자동 배정되며, 분산락으로 동시성을 제어합니다.
 - **실시간 배송 상태 추적**: 배송 상태 변경 시 Kafka 이벤트를 통해 Slack 알림이 발송됩니다.
 - **AI 연동**: OpenAI를 활용한 메시지 생성 및 pgvector 기반 유사도 검색을 지원합니다.
 - **역할 기반 접근 제어**: MASTER, HUB_MANAGER, DELIVERY_MANAGER, COMPANY_MANAGER 4단계 권한 체계를 적용합니다.
@@ -95,7 +95,13 @@
 ### 서비스 간 통신
 
 - **동기 (FeignClient)**: 서비스 간 데이터 조회 및 검증
+  
+  <img width="2189" height="1011" alt="일등물류-Event Storming" src="https://github.com/user-attachments/assets/6e5c8127-ea44-49b4-ba40-529f90c5d9d8" />
+
 - **비동기 (Kafka)**: 이벤트 기반 처리 (주문 생성 -> 배송 생성, 배송 상태 변경 -> 슬랙 알림)
+  
+  <img width="3085" height="2202" alt="일등물류-Event Storming (3)" src="https://github.com/user-attachments/assets/7ab8286b-ceda-4d2c-a354-4443c9149736" />
+
 
 ### 데이터베이스 구조
 
@@ -140,7 +146,7 @@ PostgreSQL (5432)
 
 | 모듈 | 설명 |
 |------|------|
-| `common` | 예외 처리, 공통 ���답 포맷, ErrorCode/SuccessCode |
+| `common` | 예외 처리, 공통 응답 포맷, ErrorCode/SuccessCode |
 | `common-jpa` | BaseEntity, JPA Auditing, Master/Slave DataSource 라우팅 |
 | `common-event` | Kafka Producer/Consumer 공통 설정, ConsistentHashPartitioner |
 | `common-security` | @RequireRole/@OnlyMaster AOP, SecurityUtils, UserRole |
@@ -351,9 +357,9 @@ docker compose down -v
 | **이벤트 기반 비동기 통신** | 주문-배송 간 Kafka 이벤트로 결합도 최소화, at-least-once + 멱등성 보장 |
 | **Saga 보상 트랜잭션** | 배송 생성 실패 시 `delivery.creation.failed` 이벤트로 주문 자동 취소 |
 | **분산락 (Redisson)** | 배송 담당자 배정 시 동시성 제어, Facade 패턴으로 락 획득 후 서비스 호출 |
-| **낙관적 락** | 배송/배송담당자 엔티티 @Version으로 동시 수정 ���돌 감지 |
+| **낙관적 락** | 배송/배송담당자 엔티티 @Version으로 동시 수정 충돌 감지 |
 | **Master/Slave 읽기-쓰기 분리** | common-jpa에서 RoutingDataSource로 readOnly 트랜잭션을 Slave로 라우팅 |
-| **커서 기반 페이지네이션** | offset 방식의 데이터 누락 문제 해결, createdAt + id 복�� 커서 |
+| **커서 기반 페이지네이션** | offset 방식의 데이터 누락 문제 해결, createdAt + id 복합키 커서 |
 | **Strategy 패턴 권한 검증** | 역할별 PermissionStrategy로 데이터 레벨 접근 제어 |
 | **Port-Adapter 패턴** | Application은 Port 인터페이스만 의존, FeignClient는 Infrastructure에서 Adapter로 구현 |
 
