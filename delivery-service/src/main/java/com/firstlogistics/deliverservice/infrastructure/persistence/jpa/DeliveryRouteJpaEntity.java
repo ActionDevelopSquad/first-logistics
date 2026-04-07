@@ -78,4 +78,9 @@ public class DeliveryRouteJpaEntity extends BaseAuditEntity {
 			status, deliveryManagerId
 		);
 	}
+
+	public void updateStatus(RouteStatus status, UUID deliveryManagerId) {
+		this.status = status;
+		this.deliveryManagerId = deliveryManagerId;
+	}
 }
