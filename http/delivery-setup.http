@@ -285,7 +285,7 @@ Authorization: Bearer {{masterToken}}
     client.global.set("receiverCompanyId", response.body.data.companyId);
 %}
 
-### ========== 19. 허브 배송담당자 회원가입 ==========
+### ========== 19. 허브 배송담당자 회원가입 (서울) ==========
 # 승인 시 Kafka(user.status.changed) → delivery-service에서 자동 생성
 POST {{gatewayUrl}}/api/v1/users/signup
 Content-Type: application/json
@@ -309,7 +309,30 @@ Content-Type: application/json
     client.global.set("hubDeliveryManagerUserId", response.body.data.userId);
 %}
 
-### ========== 20. 업체 배송담당자 회원가입 ==========
+### ========== 20. 허브 배송담당자 회원가입 (대구) ==========
+POST {{gatewayUrl}}/api/v1/users/signup
+Content-Type: application/json
+
+{
+  "username": "{{daeguHubDeliveryManagerUsername}}",
+  "password": {
+    "password": "{{daeguHubDeliveryManagerPassword}}",
+    "confirmPassword": "{{daeguHubDeliveryManagerPassword}}"
+  },
+  "firstName": "대구허브배송",
+  "lastName": "담당자",
+  "phone": "010-4444-0002",
+  "email": "hubdm02_daegu@test.com",
+  "slackId": "U_HUBDM02",
+  "userRole": "DELIVERY_MANAGER",
+  "organizationId": "{{daeguHubId}}"
+}
+
+> {%
+    client.global.set("daeguHubDeliveryManagerUserId", response.body.data.userId);
+%}
+
+### ========== 21. 업체 배송담당자 회원가입 ==========
 POST {{gatewayUrl}}/api/v1/users/signup
 Content-Type: application/json
 
@@ -332,7 +355,7 @@ Content-Type: application/json
     client.global.set("companyDeliveryManagerUserId", response.body.data.userId);
 %}
 
-### ========== 21. 허브 배송담당자 승인 → Kafka로 배송담당자 자동 생성 ==========
+### ========== 22. 허브 배송담당자 승인 (서울) → Kafka로 배송담당자 자동 생성 ==========
 PATCH {{gatewayUrl}}/api/v1/users/{{hubDeliveryManagerUserId}}/status
 Content-Type: application/json
 Authorization: Bearer {{masterToken}}
@@ -342,7 +365,17 @@ X-User-Id: {{masterUserId}}
   "status": "APPROVED"
 }
 
-### ========== 22. 업체 배송담당자 승인 → Kafka로 배송담당자 자동 생성 ==========
+### ========== 23. 허브 배송담당자 승인 (대구) → Kafka로 배송담당자 자동 생성 ==========
+PATCH {{gatewayUrl}}/api/v1/users/{{daeguHubDeliveryManagerUserId}}/status
+Content-Type: application/json
+Authorization: Bearer {{masterToken}}
+X-User-Id: {{masterUserId}}
+
+{
+  "status": "APPROVED"
+}
+
+### ========== 24. 업체 배송담당자 승인 → Kafka로 배송담당자 자동 생성 ==========
 PATCH {{gatewayUrl}}/api/v1/users/{{companyDeliveryManagerUserId}}/status
 Content-Type: application/json
 Authorization: Bearer {{masterToken}}
@@ -352,7 +385,7 @@ X-User-Id: {{masterUserId}}
   "status": "APPROVED"
 }
 
-### ========== 23. 배송담당자 로그인 (허브) ==========
+### ========== 25. 배송담당자 로그인 (서울 허브) ==========
 POST {{gatewayUrl}}/api/v1/users/login
 Content-Type: application/json
 
@@ -365,7 +398,20 @@ Content-Type: application/json
     client.global.set("hubDeliveryManagerToken", response.body.data.accessToken);
 %}
 
-### ========== 24. 배송담당자 로그인 (업체) ==========
+### ========== 26. 배송담당자 로그인 (대구 허브) ==========
+POST {{gatewayUrl}}/api/v1/users/login
+Content-Type: application/json
+
+{
+  "username": "{{daeguHubDeliveryManagerUsername}}",
+  "password": "{{daeguHubDeliveryManagerPassword}}"
+}
+
+> {%
+    client.global.set("daeguHubDeliveryManagerToken", response.body.data.accessToken);
+%}
+
+### ========== 27. 배송담당자 로그인 (업체) ==========
 POST {{gatewayUrl}}/api/v1/users/login
 Content-Type: application/json
 
@@ -378,7 +424,7 @@ Content-Type: application/json
     client.global.set("companyDeliveryManagerToken", response.body.data.accessToken);
 %}
 
-### ========== 25. 상품 생성 (공급업체 소속) ==========
+### ========== 28. 상품 생성 (공급업체 소속) ==========
 POST {{gatewayUrl}}/api/v1/products
 Content-Type: application/json
 Authorization: Bearer {{masterToken}}
@@ -394,7 +440,7 @@ Authorization: Bearer {{masterToken}}
     client.global.set("productId", response.body.data.productId);
 %}
 
-### ========== 26. 주문 생성 → Kafka(order.accepted) → 배송 자동 생성 ==========
+### ========== 29. 주문 생성 ==========
 POST {{gatewayUrl}}/api/v1/orders
 Content-Type: application/json
 Authorization: Bearer {{masterToken}}
@@ -422,7 +468,7 @@ Authorization: Bearer {{masterToken}}
     client.global.set("orderId", response.body.data.orderId);
 %}
 
-### ========== 27. 주문 승인 → Kafka(order.accepted) → 배송 자동 생성 ==========
+### ========== 30. 주문 승인 → Kafka(order.accepted) → 배송 자동 생성 ==========
 PATCH {{gatewayUrl}}/api/v1/orders/{{orderId}}/acceptance
 Content-Type: application/json
 Authorization: Bearer {{masterToken}}
