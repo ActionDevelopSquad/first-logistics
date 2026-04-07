@@ -9,6 +9,7 @@ import com.firstlogistics.companyservice.presentation.dto.request.UpdateCompanyR
 import com.firstlogistics.companyservice.presentation.dto.response.CompanyPageResponse;
 import com.firstlogistics.companyservice.presentation.dto.response.CompanyResponse;
 import com.firstlogistics.companyservice.presentation.dto.response.CreateCompanyResponse;
+import com.firstlogistics.companyservice.presentation.docs.CompanyControllerDocs;
 import common.response.ApiResponse;
 import common.response.CommonSuccessCode;
 import common.security.entity.enums.UserRole;
@@ -34,7 +35,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/companies")
 @RequiredArgsConstructor
-public class CompanyController {
+public class CompanyController implements CompanyControllerDocs {
 
     private final CompanyCommandService companyCommandService;
     private final CompanyQueryService companyQueryService;

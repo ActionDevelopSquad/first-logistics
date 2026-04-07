@@ -10,6 +10,7 @@ import com.firstlogistics.productservice.product.presentation.dto.request.Update
 import com.firstlogistics.productservice.product.presentation.dto.response.CreateProductResponse;
 import com.firstlogistics.productservice.product.presentation.dto.response.ProductPageResponse;
 import com.firstlogistics.productservice.product.presentation.dto.response.ProductResponse;
+import com.firstlogistics.productservice.product.presentation.docs.ProductControllerDocs;
 import com.firstlogistics.productservice.product.presentation.dto.response.StockResponse;
 import common.response.ApiResponse;
 import common.response.CommonSuccessCode;
@@ -36,7 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/products")
 @RequiredArgsConstructor
-public class ProductController {
+public class ProductController implements ProductControllerDocs {
 
     private final ProductCommandFacade productCommandFacade;
     private final ProductQueryService productQueryService;
