@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public class P2PHubHybridStrategy implements HubRouteStrategy{
-    private static final int HYBRID_DISTANCE_LIMIT_METERS = 250000;
+    private static final int HYBRID_DISTANCE_LIMIT_METERS = 300000;
     private static final Comparator<HubRoute> HUB_ROUTE_COMPARATOR =
             Comparator.comparingInt((HubRoute route) -> route.totalTime().minutes())
                     .thenComparingInt(route -> route.totalDistance().meters());

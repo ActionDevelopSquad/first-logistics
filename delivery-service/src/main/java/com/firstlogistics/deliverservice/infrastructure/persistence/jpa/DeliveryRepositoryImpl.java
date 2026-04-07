@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
@@ -37,7 +38,17 @@ public class DeliveryRepositoryImpl implements DeliveryRepository {
 
 	@Override
 	public Delivery save(Delivery delivery) {
-		DeliveryJpaEntity jpaEntity = deliveryMapper.toJpaEntity(delivery);
+		UUID id = delivery.getId().id();
+		Optional<DeliveryJpaEntity> existing = deliveryJpaRepository.findByIdWithRoutes(id);
+
+		DeliveryJpaEntity jpaEntity;
+		if (existing.isPresent()) {
+			jpaEntity = existing.get();
+			jpaEntity.update(delivery, deliveryMapper);
+		} else {
+			jpaEntity = deliveryMapper.toJpaEntity(delivery);
+		}
+
 		DeliveryJpaEntity savedEntity = deliveryJpaRepository.save(jpaEntity);
 		return deliveryMapper.toDomain(savedEntity);
 	}

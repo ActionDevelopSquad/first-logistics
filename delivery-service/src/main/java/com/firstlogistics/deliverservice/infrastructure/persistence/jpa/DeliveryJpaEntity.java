@@ -112,4 +112,18 @@ public class DeliveryJpaEntity extends BaseAuditEntity {
 	public void addRoute(DeliveryRouteJpaEntity route) {
 		this.routes.add(route);
 	}
+
+	public void update(com.firstlogistics.deliverservice.domain.entity.Delivery domain, DeliveryMapper mapper) {
+		this.status = domain.getStatus();
+		this.currentHubId = domain.getCurrentHubId();
+		this.receiverId = domain.getReceiverId();
+		this.receiverSlackId = domain.getReceiverSlackId();
+
+		for (com.firstlogistics.deliverservice.domain.entity.DeliveryRoute route : domain.getRoutes()) {
+			this.routes.stream()
+				.filter(existing -> existing.getId().equals(route.getId().id()))
+				.findFirst()
+				.ifPresent(existing -> existing.updateStatus(route.getStatus(), route.getDeliveryManagerId() != null ? route.getDeliveryManagerId().id() : null));
+		}
+	}
 }

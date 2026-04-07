@@ -30,6 +30,7 @@ import com.firstlogistics.deliverservice.application.port.dto.HubRouteResponse;
 import com.firstlogistics.deliverservice.application.port.dto.HubRouteStepResponse;
 import com.firstlogistics.deliverservice.application.port.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +43,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -59,6 +61,7 @@ public class DeliveryCommandService {
 			CompanyResponse supplierCompany,
 			CompanyResponse receiverCompany,
 			HubRouteResponse hubRoute) {
+		log.info("[배송 생성] 시작 - orderId: {}, sourceHub: {}, destHub: {}", command.orderId(), supplierCompany.hubId(), receiverCompany.hubId());
 		if (deliveryRepository.existsByOrderId(command.orderId())) {
 			throw new DeliveryException(DeliveryErrorCode.DELIVERY_ALREADY_EXISTS);
 		}
@@ -114,6 +117,8 @@ public class DeliveryCommandService {
 
 		for (int i = 0; i < hubSteps.size(); i++) {
 			HubRouteStepResponse step = hubSteps.get(i);
+			log.info("[배송 경로 생성] step[{}] seq={}, sourceId={}, destId={}, distance={}, duration={}",
+				i, step.hubRouteSequence(), step.sourceHubId(), step.destinationHubId(), step.distanceMeters(), step.durationMinutes());
 			DeliveryRoute route = DeliveryRoute.create(
 				delivery.getId(),
 				step.hubRouteSequence(),
@@ -125,6 +130,8 @@ public class DeliveryCommandService {
 			delivery.assignRoute(route, hubDeliveryManagers.get(i).getId());
 		}
 
+		log.info("[배송 경로 생성] lastStep seq={}, sourceId={}, destId={}, distance={}, duration={}",
+			lastStep.hubRouteSequence(), lastStep.sourceHubId(), lastStep.destinationHubId(), lastStep.distanceMeters(), lastStep.durationMinutes());
 		DeliveryRoute companyRoute = DeliveryRoute.create(
 			delivery.getId(),
 			lastStep.hubRouteSequence(),
@@ -135,7 +142,9 @@ public class DeliveryCommandService {
 		);
 		delivery.assignRoute(companyRoute, companyDeliveryManager.getId());
 
+		log.info("[배송 생성] 경로 생성 완료, DB 저장 시작");
 		Delivery savedDelivery = deliveryRepository.save(delivery);
+		log.info("[배송 생성] DB 저장 완료 - deliveryId: {}", savedDelivery.getId().id());
 
 		int timetableMinutes = 0;
 		for (int i = 0; i < hubSteps.size(); i++) {
@@ -152,9 +161,11 @@ public class DeliveryCommandService {
 		companyDeliveryManager.assignDelivery(savedDelivery.getId(), companyAssignmentStart, companyAssignmentEnd);
 		deliveryManagerRepository.save(companyDeliveryManager);
 
-		List<UUID> hubIds = orderedRoutes.stream()
-			.flatMap(step -> Stream.of(step.sourceHubId(), step.destinationHubId()))
-			.distinct().toList();
+		log.info("[배송 생성] 타임테이블 배정 완료, 허브 정보 조회 시작");
+		List<UUID> hubIds = Stream.concat(
+			orderedRoutes.stream().map(HubRouteStepResponse::sourceHubId),
+			hubSteps.stream().map(HubRouteStepResponse::destinationHubId)
+		).distinct().toList();
 		Map<UUID, HubResponse> hubMap = hubPort.getHubs(hubIds).stream()
 			.collect(Collectors.toMap(HubResponse::hubId, hub -> hub));
 		if (!hubMap.keySet().containsAll(hubIds)) {
@@ -162,15 +173,18 @@ public class DeliveryCommandService {
 		}
 		UserResponse companyDeliveryManagerUser = userPort.getUser(companyDeliveryManager.getUserId());
 
+		log.info("[배송 생성] 허브 정보 조회 완료, 이벤트 빌드 시작");
 		DeliveryCreatedEvent deliveryCreatedEvent = buildDeliveryCreatedEvent(
 				savedDelivery, command, receiver, hubSteps, hubDeliveryManagers, lastStep, companyDeliveryManager, hubMap, companyDeliveryManagerUser
 		);
 		deliveryEventPublisher.publishedDeliveryCreated(deliveryCreatedEvent);
 
+		log.info("[배송 생성] 완료 - deliveryId: {}, orderId: {}", savedDelivery.getId().id(), command.orderId());
 		return CreateDeliveryResult.from(savedDelivery);
 	}
 
 	public UpdateDeliveryResult updateDelivery(UpdateDeliveryCommand command) {
+		log.info("[배송 수정] 시작 - deliveryId: {}", command.deliveryId());
 		Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
 
@@ -189,6 +203,7 @@ public class DeliveryCommandService {
 	}
 
 	public ChangeDeliveryStatusResult startHubDelivery(ChangeDeliveryStatusCommand command, UserRole role, UUID userId) {
+		log.info("[배송 허브 출발] 시작 - deliveryId: {}", command.deliveryId());
 		Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
 
@@ -205,6 +220,7 @@ public class DeliveryCommandService {
 	}
 
 	public ChangeDeliveryStatusResult startCompanyDelivery(ChangeDeliveryStatusCommand command, UserRole role, UUID userId) {
+		log.info("[배송 업체 출발] 시작 - deliveryId: {}", command.deliveryId());
 		Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
 
@@ -221,6 +237,7 @@ public class DeliveryCommandService {
 	}
 
 	public ChangeDeliveryStatusResult arriveHub(ChangeDeliveryStatusCommand command, UserRole role, UUID userId) {
+		log.info("[배송 허브 도착] 시작 - deliveryId: {}", command.deliveryId());
 		Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
 
@@ -237,6 +254,7 @@ public class DeliveryCommandService {
 	}
 
 	public ChangeDeliveryStatusResult receiveAtHub(ChangeDeliveryStatusCommand command, UserRole role, UUID userId) {
+		log.info("[배송 허브 입고] 시작 - deliveryId: {}", command.deliveryId());
 		Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
 
@@ -253,6 +271,7 @@ public class DeliveryCommandService {
 	}
 
 	public ChangeDeliveryStatusResult completeDelivery(ChangeDeliveryStatusCommand command, UserRole role, UUID userId) {
+		log.info("[배송 완료] 시작 - deliveryId: {}", command.deliveryId());
 		Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
 
@@ -269,6 +288,7 @@ public class DeliveryCommandService {
 	}
 
 	public ChangeDeliveryStatusResult cancelDelivery(ChangeDeliveryStatusCommand command, UserRole role, UUID userId) {
+		log.info("[배송 취소] 시작 - deliveryId: {}", command.deliveryId());
 		Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
 
@@ -285,6 +305,7 @@ public class DeliveryCommandService {
 	}
 
 	public void cancelDeliveryBySystem(ChangeDeliveryStatusCommand command) {
+		log.info("[배송 시스템 취소] 시작 - deliveryId: {}", command.deliveryId());
 		Delivery delivery = deliveryRepository.findById(DeliveryId.of(command.deliveryId()))
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
 
@@ -300,6 +321,7 @@ public class DeliveryCommandService {
 	}
 
 	public void deleteDelivery(UUID deliveryId, UserRole role, UUID userId) {
+		log.info("[배송 삭제] 시작 - deliveryId: {}", deliveryId);
 		Delivery delivery = deliveryRepository.findById(DeliveryId.of(deliveryId))
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
 
@@ -336,11 +358,10 @@ public class DeliveryCommandService {
 		}
 
 		HubResponse lastSourceHub = hubMap.get(lastStep.sourceHubId());
-		HubResponse lastDestinationHub = hubMap.get(lastStep.destinationHubId());
 		deliveryRoutes.add(DeliveryCreatedEvent.DeliveryRouteInfo.of(
 			lastStep.hubRouteSequence(),
 			lastStep.sourceHubId(), lastSourceHub.name(), lastSourceHub.roadAddress(),
-			lastStep.destinationHubId(), lastDestinationHub.name(), lastDestinationHub.roadAddress(),
+			lastStep.destinationHubId(), null, null,
 			lastStep.distanceMeters(),
 			lastStep.durationMinutes(),
 			companyDeliveryManager.getSlackId()

@@ -15,12 +15,14 @@ import com.firstlogistics.deliverservice.domain.spec.DeliveryManagerSearchSpec;
 import com.firstlogistics.deliverservice.domain.spec.DeliveryScope;
 import com.firstlogistics.deliverservice.domain.vo.DeliveryManagerId;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -31,6 +33,7 @@ public class DeliveryManagerQueryService {
 	private final HubManagerPort hubManagerPort;
 
 	public DeliveryManagerListResult getDeliveryManagers(DeliveryManagerListQuery query) {
+		log.info("[배송담당자 목록 조회] 시작 - role: {}, userId: {}", query.role(), query.userId());
 		UserRole userRole = UserRole.valueOf(query.role());
 
 		UUID hubId =
@@ -59,6 +62,7 @@ public class DeliveryManagerQueryService {
 	}
 
 	public DeliveryManagerDetailResult getDeliveryManager(UUID managerId, UserRole role, UUID requestUserId) {
+		log.info("[배송담당자 상세 조회] 시작 - managerId: {}", managerId);
 		DeliveryManager manager = deliveryManagerRepository.findById(DeliveryManagerId.of(managerId))
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_MANAGER_NOT_FOUND));
 
@@ -80,6 +84,7 @@ public class DeliveryManagerQueryService {
 	}
 
 	public DeliveryManagerDetailResult getDeliveryManagerByUserId(UUID targetUserId, UserRole role, UUID requestUserId) {
+		log.info("[배송담당자 userId 조회] 시작 - targetUserId: {}", targetUserId);
 		DeliveryManager manager = deliveryManagerRepository.findByUserId(targetUserId)
 			.orElseThrow(() -> new DeliveryException(DeliveryErrorCode.DELIVERY_MANAGER_NOT_FOUND));
 

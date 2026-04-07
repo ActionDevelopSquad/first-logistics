@@ -1,8 +1,8 @@
 package com.firstlogistics.deliverservice.infrastructure.feign;
 
-import com.firstlogistics.deliverservice.application.port.dto.HubResponse;
 import com.firstlogistics.deliverservice.infrastructure.feign.config.FeignErrorDecoder;
 import com.firstlogistics.deliverservice.infrastructure.feign.dto.FeignApiResponse;
+import com.firstlogistics.deliverservice.infrastructure.feign.dto.HubListFeignResponse;
 import com.firstlogistics.deliverservice.application.port.dto.HubRouteResponse;
 import com.firstlogistics.deliverservice.application.port.dto.HubManagerResponse;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @FeignClient(name = "hub-service", url = "${hub-service.url:}", configuration = FeignErrorDecoder.class)
@@ -29,5 +30,5 @@ public interface HubClient {
 	FeignApiResponse<HubManagerResponse> getHubManagerByUserId(@PathVariable("userId") UUID userId);
 
 	@PostMapping("/api/v1/hubs/ids")
-	FeignApiResponse<List<HubResponse>> getHubs(@RequestBody List<UUID> hubIds);
+	FeignApiResponse<HubListFeignResponse> getHubs(@RequestBody Map<String, List<UUID>> request);
 }

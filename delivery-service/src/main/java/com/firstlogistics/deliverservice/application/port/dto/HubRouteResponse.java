@@ -7,8 +7,10 @@ import java.util.UUID;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record HubRouteResponse(
-	UUID sourceHubId,
-	UUID destinationHubId,
+	UUID sourceId,
+	UUID destinationId,
 	List<HubRouteStepResponse> routes
 ) {
+	public UUID sourceHubId() { return sourceId; }
+	public UUID destinationHubId() { return destinationId; }
 }
