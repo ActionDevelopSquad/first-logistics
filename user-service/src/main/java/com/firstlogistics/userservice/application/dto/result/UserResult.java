@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record UserResult(
+        UUID userId,
         String username,
         String name,
         String phone,
@@ -21,6 +22,7 @@ public record UserResult(
 {
     public static UserResult fromDomain(User user) {
         return new UserResult(
+                user.getId(),
                 user.getUsername(),
                 user.getName(),
                 user.getPhone(),
@@ -34,6 +36,7 @@ public record UserResult(
 
     public static UserResult fromSpec(UsersSpec spec) {
         return new UserResult(
+                spec.userId(),
                 spec.username(),
                 spec.name(),
                 spec.phone(),

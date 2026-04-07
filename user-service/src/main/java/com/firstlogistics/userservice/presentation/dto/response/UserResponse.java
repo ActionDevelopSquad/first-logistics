@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record UserResponse(
+        UUID userId,
         String username,
         String name,
         String phone,
@@ -18,6 +19,7 @@ public record UserResponse(
 {
     public static UserResponse from(UserResult result) {
         return new UserResponse(
+                result.userId(),
                 result.username(),
                 result.name(),
                 result.phone(),

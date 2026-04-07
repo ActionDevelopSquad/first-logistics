@@ -31,6 +31,7 @@ public class UserQueryRepositoryImpl implements UserQueryRepository {
         List<UsersSpec> content = queryFactory
                 .select(Projections.constructor(
                         UsersSpec.class,
+                        userJpaEntity.id,
                         userJpaEntity.username,
                         userJpaEntity.name,
                         userJpaEntity.phone,

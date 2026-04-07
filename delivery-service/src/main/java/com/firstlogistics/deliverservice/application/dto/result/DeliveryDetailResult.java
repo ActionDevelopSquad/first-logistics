@@ -78,7 +78,7 @@ public record DeliveryDetailResult(
 	public record ReceiverInfo(UUID userId, String name, String phone) {
 
 		public ReceiverInfo {
-			Objects.requireNonNull(userId, "userId must not be null");
+			Objects.requireNonNull(name, "name must not be null");
 		}
 
 		public static ReceiverInfo from(UserResponse user) {
@@ -133,11 +133,12 @@ public record DeliveryDetailResult(
 		}
 
 		public static RouteDetail from(DeliveryDetailProjection.RouteDetail route, Map<UUID, HubResponse> hubMap) {
+			HubResponse destHub = hubMap.get(route.destinationHubId());
 			return new RouteDetail(
 				route.routeId(),
 				route.sequence(),
 				HubInfo.from(hubMap.get(route.sourceHubId())),
-				HubInfo.from(hubMap.get(route.destinationHubId())),
+				destHub != null ? HubInfo.from(destHub) : null,
 				route.estimatedDistanceMeters(),
 				route.estimatedDurationMinutes(),
 				route.actualDistanceMeters(),

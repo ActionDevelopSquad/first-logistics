@@ -99,9 +99,11 @@ public class DeliveryQueryService {
 		DeliveryAccessContext accessContext = DeliveryAccessContext.from(deliveryDetail, routes);
 		deliveryPermissionValidator.validate(accessContext, role, userId);
 
-		List<UUID> hubIds = routes.stream()
-			.flatMap(route -> Stream.of(route.sourceHubId(), route.destinationHubId()))
-			.distinct().toList();
+		List<DeliveryDetailProjection.RouteDetail> hubRoutes = routes.subList(0, routes.size() - 1);
+		List<UUID> hubIds = Stream.concat(
+			routes.stream().map(DeliveryDetailProjection.RouteDetail::sourceHubId),
+			hubRoutes.stream().map(DeliveryDetailProjection.RouteDetail::destinationHubId)
+		).distinct().toList();
 
 		Map<UUID, HubResponse> hubMap = hubPort.getHubs(hubIds).stream()
 			.collect(Collectors.toMap(HubResponse::hubId, hub -> hub));
