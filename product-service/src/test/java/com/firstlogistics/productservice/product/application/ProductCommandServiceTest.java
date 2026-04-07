@@ -1,18 +1,17 @@
 package com.firstlogistics.productservice.product.application;
 
-import com.firstlogistics.productservice.product.application.dto.command.CreateProductCommand;
 import com.firstlogistics.productservice.product.application.dto.command.ChangeProductStatusCommand;
+import com.firstlogistics.productservice.product.application.dto.command.CreateProductCommand;
 import com.firstlogistics.productservice.product.application.dto.command.UpdateProductCommand;
 import com.firstlogistics.productservice.product.application.dto.result.ProductResult;
-import com.firstlogistics.productservice.product.application.port.CompanyPort;
 import com.firstlogistics.productservice.product.application.port.CompanyPort.CompanyInfo;
 import com.firstlogistics.productservice.product.domain.entity.Product;
 import com.firstlogistics.productservice.product.domain.enums.ProductStatus;
-import com.firstlogistics.productservice.product.domain.event.ProductCreatedEvent;
-import com.firstlogistics.productservice.product.domain.vo.Money;
 import com.firstlogistics.productservice.product.domain.exception.ProductErrorCode;
 import com.firstlogistics.productservice.product.domain.exception.ProductException;
 import com.firstlogistics.productservice.product.domain.repository.ProductRepository;
+import com.firstlogistics.productservice.product.domain.vo.Money;
+import com.firstlogistics.productservice.product.domain.event.ProductCreatedEvent;
 import common.event.Events;
 import common.security.entity.enums.UserRole;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,10 +33,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
-import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.verify;
-
-import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 class ProductCommandServiceTest {
@@ -45,10 +42,7 @@ class ProductCommandServiceTest {
     private ProductRepository productRepository;
 
     @Mock
-    private ApplicationEventPublisher applicationEventPublisher;
-
-    @Mock
-    private CompanyPort companyPort;
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private ProductCommandService productCommandService;
@@ -59,11 +53,9 @@ class ProductCommandServiceTest {
     private static final UUID MANAGER_ID = UUID.fromString("00000000-0000-0000-0000-000000000003");
     private static final UUID OTHER_USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000099");
 
-    private static final CompanyInfo COMPANY_INFO = new CompanyInfo(COMPANY_ID, HUB_ID, MANAGER_ID);
-
     @BeforeEach
-    void initEvents() {
-        new Events().init(applicationEventPublisher);
+    void setUpEvents() {
+        new Events().init(eventPublisher);
     }
 
     @Nested
@@ -71,17 +63,15 @@ class ProductCommandServiceTest {
     class Register {
 
         private CreateProductCommand masterCommand;
+        private CompanyInfo companyInfo;
 
         @BeforeEach
         void setUp() {
             masterCommand = new CreateProductCommand(
-                    MANAGER_ID,
-                    UserRole.MASTER.name(),
-                    COMPANY_ID,
-                    "마른오징어",
-                    BigDecimal.valueOf(15000),
-                    100
+                    MANAGER_ID, UserRole.MASTER.name(), COMPANY_ID,
+                    "마른오징어", BigDecimal.valueOf(15000), 100
             );
+            companyInfo = new CompanyInfo(COMPANY_ID, HUB_ID, MANAGER_ID);
         }
 
         @Test
@@ -91,7 +81,7 @@ class ProductCommandServiceTest {
             given(productRepository.save(any())).willAnswer(invocation -> invocation.getArgument(0));
 
             // when
-            ProductResult result = productCommandService.register(masterCommand, COMPANY_INFO);
+            ProductResult result = productCommandService.register(masterCommand, companyInfo);
 
             // then
             assertThat(result.companyId()).isEqualTo(COMPANY_ID);
@@ -101,16 +91,16 @@ class ProductCommandServiceTest {
         }
 
         @Test
-        @DisplayName("상품 등록 후 ProductCreatedEvent가 발행된다")
+        @DisplayName("상품 등록 시 ProductCreatedEvent가 발행된다")
         void register_publishesProductCreatedEvent() {
             // given
             given(productRepository.save(any())).willAnswer(invocation -> invocation.getArgument(0));
 
             // when
-            productCommandService.register(masterCommand, COMPANY_INFO);
+            productCommandService.register(masterCommand, companyInfo);
 
             // then
-            verify(applicationEventPublisher).publishEvent(any(ProductCreatedEvent.class));
+            verify(eventPublisher).publishEvent(any(ProductCreatedEvent.class));
         }
 
         @Test
@@ -124,7 +114,7 @@ class ProductCommandServiceTest {
             given(productRepository.save(any())).willAnswer(invocation -> invocation.getArgument(0));
 
             // when
-            ProductResult result = productCommandService.register(command, COMPANY_INFO);
+            ProductResult result = productCommandService.register(command, companyInfo);
 
             // then
             assertThat(result.companyId()).isEqualTo(COMPANY_ID);
@@ -140,22 +130,9 @@ class ProductCommandServiceTest {
             );
 
             // when & then
-            assertThatThrownBy(() -> productCommandService.register(command, COMPANY_INFO))
+            assertThatThrownBy(() -> productCommandService.register(command, companyInfo))
                     .isInstanceOf(ProductException.class)
                     .hasMessageContaining(ProductErrorCode.UNAUTHORIZED_COMPANY_ACCESS.getMessage());
-        }
-
-        @Test
-        @DisplayName("상품 등록 시 Product가 저장된다")
-        void register_savesProduct() {
-            // given
-            given(productRepository.save(any())).willAnswer(invocation -> invocation.getArgument(0));
-
-            // when
-            productCommandService.register(masterCommand, COMPANY_INFO);
-
-            // then
-            verify(productRepository).save(any(Product.class));
         }
     }
 
@@ -185,7 +162,7 @@ class ProductCommandServiceTest {
             given(productRepository.save(any())).willAnswer(invocation -> invocation.getArgument(0));
 
             // when
-            ProductResult result = productCommandService.update(command);
+            ProductResult result = productCommandService.update(command, null);
 
             // then
             assertThat(result.name()).isEqualTo("건오징어");
@@ -204,7 +181,7 @@ class ProductCommandServiceTest {
             given(productRepository.save(any())).willAnswer(invocation -> invocation.getArgument(0));
 
             // when
-            ProductResult result = productCommandService.update(command);
+            ProductResult result = productCommandService.update(command, null);
 
             // then
             assertThat(result.name()).isEqualTo("건오징어");
@@ -223,7 +200,7 @@ class ProductCommandServiceTest {
             given(productRepository.save(any())).willAnswer(invocation -> invocation.getArgument(0));
 
             // when
-            ProductResult result = productCommandService.update(command);
+            ProductResult result = productCommandService.update(command, null);
 
             // then
             assertThat(result.name()).isEqualTo("마른오징어");
@@ -238,13 +215,12 @@ class ProductCommandServiceTest {
                     MANAGER_ID, UserRole.COMPANY_MANAGER.name(), PRODUCT_ID,
                     "건오징어", BigDecimal.valueOf(20000)
             );
+            CompanyInfo companyInfo = new CompanyInfo(COMPANY_ID, HUB_ID, MANAGER_ID);
             given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(existingProduct));
-            given(companyPort.getCompany(COMPANY_ID))
-                    .willReturn(new CompanyInfo(COMPANY_ID, HUB_ID, MANAGER_ID));
             given(productRepository.save(any())).willAnswer(invocation -> invocation.getArgument(0));
 
             // when
-            ProductResult result = productCommandService.update(command);
+            ProductResult result = productCommandService.update(command, companyInfo);
 
             // then
             assertThat(result.name()).isEqualTo("건오징어");
@@ -258,12 +234,11 @@ class ProductCommandServiceTest {
                     OTHER_USER_ID, UserRole.COMPANY_MANAGER.name(), PRODUCT_ID,
                     "건오징어", null
             );
+            CompanyInfo companyInfo = new CompanyInfo(COMPANY_ID, HUB_ID, MANAGER_ID);
             given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(existingProduct));
-            given(companyPort.getCompany(COMPANY_ID))
-                    .willReturn(new CompanyInfo(COMPANY_ID, HUB_ID, MANAGER_ID));
 
             // when & then
-            assertThatThrownBy(() -> productCommandService.update(command))
+            assertThatThrownBy(() -> productCommandService.update(command, companyInfo))
                     .isInstanceOf(ProductException.class)
                     .hasMessageContaining(ProductErrorCode.UNAUTHORIZED_PRODUCT_UPDATE.getMessage());
         }
@@ -279,7 +254,7 @@ class ProductCommandServiceTest {
             given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> productCommandService.update(command))
+            assertThatThrownBy(() -> productCommandService.update(command, null))
                     .isInstanceOf(ProductException.class)
                     .hasMessageContaining(ProductErrorCode.PRODUCT_NOT_FOUND.getMessage());
         }
@@ -315,7 +290,7 @@ class ProductCommandServiceTest {
             given(productRepository.save(any())).willAnswer(invocation -> invocation.getArgument(0));
 
             // when
-            ProductResult result = productCommandService.changeStatus(command);
+            ProductResult result = productCommandService.changeStatus(command, null);
 
             // then
             assertThat(result.status()).isEqualTo(ProductStatus.STOPPED.name());
@@ -332,7 +307,7 @@ class ProductCommandServiceTest {
             given(productRepository.save(any())).willAnswer(invocation -> invocation.getArgument(0));
 
             // when
-            ProductResult result = productCommandService.changeStatus(command);
+            ProductResult result = productCommandService.changeStatus(command, null);
 
             // then
             assertThat(result.status()).isEqualTo(ProductStatus.SELLING.name());
@@ -345,13 +320,12 @@ class ProductCommandServiceTest {
             ChangeProductStatusCommand command = new ChangeProductStatusCommand(
                     MANAGER_ID, UserRole.COMPANY_MANAGER.name(), PRODUCT_ID, "STOPPED"
             );
+            CompanyInfo companyInfo = new CompanyInfo(COMPANY_ID, HUB_ID, MANAGER_ID);
             given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(sellingProduct));
-            given(companyPort.getCompany(COMPANY_ID))
-                    .willReturn(new CompanyInfo(COMPANY_ID, HUB_ID, MANAGER_ID));
             given(productRepository.save(any())).willAnswer(invocation -> invocation.getArgument(0));
 
             // when
-            ProductResult result = productCommandService.changeStatus(command);
+            ProductResult result = productCommandService.changeStatus(command, companyInfo);
 
             // then
             assertThat(result.status()).isEqualTo(ProductStatus.STOPPED.name());
@@ -364,12 +338,11 @@ class ProductCommandServiceTest {
             ChangeProductStatusCommand command = new ChangeProductStatusCommand(
                     OTHER_USER_ID, UserRole.COMPANY_MANAGER.name(), PRODUCT_ID, "STOPPED"
             );
+            CompanyInfo companyInfo = new CompanyInfo(COMPANY_ID, HUB_ID, MANAGER_ID);
             given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(sellingProduct));
-            given(companyPort.getCompany(COMPANY_ID))
-                    .willReturn(new CompanyInfo(COMPANY_ID, HUB_ID, MANAGER_ID));
 
             // when & then
-            assertThatThrownBy(() -> productCommandService.changeStatus(command))
+            assertThatThrownBy(() -> productCommandService.changeStatus(command, companyInfo))
                     .isInstanceOf(ProductException.class)
                     .hasMessageContaining(ProductErrorCode.UNAUTHORIZED_PRODUCT_STATUS_CHANGE.getMessage());
         }
@@ -384,7 +357,7 @@ class ProductCommandServiceTest {
             given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(sellingProduct));
 
             // when & then
-            assertThatThrownBy(() -> productCommandService.changeStatus(command))
+            assertThatThrownBy(() -> productCommandService.changeStatus(command, null))
                     .isInstanceOf(ProductException.class)
                     .hasMessageContaining(ProductErrorCode.PRODUCT_ALREADY_SELLING.getMessage());
         }
@@ -399,7 +372,7 @@ class ProductCommandServiceTest {
             given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(stoppedProduct));
 
             // when & then
-            assertThatThrownBy(() -> productCommandService.changeStatus(command))
+            assertThatThrownBy(() -> productCommandService.changeStatus(command, null))
                     .isInstanceOf(ProductException.class)
                     .hasMessageContaining(ProductErrorCode.PRODUCT_ALREADY_STOPPED.getMessage());
         }
@@ -414,7 +387,7 @@ class ProductCommandServiceTest {
             given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(sellingProduct));
 
             // when & then
-            assertThatThrownBy(() -> productCommandService.changeStatus(command))
+            assertThatThrownBy(() -> productCommandService.changeStatus(command, null))
                     .isInstanceOf(ProductException.class)
                     .hasMessageContaining(ProductErrorCode.INVALID_PRODUCT_STATUS.getMessage());
         }
@@ -429,7 +402,7 @@ class ProductCommandServiceTest {
             given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> productCommandService.changeStatus(command))
+            assertThatThrownBy(() -> productCommandService.changeStatus(command, null))
                     .isInstanceOf(ProductException.class)
                     .hasMessageContaining(ProductErrorCode.PRODUCT_NOT_FOUND.getMessage());
         }
@@ -457,7 +430,7 @@ class ProductCommandServiceTest {
             willDoNothing().given(productRepository).delete(PRODUCT_ID, MANAGER_ID);
 
             // when
-            productCommandService.delete(PRODUCT_ID, MANAGER_ID, UserRole.MASTER.name());
+            productCommandService.delete(PRODUCT_ID, MANAGER_ID, UserRole.MASTER.name(), null);
 
             // then
             verify(productRepository).delete(PRODUCT_ID, MANAGER_ID);
@@ -471,7 +444,7 @@ class ProductCommandServiceTest {
             willDoNothing().given(productRepository).delete(PRODUCT_ID, MANAGER_ID);
 
             // when
-            productCommandService.delete(PRODUCT_ID, MANAGER_ID, UserRole.HUB_MANAGER.name());
+            productCommandService.delete(PRODUCT_ID, MANAGER_ID, UserRole.HUB_MANAGER.name(), null);
 
             // then
             verify(productRepository).delete(PRODUCT_ID, MANAGER_ID);
@@ -481,13 +454,12 @@ class ProductCommandServiceTest {
         @DisplayName("COMPANY_MANAGER가 본인 업체 상품을 삭제하면 성공한다")
         void delete_companyManager_ownCompany_success() {
             // given
+            CompanyInfo companyInfo = new CompanyInfo(COMPANY_ID, HUB_ID, MANAGER_ID);
             given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
-            given(companyPort.getCompany(COMPANY_ID))
-                    .willReturn(new CompanyInfo(COMPANY_ID, HUB_ID, MANAGER_ID));
             willDoNothing().given(productRepository).delete(PRODUCT_ID, MANAGER_ID);
 
             // when
-            productCommandService.delete(PRODUCT_ID, MANAGER_ID, UserRole.COMPANY_MANAGER.name());
+            productCommandService.delete(PRODUCT_ID, MANAGER_ID, UserRole.COMPANY_MANAGER.name(), companyInfo);
 
             // then
             verify(productRepository).delete(PRODUCT_ID, MANAGER_ID);
@@ -497,13 +469,12 @@ class ProductCommandServiceTest {
         @DisplayName("COMPANY_MANAGER가 다른 업체 상품을 삭제하면 예외가 발생한다")
         void delete_companyManager_otherCompany_throwsException() {
             // given
+            CompanyInfo companyInfo = new CompanyInfo(COMPANY_ID, HUB_ID, MANAGER_ID);
             given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
-            given(companyPort.getCompany(COMPANY_ID))
-                    .willReturn(new CompanyInfo(COMPANY_ID, HUB_ID, MANAGER_ID));
 
             // when & then
             assertThatThrownBy(() ->
-                    productCommandService.delete(PRODUCT_ID, OTHER_USER_ID, UserRole.COMPANY_MANAGER.name()))
+                    productCommandService.delete(PRODUCT_ID, OTHER_USER_ID, UserRole.COMPANY_MANAGER.name(), companyInfo))
                     .isInstanceOf(ProductException.class)
                     .hasMessageContaining(ProductErrorCode.UNAUTHORIZED_PRODUCT_DELETE.getMessage());
         }
@@ -516,7 +487,7 @@ class ProductCommandServiceTest {
 
             // when & then
             assertThatThrownBy(() ->
-                    productCommandService.delete(PRODUCT_ID, MANAGER_ID, UserRole.MASTER.name()))
+                    productCommandService.delete(PRODUCT_ID, MANAGER_ID, UserRole.MASTER.name(), null))
                     .isInstanceOf(ProductException.class)
                     .hasMessageContaining(ProductErrorCode.PRODUCT_NOT_FOUND.getMessage());
         }

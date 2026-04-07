@@ -11,7 +11,6 @@ import com.firstlogistics.productservice.product.domain.exception.ProductErrorCo
 import com.firstlogistics.productservice.product.domain.exception.ProductException;
 import com.firstlogistics.productservice.product.domain.repository.ProductRepository;
 import com.firstlogistics.productservice.product.domain.vo.Money;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -43,26 +42,19 @@ class InventoryQueryServiceTest {
     private static final UUID COMPANY_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
     private static final UUID HUB_ID = UUID.fromString("00000000-0000-0000-0000-000000000003");
 
-    private Product product;
-    private Inventory inventory;
-
-    @BeforeEach
-    void setUp() {
-        product = Product.reconstitute(
-                PRODUCT_ID, COMPANY_ID, HUB_ID, "마른오징어",
-                Money.krw(15000), ProductStatus.SELLING
-        );
-        inventory = Inventory.reconstitute(PRODUCT_ID, 100, 10);
-    }
-
     @Nested
-    @DisplayName("재고 조회 (getByProductId)")
+    @DisplayName("재고 단건 조회 (getByProductId)")
     class GetByProductId {
 
         @Test
-        @DisplayName("존재하는 상품의 재고를 조회하면 재고 정보를 반환한다")
+        @DisplayName("상품과 재고가 존재하면 재고 정보를 반환한다")
         void getByProductId_success() {
             // given
+            Product product = Product.reconstitute(
+                    PRODUCT_ID, COMPANY_ID, HUB_ID, "마른오징어",
+                    Money.krw(15000), ProductStatus.SELLING
+            );
+            Inventory inventory = Inventory.reconstitute(PRODUCT_ID, 90, 10);
             given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
             given(inventoryRepository.findByProductId(PRODUCT_ID)).willReturn(Optional.of(inventory));
 
@@ -71,12 +63,12 @@ class InventoryQueryServiceTest {
 
             // then
             assertThat(result.productId()).isEqualTo(PRODUCT_ID);
-            assertThat(result.available()).isEqualTo(100);
+            assertThat(result.available()).isEqualTo(90);
             assertThat(result.reserved()).isEqualTo(10);
         }
 
         @Test
-        @DisplayName("존재하지 않는 productId로 조회하면 PRODUCT_NOT_FOUND 예외가 발생한다")
+        @DisplayName("상품이 존재하지 않으면 PRODUCT_NOT_FOUND 예외가 발생한다")
         void getByProductId_productNotFound_throwsException() {
             // given
             given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.empty());
@@ -88,9 +80,13 @@ class InventoryQueryServiceTest {
         }
 
         @Test
-        @DisplayName("상품은 존재하지만 재고 정보가 없으면 INVENTORY_NOT_FOUND 예외가 발생한다")
+        @DisplayName("상품은 있지만 재고 정보가 없으면 INVENTORY_NOT_FOUND 예외가 발생한다")
         void getByProductId_inventoryNotFound_throwsException() {
             // given
+            Product product = Product.reconstitute(
+                    PRODUCT_ID, COMPANY_ID, HUB_ID, "마른오징어",
+                    Money.krw(15000), ProductStatus.SELLING
+            );
             given(productRepository.findById(PRODUCT_ID)).willReturn(Optional.of(product));
             given(inventoryRepository.findByProductId(PRODUCT_ID)).willReturn(Optional.empty());
 

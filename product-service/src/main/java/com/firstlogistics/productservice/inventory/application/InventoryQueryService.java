@@ -14,12 +14,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class InventoryQueryService {
 
     private final ProductRepository productRepository;
     private final InventoryRepository inventoryRepository;
 
-    @Transactional(readOnly = true)
     public InventoryResult getByProductId(UUID productId) {
         productRepository.findById(productId)
                 .orElseThrow(() -> new ProductException(ProductErrorCode.PRODUCT_NOT_FOUND));

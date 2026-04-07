@@ -13,6 +13,7 @@ public enum InventoryErrorCode implements ErrorCode {
     INSUFFICIENT_AVAILABLE_QUANTITY(HttpStatus.BAD_REQUEST, "INV003", "사용 가능한 수량이 부족합니다."),
     INSUFFICIENT_RESERVED_QUANTITY(HttpStatus.BAD_REQUEST, "INV004", "예약된 수량이 부족합니다."),
     INVENTORY_NOT_FOUND(HttpStatus.NOT_FOUND, "INV005", "재고 정보를 찾을 수 없습니다."),
+    INVENTORY_LOCK_FAILED(HttpStatus.CONFLICT, "INV006", "재고 잠금 획득에 실패했습니다."),
     ;
 
     private final HttpStatus status;
