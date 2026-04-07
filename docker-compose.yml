@@ -29,7 +29,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256m
+          memory: 384m
 
   postgres-init:
     image: pgvector/pgvector:pg16
@@ -135,7 +135,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 192m
+          memory: 384m
 
   # ============================================
   # 2단계: 서비스 디스커버리 (Eureka)
@@ -153,7 +153,7 @@ services:
       SERVER_PORT: 8080
       EUREKA_INSTANCE_HOSTNAME: eureka-server
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
-      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
+      JAVA_TOOL_OPTIONS: "-Xmx256m -Xms128m"
     volumes:
       - ./logs/eureka-server:/logs/eureka-server
     healthcheck:
@@ -165,7 +165,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 300m
+          memory: 512m
 
   # ============================================
   # 3단계: 기반 서비스 (User, Hub, Company, Product)
@@ -195,7 +195,7 @@ services:
       KEYCLOAK_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       ZIPKIN_ENDPOINT: ${ZIPKIN_ENDPOINT}
-      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
+      JAVA_TOOL_OPTIONS: "-Xmx320m -Xms192m"
     volumes:
       - ./logs/user-service:/logs/user-service
     depends_on:
@@ -214,7 +214,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 300m
+          memory: 512m
 
   hub-service:
     build:
@@ -238,7 +238,7 @@ services:
       NAVER_MAP_CLIENT_SECRET: ${NAVER_MAP_CLIENT_SECRET}
       COMPANY_SERVICE_URL: http://company-service:8080
       ZIPKIN_ENDPOINT: http://zipkin:9411/api/v2/spans
-      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
+      JAVA_TOOL_OPTIONS: "-Xmx320m -Xms192m"
     volumes:
       - ./logs/hub-service:/logs/hub-service
     depends_on:
@@ -259,7 +259,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 300m
+          memory: 512m
 
   company-service:
     build:
@@ -278,7 +278,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
+      JAVA_TOOL_OPTIONS: "-Xmx320m -Xms192m"
     volumes:
       - ./logs/company-service:/logs/company-service
     depends_on:
@@ -297,7 +297,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 300m
+          memory: 512m
 
   product-service:
     build:
@@ -316,7 +316,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
+      JAVA_TOOL_OPTIONS: "-Xmx320m -Xms192m"
     volumes:
       - ./logs/product-service:/logs/product-service
     depends_on:
@@ -335,7 +335,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 300m
+          memory: 512m
 
   # ============================================
   # 4단계: 비즈니스 서비스 (Order, Delivery)
@@ -358,7 +358,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
+      JAVA_TOOL_OPTIONS: "-Xmx320m -Xms192m"
     volumes:
       - ./logs/order-service:/logs/order-service
     depends_on:
@@ -377,7 +377,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 300m
+          memory: 512m
 
   delivery-service:
     build:
@@ -397,7 +397,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       REDIS_URL: redis://redis:6379
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
+      JAVA_TOOL_OPTIONS: "-Xmx320m -Xms192m"
     volumes:
       - ./logs/delivery-service:/logs/delivery-service
     depends_on:
@@ -418,7 +418,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 300m
+          memory: 512m
 
   # ============================================
   # 5단계: 후행 서비스 (Notification, AI)
@@ -442,7 +442,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SLACK_BOT_TOKEN: ${SLACK_BOT_TOKEN}
-      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
+      JAVA_TOOL_OPTIONS: "-Xmx320m -Xms192m"
     volumes:
       - ./logs/notification-service:/logs/notification-service
     depends_on:
@@ -457,7 +457,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 300m
+          memory: 512m
 
   ai-service:
     build:
@@ -477,7 +477,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       OPENAI_API_KEY: ${OPENAI_API_KEY}
-      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
+      JAVA_TOOL_OPTIONS: "-Xmx320m -Xms192m"
     volumes:
       - ./logs/ai-service:/logs/ai-service
     depends_on:
@@ -492,7 +492,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 300m
+          memory: 512m
 
   # ============================================
   # 6단계: API Gateway
@@ -510,7 +510,7 @@ services:
       SERVER_PORT: 8080
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_DEFAULT_ZONE}
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI: ${KEYCLOAK_ISSUER_URI}
-      JAVA_TOOL_OPTIONS: "-Xmx160m -Xms96m"
+      JAVA_TOOL_OPTIONS: "-Xmx320m -Xms192m"
     volumes:
       - ./logs/api-gateway:/logs/api-gateway
     depends_on:
@@ -535,7 +535,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 300m
+          memory: 512m
 
   # ============================================
   # Keycloak (독립 인프라)
