@@ -117,6 +117,8 @@ public class DeliveryCommandService {
 
 		for (int i = 0; i < hubSteps.size(); i++) {
 			HubRouteStepResponse step = hubSteps.get(i);
+			log.info("[배송 경로 생성] step[{}] seq={}, sourceId={}, destId={}, distance={}, duration={}",
+				i, step.hubRouteSequence(), step.sourceHubId(), step.destinationHubId(), step.distanceMeters(), step.durationMinutes());
 			DeliveryRoute route = DeliveryRoute.create(
 				delivery.getId(),
 				step.hubRouteSequence(),
@@ -128,6 +130,8 @@ public class DeliveryCommandService {
 			delivery.assignRoute(route, hubDeliveryManagers.get(i).getId());
 		}
 
+		log.info("[배송 경로 생성] lastStep seq={}, sourceId={}, destId={}, distance={}, duration={}",
+			lastStep.hubRouteSequence(), lastStep.sourceHubId(), lastStep.destinationHubId(), lastStep.distanceMeters(), lastStep.durationMinutes());
 		DeliveryRoute companyRoute = DeliveryRoute.create(
 			delivery.getId(),
 			lastStep.hubRouteSequence(),
@@ -138,7 +142,9 @@ public class DeliveryCommandService {
 		);
 		delivery.assignRoute(companyRoute, companyDeliveryManager.getId());
 
+		log.info("[배송 생성] 경로 생성 완료, DB 저장 시작");
 		Delivery savedDelivery = deliveryRepository.save(delivery);
+		log.info("[배송 생성] DB 저장 완료 - deliveryId: {}", savedDelivery.getId().id());
 
 		int timetableMinutes = 0;
 		for (int i = 0; i < hubSteps.size(); i++) {
@@ -155,6 +161,7 @@ public class DeliveryCommandService {
 		companyDeliveryManager.assignDelivery(savedDelivery.getId(), companyAssignmentStart, companyAssignmentEnd);
 		deliveryManagerRepository.save(companyDeliveryManager);
 
+		log.info("[배송 생성] 타임테이블 배정 완료, 허브 정보 조회 시작");
 		List<UUID> hubIds = Stream.concat(
 			orderedRoutes.stream().map(HubRouteStepResponse::sourceHubId),
 			hubSteps.stream().map(HubRouteStepResponse::destinationHubId)
@@ -166,6 +173,7 @@ public class DeliveryCommandService {
 		}
 		UserResponse companyDeliveryManagerUser = userPort.getUser(companyDeliveryManager.getUserId());
 
+		log.info("[배송 생성] 허브 정보 조회 완료, 이벤트 빌드 시작");
 		DeliveryCreatedEvent deliveryCreatedEvent = buildDeliveryCreatedEvent(
 				savedDelivery, command, receiver, hubSteps, hubDeliveryManagers, lastStep, companyDeliveryManager, hubMap, companyDeliveryManagerUser
 		);
