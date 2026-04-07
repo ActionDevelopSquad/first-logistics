@@ -1,6 +1,5 @@
 rootProject.name = 'first-logistics'
 
-include 'sample-service'
 include 'common'
 include 'common-jpa'
 include 'common-event'
