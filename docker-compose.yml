@@ -316,6 +316,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      REDIS_URL: redis://redis:6379
       JAVA_TOOL_OPTIONS: "-Xmx320m -Xms192m"
     volumes:
       - ./logs/product-service:/logs/product-service
@@ -325,6 +326,8 @@ services:
       eureka-server:
         condition: service_healthy
       kafka:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
