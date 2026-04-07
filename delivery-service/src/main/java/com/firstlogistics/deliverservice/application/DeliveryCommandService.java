@@ -155,9 +155,10 @@ public class DeliveryCommandService {
 		companyDeliveryManager.assignDelivery(savedDelivery.getId(), companyAssignmentStart, companyAssignmentEnd);
 		deliveryManagerRepository.save(companyDeliveryManager);
 
-		List<UUID> hubIds = orderedRoutes.stream()
-			.flatMap(step -> Stream.of(step.sourceHubId(), step.destinationHubId()))
-			.distinct().toList();
+		List<UUID> hubIds = Stream.concat(
+			orderedRoutes.stream().map(HubRouteStepResponse::sourceHubId),
+			hubSteps.stream().map(HubRouteStepResponse::destinationHubId)
+		).distinct().toList();
 		Map<UUID, HubResponse> hubMap = hubPort.getHubs(hubIds).stream()
 			.collect(Collectors.toMap(HubResponse::hubId, hub -> hub));
 		if (!hubMap.keySet().containsAll(hubIds)) {
@@ -349,11 +350,10 @@ public class DeliveryCommandService {
 		}
 
 		HubResponse lastSourceHub = hubMap.get(lastStep.sourceHubId());
-		HubResponse lastDestinationHub = hubMap.get(lastStep.destinationHubId());
 		deliveryRoutes.add(DeliveryCreatedEvent.DeliveryRouteInfo.of(
 			lastStep.hubRouteSequence(),
 			lastStep.sourceHubId(), lastSourceHub.name(), lastSourceHub.roadAddress(),
-			lastStep.destinationHubId(), lastDestinationHub.name(), lastDestinationHub.roadAddress(),
+			lastStep.destinationHubId(), null, null,
 			lastStep.distanceMeters(),
 			lastStep.durationMinutes(),
 			companyDeliveryManager.getSlackId()
