@@ -3,6 +3,8 @@ package com.firstlogistics.productservice.product.infrastructure.persistence.jpa
 import static com.firstlogistics.productservice.product.infrastructure.persistence.jpa.QProductJpaEntity.productJpaEntity;
 
 import com.firstlogistics.productservice.product.domain.entity.Product;
+import com.firstlogistics.productservice.product.domain.exception.ProductErrorCode;
+import com.firstlogistics.productservice.product.domain.exception.ProductException;
 import com.firstlogistics.productservice.product.domain.repository.ProductRepository;
 import com.firstlogistics.productservice.product.domain.specification.ProductSearchSpec;
 import com.querydsl.core.BooleanBuilder;
@@ -71,10 +73,11 @@ public class ProductRepositoryImpl implements ProductRepository {
                 .map(order -> {
                     boolean isAsc = order.isAscending();
                     return switch (order.getProperty()) {
+                        case "createdAt" ->
+                                isAsc ? productJpaEntity.createdAt.asc() : productJpaEntity.createdAt.desc();
                         case "updatedAt" ->
                                 isAsc ? productJpaEntity.updatedAt.asc() : productJpaEntity.updatedAt.desc();
-                        default ->
-                                isAsc ? productJpaEntity.createdAt.asc() : productJpaEntity.createdAt.desc();
+                        default -> throw new ProductException(ProductErrorCode.INVALID_SORT_FIELD);
                     };
                 })
                 .collect(java.util.stream.Collectors.toCollection(ArrayList::new));

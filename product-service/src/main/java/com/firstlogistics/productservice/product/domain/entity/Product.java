@@ -61,8 +61,22 @@ public class Product {
         }
     }
 
+    public void changeName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new ProductException(ProductErrorCode.INVALID_PRODUCT_NAME);
+        }
+        this.name = name;
+    }
+
     public void changePrice(Money price) {
         this.price = price;
+    }
+
+    public void startSelling() {
+        if (this.status == ProductStatus.SELLING) {
+            throw new ProductException(ProductErrorCode.PRODUCT_ALREADY_SELLING);
+        }
+        this.status = ProductStatus.SELLING;
     }
 
     public void stopSelling() {
