@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @FeignClient(name = "hub-service", url = "${hub-service.url:}", configuration = FeignErrorDecoder.class)
@@ -29,5 +30,5 @@ public interface HubClient {
 	FeignApiResponse<HubManagerResponse> getHubManagerByUserId(@PathVariable("userId") UUID userId);
 
 	@PostMapping("/api/v1/hubs/ids")
-	FeignApiResponse<List<HubResponse>> getHubs(@RequestBody List<UUID> hubIds);
+	FeignApiResponse<List<HubResponse>> getHubs(@RequestBody Map<String, List<UUID>> request);
 }
